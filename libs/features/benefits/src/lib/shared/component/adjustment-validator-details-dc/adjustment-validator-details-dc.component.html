@@ -1,0 +1,137 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<ng-container *ngIf="adjustmentDetails && adjustmentDetails?.adjustments?.length > 0">
+  <div
+    class="col-md-12 pt-2 pl-0"
+    *ngIf="
+      checkBenefitType === BenefitType.restartbenefit ||
+      checkBenefitType === BenefitType.stopbenefit ||
+      checkBenefitType === BenefitType.modifyCommitment
+    "
+  >
+    <div class="col-md-12 heading" *ngIf="checkBenefitType !== BenefitType.modifyCommitment">
+      {{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}
+    </div>
+    <div class="table-scroll table-responsive table-adjustmentDetails">
+      <table class="table table-borderless rounded">
+        <thead class="table-header">
+          <tr>
+            <th *ngIf="checkBenefitType !== BenefitType.modifyCommitment">
+              {{ 'BENEFITS.ADJUSTMENT-PERIOD' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.ADJUSTMENT-TYPE' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}
+            </th>
+            <th class="pr-3">
+              {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody *ngIf="adjustmentDetails">
+          <tr *ngFor="let eachAdjustment of adjustmentDetails.adjustments" class="data-row border-bottom">
+            <td *ngIf="checkBenefitType !== BenefitType.modifyCommitment">
+              <ng-container *ngIf="eachAdjustment.startDate || eachAdjustment.endDate; else hyphen">
+                {{ eachAdjustment.startDate | dateType }}
+                <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                {{ eachAdjustment.endDate | dateType }}
+              </ng-container>
+              <ng-template #hyphen>-</ng-template>
+            </td>
+            <td>{{ (eachAdjustment?.type | bilingualText) || '-' }}</td>
+            <td>{{ (eachAdjustment?.reason | bilingualText) || '-' }}</td>
+            <td class="amount">
+              {{ (eachAdjustment?.amount | number) || '-' }}
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="total-value text-right">{{ 'BENEFITS.TOTAL-ADJUSTMENT-LBL' | translate }} :</td>
+            <td
+              *ngIf="checkBenefitType === BenefitType.modifyCommitment"
+              [ngClass]="adjustmentDetails?.debit ? 'net-value-red' : 'net-value-green'"
+            >
+              {{ adjustmentDetails.totalAdjustmentAmount | number }}
+            </td>
+            <td *ngIf="checkBenefitType !== BenefitType.modifyCommitment">
+              {{ adjustmentDetails.totalAdjustmentAmount | number }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>
+<div
+  class="row"
+  *ngIf="checkBenefitType === BenefitType.restartbenefit || checkBenefitType === BenefitType.stopbenefit"
+>
+  <div class="col-md-12">
+    {{ 'BENEFITS.PRE-ADJUSTMENTS' | translate }}
+  </div>
+  <div class="col-md-12">
+    <span [ngClass]="adjustmentDetails?.isPreviousAdjustmentAmountDebit ? 'net-value-red' : 'net-value-green'"
+      >{{ Math.abs(adjustmentDetails?.netPreviousAdjustmentAmount) | number: '1.2-2' }}
+      {{ 'BENEFITS.SR' | translate }}</span
+    >
+    <span class="link-value float-right"
+      ><a (click)="onViewPreviousDetails()">{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</a></span
+    >
+  </div>
+  <div class="col-md-12 pt-3">
+    {{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }}
+  </div>
+  <div class="col-md-6" [ngClass]="adjustmentDetails?.debit ? 'net-value-red' : 'net-value-green'">
+    {{ Math.abs(adjustmentDetails?.netAdjustmentAmount) | number: '1.2-2' }} {{ 'BENEFITS.SR' | translate }}
+  </div>
+</div>
+<div class="row" *ngIf="checkBenefitType === BenefitType.modifyCommitment">
+  <div class="col-md-5"></div>
+  <div class="col-md-5 p-0">
+    <a id="viewAdjDetails" routerLinkActive="active" (click)="viewAdjustmentDetails()">
+      <u>{{ 'BENEFITS.VIEW-ADJUSTMENT-DETAILS' | translate }}</u>
+    </a>
+  </div>
+</div>
+<div
+  class="row"
+  *ngIf="
+    checkBenefitType === BenefitType.restartbenefit ||
+    checkBenefitType === BenefitType.modifyCommitment ||
+    checkBenefitType === BenefitType.stopbenefit
+  "
+>
+  <div class="col-sm-12 pt-4 pl-3" *ngIf="adjustmentDetails?.warningMessage?.english">
+    <gosi-alert-dc
+      [bilingualMessage]="
+        'BENEFITS.BENEFIT-WILLNOTBE-RESTARTED-WARNING-MSG'
+          | translate
+            : {
+                msg: adjustmentDetails?.warningMessage | bilingualText,
+                reason: adjustmentDetails?.reason | bilingualText
+              }
+      "
+      type="warning"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+  </div>
+  <div
+    class="row pt-4 pl-4"
+    *ngIf="parentForm?.get('checkBoxFlag') && adjustmentDetails?.netAdjustmentAmount > 0 && !adjustmentDetails?.debit"
+  >
+    <gosi-input-checkbox-dc
+      id="checkBox"
+      name="checkBox"
+      [disabled]="directDisabled || adjustmentDetails?.warningMessage"
+      [control]="parentForm?.get('checkBoxFlag')"
+      [label]="'BENEFITS.ALLOW-DIRECT-PAYMENT' | translate"
+    >
+    </gosi-input-checkbox-dc>
+    <!--    <span *ngIf="parentForm"><fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon></span>-->
+  </div>
+</div>

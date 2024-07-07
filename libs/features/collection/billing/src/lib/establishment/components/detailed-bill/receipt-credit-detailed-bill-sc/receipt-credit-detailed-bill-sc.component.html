@@ -1,0 +1,331 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<blg-detailed-bill-header-dc
+  [establishmentHeader]="establishmentHeader"
+  [isGccCountry]="isGccCountry"
+  [isMofFlag]="isMofFlag"
+  (download)="downloadReceiptDetailedBill($event)"
+  (print)="printReceiptDetailedBill()"
+></blg-detailed-bill-header-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="row" *ngIf="CurrencyDetails.english !== undefined">
+        <div class="col-lg-12">
+          <div *ngIf="!isMofFlag">
+            <blg-itemized-bill-details-dc
+              [itemizedBillDetails]="billDetails"
+              (itemizedDate)="getReceiptCreditDetailedBillDetailsOnSelectedDate($event)"
+              [isAdmin]="isAdmin"
+              [exchangeRate]="exchangeRate"
+              [isGccCountry]="isGccCountry"
+              [currencyType]="CurrencyDetails"
+              (itemizedDetails)="getDashboardBillDetails()"
+              [itemizedBillList]="itemizedBillList"
+              [noOfDays]="noOfDays"
+              [selectedDate]="selectedDate"
+              [isBillNumber]="isBillNumber"
+              [errorMessage]="errorMessage"
+              [billStartDate]="billStartDate"
+              [initialStartDate]="initialStartDate"
+            >
+            </blg-itemized-bill-details-dc>
+          </div>
+          <ng-container *ngIf="!isBillNumber">
+            <div *ngIf="isMofFlag">
+              <blg-mof-emp-share-summary-dc
+                [selectedDate]="selectedDate"
+                [billIssueDate]="billIssueDate"
+                [billDetails]="billDetails"
+                [exchangeRate]="exchangeRate"
+                [currencyType]="CurrencyDetails"
+                (mofCalender)="mofCalDatechanged($event)"
+              >
+              </blg-mof-emp-share-summary-dc>
+            </div>
+            <blg-itemized-bill-tabset-dc
+              [selectedTab]="selectedTabName"
+              [tabSet]="tabDetails"
+              (tabSelected)="goToNewTabs($event)"
+              [exchangeRate]="exchangeRate"
+              [currencyType]="CurrencyDetails"
+            >
+            </blg-itemized-bill-tabset-dc>
+            <div class="billtables">
+              <ng-container *ngIf="!isReceiptDetails">
+                <blg-itemized-bill-payment-receipt-details-dc
+                  [ReceiptDetails]="ReceiptDetails"
+                  [exchangeRate]="exchangeRate"
+                  [currencyType]="CurrencyDetails"
+                  (receiptSelectPageNo)="getReceiptSelectPageNo($event)"
+                  (sortListDet)="getReceiptSortList($event)"
+                  (SearchReceiptNo)="getPaymentReceiptList($event)"
+                  (filter)="getPaymentReceiptList($event)"
+                  [receiptSort]="receiptSort$"
+                  [pageNo]="pageNo"
+                >
+                </blg-itemized-bill-payment-receipt-details-dc>
+              </ng-container>
+              <div>
+                <div
+                  *ngIf="
+                    (wageDecreaseTotal !== null && wageDecreaseTotal !== 0) ||
+                    (periodDecreaseTotal !== null && periodDecreaseTotal !== 0) ||
+                    (coverageDecreaseTotal !== null && coverageDecreaseTotal !== 0) ||
+                    (ohRateDecreaseTotal !== null && ohRateDecreaseTotal !== 0) ||
+                    miscAdjustmentResponse?.adjustments?.length > 0
+                  "
+                  class="mr-auto heading"
+                >
+                  {{ 'BILLING.CREDIT-ADJUSTMENT-DETAILS' | translate }}
+                </div>
+                <div
+                  *ngIf="
+                    (wageDecreaseTotal !== null && wageDecreaseTotal !== 0 && wageFlag === false) || wageFlag === true
+                  "
+                >
+                  <blg-itemized-backdated-wage-details-dc
+                    [isPPA]="isPPA"
+                    [HeadingName]="'BILLING.BACKDATED-WAGE-DECREASE'"
+                    [backDatedWageDetails]="wageChange"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                    (selectPageNo)="getselectPageNo($event, 'WAGE_DECREASE')"
+                    [currencyType]="CurrencyDetails"
+                    [lateFeeFlag]="lateFeeFlag"
+                    [isMofFlag]="isMofFlag"
+                    [creditRequired]="creditRequired"
+                    (sortListValues)="getCreditsSortList($event)"
+                    (adjustmentFilterDetails)="getCreditAdjustmentFilterDetails($event, 'WAGE_DECREASE')"
+                    (searchValues)="getCreditSearchValues($event, 'WAGE_DECREASE')"
+                    [residentType]="residentType$"
+                    [adjustmentSort]="adjustmentSort$"
+                    [pageNo]="pageNo"
+                  >
+                  </blg-itemized-backdated-wage-details-dc>
+                </div>
+                <div
+                  *ngIf="
+                    (ohRateDecreaseTotal !== null && ohRateDecreaseTotal !== 0 && ohRateFlag === false) ||
+                    ohRateFlag === true
+                  "
+                >
+                  <blg-itemized-backdated-period-details-dc
+                    [isPPA]="isPPA"
+                    [HeadingName]="'BILLING.OH-CHANGE'"
+                    [adjustmentBreakupDetails]="ohRateChange"
+                    [lateFeeFlag]="lateFeeFlag"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                    (selectPageNo)="getselectPageNo($event, 'OH_RATE_DECREASE')"
+                    [isMofFlag]="isMofFlag"
+                    [creditRequired]="creditRequired"
+                    (sortListValues)="getCreditsSortList($event)"
+                    (searchValues)="getCreditSearchValues($event, 'OH_RATE_DECREASE')"
+                    [residentType]="residentType$"
+                    (adjustmentFilterDetails)="getCreditAdjustmentFilterDetails($event, 'OH_RATE_DECREASE')"
+                    [adjustmentSort]="adjustmentSort$"
+                    [pageNo]="pageNo"
+                  ></blg-itemized-backdated-period-details-dc>
+                </div>
+                <div
+                  *ngIf="
+                    (periodDecreaseTotal !== null && periodDecreaseTotal !== 0 && periodFlag === false) ||
+                    periodFlag === true
+                  "
+                >
+                  <blg-itemized-backdated-period-details-dc
+                    [isPPA]="isPPA"
+                    [HeadingName]="'BILLING.BACKDATED-PERIOD-DECREASE'"
+                    [adjustmentBreakupDetails]="periodChange"
+                    [lateFeeFlag]="lateFeeFlag"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                    (selectPageNo)="getselectPageNo($event, 'PERIOD_DECREASE')"
+                    [isMofFlag]="isMofFlag"
+                    [creditRequired]="creditRequired"
+                    (sortListValues)="getCreditsSortList($event)"
+                    (searchValues)="getCreditSearchValues($event, 'PERIOD_DECREASE')"
+                    [residentType]="residentType$"
+                    (adjustmentFilterDetails)="getCreditAdjustmentFilterDetails($event, 'PERIOD_DECREASE')"
+                    [adjustmentSort]="adjustmentSort$"
+                    [pageNo]="pageNo"
+                  >
+                  </blg-itemized-backdated-period-details-dc>
+                </div>
+                <div
+                  *ngIf="
+                    (coverageDecreaseTotal !== null && coverageDecreaseTotal !== 0 && coverageFlag === false) ||
+                    coverageFlag === true
+                  "
+                >
+                  <blg-itemized-backdated-period-details-dc
+                    [isPPA]="isPPA"
+                    [HeadingName]="'BILLING.COVERAGE-REMOVAL'"
+                    [isCoverageRemoval]="isCoverageRemoval"
+                    [adjustmentBreakupDetails]="coverageChange"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                    (selectPageNo)="getselectPageNo($event, 'COVERAGE_REMOVAL')"
+                    [lateFeeFlag]="lateFeeFlag"
+                    [isMofFlag]="isMofFlag"
+                    [creditRequired]="creditRequired"
+                    (sortListValues)="getCreditsSortList($event)"
+                    (searchValues)="getCreditSearchValues($event, 'COVERAGE_REMOVAL')"
+                    [residentType]="residentType$"
+                    (adjustmentFilterDetails)="getCreditAdjustmentFilterDetails($event, 'COVERAGE_REMOVAL')"
+                    [adjustmentSort]="adjustmentSort$"
+                    [pageNo]="pageNo"
+                  >
+                  </blg-itemized-backdated-period-details-dc>
+                </div>
+                <div *ngIf="billDetails?.totalCreditAdjustment > 0 && changeEngagement?.noOfRecords > 0">
+                  <blg-change-engagement-details-dc
+                    [currencyType]="CurrencyDetails"
+                    [changeEngagement]="changeEngagement"
+                    [pageNo]="pageNo"
+                    (selectPageNo)="getselectPageNo($event, 'WAGE_INCREASE')"
+                    (searchValues)="getCreditSearchValues($event, 'WAGE_INCREASE')"
+                  >
+                  </blg-change-engagement-details-dc>
+                </div>
+
+                      <!--Medical insurance details-->
+
+                <div *ngIf="medicalInsuranceBeneficiaryDetails?.medicalInsuranceResponses?.length > 0">
+                  <blg-itemized-medical-insurance-details-dc
+                    [HeadingName]="'BILLING.HEALTH-INSURANCE-EXTENSION-INITAITIVE'"
+                    [medicalInsuranceBeneficiaryDetails]="medicalInsuranceBeneficiaryDetails"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                  >
+                  </blg-itemized-medical-insurance-details-dc>
+                </div>
+
+
+                <!------- Entered Through IT ------->
+                <div *ngIf="miscAdjustmentResponse?.adjustments?.length > 0">
+                  <blg-entered-throught-it-dc
+                    [miscAdjustmentResponse]="miscAdjustmentResponse"
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                  ></blg-entered-throught-it-dc>
+                </div>
+                <!------- end of Entered Through IT ------->
+                <!------- Reversed Late Fees ------->
+                <div *ngIf="itemizedReversedLateFees?.reversedLateFeeBreakUp?.length > 0">
+                  <blg-itemized-reversed-late-fees-dc
+                    [exchangeRate]="exchangeRate"
+                    [currencyType]="CurrencyDetails"
+                    [itemizedReversedLateFees] ="itemizedReversedLateFees"
+                  ></blg-itemized-reversed-late-fees-dc>
+                </div>
+                <!------- End of Reversed Late Fees ------->
+                <ng-container *ngIf="lateFeeWavierChange?.totalAmount > 0 && showLateFeesWaiver">
+                  <div class="mr-auto heading">{{ 'BILLING.LATE-FEES-WAVIER-DETAILS' | translate }}</div>
+                  <div>
+                    <blg-itemized-late-fee-wavier-dc
+                      [lateFeeWavier]="lateFeeWavierChange"
+                      (selectPageNo)="getLateFeeWavierselectPageDetails($event)"
+                      [currencyType]="CurrencyDetails"
+                      [exchangeRate]="exchangeRate"
+                    >
+                      >
+                    </blg-itemized-late-fee-wavier-dc>
+                  </div>
+                </ng-container>
+                <!-- Gosi initative accordian -->
+                <ng-container *ngIf="showGosiInitiative">
+                  <div class="mr-auto heading">{{ 'BILLING.VIOLATION-LATE-FEE' | translate }}</div>
+                  <div>
+                    <blg-itemized-gosi-initiative-view-dc
+                      [lateFeeWavier]="lateFeeWavierChange"
+                      [currencyType]="CurrencyDetails"
+                    >
+                    </blg-itemized-gosi-initiative-view-dc>
+                  </div>
+                </ng-container>
+                <!--------------------------voilation adjustment details--------------------->
+                <ng-container *ngIf="violationAdjustmentdet?.violatedContributorsList?.length !== 0">
+                  <div class="mr-auto heading">{{ 'BILLING.VIOLATION-ADJUSTMENT' | translate }}</div>
+                  <div>
+                    <blg-itemized-violation-adjustment-details-dc
+                      [violationAdjustment]="violationAdjustmentdet"
+                      [exchangeRate]="exchangeRate"
+                      [violationCurrencyType]="CurrencyDetails"
+                      (selectPageNo)="getviolationAdjustmentselectPageDetails($event)"
+                    >
+                    </blg-itemized-violation-adjustment-details-dc>
+                  </div>
+                </ng-container>
+                <!--------------------------end voilation adjustment details--------------------->
+                <!--------------------------rejected oh recovery details--------------------->
+                <ng-container *ngIf="this.rejectedOHRecoveryDetails.amount > 0">
+                  <accordion>
+                    <accordion-group
+                      class="accordion-group-class"
+                      heading="{{ 'BILLING.REJECTED-OH-CLAIMS-DETAILS' | translate }}"
+                    >
+                      <span class="arrow-up-period arrow-color" accordion-heading>
+                        <span>
+                          ({{ 'BILLING.TOTAL' | translate }}: {{ rejectedOHRecoveryDetails.amount | number: '1.2-2' }}
+                          {{ CurrencyDetails | bilingualText }} )
+                        </span>
+                        <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+                      </span>
+                      <span class="arrow-down-period arrow-color" accordion-heading>
+                        <span>
+                          ({{ 'BILLING.TOTAL' | translate }}: {{ rejectedOHRecoveryDetails.amount | number: '1.2-2' }}
+                          {{ CurrencyDetails | bilingualText }} )
+                        </span>
+                        <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+                      </span>
+
+                      <div class="rejectoh-margin">
+                        <blg-itemized-rejected-oh-dc
+                          [rejectedOHDetails]="rejectedOHRecoveryDetails"
+                          [exchangeRate]="exchangeRate"
+                          [currencyType]="CurrencyDetails"
+                          (selectPage)="getselectPage($event)"
+                          [pageNo]="pageNo"
+                        ></blg-itemized-rejected-oh-dc>
+                      </div>
+                    </accordion-group>
+                  </accordion>
+                  <ng-template #noResult>
+                    <div class="col-lg-12">
+                      <div class="mt-10 text-center">
+                        <img src="assets/images/search-error.svg" alt="search-error" />
+                        <br />
+                        <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ng-container>
+                <!--------------------------end of rejected oh recovery details--------------------->
+              </div>
+              <div *ngIf="creditTransferChange?.transferDetails?.length > 0" class="mr-auto heading">
+                {{ 'BILLING.CREDIT-BALANCE-TRANSFER-DETAILS' | translate }}
+              </div>
+              <div *ngIf="creditTransferChange?.transferDetails?.length > 0">
+                <blg-credit-balance-transfer-dc
+                  [creditTransfers]="creditTransferChange"
+                  [tabHeader]="'BILLING.CREDIT-BALANCE-TRANSFER-DETAILS'"
+                  [currencyType]="CurrencyDetails"
+                  [exchangeRate]="exchangeRate"
+                  (selectPageNo)="getCreditTransferselectPageDetails($event)"
+                  [fromPage]="'receipt'"
+                >
+                </blg-credit-balance-transfer-dc>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

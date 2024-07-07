@@ -1,0 +1,615 @@
+<div *ngIf="isFirstScheme">
+  <!-- FirstScheme -->
+  <!-- GOSI-ENG-DETAILS FirstScheme-->
+
+  <frm-content-heading-dc
+    *ngIf="isFirstScheme"
+    icon="briefcase"
+    heading="CONTRIBUTOR.GOSI-ENG-DETAILS"
+    [canEdit]="false"
+  >
+  </frm-content-heading-dc>
+
+  <!-- FirstScheme -->
+
+  <div class="row" *ngIf="isFirstScheme">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="engagementStartDate"
+        [date]="true"
+        [value]="
+          engagementDetails?.activeEngagements[0]?.engagementPeriod[0]?.startDate?.gregorian | date: 'dd/MM/yyyy'
+        "
+        [label]="'CONTRIBUTOR.ENGAGEMENT-START-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="contributionMonths"
+        [value]="engagementDetails?.totalGOSIContributionMonths"
+        [label]="'CONTRIBUTOR.CONTRIBUTION-MONTHS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6"></div>
+  </div>
+
+  <div class="row">
+    <ng-container>
+      <div class="col-sm-12 col-md-12">
+        <h4 class="sub-heading">
+          {{ 'CONTRIBUTOR.CONTRIBUTION-HISTORY' | translate }}
+        </h4>
+      </div>
+    </ng-container>
+    <div class="row w-100">
+      <div
+        class="col-lg-12 col-md-12 col-sm-12 w-100 accordion-custom"
+        *ngFor="let engagement of engagementDetails?.overallEngagements; let i = index"
+      >
+        <gosi-accordion-dc
+          *ngIf="!engagement.ppaIndicator && !engagement.vicIndicator"
+          [closeOthers]="true"
+          [id]="'enterRpa-' + i"
+          [isPrimaryColor]="true"
+          class="modify-accordion"
+        >
+          <div header>
+            <div class="heading-wrapper">
+              <div class="row align-items-center d-md-flex justify-content-between">
+                <div class="accordion-heading-type col-lg-11 col-auto">
+                  <div class="type-label">
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement.establishmentName?.arabic
+                        : (engagement.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+                  <div class="type-value mt-2">
+                    <div class="row">
+                      <div class="col-12 date-value">
+                        {{ engagement?.joiningDate | dateType }}
+                        <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                        <ng-container *ngIf="engagement?.leavingDate?.gregorian; else onwards">{{
+                          engagement?.leavingDate | dateType
+                        }}</ng-container>
+                        <ng-template #onwards>
+                          <span class="flag-endDate"> {{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                        </ng-template>
+                        <span class="ml-2"
+                          >({{
+                            'CONTRIBUTOR.NO-OF-MONTHS'
+                              | translate: { months: engagement.engagementDuration?.noOfMonths }
+                          }}
+                          ,
+                          {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: engagement.engagementDuration?.noOfDays } }})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="duration seperator">
+                    <div *ngIf="engagement?.engagementSourceType">
+                      <span>
+                        {{ 'CONTRIBUTOR.DATA-SOURCE' | translate }}
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'PPA Legacy'" class="ppa-legacy">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'Mitaq'" class="mithaq">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'GOSI'" class="gosi">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency'" class="govt-agency">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span
+                          *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency & Mithaq'"
+                          class="govt-agency-mithaq"
+                        >
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-1 col-auto d-flex justify-content-end">
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div body>
+            <div class="row mt-4">
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="registrationNo"
+                  label="CONTRIBUTOR.ESTABLISHMENT-REG-NO"
+                  [value]="engagement?.registrationNo"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameEnglish"
+                  label="CONTRIBUTOR.ESTABLISHMENT-NAME-EN"
+                  [value]="engagement?.establishmentName?.english"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameArabic"
+                  label="CONTRIBUTOR.ESTABLISHMENT-NAME-AR"
+                  [value]="engagement?.establishmentName?.arabic"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameArabic"
+                  label="CONTRIBUTOR.TERMINATION-REASON"
+                  [value]="engagement?.leavingReason | bilingualText"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <div *ngIf="engagement?.engagementPeriod?.length > 0" class="table-scroll table-responsive full-width">
+              <table class="table table-borderless wage-table">
+                <thead class="thead-light">
+                  <tr>
+                    <th>
+                      {{ 'CONTRIBUTOR.PERIOD' | translate }}
+                    </th>
+                    <th>
+                      {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}
+                    </th>
+                    <th>{{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-bottom" *ngFor="let item of engagement.engagementPeriod">
+                    <td class="d-flex">
+                      <span *ngIf="item.startDate && item.startDate.gregorian"
+                        >{{ item.startDate.gregorian | date: 'MMMM yyyy' }}
+                      </span>
+                      <span class="pl-2 pr-2">
+                        <fa-icon *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                      </span>
+                      <span *ngIf="item.endDate; else nullTemplate">
+                        <span *ngIf="item.endDate.gregorian; else nullTemplate">
+                          {{ item.endDate.gregorian | date: 'MMMM yyyy' }}
+                        </span>
+                      </span>
+                      <ng-template #nullTemplate>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+                      <span class="ml-2"
+                        >({{ 'CONTRIBUTOR.NO-OF-MONTHS' | translate: { months: item.periodDuration?.noOfMonths } }} ,
+                        {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: item.periodDuration?.noOfDays } }})
+                      </span>
+                    </td>
+                    <td>
+                      {{ item.wage.totalWage | number: '1.0' }}
+                    </td>
+                    <td>
+                      {{ item.wage.contributoryWage | number: '1.0' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </gosi-accordion-dc>
+      </div>
+    </div>
+  </div>
+
+  <frm-content-heading-dc icon="briefcase" heading="CONTRIBUTOR.ENGAGEMENT-DETAILS-PPA" [canEdit]="false">
+  </frm-content-heading-dc>
+
+  <div class="row">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="personBirthDate"
+        [date]="true"
+        [value]="engagementDetails?.ppaStartDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.PPA-START-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="personBirthDate"
+        [date]="true"
+        [value]="engagementDetails?.ppaEndDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.PPA-END-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="contributionMonths"
+        [value]="engagementDetails?.totalPpaContributionMonth"
+        [label]="'CONTRIBUTOR.CONTRIBUTION-MONTHS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6"></div>
+  </div>
+
+  <!-- AGGREGATION-DETAILS -->
+  <frm-content-heading-dc icon="briefcase" heading="CONTRIBUTOR.AGGREGATION-DETAILS" [canEdit]="false">
+  </frm-content-heading-dc>
+
+  <!-- FirstScheme -->
+  <div class="row" *ngIf="isFirstScheme">
+    <div class="wage-block col-sm-12 col-md-12">
+      <div class="wage-card">
+        <table class="table-dd table-responsive">
+          <table>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.GOSI-CONTRIBUTIONS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.totalGOSIContributionMonths }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.PPA-CONTRIBUTIONS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.totalPpaContributionMonth }}</td>
+            </tr>
+            <tr class="td-last trow">
+              <th scope="row">{{ 'CONTRIBUTOR.TOTAL-PPA-CONTRIBUTION' | translate }}</th>
+              <td class="data-row">
+                {{ engagementDetails?.totalPpaContributionMonth + engagementDetails?.totalGOSIContributionMonths }}
+              </td>
+            </tr>
+          </table>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!isFirstScheme">
+  <!-- LastScheme -->
+  <!-- ENGAGEMENT-DETAILS-PPA -->
+
+  <frm-content-heading-dc icon="briefcase" heading="CONTRIBUTOR.ENGAGEMENT-DETAILS-PPA" [canEdit]="false">
+  </frm-content-heading-dc>
+
+  <div class="row">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="personBirthDate"
+        [date]="true"
+        [value]="engagementDetails?.ppaStartDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.PPA-START-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="personBirthDate"
+        [date]="true"
+        [value]="engagementDetails?.ppaEndDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.PPA-END-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="contributionMonths"
+        [value]="engagementDetails?.totalPpaContributionMonth"
+        [label]="'CONTRIBUTOR.CONTRIBUTION-MONTHS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6"></div>
+  </div>
+
+  <div class="row">
+    <ng-container>
+      <div class="col-sm-12 col-md-12">
+        <h4 class="sub-heading">
+          {{ 'CONTRIBUTOR.LAST-WAGE-DETAILS' | translate }}
+        </h4>
+      </div>
+    </ng-container>
+    <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="lang === 'en'">
+      <gosi-label-dc
+        id="jobClass"
+        [value]="engagementDetails?.wageBreakPeriod?.jobClassName?.english"
+        [label]="'CONTRIBUTOR.JOB-CLASS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="lang === 'ar'">
+      <gosi-label-dc
+        id="jobClass"
+        [value]="engagementDetails?.wageBreakPeriod?.jobClassName?.arabic"
+        [label]="'CONTRIBUTOR.JOB-CLASS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="Grade"
+        [value]="engagementDetails?.wageBreakPeriod?.jobGradeCode"
+        [label]="'CONTRIBUTOR.GRADE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="Rank"
+        [value]="engagementDetails?.wageBreakPeriod?.jobRankCode"
+        [label]="'CONTRIBUTOR.RANK' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <ng-container>
+      <div class="col-sm-12 col-md-12">
+        <h4 class="sub-heading">
+          {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}
+        </h4>
+      </div>
+    </ng-container>
+    <div class="wage-block col-sm-12 col-md-12">
+      <div class="wage-card">
+        <table class="table-dd table-responsive">
+          <table>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.BASIC-SALARY' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.wageBreakPeriod?.wage.basicWage }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.HOUSING-BENEFITS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.wageBreakPeriod?.wage.housingBenefit }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.wageBreakPeriod?.wage.commission }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.wageBreakPeriod?.wage.otherAllowance }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.wageBreakPeriod?.wage.totalWage }}</td>
+            </tr>
+          </table>
+        </table>
+      </div>
+
+      <p class="mt-3 color-gray updation-msg">
+        {{ 'CONTRIBUTOR.ALL-VALUES-IN-SAR' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <ng-container>
+      <div class="col-sm-12 col-md-12">
+        <h4 class="sub-heading">
+          {{ 'CONTRIBUTOR.CONTRIBUTION-HISTORY' | translate }}
+        </h4>
+      </div>
+    </ng-container>
+    <div class="row w-100">
+      <div
+        class="col-lg-12 col-md-12 col-sm-12 w-100 accordion-custom"
+        *ngFor="let engagement of engagementDetails?.overallEngagements; let i = index"
+      >
+        <gosi-accordion-dc
+          *ngIf="engagement.ppaIndicator"
+          [closeOthers]="true"
+          [id]="'enterRpa-' + i"
+          [isPrimaryColor]="true"
+          class="modify-accordion"
+        >
+          <div header>
+            <div class="heading-wrapper">
+              <div class="row align-items-center d-md-flex justify-content-between">
+                <div class="accordion-heading-type col-lg-11 col-auto">
+                  <div class="type-label">
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement.establishmentName?.arabic
+                        : (engagement.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+                  <div class="type-value mt-2">
+                    <div class="row">
+                      <div class="col-12 date-value">
+                        {{ engagement?.joiningDate | dateType }}
+                        <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                        <ng-container *ngIf="engagement?.leavingDate?.gregorian; else onwards">{{
+                          engagement?.leavingDate | dateType
+                        }}</ng-container>
+                        <ng-template #onwards>
+                          <span class="flag-endDate"> {{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                        </ng-template>
+                        <span class="ml-2"
+                          >({{
+                            'CONTRIBUTOR.NO-OF-MONTHS'
+                              | translate: { months: engagement.engagementDuration?.noOfMonths }
+                          }}
+                          ,
+                          {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: engagement.engagementDuration?.noOfDays } }})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="duration seperator">
+                    <div *ngIf="engagement?.engagementSourceType">
+                      <span>
+                        {{ 'CONTRIBUTOR.DATA-SOURCE' | translate }}
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'PPA Legacy'" class="ppa-legacy">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'Mitaq'" class="mithaq">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'GOSI'" class="gosi">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency'" class="govt-agency">
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                        <span
+                          *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency & Mithaq'"
+                          class="govt-agency-mithaq"
+                        >
+                          {{ engagement?.engagementSourceType | bilingualText }}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-1 col-auto d-flex justify-content-end">
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div body>
+            <div class="row mt-4">
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="registrationNo"
+                  label="CONTRIBUTOR.ESTABLISHMENT-REG-NO"
+                  [value]="engagement?.registrationNo"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameEnglish"
+                  label="CONTRIBUTOR.ESTABLISHMENT-NAME-EN"
+                  [value]="engagement?.establishmentName?.english"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameArabic"
+                  label="CONTRIBUTOR.ESTABLISHMENT-NAME-AR"
+                  [value]="engagement?.establishmentName?.arabic"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="nameArabic"
+                  label="CONTRIBUTOR.TERMINATION-REASON"
+                  [value]="engagement?.leavingReason | bilingualText"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <div *ngIf="engagement?.engagementPeriod?.length > 0" class="table-scroll table-responsive full-width">
+              <table class="table table-borderless wage-table">
+                <thead class="thead-light">
+                  <tr>
+                    <th>
+                      {{ 'CONTRIBUTOR.PERIOD' | translate }}
+                    </th>
+                    <th>
+                      {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}
+                    </th>
+                    <th>{{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-bottom" *ngFor="let item of engagement.engagementPeriod">
+                    <td class="d-flex">
+                      <span *ngIf="item.startDate && item.startDate.gregorian"
+                        >{{ item.startDate.gregorian | date: 'MMMM yyyy' }}
+                      </span>
+                      <span class="pl-2 pr-2">
+                        <fa-icon *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                      </span>
+                      <span *ngIf="item.endDate; else nullTemplate">
+                        <span *ngIf="item.endDate.gregorian; else nullTemplate">
+                          {{ item.endDate.gregorian | date: 'MMMM yyyy' }}
+                        </span>
+                      </span>
+                      <ng-template #nullTemplate>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+                      <span class="ml-2"
+                        >({{ 'CONTRIBUTOR.NO-OF-MONTHS' | translate: { months: item.periodDuration?.noOfMonths } }} ,
+                        {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: item.periodDuration?.noOfDays } }})
+                      </span>
+                    </td>
+                    <td>
+                      {{ item.wage.totalWage | number: '1.0' }}
+                    </td>
+                    <td>
+                      {{ item.wage.contributoryWage | number: '1.0' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </gosi-accordion-dc>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOSI-ENG-DETAILS  LastScheme -->
+
+  <frm-content-heading-dc
+    *ngIf="!isFirstScheme"
+    icon="briefcase"
+    heading="CONTRIBUTOR.GOSI-ENG-DETAILS"
+    [canEdit]="false"
+  >
+  </frm-content-heading-dc>
+
+  <!-- LastScheme -->
+  <div class="row" *ngIf="!isFirstScheme">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="engagementStartDate"
+        [date]="true"
+        [value]="
+          engagementDetails?.activeEngagements[0]?.engagementPeriod[0]?.startDate?.gregorian | date: 'dd/MM/yyyy'
+        "
+        [label]="'CONTRIBUTOR.ENGAGEMENT-START-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="contributionMonths"
+        [value]="engagementDetails?.totalGOSIContributionMonths"
+        [label]="'CONTRIBUTOR.CONTRIBUTION-MONTHS' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+
+  <!-- AGGREGATION-DETAILS -->
+  <frm-content-heading-dc icon="briefcase" heading="CONTRIBUTOR.AGGREGATION-DETAILS" [canEdit]="false">
+  </frm-content-heading-dc>
+
+  <!-- LastScheme -->
+  <div class="row" *ngIf="!isFirstScheme">
+    <div class="wage-block col-sm-12 col-md-12">
+      <div class="wage-card">
+        <table class="table-dd table-responsive">
+          <table>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.PPA-CONTRIBUTIONS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.totalPpaContributionMonth }}</td>
+            </tr>
+            <tr class="trow">
+              <th scope="row">{{ 'CONTRIBUTOR.GOSI-CONTRIBUTIONS' | translate }}</th>
+              <td class="data-row">{{ engagementDetails?.totalGOSIContributionMonths }}</td>
+            </tr>
+            <tr class="td-last trow">
+              <th scope="row">{{ 'CONTRIBUTOR.TOTAL-GOSI-CONTRIBUTION' | translate }}</th>
+              <td class="data-row">
+                {{ engagementDetails?.totalGOSIContributionMonths + engagementDetails?.totalPpaContributionMonth }}
+              </td>
+            </tr>
+          </table>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

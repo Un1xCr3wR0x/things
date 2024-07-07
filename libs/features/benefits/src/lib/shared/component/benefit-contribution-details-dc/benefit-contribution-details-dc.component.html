@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <frm-content-heading-dc icon="user" heading="{{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}" [canEdit]="false">
+    </frm-content-heading-dc>
+  </div>
+  <div class="col-sm-6">
+    <gosi-button-dc
+      class="calc-button"
+      [size]="isSmallScreen ? 'sm' : 'md'"
+      type="secondary"
+      [outlineOnly]="true"
+      (click)="showModal(calculationDetails)"
+    >
+      {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+    </gosi-button-dc>
+  </div>
+
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <gosi-label-dc
+      id="average-amount"
+      [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate: { amount: benefitDetails.averageMonthlyContributoryWage | number: '1.2-2' }
+      "
+      label="{{ 'BENEFITS.AVERAGE-WAGE' | translate }}"
+    ></gosi-label-dc>
+  </div>
+</div>
+<div class="row py-3">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <div class="details-heading">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</div>
+  </div>
+  <div class="col-sm-6" *ngIf="benefitCalculationDetails">
+    <gosi-button-dc
+      class="calc-button"
+      [size]="isSmallScreen ? 'sm' : 'md'"
+      type="secondary"
+      [outlineOnly]="true"
+      (click)="showModal(moreDetails)"
+    >
+      {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+<div class="row py-2" *ngIf="isReopenCase && benefitDetails?.availedMonths">
+  <div class="col-lg-12">
+    <gosi-alert-dc
+      [message]="'BENEFITS.BENEFIT_DETAILS_REOPEN_INFO' | translate: { availedMonths: benefitDetails.availedMonths }"
+      type="info"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="benefitDetails.initialMonths; else benefitAmountLabel">
+    <gosi-label-dc
+      id="first-amount"
+      [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.initialMonths?.amount | number: '1.2-2' }"
+      label="{{ 'BENEFITS.FIRST-MONTHS' | translate: { month: benefitDetails.initialMonths?.noOfMonths } }}"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="benefitDetails.initialMonths">
+    <gosi-label-dc
+      id="next-amount"
+      [value]="
+        'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.remainingMonths?.amount | number: '1.2-2' }
+      "
+      label="{{
+        'BENEFITS.NEXT-MONTHS' | translate: { month: getMonthsSuffix(benefitDetails.remainingMonths?.noOfMonths) }
+      }}"
+    ></gosi-label-dc>
+  </div>
+  <ng-template #benefitAmountLabel>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="first-amount"
+        [value]="
+          'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.remainingMonths?.amount | number: '1.2-2' }
+        "
+        label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+      ></gosi-label-dc>
+    </div>
+  </ng-template>
+  <!-- defect 535833 - removed repeating labels-->
+
+  <div *ngIf="showViewEligibleMonthsLink" class="col-sm-6 col-md-6 col-lg-6">
+    <a class="view-link" (click)="showModal(eligibleMonthsTemplate)">{{
+      'BENEFITS.VIEW-ELIGIBLE-MONTHS' | translate
+    }}</a>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *gosiShow="viewOnly">
+    <a class="view-link" (click)="viewHistory()">{{ 'BENEFITS.VIEW-BENEFIT-HISTORY' | translate }}</a>
+  </div>
+</div>
+<ng-template #eligibleMonthsTemplate>
+  <bnt-eligible-months-dc
+    [eligibleMonthsAmounts]="eligibleMonthsAmounts"
+    (close)="hideModal()"
+  ></bnt-eligible-months-dc>
+</ng-template>
+
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc [benefitDetails]="benefitCalculationDetails" [eligibleForPensionReform]="eligibleForPensionReform" (close)="hideModal()"></bnt-amw-view-dc>
+</ng-template>
+
+<ng-template #moreDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [isSaned]="true"
+    [benefitCalculationDetails]="benefitCalculationDetails"
+    [averageMonthlyWagePeriods]="benefitCalculationDetails?.averageMonthlyWagePeriods"
+    [lang]="lang"
+    [eligibleForPensionReform]="eligibleForPensionReform"
+  ></bnt-annuity-calculation-details-dc>
+</ng-template>

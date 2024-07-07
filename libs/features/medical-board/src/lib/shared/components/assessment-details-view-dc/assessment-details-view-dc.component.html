@@ -1,0 +1,730 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <ng-container class="col-md-6">
+        <frm-content-heading-dc
+          icon="notes-medical"
+          heading="{{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate }}"
+          [canEdit]="isGosiDoctor"
+          (onEdit)="gosiDoctorEdit()"
+        ></frm-content-heading-dc>
+      </ng-container>
+    </div>
+    <div class="row">
+      <div class="col-md-6 d-flex justify-content-start">
+        <h5>{{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate }}</h5>
+      </div>
+      <!-- && (isCSR || isMbo) -->
+      <div class="col-md-6 d-flex justify-content-end" *ngIf="singleAssessmentDetail && showForNonOcc()">
+        <!-- can appeal to show appeal button from benefits  -->
+        <gosi-button-dc
+          *ngIf="
+            singleAssessmentDetail?.canAppeal &&
+            (isCSR || isMbo) &&
+            !isHoDoctor &&
+            singleAssessmentDetail?.daysCompleted
+          "
+          class="px-3 pb-2"
+          [type]="'primary'"
+          [outlineOnly]="true"
+          [size]="'md'"
+          (click)="appeal(singleAssessmentDetail)"
+        >
+          {{ 'FORM-FRAGMENTS.APPEAL' | translate }}
+        </gosi-button-dc>
+        <div *gosiShow="allowEarlyReassessment">
+          <gosi-button-dc
+            *ngIf="singleAssessmentDetail?.canEarlyReq"
+            class="px-3 pb-2"
+            [type]="'primary'"
+            [outlineOnly]="true"
+            [size]="'md'"
+            (click)="earlyReAssessment(singleAssessmentDetail)"
+          >
+            {{ 'FORM-FRAGMENTS.REQUEST-EARLY-RE-ASSESSMENT' | translate }}
+          </gosi-button-dc>
+        </div>
+        <gosi-button-dc
+          *ngIf="singleAssessmentDetail?.canWithdraw"
+          class="px-3 pb-2"
+          [type]="'primary'"
+          [size]="'md'"
+          (click)="appeal(singleAssessmentDetail)"
+        >
+          {{ 'FORM-FRAGMENTS.WITHDRAW-APPEAL' | translate }}
+        </gosi-button-dc>
+        <ng-container *ngIf="singleAssessmentDetail?.showAppeal">
+          <span class="rule-value">_</span>
+          <fa-icon [icon]="['fas', 'gavel']" rotate="270" class="hammer" size="1x"></fa-icon>
+          <span>
+            {{ 'FORM-FRAGMENTS.APPEALED' | translate }}
+          </span>
+          <div class="px-2 pb-2">
+            <span
+              ><a class="appeal-link" (click)="navigateToAppealInfo.emit(singleAssessmentDetail)">
+                {{ 'FORM-FRAGMENTS.APPEAL-DETAILS' | translate }}</a
+              ></span
+            >
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="row" style="min-height: 20px"></div>
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.medicalBoardType">
+        <gosi-label-dc
+          id="medicalBoardType"
+          [value]="assessmentDetails?.medicalBoardType | bilingualText"
+          label="{{ 'MEDICAL-BOARD.MEDICAL-BOARD-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="assessmentChannel"
+          [value]="assessmentDetails?.assessmentChannel | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-CHANNEL' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.locationType">
+        <gosi-label-dc
+          id="locationType"
+          [value]="assessmentDetails?.locationType | bilingualText"
+          label="{{ 'MEDICAL-BOARD.LOCATION-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.officeLocation">
+        <gosi-label-dc
+          id="locationType"
+          [value]="assessmentDetails?.officeLocation | bilingualText"
+          label="{{ 'MEDICAL-BOARD.OTHER-GOSI-OFFICE-LOCATION' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.healthcareProvider">
+        <gosi-label-dc
+          id="healthcareProvider"
+          [value]="assessmentDetails?.healthcareProvider | bilingualText"
+          label="{{ 'MEDICAL-BOARD.HEALTHCARE-PROVIDER' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- show benefit amount and hide in case if canAppeal is true while click -->
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="singleAssessmentDetail?.benefitAmount">
+        <div class="row" style="min-height: 60px">
+          <div
+            class="toolTipVisible"
+            [tooltip]="singleAssessmentDetail?.benefitAmount ? hoverAmountDetailsTemplate : null"
+            triggers="mouseenter:mouseleave"
+            placement="bottom"
+          >
+            <div class="row" style="padding-left: 30px">
+              {{ 'MEDICAL-BOARD.BENEFIT-AMOUNT' | translate }}
+            </div>
+            <div class="row" style="padding-left: 30px; font-size: medium">
+              {{ singleAssessmentDetail?.benefitAmount }}
+            </div>
+          </div>
+        </div>
+        <ng-template #hoverAmountDetailsTemplate>
+          <ng-container>
+            <div class="heading-tooltip">
+              <div class="row no-gutters flex-nowrap amount-type">
+                <div class="row heading">
+                  <strong style="font-size: medium"> {{ 'FORM-FRAGMENTS.BENEFIT-BREAKUP' | translate }} </strong>
+                </div>
+              </div>
+              <div class="row no-gutters flex-nowrap amount-type" *ngIf="singleAssessmentDetail?.basicAmount">
+                <div class="row left">{{ 'FORM-FRAGMENTS.BASIC-AMOUNT' | translate }}:</div>
+                <div class="row right custoom-white">{{ singleAssessmentDetail?.basicAmount }}</div>
+              </div>
+              <div class="row no-gutters flex-nowrap amount-type" *ngIf="singleAssessmentDetail?.helperAmount">
+                <div class="row left">{{ 'FORM-FRAGMENTS.HELPER-AMOUNT' | translate }}:</div>
+                <div class="row right custoom-white">{{ singleAssessmentDetail?.helperAmount }}</div>
+              </div>
+              <div class="row no-gutters flex-nowrap amount-type" *ngIf="singleAssessmentDetail?.dependentAmount">
+                <div class="row left">{{ 'FORM-FRAGMENTS.DEPENDENT-AMOUNT' | translate }}:</div>
+                <div class="row right custoom-white">{{ singleAssessmentDetail?.dependentAmount }}</div>
+              </div>
+              <div class="underLine-benefitamount"></div>
+              <div class="row no-gutters flex-nowrap amount-type" *ngIf="singleAssessmentDetail?.benefitAmount">
+                <div class="row left">{{ 'FORM-FRAGMENTS.TOTAL-AMOUNT' | translate }}:</div>
+                <div class="row right custoom-white">{{ singleAssessmentDetail?.benefitAmount }}</div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-template>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="assessmentDateTime"
+          value="{{ assessmentDetails?.assessmentDate | dateType }} {{ assessmentDetails?.assessmentTime }}"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-DATE-TIME' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="assessmentType"
+          [value]="assessmentDetails?.assessmentType | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="assessmentResult"
+          [value]="assessmentDetails?.assessmentResult | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-RESULT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.disabilityAssmtId">
+        <gosi-label-dc
+          id="assessmentId"
+          [value]="assessmentDetails?.disabilityAssmtId"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-ID' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.injuryId">
+        <gosi-label-dc
+          id="injuryId"
+          [value]="assessmentDetails?.injuryId"
+          label="{{ 'MEDICAL-BOARD.INJURY-ID-SMALL' | translate }}"
+          [isLink]="true"
+          (select)="onInjuryIdClicked.emit(assessmentDetails?.injuryId)"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.benefitRequestId">
+        <gosi-label-dc
+          id="benefitRequestId"
+          [value]="assessmentDetails?.benefitRequestId"
+          label="{{ 'MEDICAL-BOARD.BENEFIT-REQUEST-ID' | translate }}"
+          [isLink]="true"
+          (select)="benefitIdClick.emit(assessmentDetails?.benefitRequestId)"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="assessmentStatus"
+          [value]="assessmentDetails?.assessmentStatus | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-STATUS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.reasonForAppeal?.english">
+        <gosi-label-dc
+          id="reasonForAppeal"
+          [value]="assessmentDetails?.reasonForAppeal | bilingualText"
+          label="{{ 'MEDICAL-BOARD.REASON-FOR-APPEAL' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.appealComment?.english">
+        <gosi-label-dc
+          id="assessmentStatus"
+          [value]="assessmentDetails?.appealComment | bilingualText"
+          label="{{ 'MEDICAL-BOARD.APPEAL-COMMENTS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.rescheduleReason?.english">
+        <gosi-label-dc
+          id="rescheduleReason"
+          [value]="assessmentDetails?.rescheduleReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.RESCHEDULE-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="assessmentDetails?.rescheduleReason?.english === 'Other specialties required'"
+      >
+        <gosi-label-dc
+          id="specialityRequired"
+          [value]=""
+          label="{{ 'MEDICAL-BOARD.SPECIALITY-REQUIRED' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.disabilityDate">
+        <gosi-label-dc
+          id="disabilityDate"
+          [value]="assessmentDetails?.disabilityDate | dateType"
+          label="{{ 'MEDICAL-BOARD.DISABLED-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="assessmentDetails?.assessmentResult?.english === 'Cured With Disability'"
+      >
+        <gosi-label-dc
+          id="disabilityPercentage"
+          [value]="assessmentDetails?.disabilityPercentage"
+          label="{{ 'MEDICAL-BOARD.DISABILTY-PERCENTAGE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.bodyPartsList?.length > 0">
+        <gosi-label-dc
+          *ngIf="isGosiDoctor"
+          id="disabledPart"
+          [value]="disabledBodyPart | bilingualText"
+          label="{{ 'MEDICAL-BOARD.DISABLED-BODY-PART' | translate }}"
+        ></gosi-label-dc>
+      </div> -->
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="assessmentDetails?.bodyPartsList?.length > 0">
+        <div class="row pt-3">
+          <div class="col-12">
+            <span class="heading mr-auto">{{ 'MEDICAL-BOARD.DISABLED-BODY-PART' | translate }}</span>
+          </div>
+          <div class="col-lg-12 align-items-center table-view">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>{{ 'MEDICAL-BOARD.BODY-PARTS-CATEGORY' | translate }}</th>
+                  <th>{{ 'MEDICAL-BOARD.BODY-PARTS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="data-row" *ngFor="let parts of assessmentDetails?.bodyPartsList; let i = index">
+                  <td>
+                    <div>
+                      {{ parts.category | bilingualText }}
+                    </div>
+                  </td>
+                  <td>
+                    {{ getBodyParts(parts?.bodyParts) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="helperRequired">
+        <gosi-label-dc
+          id="helperRequired"
+          [value]="assessmentDetails?.isHelperRequired | bilingualText"
+          label="{{ 'MEDICAL-BOARD.HELPER-REQUIRED' | translate }}"
+        ></gosi-label-dc>
+      </div>
+
+      <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.reasonForHelper">
+        <gosi-label-dc
+          id="reasonForHelper"
+          [value]="helperReasons | bilingualText"
+          label="{{ 'MEDICAL-BOARD.REASON-HELPER' | translate }}"
+        ></gosi-label-dc>
+      </div> -->
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.reasonForHelper">
+        <span class="helper">{{ 'MEDICAL-BOARD.REASON-HELPER' | translate }}</span>
+        <div class="container">
+          <div class="row" *ngFor="let reasons of assessmentDetails?.reasonForHelper; let i = index">
+            <div class="message">{{ i + 1 }} . {{ reasons | bilingualText }}</div>
+          </div>
+        </div>
+       </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.helperStartDate">
+        <gosi-label-dc
+          id="helperStartDate"
+          [value]="assessmentDetails?.helperStartDate | dateType"
+          label="{{ 'MEDICAL-BOARD.HELPER-START-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.nextAssessmentDate">
+        <gosi-label-dc
+          id="nextAssessmentDate"
+          [value]="assessmentDetails?.nextAssessmentDate | dateType"
+          label="{{ 'MEDICAL-BOARD.NEXT-ASSESSMENT-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- <div class="row"> -->
+      <!-- </div> -->
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.mainReason">
+        <gosi-label-dc
+          id="mainReason"
+          [value]="assessmentDetails?.mainReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.MAIN-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.secondaryReason">
+        <gosi-label-dc
+          id="secondaryReason"
+          [value]="assessmentDetails?.secondaryReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.SECONDARY-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12 word-wrap">
+        <div>{{ 'MEDICAL-BOARD.CASE-DESCRIPTION' | translate }}</div>
+        {{ getDescriptionString(assessmentDetails?.caseDescriptions) | limitTo: limit }}
+        <div *ngIf="getDescriptionString(assessmentDetails?.caseDescriptions)?.length > limitvalue">
+          <a (click)="showModal(caseDescription)" class="read-more">
+            {{ showMoreText | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="ambTransaction || hoDoctor">
+  <div class="float-left">
+    <gosi-button-dc
+      id="contributor"
+      type="secondary"
+      [outlineOnly]="true"
+      size="md"
+      (click)="previousAssessment(previousAssessmentModal)"
+    >
+      <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+      {{ 'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</gosi-button-dc
+    >
+  </div>
+
+  <div
+    class="float-right pl-1"
+    *ngIf="
+      assessmentDetails?.assessmentType?.english === 'Occupational Disability' ||
+      assessmentDetails?.assessmentType?.english === 'Occupational Disability Reassessment'
+    "
+  >
+    <gosi-button-dc id="contributor" type="secondary" [outlineOnly]="true" size="md" (submit)="onOHClicked.emit()">
+      <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+      {{ 'MEDICAL-BOARD.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>
+<div class="row pt-5" *ngIf="!isIndividalApp && (assessmentDetails?.assessedBy || assessmentDetails?.primaryGosiDr)">
+  <div class="col-12">
+    <span class="heading mr-auto">{{
+      !isValidatorView ? ('MEDICAL-BOARD.MEDICAL-BOARD-MEMBERS' | translate) : ('MEDICAL-BOARD.ASSESSED-BY' | translate)
+    }}</span>
+  </div>
+  <div class="col-lg-12" *ngIf="isGosiDrShow && assessmentDetails?.primaryGosiDr?.mbProfessionId">
+    <div class="row mt-3">
+      <div class="col-lg-6">
+        <!-- <gosi-label-dc
+        id="primaryGosiDr"
+        value="{{assessmentDetails?.primaryGosiDr?.name?.english ? (assessmentDetails?.primaryGosiDr?.name  | bilingualText) : assessmentDetails?.primaryGosiDr?.name?.arabic }}"
+        label="{{ 'MEDICAL-BOARD.ASSESSED-BY' | translate }}{{' '}}"
+        labelsuffix="{{ 'MEDICAL-BOARD.MAIN' | translate }}"
+      ></gosi-label-dc> -->
+        <div class="form-group form-label fc-margin">
+          <label class="label-color">
+            {{ 'MEDICAL-BOARD.ASSESSED-BY' | translate }}{{ ' ' }}
+            <span class="custom-suffix">{{ 'MEDICAL-BOARD.MAIN' | translate }}</span>
+          </label>
+          <div class="label-value">
+            {{
+              assessmentDetails?.primaryGosiDr?.name?.english
+                ? (assessmentDetails?.primaryGosiDr?.name | bilingualText)
+                : assessmentDetails?.primaryGosiDr?.name?.arabic
+            }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-12 align-items-center table-view">
+    <table class="table table-borderless">
+      <thead>
+        <tr>
+          <th>{{ 'MEDICAL-BOARD.MEMBER' | translate }}</th>
+          <th>{{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }}</th>
+          <th>{{ 'MEDICAL-BOARD.SPECIALITY' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- <tr class="data-row" *ngIf="assessmentDetails?.primaryGosiDr?.mbProfessionId">
+          <td>{{assessmentDetails?.primaryGosiDr?.name  | bilingualText }}({{ 'MEDICAL-BOARD.MAIN' | translate }})</td>
+          <td><a class="nationalId-click" (click)="navigateToDoctorProfile()">{{assessmentDetails?.primaryGosiDr?.identifier}}</a></td>
+          <td>{{getSpeciality(assessmentDetails?.primaryGosiDr?.specialty)}}</td>
+        </tr> -->
+        <tr class="data-row" *ngFor="let details of assessmentDetails?.assessedBy; let i = index">
+          <td>
+            <div>
+              {{ details.name | bilingualText }}
+            </div>
+          </td>
+          <td>
+            <a class="nationalId-click" (click)="navigateToDoctor(details)"> {{ details.identifier }}</a>
+          </td>
+          <td>
+            {{ getSpeciality(details?.specialty) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!--
+<div class="row" *ngIf="!isValidatorView && assessmentDetails?.reasonForAppeal">
+  <div class="col-lg-4">
+    <gosi-label-dc
+      id="reasonForAppeal"
+      value="{{ assessmentDetails?.reasonForAppeal | bilingualText }}"
+      label="{{ 'OCCUPATIONAL-HAZARD.REASON-APPEAL' | translate }}"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-4"></div>
+</div> -->
+<div class="row mx-0 pt-3" *ngIf="!isValidatorView">
+  <div class="col-lg-4">
+    <gosi-button-dc
+      type="primary"
+      id="previousMBAssessmentsButton"
+      size="sm"
+      [outlineOnly]="true"
+      (submit)="onShowMBAssessmentClicked.emit()"
+    >
+      <span class="mx-2">{{ 'MEDICAL-BOARD.VIEW-PREVIOUS-ASSESSMENTS' | translate }}</span>
+    </gosi-button-dc>
+  </div>
+</div>
+<div class="row" *ngIf="assessmentDetails?.modifiedDetails">
+  <div class="col-md-12">
+    <!-- <ng-container> -->
+    <!-- <frm-content-heading-dc
+        icon="notes-medical"
+        heading="{{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS-MODIFICATION' | translate }}"
+      ></frm-content-heading-dc> -->
+    <!-- </ng-container> -->
+    <div class="heading">
+      {{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS-MODIFICATION' | translate }}
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.assessmentChannel">
+        <gosi-label-dc
+          id="assessmentChannel"
+          [value]="assessmentDetails?.modifiedDetails?.assessmentChannel | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-CHANNEL' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.locationType">
+        <gosi-label-dc
+          id="locationType"
+          [value]="assessmentDetails?.modifiedDetails?.locationType | bilingualText"
+          label="{{ 'MEDICAL-BOARD.LOCATION-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.officeLocation">
+        <gosi-label-dc
+          id="locationType"
+          [value]="assessmentDetails?.modifiedDetails?.officeLocation | bilingualText"
+          label="{{ 'MEDICAL-BOARD.OTHER-GOSI-OFFICE-LOCATION' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.healthcareProvider">
+        <gosi-label-dc
+          id="healthcareProvider"
+          [value]="assessmentDetails?.modifiedDetails?.healthcareProvider | bilingualText"
+          label="{{ 'MEDICAL-BOARD.HEALTHCARE-PROVIDER' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.assessmentResult">
+        <gosi-label-dc
+          id="ssessmentResult"
+          [value]="assessmentDetails?.modifiedDetails?.assessmentResult | bilingualText"
+          label="{{ 'MEDICAL-BOARD.ASSESSMENT-RESULT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.rescheduleReason?.english">
+        <gosi-label-dc
+          id="rescheduleReason"
+          [value]="assessmentDetails?.modifiedDetails?.rescheduleReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.RESCHEDULE-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.disabilityPercentage">
+        <gosi-label-dc
+          id="disabilityPercentage"
+          [value]="assessmentDetails?.modifiedDetails?.disabilityPercentage"
+          label="{{ 'MEDICAL-BOARD.DISABILTY-PERCENTAGE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="assessmentDetails?.modifiedDetails?.bodyPartsLists?.length > 0">
+        <div class="row pt-3">
+          <div class="col-12">
+            <span class="heading mr-auto">{{ 'MEDICAL-BOARD.DISABLED-BODY-PART' | translate }}</span>
+          </div>
+          <div class="col-lg-12 align-items-center table-view">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>{{ 'MEDICAL-BOARD.BODY-PARTS-CATEGORY' | translate }}</th>
+                  <th>{{ 'MEDICAL-BOARD.BODY-PARTS' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  class="data-row"
+                  *ngFor="let parts of assessmentDetails?.modifiedDetails?.bodyPartsLists; let i = index"
+                >
+                  <td>
+                    <div>
+                      {{ parts.category | bilingualText }}
+                    </div>
+                  </td>
+                  <td>
+                    {{ getBodyParts(parts?.bodyParts) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.mainReason">
+        <gosi-label-dc
+          id="mainReason"
+          [value]="assessmentDetails?.modifiedDetails?.mainReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.MAIN-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.secondaryReason">
+        <gosi-label-dc
+          id="secondaryReason"
+          [value]="assessmentDetails?.modifiedDetails?.secondaryReason | bilingualText"
+          label="{{ 'MEDICAL-BOARD.SECONDARY-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.disabilityDate">
+        <gosi-label-dc
+          id="disabilityDate"
+          [value]="assessmentDetails?.modifiedDetails?.disabilityDate | dateType"
+          label="{{ 'MEDICAL-BOARD.DISABLED-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.reasonForHelper">
+        <gosi-label-dc
+          id="reasonForHelper"
+          [value]="modifiedHelperReasons | bilingualText"
+          label="{{ 'MEDICAL-BOARD.REASON-HELPER' | translate }}"
+        ></gosi-label-dc>
+      </div> -->
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.reasonForHelper">
+        <span>"{{ 'MEDICAL-BOARD.REASON-HELPER' | translate }}"</span>
+        <div class="container">
+          <div class="row" *ngFor="let reasons of assessmentDetails?.modifiedDetails?.reasonForHelper; let i = index">
+            <div class="message">{{ i + 1 }} . {{ reasons | bilingualText }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.helperStartDate">
+        <gosi-label-dc
+          id="helperStartDate"
+          [value]="assessmentDetails?.modifiedDetails?.helperStartDate | dateType"
+          label="{{ 'MEDICAL-BOARD.HELPER-START-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.modifiedDetails?.nextAssessmentDate">
+        <gosi-label-dc
+          id="nextAssessmentDate"
+          [value]="assessmentDetails?.modifiedDetails?.nextAssessmentDate | dateType"
+          label="{{ 'MEDICAL-BOARD.NEXT-ASSESSMENT-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-12 col-md-12 col-lg-12"
+        *ngIf="getDescriptionString(assessmentDetails?.modifiedDetails?.caseDescriptions)"
+      >
+        <div>{{ 'MEDICAL-BOARD.CASE-DESCRIPTION' | translate }}</div>
+        {{ getDescriptionString(assessmentDetails?.modifiedDetails?.caseDescriptions) | limitTo: limit }}
+        <div *ngIf="getDescriptionString(assessmentDetails?.modifiedDetails?.caseDescriptions)?.length > limitvalue">
+          <a (click)="showModal(modifiedcaseDescription)" class="read-more"> {{ showMoreText | translate }} </a>
+        </div>
+      </div>
+      <div
+        class="row pt-5"
+        *ngIf="assessmentDetails?.modifiedDetails?.assessedBy || assessmentDetails?.modifiedDetails?.primaryGosiDr"
+      >
+        <div class="col-12">
+          <span class="heading mr-auto">{{
+            !isValidatorView
+              ? ('MEDICAL-BOARD.MEDICAL-BOARD-MEMBERS' | translate)
+              : ('MEDICAL-BOARD.ASSESSED-BY' | translate)
+          }}</span>
+        </div>
+        <div
+          class="col-lg-12"
+          *ngIf="isGosiDrShow && assessmentDetails?.modifiedDetails?.primaryGosiDr?.mbProfessionId"
+        >
+          <div class="row mt-3">
+            <div class="col-lg-6">
+              <!-- <gosi-label-dc
+              id="primaryGosiDr"
+              value="{{assessmentDetails?.primaryGosiDr?.name?.english ? (assessmentDetails?.primaryGosiDr?.name  | bilingualText) : assessmentDetails?.primaryGosiDr?.name?.arabic }}"
+              label="{{ 'MEDICAL-BOARD.ASSESSED-BY' | translate }}{{' '}}"
+              labelsuffix="{{ 'MEDICAL-BOARD.MAIN' | translate }}"
+            ></gosi-label-dc> -->
+              <div class="form-group form-label fc-margin">
+                <label class="label-color">
+                  {{ 'MEDICAL-BOARD.ASSESSED-BY' | translate }}{{ ' ' }}
+                  <span class="custom-suffix">{{ 'MEDICAL-BOARD.MAIN' | translate }}</span>
+                </label>
+                <div class="label-value">
+                  {{
+                    assessmentDetails?.modifiedDetails?.primaryGosiDr?.name?.english
+                      ? (assessmentDetails?.modifiedDetails?.primaryGosiDr?.name | bilingualText)
+                      : assessmentDetails?.modifiedDetails?.primaryGosiDr?.name?.arabic
+                  }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12 align-items-center table-view">
+          <table class="table table-borderless">
+            <thead>
+              <tr>
+                <th>{{ 'MEDICAL-BOARD.MEMBER' | translate }}</th>
+                <th>{{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }}</th>
+                <th>{{ 'MEDICAL-BOARD.SPECIALITY' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- <tr class="data-row" *ngIf="assessmentDetails?.primaryGosiDr?.mbProfessionId">
+                <td>{{assessmentDetails?.primaryGosiDr?.name  | bilingualText }}({{ 'MEDICAL-BOARD.MAIN' | translate }})</td>
+                <td><a class="nationalId-click" (click)="navigateToDoctorProfile()">{{assessmentDetails?.primaryGosiDr?.identifier}}</a></td>
+                <td>{{getSpeciality(assessmentDetails?.primaryGosiDr?.specialty)}}</td>
+              </tr> -->
+              <tr
+                class="data-row"
+                *ngFor="let details of assessmentDetails?.modifiedDetails?.assessedBy; let i = index"
+              >
+                <td>
+                  <div>
+                    {{ details.name | bilingualText }}
+                  </div>
+                </td>
+                <td>
+                  <a class="nationalId-click" (click)="navigateToDoctor(details)"> {{ details.identifier }}</a>
+                </td>
+                <td>
+                  {{ getSpeciality(details?.specialty) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #caseDescription>
+  <mb-case-description-popup-dc
+    [caseDescription]="assessmentDetails"
+    (onCloseModal)="hideModal()"
+  ></mb-case-description-popup-dc>
+</ng-template>
+<ng-template #modifiedcaseDescription>
+  <mb-case-description-popup-dc
+    [caseDescription]="assessmentDetails?.modifiedDetails"
+    (onCloseModal)="hideModal()"
+  ></mb-case-description-popup-dc>
+</ng-template>
+<ng-template #previousAssessmentModal>
+  <gosi-modal-dc
+    [modalHeader]="'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="modalRef.hide()"
+  >
+    <div modalContent>
+      <mb-previous-disability-dc
+        *ngIf="previousDisabilityDetails"
+        [previousDisabilityDetails]="previousDisabilityDetails"
+        (onAssessmentIdClicked)="onAssessmentIdClick($event)"
+      ></mb-previous-disability-dc>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

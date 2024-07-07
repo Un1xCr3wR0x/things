@@ -1,0 +1,68 @@
+<gosi-modal-dc [modalHeader]="'BENEFITS.DEP-DETAILS' | translate" [needCloseButton]="true" (closeModal)="hideModal()">
+  <div class="row" modalContent>
+    <div class="col-lg-12">
+      <div
+        *ngIf="dependentDetails?.length > 0; else no_data"
+        class="table-scroll table-responsive table-adjustmentDetails"
+      >
+        <table class="table">
+          <thead class="table-header">
+            <tr>
+              <th>
+                {{ 'BENEFITS.NAME' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let eachDepenent of dependentDetails"
+              (click)="onDependentEntryCLick(eachDepenent)"
+              class="data-row"
+            >
+              <td>
+                {{ eachDepenent.name | nameToString: true }}
+                <span class="grey">({{ eachDepenent.relationship | bilingualText }})</span>
+                <div *ngIf="eachDepenent.identity[0]" class="d-block nin-text grey">
+                  <span>{{ 'BENEFITS.NIN-ID' | translate }} :</span>
+                  {{ eachDepenent.identity[0]?.newNin }}
+                </div>
+              </td>
+              <td class="vAlign">
+                {{ eachDepenent.heirStatus | bilingualText }}
+                <div
+                  *ngIf="
+                    eachDepenent.heirStatus.english == benefitValues.disabled &&
+                    eachDepenent.disabilityAssessmentDate?.gregorian
+                  "
+                  class="d-block nin-text grey"
+                >
+                  {{ 'BENEFITS.NEXT-ASSESSMENT-DATE' | translate }}:
+                  {{ eachDepenent.disabilityAssessmentDate?.gregorian | gosiDate }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #no_data>
+        <div class="no-data">
+          {{ 'BENEFITS.NO-DEPENDENTS-AVAILABLE' | translate }}
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="col-lg-12 mx-0" modalAction>
+    <div
+      *ngIf="benefitDetail.status?.english === benefitValues.Active"
+      action-items
+      class="ml-auto action-item-btn"
+      (click)="navigateTomodify(benefitDetail, benefitDetail.status?.english)"
+    >
+      {{ 'BENEFITS.MANAGE-DEPENDENTS' | translate }}
+    </div>
+  </div>
+</gosi-modal-dc>

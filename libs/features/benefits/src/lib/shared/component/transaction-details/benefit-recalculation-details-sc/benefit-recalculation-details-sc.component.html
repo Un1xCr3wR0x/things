@@ -1,0 +1,171 @@
+<frm-content-heading-dc
+  icon="user"
+  heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+  [canEdit]="false"
+  *ngIf="benefitDetails"
+>
+</frm-content-heading-dc>
+<div class="mb-5">
+  <bnt-validator-adjustment-contributor-dc
+    *ngIf="benefitDetails"
+    [personDetails]="benefitDetails"
+    (onContributorIdClicked)="viewContributorInfo()"
+  ></bnt-validator-adjustment-contributor-dc>
+</div>
+<frm-content-heading-dc
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType !==
+    'Pension to Lumpsum'
+  "
+  icon="Benefits"
+  [isSvg]="true"
+  [canEdit]="false"
+  heading="{{ 'ADJUSTMENT.BENEFIT-DETAILS' | translate }}"
+>
+</frm-content-heading-dc>
+<bnt-engagement-change-periods-dc
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType !==
+    'Pension to Lumpsum'
+  "
+  [benefitDetails]="benefitDetails"
+  [benefitRecalculationDetails]="benefitRecalculationDetails"
+  [isTransactionCompleted]="isTransactionCompleted"
+  [lang]="lang"
+  (onViewPaymentHistoryClicked)="viewPaymentHistory($event, benefitDetails?.benefitType?.english)"
+  (onCalculationBtnClicked)="howToCalculateRejoining($event)"
+>
+</bnt-engagement-change-periods-dc>
+
+<!--Current benefit details-->
+<div
+  class="row custom-margin"
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType ===
+    'Pension to Lumpsum'
+  "
+>
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <frm-content-heading-dc
+      icon="Benefits"
+      heading="{{ 'BENEFITS.CURRENT-BENEFIT-DETAILS' | translate }}"
+      [isSvg]="true"
+      [canEdit]="false"
+    >
+    </frm-content-heading-dc>
+  </div>
+</div>
+<div
+  class="row"
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType ===
+    'Pension to Lumpsum'
+  "
+>
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <bnt-current-benefitdetails-dc
+      [benefitDetails]="benefitDetails"
+      [benefitRecalculationDetails]="benefitRecalculationDetails"
+      [lang]="lang"
+      (onViewPaymentClicked)="viewPaymentHistory($event, benefitDetails?.benefitType?.english)"
+    >
+    </bnt-current-benefitdetails-dc>
+  </div>
+</div>
+<!---New benefit details-->
+
+<div
+  class="row custom-margin"
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType ===
+    'Pension to Lumpsum'
+  "
+>
+  <div class="col-md-12">
+    <div class="benefit-heading">
+      <frm-content-heading-dc
+        icon="Benefits"
+        heading="{{ 'BENEFITS.NEW-BENEFIT-DETAILS' | translate }}"
+        [isSvg]="true"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+      <span class="float-right">
+        <div
+          class="border rounded mt-25 p-2 bg-white border-primary text-primary custom-pointer"
+          (click)="howToCalculate(null)"
+        >
+          {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+        </div>
+      </span>
+    </div>
+  </div>
+</div>
+<div
+  class="row"
+  *ngIf="
+    benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.benefitConversionType ===
+    'Pension to Lumpsum'
+  "
+>
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <bnt-new-benefitdetails-dc
+      *ngIf="benefitRecalculationDetails"
+      [benefitRecalculationDetails]="
+        benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails?.pensionToLumpsum
+      "
+    >
+    </bnt-new-benefitdetails-dc>
+  </div>
+</div>
+<!--Benefit Recalculation Detail-->
+<ng-container *ngIf="benefitRecalculationDetails?.engagementModifications?.length > 0">
+  <div class="row custom-margin">
+    <div class="col-lg-12">
+      <frm-content-heading-dc
+        icon="file-alt"
+        [canEdit]="false"
+        [heading]="
+          benefitRecalculationDetails?.changeInEngagementRecalculationDetails?.newBenefitDetails
+            ?.benefitConversionType === 'Pension to Lumpsum'
+            ? 'BENEFITS.BENEFIT-RECALCULATION-DETAILS'
+            : 'BENEFITS.MODIFICATION-TRANSACTION-DETAILS'
+        "
+      >
+      </frm-content-heading-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <bnt-recalculation-wage-dc
+        [benefitRecalculationDetails]="benefitRecalculationDetails"
+        [lang]="lang"
+        (onTransactionClicked)="viewChangeEngagement($event)"
+      ></bnt-recalculation-wage-dc>
+    </div>
+  </div>
+</ng-container>
+<!--Adjustment Detail-->
+<div class="row custom-margin">
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <frm-content-heading-dc
+      icon="money-bill"
+      [canEdit]="false"
+      heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}"
+    >
+    </frm-content-heading-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <bnt-recalculate-adjustment-dc
+      [checkForm]="payForm"
+      [isDebitRequired]="false"
+      [benefitRecalculationDetails]="benefitRecalculationDetails"
+      [disableDirectPayment]="payload?.assignedRole === 'FC Approver' || (transaction ? true : false)"
+      [lang]="lang"
+      (onPreviousAdjustmentsClicked)="viewMaintainAdjustment(benefitConstants.ENGAGEMENT_CHANGE)"
+    >
+    </bnt-recalculate-adjustment-dc>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-table-dc>
+  <ng-container modalContent>
+    <table class="table table-condensed" aria-describedby="title">
+      <thead>
+        <tr>
+          <th style="width: 22%" class="table-head" (click)="sortTeamMembers(teamMemberPropsEnum.NAME)">
+            {{ 'TEAM-MANAGEMENT.NAME' | translate }}
+            <fa-icon *ngIf="sortOption === teamMemberPropsEnum.NAME" icon="sort"></fa-icon>
+          </th>
+          <th style="width: 22%" class="table-head">
+            {{ 'TEAM-MANAGEMENT.ROLE' | translate }}
+          </th>
+          <th style="width: 22%" class="table-head data-center">
+            {{ 'TEAM-MANAGEMENT.PENDING_TRANSACTIONS' | translate }}
+          </th>
+          <th style="width: 22%" class="table-head data-center">
+            {{ 'TEAM-MANAGEMENT.OLA_EXCEEDED' | translate }}
+          </th>
+          <th style="width: 12%" class="table-head">
+            {{ 'TEAM-MANAGEMENT.STATUS' | translate }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="data-row"
+          *ngFor="
+            let member of members?.response
+              | paginate
+                : { itemsPerPage: itemsPerPage, currentPage: pageDetails.currentPage, totalItems: members?.totalCount };
+            let i = index
+          "
+          (click)="onNavigate(member)"
+        >
+          <td style="width: 22%">
+            <div class="font-weight-bold">
+              {{ member.name | bilingualText }}
+            </div>
+            <div class="font-weight-light">{{ 'TEAM-MANAGEMENT.ID' | translate }}: {{ member.id }}</div>
+          </td>
+          <td style="width: 22%">
+            <div *ngIf="member" [gosiRoles]="member && member.role ? member.role[0].role : null" [lang]="lang"></div>
+          </td>
+          <td style="width: 22%">
+            <div class="data-center">
+              {{ member.pendingTransaction }}
+            </div>
+          </td>
+          <td style="width: 22%">
+            <div class="data-center">
+              {{ member.olaCount }}
+            </div>
+          </td>
+
+          <td style="width: 12%">
+            <div *ngIf="member.status">
+              <gosi-status-badge-dc
+                [label]="'TEAM-MANAGEMENT.' + member.statusLabel | translate"
+                [type]="statusBadgeType(member.status)"
+              ></gosi-status-badge-dc>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+</gosi-table-dc>
+<div class="pagination d-flex justify-content-center mt-4">
+  <gosi-pagination-dc
+    *ngIf="members?.totalCount > itemsPerPage"
+    [totalSize]="members?.totalCount"
+    [itemsPerPage]="itemsPerPage"
+    [itemType]="'TEAM-MANAGEMENT.TEAM_MEMBER' | translate"
+    [pageDetails]="pageDetails"
+    (pageChange)="paginateTransactions($event)"
+    #paginationComponent
+  >
+  </gosi-pagination-dc>
+</div>
+<ng-template #notAvailable>
+  {{ 'TEAM-MANAGEMENT.NOT-AVAILABLE' | translate }}
+</ng-template>

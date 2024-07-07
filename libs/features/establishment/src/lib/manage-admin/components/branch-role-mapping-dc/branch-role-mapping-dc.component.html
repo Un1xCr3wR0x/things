@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div
+  class="branch-role-mapping row align-items-center no-gutters ml-0 mr-0"
+  [ngClass]="{ unselect: canDelete && !isSelected }"
+>
+  <div class="col-md-3 col-sm-12 d-flex align-items-center select-branch" [ngClass]="{ 'col-md-4': canSelect }">
+    <gosi-input-checkbox-dc
+      *ngIf="canSelect"
+      class="mt-4 checkbox-padding"
+      [disabled]="readOnly"
+      [control]="branchRoleForm.get('hasRole')"
+      (select)="selectBranch($event)"
+    ></gosi-input-checkbox-dc>
+    <div [ngClass]="{ 'pl-4 pr-4': canDelete }" class="branches">
+      <div class="branch-name">{{ branch.name | bilingualText: true }}</div>
+      <div class="branch-regno">{{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }} : {{ branch.registrationNo }}</div>
+    </div>
+    <div class="row d-none ml-auto delete" *ngIf="canDelete">
+      <div class="col-sm-12">
+        <fa-icon
+          class="col-sm-12 delete-icon"
+          [icon]="['far', 'trash-alt']"
+          size="lg"
+          *ngIf="branchRoleForm.get('hasRole').value"
+          (click)="selectBranch('false')"
+        ></fa-icon>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="isSelected">
+    <div *ngIf="!showOnlyRoleAdmins" class="col-md-4 pr-md-4 pl-md-4 custom-margin">
+      <div class="admin-role pb-2 mt-2">
+        {{ 'ESTABLISHMENT.ROLES' | translate }}
+      </div>
+      <gosi-input-radio-dc
+        class="role-radio"
+        [ignoreLabel]="true"
+        [disabled]="readOnly || isRadioDisabled"
+        name="{{ index + 'branchRadio' }}"
+        id="{{ index + 'branchRadio' }}"
+        [list]="branchRoleList"
+        [control]="branchRoleForm.get('isBranch')"
+        (select)="selectBranchAdmin($event)"
+      ></gosi-input-radio-dc>
+    </div>
+    <div class="col-md-4 custom-margin" *ngIf="!hideMultiSelect">
+      <gosi-input-multi-select-dropdown-dc
+        [disabled]="readOnly"
+        id="{{ index + 'roleSelect' }}"
+        [list]="roleList"
+        [control]="branchRoleForm.get('roles')"
+        [ignoreLabel]="true"
+        [placeholder]="'ESTABLISHMENT.ROLES' | translate"
+        [selectedValues]="selectedRoles"
+        (selected)="changeRoles($event)"
+        class="search"
+      ></gosi-input-multi-select-dropdown-dc>
+    </div>
+    <div class="col-auto pl-2 pr-4 mr-3 ml-auto d-md-block d-none custom-margin" *ngIf="canDelete">
+      <fa-icon
+        class="delete-icon"
+        [icon]="['far', 'trash-alt']"
+        size="lg"
+        *ngIf="branchRoleForm.get('hasRole').value"
+        (click)="selectBranch('false')"
+      ></fa-icon>
+    </div>
+  </ng-container>
+  <div class="col-auto pl-2 pr-4 ml-auto" *ngIf="canDelete && !isSelected">
+    <span class="undo-icon" (click)="bindToForm(rolesBeforeChange)"
+      ><fa-icon icon="undo" class="pl-2 pr-2"></fa-icon>{{ 'ESTABLISHMENT.SELECTED-FOR-REMOVAL' | translate }}</span
+    >
+  </div>
+</div>

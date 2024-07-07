@@ -1,0 +1,210 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div [formGroup]="engagementDetailsForm">
+  <cnt-engagement-period-dc
+    *ngIf="engagementDetailsForm"
+    [workTypeList]="workTypeList$ | async"
+    [contributorAbroad]="contributorAbroad$ | async"
+    [leavingReasonLovList]="leavingReasonLovList$ | async"
+    [contributorType]="contributorType"
+    [inEditMode]="inEditMode"
+    [isDraftAvailable]="isDraftAvailable"
+    [systemParams]="systemParams"
+    [engagementDetails]="engagementDetails"
+    [backdatedContributor]="backdatedContributor"
+    [isGccEstablishment]="isGccEstablishment"
+    [isBeneficiary]="isBeneficiary"
+    [engagementDetailsForm]="engagementDetailsForm"
+    [engagementWageDetails]="engagementWageDetails"
+    [isPrivate]="isPrivate"
+    [person]="person"
+    [isContractRequired]="isContractRequired"
+    [checkLegal]="checkLegal"
+    [disableTerminate]="disableTerminate"
+    (resetDateFormFromConfirmLeavingdate)="resetDateFormFromConfirmLeavingdate()"
+    [(joiningDate)]="joiningDate"
+    [(joiningDateHijiri)]="joiningDateHijiri"
+    [(joiningDateEntryFormat)]="joiningDateEntryFormat"
+    [(leavingDate)]="leavingDate"
+    [(disableWageAddSection)]="disableWageAddSection"
+    (checkDocRequired)="checkDocumentsRequired($event)"
+    (resetEngagementWages)="resetEngagementWages()"
+    (resetHijiriLeavingDate)="resetHijiriLeavingDate()"
+    (setWageValidation)="setWageValidation()"
+    (setWagePeriodEndDate)="setWagePeriodEndDate()"
+    (setMaxLeavingDate)="setMaxLeavingDate()"
+    [backdatedEngValidatorRequired]="backdatedEngValidatorRequired"
+    [hijiriDateConst]="hijiriDateConst"
+    [ppaEstablishment]="ppaEstablishment"
+  ></cnt-engagement-period-dc>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="row justify-content-between">
+          <h4 class="card-heading">
+            {{ 'CONTRIBUTOR.WAGE-OCCUPATION-DETAILS' | translate }}
+          </h4>
+          <div
+            *ngIf="isWageInfoVisible && engagementWageDetails.length > 0 && contributorType === contributorTypes.SAUDI"
+          >
+            <gosi-button-dc
+              type="outline-primary"
+              id="addadditionalperiod"
+              [disabled]="isPeriodEditOn"
+              (submit)="addAdditionalPeriod()"
+              size="md"
+            >
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+              {{ 'CONTRIBUTOR.ADD-ADDITIONAL-PERIOD' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+        <div class="card-body">
+          <cnt-engagement-wage-add-dc
+            [minWageAddDate]="minDateWageAdd"
+            [maxWageAddDate]="maxWageAddDate"
+            [maxHijiriLeavingDate]="maxHijiriLeavingDate"
+            [occupationList]="occupationList"
+            [engagementWageDetails]="engagementWageDetails"
+            [joiningDate]="joiningDate"
+            [isPrivate]="isPrivate"
+            [contributorType]="contributorType"
+            [joiningDateHijiri]="joiningDateHijiri"
+            [isDeleteWageSection]="isDeleteWageSection"
+            [isAddition]="isAddition"
+            [resetDateForm]="resetDateForm"
+            [joiningDateEntryFormat]="joiningDateEntryFormat"
+            [disableAll]="disableWageAddSection"
+            [disableJoining]="engagementWageDetails.length === 0"
+            [leavingDate]="leavingDate"
+            (addWageEvent)="addWagePeriod($event)"
+            (resetDateFormEvent)="resetDateFormEvent()"
+            (resetisDeleteWageSection)="resetisDeleteWageSection()"
+            (cancelWageEvent)="cancelAddWagePeriod()"
+            [ppaEstablishment]="ppaEstablishment"
+            [jobClassDetails]="jobClassDetails"
+            [jobClassLov]="jobClassLov"
+            (jobClassListChange)="jobClassListChangeForPPA($event)"
+            [jobRankLov]="jobRankLov"
+            (jobRankListChange)="jobRankListChangeForPPA($event)"
+            [jobGradeLov]="jobGradeLov"
+            [jobGradeApiResponse]="jobGradeApiResponse"
+            [hijiriDateConst]="hijiriDateConst"
+            (disableBasicWagePpa)="disableBasicWagePpa($event)"
+            [wageStartDate]="wageStartDate"
+          ></cnt-engagement-wage-add-dc>
+          <br />
+          <cnt-engagement-wage-history-dc
+            [(engagementWageDetails)]="engagementWageDetails"
+            [occupationList]="occupationList"
+            [hideWageInfoSection]="isWageInfoVisible"
+            [editModeOn]="!inEditMode"
+            [isWageAdditionOn]="isWageAdditionOn"
+            [isPrivate]="isPrivate"
+            [contributorType]="contributorType"
+            (editWageEvent)="addWagePeriod($event)"
+            (removeWageEvent)="removeWagePeriod($event)"
+            (showError)="showAlertError($event)"
+            [(wageStartDate)]="wageStartDate"
+            (wagePeriodUpdate)="handleWagePeriodChange($event)"
+            (periodEditOn)="isPeriodEditOn = $event"
+            [ppaEstablishment]="ppaEstablishment"
+            [jobClassDetails]="jobClassDetails"
+            [jobClassLov]="jobClassLov"
+            [(lovDataList)]="lovDataList"
+            (selectedClassIndex)="selectedClassIndex.emit($event)"
+            (jobClassListChange)="jobClassListChangeForPPA($event)"
+            [jobRankLov]="jobRankLov"
+            (jobRankListChange)="jobRankListChangeForPPA($event)"
+            [jobGradeLov]="jobGradeLov"
+            [jobGradeApiResponse]="jobGradeApiResponse"
+            [hijiriDateConst]="hijiriDateConst"
+            [disableBasicWage]="disableBasicWage"
+          >
+          </cnt-engagement-wage-history-dc>
+          <div
+            class="row pt-5"
+            *ngIf="
+              !this.ppaEstablishment &&
+              backdatedContributor &&
+              isPrivate &&
+              inEditMode &&
+              contributorType === contributorTypes.SAUDI
+            "
+          >
+            <div class="col-lg-12">
+              <!-- Penalty indicator -->
+              <cnt-employment-status-switch-dc
+                [label]="'CONTRIBUTOR.APPLY-PENALITY'"
+                [activeLabel]="'CONTRIBUTOR.YES'"
+                [inActiveLabel]="'CONTRIBUTOR.NO'"
+                [isContract]="false"
+                [control]="engagementDetailsForm.get('penaltyIndicator')"
+                (changeEvent)="setPenaltyIndicator($event)"
+              >
+              </cnt-employment-status-switch-dc>
+              <br />
+            </div>
+          </div>
+
+          <div *ngIf="!isDocumentsRequired">
+            <!-- Disclaimer content section -->
+            <div class="row">
+              <div class="form-group fc-margin col-lg-12">
+                <label for="declarationMessage">{{ 'CONTRIBUTOR.DECLARATION' | translate }}</label>
+                <textarea
+                  rows="5"
+                  class="form-control"
+                  readOnly="true"
+                  (focus)="engagementDetailsForm.patchValue({ checkBoxFlag: true })"
+                >
+                    {{ 'CONTRIBUTOR.ADD-SAUDI-CONTRIBUTOR-DECLARATION' | translate }}
+                  </textarea
+                >
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-input-checkbox-dc
+                  id="declarationMessage"
+                  [control]="engagementDetailsForm.get('checkBoxFlag')"
+                  [label]="'CONTRIBUTOR.ACCEPT-DECLARATION' | translate"
+                >
+                </gosi-input-checkbox-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer section -->
+  <cnt-action-area-dc
+    [primaryButtonLabel]="isSubmit ? 'CONTRIBUTOR.SUBMIT' : 'CONTRIBUTOR.SAVE-AND-NEXT'"
+    [showPreviousSection]="true"
+    [disablePrimary]="isApiTriggered"
+    idValue="1"
+    (submit)="saveEngagementDetails()"
+    (previous)="navigateTopreviousTab()"
+    (cancel)="showCancelTemplate()"
+    [isUnclaimed]="isUnclaimed"
+  ></cnt-action-area-dc>
+</div>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #draftTemplate>
+  <cnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="onDiscard()"
+    (onCancel)="decline()"
+  ></cnt-transaction-cancel-popup-dc>
+</ng-template>

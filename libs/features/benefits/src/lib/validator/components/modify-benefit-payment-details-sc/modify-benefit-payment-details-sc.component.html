@@ -1,0 +1,504 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div>
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+</div>
+<div id="mainHeading">
+  <ng-container>
+    <div>
+      <frm-main-heading-dc
+        [heading]="'BENEFITS.MODIFY-HEIR-PAYMENT-AND-PAYEE-DETAILS' | translate"
+      ></frm-main-heading-dc>
+    </div>
+  </ng-container>
+  <frm-main-content-dc [documents]="documentList" [comments]="comments">
+    <gosi-alert-dc> </gosi-alert-dc>
+    <div id="contentArea">
+      <div class="row">
+        <div class="col-md-12">
+          <gosi-card-dc type="secondary" lessPadding="true">
+            <!-- Contributor  Details -->
+            <div class="row">
+              <div class="col-lg-12">
+                <frm-content-heading-dc
+                  icon="user"
+                  [canEdit]="validatorCanEdit"
+                  (onEdit)="navigateToEdit()"
+                  heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+                >
+                </frm-content-heading-dc>
+                <bnt-contributor-common-dc
+                  [contributorDetails]="contributorDetails"
+                  [identity]="identity"
+                  [identityLabel]="identityLabel"
+                  [iscolfour]="iscolfour"
+                  [lang]="lang"
+                  (onContributorIdClicked)="navigateToInjuryDetails()"
+                ></bnt-contributor-common-dc>
+              </div>
+            </div>
+            <!----------------------- Benefit Details ---------------------------------->
+            <div class="row">
+              <div class="col-lg-12">
+                <frm-content-heading-dc
+                  icon="Benefits"
+                  isSvg="true"
+                  [canEdit]="false"
+                  heading="{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}"
+                >
+                </frm-content-heading-dc>
+                <div class="row">
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <gosi-label-dc
+                      id="benfitType"
+                      label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+                      [value]="payeeDetails?.benefitType | bilingualText"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <gosi-label-dc
+                      id="benefitAmount"
+                      label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+                      [value]="
+                        'BENEFITS.AMOUNT-MONTHS' | translate: { amount: payeeDetails?.amount || 0 | number: '1.2-2' }
+                      "
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <gosi-label-dc
+                      id="startDate"
+                      label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+                      value="{{ payeeDetails?.benefitStartDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-4 col-md-4 col-lg-4">
+                    <gosi-label-dc
+                      id="benefitStatus"
+                      label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+                      [value]="payeeDetails?.benefitStatus | bilingualText"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- view benefit details LINK -->
+            <div class="row pl-3">
+              <div class="view-benefit-details pb-4">
+                <a id="viewBenefitDetails" routerLinkActive="active" (click)="onViewBenefitDetails()">
+                  <u>{{ 'BENEFITS.VIEW-BENEFIT-DETAILS' | translate }}</u>
+                </a>
+              </div>
+            </div>
+            <!-- Benefit Payment Details -->
+            <div class="row">
+              <div class="col-lg-12">
+                <frm-content-heading-dc
+                  icon="money-bill"
+                  [canEdit]="false"
+                  heading="{{ 'BENEFITS.BENEFIT-PAYMENT-DETAILS' | translate }}"
+                >
+                </frm-content-heading-dc>
+                <div class="col-sm-4 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    id="requestDate"
+                    label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+                    value="{{ payeeDetails?.requestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <accordion class="modify-accordion w-100">
+                      <ng-container *ngFor="let items of modifyPayeeDetails; let i = index">
+                        <accordion-group class="wrapper-accordion-group" [isOpen]="true">
+                          <div accordion-heading class="float-left font-weight-normal">
+                            {{ items?.name | bilingualText }} ({{ items?.relationship | bilingualText }})
+                          </div>
+                          <div class="header-wrapper ml-auto" accordion-heading>
+                            <span class="arrow-up arrow-color">
+                              <fa-icon icon="angle-up" size="lg"></fa-icon>
+                            </span>
+                            <span class="arrow-down arrow-color">
+                              <fa-icon icon="angle-down" size="lg"></fa-icon>
+                            </span>
+                          </div>
+                          <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                            <div class="row">
+                              <div class="col-sm-4 col-md-4 col-lg-4">
+                                <gosi-label-dc
+                                  id="payeeType"
+                                  label="{{ 'BENEFITS.PAYEE' | translate }}"
+                                  [value]="items?.payeeType | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div
+                                class="col-sm-4 col-md-4 col-lg-4"
+                                *ngIf="items?.payeeType?.english === 'Authorized Person'"
+                              >
+                                <gosi-label-dc
+                                  id="authorizedPerson"
+                                  label="{{ 'BENEFITS.NAME-OF-AUTHORIZED-PERSON' | translate }}"
+                                  [value]="items?.authorizedPersonName | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div
+                                class="col-sm-4 col-md-4 col-lg-4"
+                                *ngIf="items?.payeeType?.english === 'Authorized Person'"
+                              >
+                                <gosi-label-dc
+                                  id="ninofAuthorized"
+                                  [isLink]="true"
+                                  label="{{ 'BENEFITS.NATIONAL-ID-OF-AUTHORIZED' | translate }}"
+                                  [value]="authorizedPersonId?.id"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.payeeType?.english === 'Guardian'">
+                                <gosi-label-dc
+                                  id="authorizedPerson"
+                                  label="{{ 'BENEFITS.NAME-OF-GUARDIAN' | translate }}"
+                                  [value]="items?.guardianPersonName | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.payeeType?.english === 'Guardian'">
+                                <gosi-label-dc
+                                  id="ninofAuthorized"
+                                  [isLink]="true"
+                                  label="{{ 'BENEFITS.NATIONAL-ID-OF-GUARDIAN' | translate }}"
+                                  [value]="guardianPersonId?.id"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.payeeType?.english !== 'Self'">
+                                <gosi-label-dc
+                                  id="certificateNumber"
+                                  [isLink]="true"
+                                  label="{{ 'BENEFITS.CERTIFICATE-NUMBER' | translate }}"
+                                  [value]="items?.certificateNumber"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.payeeType?.english !== 'Self'">
+                                <gosi-label-dc
+                                  id="expirationDate"
+                                  label="{{ 'BENEFITS.CERTIFICATE-EXPIRATION-DATE' | translate }}"
+                                  [value]="items?.certificateExpiryDate?.gregorian | date: 'dd/MM/yyyy'"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4">
+                                <gosi-label-dc
+                                  id="paymentMethod"
+                                  label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+                                  [value]="items?.paymentMode | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.paymentMode?.english !== 'Cheque'">
+                                <gosi-label-dc
+                                  id="accountNumber"
+                                  label="{{ 'BENEFITS.IBANACCOUNT-NUMBER' | translate }}"
+                                  [value]="items?.bankAccount?.ibanBankAccountNo"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.paymentMode?.english !== 'Cheque'">
+                                <gosi-label-dc
+                                  id="bankName"
+                                  label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+                                  [value]="items?.bankAccount?.bankName | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="items?.paymentMode?.english !== 'Cheque'">
+                                <gosi-label-dc
+                                  id="status"
+                                  label="{{ 'BENEFITS.STATUS' | translate }}"
+                                  [value]="items?.bankAccount?.status | bilingualText"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div
+                                class="col-sm-4 col-md-4 col-lg-4"
+                                *ngIf="items?.paymentMode?.english !== 'Cheque' && items?.bankAccount?.isNonSaudiIBAN"
+                              >
+                                <gosi-label-dc
+                                  id="nationality"
+                                  label="{{ 'BENEFITS.BANK-IS-IN-SAUDI' | translate }}"
+                                  [value]="
+                                    (items?.bankAccount?.isNonSaudiIBAN ? 'BENEFITS.NO' : 'BENEFITS.YES') | translate
+                                  "
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div
+                                class="col-sm-4 col-md-4 col-lg-4"
+                                *ngIf="
+                                  items?.paymentMode?.english !== 'Cheque' &&
+                                  items?.bankAccount?.swiftCode &&
+                                  items?.bankAccount?.isNonSaudiIBAN
+                                "
+                              >
+                                <gosi-label-dc
+                                  id="swiftcode"
+                                  label="{{ 'BENEFITS.SWIFT-CODE' | translate }}"
+                                  [value]="items?.bankAccount?.swiftCode"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                            </div>
+                            <bnt-person-contact-details-dc
+                              *ngIf="items?.contactDetail"
+                              [contactDetail]="items?.contactDetail"
+                            >
+                            </bnt-person-contact-details-dc>
+
+                            <!----------------------- Adjustment Details ---------------------------------->
+                            <div class="row">
+                              <div class="col-lg-12">
+                                <frm-content-heading-dc
+                                  *ngIf="items?.adjustments?.length > 0"
+                                  icon="money-bill"
+                                  [canEdit]="false"
+                                  heading="{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}"
+                                >
+                                </frm-content-heading-dc>
+                                <div class="row d-flex align-items-center" *ngIf="items?.adjustments?.length > 0">
+                                  <div class="col-md-12">
+                                    <div class="table-scroll table-responsive table-adjustmentDetails">
+                                      <table class="table table-borderless rounded">
+                                        <thead class="table-header">
+                                          <tr>
+                                            <th>
+                                              {{ 'BENEFITS.ADJUSTMENT-TYPE' | translate }}
+                                            </th>
+                                            <th>
+                                              {{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}
+                                            </th>
+                                            <th class="float-right pr-3">
+                                              {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr
+                                            *ngFor="let eachAdjustment of items?.adjustments"
+                                            class="data-row border-bottom"
+                                          >
+                                            <td>{{ (eachAdjustment?.adjustmentType | bilingualText) || '-' }}</td>
+                                            <td>{{ (eachAdjustment?.adjustmentReason | bilingualText) || '-' }}</td>
+                                            <td class="float-right amount">
+                                              {{ (eachAdjustment?.adjustmentAmount | number) || '-' }}
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                                <ng-container>
+                                  <div
+                                    class="data ml-auto mr-auto pr-0 mr-o"
+                                    *ngIf="items?.totalAdjustmentAmount && items?.adjustments?.length > 0"
+                                  >
+                                    {{ 'BENEFITS.TOTAL-ADJUSTMENT-LBL' | translate }} :
+                                    <span [ngClass]="items?.debit ? 'net-value-red' : 'net-value-green'">{{
+                                      (items?.totalAdjustmentAmount | number) || '-'
+                                    }}</span>
+                                  </div>
+                                  <div class="row pt-3">
+                                    <div class="col-md-5">
+                                      <span>{{ 'BENEFITS.PRE-ADJUSTMENTS' | translate }} </span>
+                                      <span
+                                        class="d-block"
+                                        [ngClass]="items?.debit ? 'net-value-red' : 'net-value-green'"
+                                        >{{ (items?.netPreviousAdjustmentAmount | number) || '-' }}
+                                        {{ 'BENEFITS.SR' | translate }}</span
+                                      >
+                                    </div>
+                                    <div class="col-md-7" *ngIf="items?.personId">
+                                      <a
+                                        id="viewPrevAdjustment"
+                                        routerLinkActive="active"
+                                        (click)="navigateToPrevAdjustment(items?.personId)"
+                                      >
+                                        <u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u>
+                                      </a>
+                                    </div>
+                                  </div>
+                                  <div class="row" *ngIf="items?.netPendingBenefitAmount">
+                                    <div class="col-md-12 pt-3">
+                                      {{ 'BENEFITS.NET-PENDING-AMOUNT' | translate }}
+                                    </div>
+                                    <div class="col-md-12">
+                                      <span [ngClass]="items?.debit ? 'net-value-red' : 'net-value-green'"
+                                        >{{ items?.netPendingBenefitAmount | numToPositive | number }}
+                                        {{ 'BENEFITS.SR' | translate }}</span
+                                      >
+                                      <span class="link-value float-right">
+                                        <a routerLinkActive="active" (click)="onViewBenefitDetails()"
+                                          ><u>{{ 'BENEFITS.VIEW-PAYMENT-HISTORY' | translate }}</u></a
+                                        ></span
+                                      >
+                                    </div>
+                                  </div>
+                                  <div class="row pt-4">
+                                    <div class="col-md-5">
+                                      <span>{{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }} </span>
+                                      <span
+                                        class="d-block"
+                                        [ngClass]="items?.debit ? 'net-value-red' : 'net-value-green'"
+                                        >{{ (items?.netAdjustmentAmount | number) || '-' }}
+                                        {{ 'BENEFITS.SR' | translate }}</span
+                                      >
+                                    </div>
+                                  </div>
+                                </ng-container>
+                                <div class="col-sm-12 pt-4 pl-3" *ngIf="items?.warningMessage">
+                                  <gosi-alert-dc
+                                    [bilingualMessage]="items?.warningMessage"
+                                    type="warning"
+                                    [noPadding]="true"
+                                  ></gosi-alert-dc>
+                                </div>
+                                <div
+                                  class="row pl-3 pt-4"
+                                  *ngIf="items?.netAdjustmentAmount > 0 && checkListValue.controls[i]"
+                                >
+                                  <gosi-input-checkbox-dc
+                                    id="checkBox"
+                                    name="checkBox"
+                                    [disabled]="directDisabled || items?.warningMessage"
+                                    [control]="checkListValue.controls[i].get('checkBoxFlag')"
+                                    [label]="'BENEFITS.ALLOW-DIRECT-PAYMENT' | translate"
+                                  >
+                                  </gosi-input-checkbox-dc>
+                                  <span><fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon></span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </accordion-group>
+                      </ng-container>
+                    </accordion>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </gosi-card-dc>
+        </div>
+      </div>
+    </div>
+    <div id="actionArea">
+      <div class="row form-action">
+        <div class="col-lg-12">
+          <div class="col-lg-12 form-action">
+            <div class="btn-section float-right">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="approve"
+                [disabled]="disableApprove"
+                type="primary"
+                (submit)="approveTransaction(approveTemplate)"
+              >
+                {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+
+            <ng-container>
+              <div class="btn-section float-right" *ngIf="canReject">
+                <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  type="danger"
+                  id="reject"
+                  (submit)="rejectTransaction(rejectTemplate)"
+                >
+                  {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+
+              <div class="btn-section float-right" *ngIf="canReturn">
+                <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  type="secondary"
+                  id="return"
+                  (submit)="returnTransaction(returnTemplate)"
+                >
+                  {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+            </ng-container>
+            <div class="btn-section float-left">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="cancel"
+                type="secondary"
+                (submit)="showCancelTemplate(cancelBenefitTemplate)"
+              >
+                {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelBenefitTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE' | translate }} - {{ 'BENEFITS.MODIFY-HEIR-PAYMENT-AND-PAYEE-DETAILS' | translate }}"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="modifyBenefitForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveBenefit()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{ 'BENEFITS.MODIFY-HEIR-PAYMENT-AND-PAYEE-DETAILS' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="modifyBenefitForm"
+    (rejectEvent)="confirmRejectBenefit()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.MODIFY-HEIR-PAYMENT-AND-PAYEE-DETAILS' | translate }}"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="modifyBenefitForm"
+    (returnEvent)="returnBenefit()"
+  >
+  </frm-return-template-dc>
+</ng-template>

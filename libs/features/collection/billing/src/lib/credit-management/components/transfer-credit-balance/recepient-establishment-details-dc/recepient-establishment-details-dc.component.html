@@ -1,0 +1,174 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="col-lg-7 heading-font mr-auto">{{ 'BILLING.RECEPIENT-ESTABLISHMENT-DETAILS' | translate }}</div>
+
+    <div class="row align-left-txt" *ngIf="estFlag">
+      <ng-container *ngIf="establishmentDetails">
+        <div
+          id="branchDetails"
+          class="col-auto add-branch-padding"
+          *ngIf="establishmentDetails.establishmentType.english !== 'Branch'"
+        >
+          <a class="details-link" (click)="showBranchDetModel(branchDetailsView, 'md')">{{
+            'BILLING.SELECT-EST-FROM-LIST' | translate
+          }}</a>
+        </div>
+      </ng-container>
+      <div class="col-auto add-btn-top add-branch-padding">
+        <gosi-button-dc [outlineOnly]="true" id="view" type="primary" [size]="'md'" (click)="addEstablishment()">
+          {{ 'BILLING.ADD' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+  <div class="text-outline">
+    <ng-container *ngIf="!estFlag" class="align-btn">
+      <div class="mutliple-info">
+        {{ 'BILLING.ADD-MULTIPLE-ESTABLISHMENT' | translate }}
+      </div>
+      <div class="row align-center-txt">
+        <div class="col-auto add-btn">
+          <gosi-button-dc [outlineOnly]="true" id="view" type="primary" [size]="'md'" (click)="addEstablishment()">
+            {{ 'BILLING.ADD' | translate }}</gosi-button-dc
+          >
+        </div>
+        <ng-container *ngIf="establishmentDetails">
+          <div id="branchDetails" class="col-auto" *ngIf="establishmentDetails.establishmentType.english !== 'Branch'">
+            <a class="details-link" (click)="showBranchDetModel(branchDetailsView, 'md')">{{
+              'BILLING.SELECT-EST-FROM-LIST' | translate
+            }}</a>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+    <div class="row" *ngIf="estFlag">
+      <div class="col-lg-12 receipt-margin">
+        <ng-container>
+          <div class="table-scroll table-responsive">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col " id="regNo">
+                    {{ 'BILLING.REGISTRATION-NO' | translate }}
+                  </th>
+                  <th scope="col " id="estName">
+                    {{ 'BILLING.ESTABLISHMENT-NAME' | translate }}
+                  </th>
+                  <th scope="col" id="status">{{ 'BILLING.STATUS' | translate }}</th>
+                  <th scope="col" id="fieldOffice">
+                    {{ 'BILLING.CURRENT-BALANCE' | translate }}({{ 'BILLING.SAR' | translate }})
+                  </th>
+                  <th scope="col" id="allocationAmount">
+                    {{ 'BILLING.TRANSFER-AMOUNT' | translate }}({{ 'BILLING.SAR' | translate }})
+                  </th>
+                  <th scope="col" id="removeIconHeader"></th>
+                </tr>
+              </thead>
+
+              <tbody *ngIf="fieldArrays && newBranch">
+                <ng-container>
+                  <tr *ngFor="let data of newBranch; let i = index">
+                    <td id="{{ 'registrationNumberValue' + i }}">
+                      {{ data.registrationNo }}
+                    </td>
+                    <td id="{{ 'establishmentNameValue' + i }}">
+                      {{ data.name.english === null ? data.name.arabic : (data.name | bilingualText) }}
+                    </td>
+                    <td id="{{ 'statusValue' + i }}">
+                      {{ data.status | bilingualText | titlecase }}
+                    </td>
+                    <td *ngIf="data.totalCreditBalance !== 0 && !data.branchSearch">
+                      {{ data.totalCreditBalance | number: '1.2-2' }}
+                      <span>({{ 'BILLING.CREDIT' | translate }})</span>
+                    </td>
+                    <td *ngIf="data.branchSearch">
+                      {{ '- ' }}
+                    </td>
+                    <td *ngIf="data.totalDebitBalance !== 0 && !data.branchSearch">
+                      {{ data.totalDebitBalance | number: '1.2-2' }} <span>({{ 'BILLING.DEBIT' | translate }})</span>
+                    </td>
+                    <td *ngIf="data.totalDebitBalance === 0 && data.totalCreditBalance === 0 && !data.branchSearch">
+                      {{ data.totalDebitBalance | number: '1.2-2' }}
+                    </td>
+                    <td>
+                      <gosi-input-currency-dc
+                        [id]="'allocationAmountValues' + i"
+                        [ignoreLabel]="'true'"
+                        [control]="branchList.controls[i].get('amount')"
+                        [placeholder]="'BILLING.ALLOCATION-AMOUNT' | translate | titlecase"
+                        (blur)="totalAmount()"
+                        size="sm"
+                        noMargin="true"
+                      >
+                      </gosi-input-currency-dc>
+                    </td>
+                    <td id="{{ 'delete' + i }}">
+                      <a class="delete-icon" (click)="deleteFieldValue(i, 2)">
+                        <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr *ngFor="let value of fieldArrays; let i = index">
+                    <td>
+                      <gosi-search-dc
+                        gosiNumberMask
+                        id="registrationNumber"
+                        maxLength="10"
+                        [placeholder]="'BILLING.ENTER-REGISTRATION-NUMBER' | translate"
+                        (search)="searchBranches($event)"
+                      >
+                      </gosi-search-dc>
+                    </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td id="{{ 'delete' + i }}">
+                      <a class="delete-icon" (click)="deleteFieldValue(i, 1)">
+                        <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                      </a>
+                    </td>
+                  </tr>
+                </ng-container>
+                <tr>
+                  <td colspan="3"></td>
+                  <td>
+                    <div class="total-indicator">
+                      {{ 'BILLING.TOTAL-AMOUNT-TRANSFERRED' | translate }}
+                    </div>
+                  </td>
+                  <td class="text-align" *ngIf="!errorMesg">
+                    {{ totalAmountForm.get('totalAmount').value | number: '1.2-2' }}
+                    <span class="currency-label">({{ 'BILLING.SAR' | translate }}) </span>
+                  </td>
+                  <td class="danger" *ngIf="errorMesg">
+                    {{ totalAmountForm.get('totalAmount').value | number: '1.2-2' }}
+                    <span class="currency-label">({{ 'BILLING.SAR' | translate }}) </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!-- Modals -->
+<ng-template #branchDetailsView>
+  <div class="model-margin">
+    <blg-credit-balance-branch-list-dc
+      [branchLists]="branchLists"
+      [establishmentDetails]="establishmentDetails"
+      (cancel)="confirmCancel()"
+      (selectedBranchList)="selectedBranch($event)"
+      (searchValues)="searchValues($event)"
+    ></blg-credit-balance-branch-list-dc>
+  </div>
+</ng-template>

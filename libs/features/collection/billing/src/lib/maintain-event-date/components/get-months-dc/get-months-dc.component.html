@@ -1,0 +1,112 @@
+<form [formGroup]="eventDateForm">
+  <div formArrayName="contributionDetails">
+    <gosi-card-dc
+      type="secondary"
+      *ngIf="
+        (eventDateForm?.get('contributionDetails')['controls'] | formArrayFilterPipe: selectedyearList:'year').length >
+        0
+      "
+    >
+      <div
+        *ngFor="
+          let contDetail of eventDateForm?.get('contributionDetails')['controls']
+            | formArrayFilterPipe: selectedyearList:'year';
+          let i = index
+        "
+      >
+        <div [formGroupName]="eventDateForm?.get('contributionDetails')['controls']?.indexOf(contDetail)" class="">
+          <div class="row no-gutters custom-font-weight">
+            {{ contDetail['controls']['year'].value | bilingualText }}
+          </div>
+          <div formArrayName="eventDateInfo" class="row event-Date-info">
+            <div class="col-lg-4" *ngFor="let dateInfo of contDetail?.get('eventDateInfo')['controls']; let j = index">
+              <div [formGroupName]="j">
+                <gosi-input-date-dc
+                  name="{{ dateInfo.get('month').get('english').value }}"
+                  id="{{ dateInfo.get('year').value }}_{{ dateInfo.get('month').get('english').value }}"
+                  [label]="getLabel(dateInfo.get('month').get('english').value)"
+                  [control]="dateInfo.get('eventDate').get('gregorian')"
+                  [minDate]="getMinDate(j + 1, dateInfo.get('year').value)"
+                  [maxDate]="getMaxDate(j + 1, dateInfo.get('year').value)"
+                >
+                </gosi-input-date-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-container>
+        <div class="row">
+          <div class="col-lg-12 sub-header">
+            {{ 'BILLING.UPLOAD-DOCUMENT' | translate | titlecase }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info" [dismissible]="false"> </gosi-alert-dc>
+          </div>
+        </div>
+        <div class="col-lg-12 mx-2">
+          <ng-container *ngFor="let item of documents; let i = index">
+            <gosi-input-file-sc
+              [isScan]="isScan"
+              [index]="i"
+              [transactionId]="transactionId"
+              [document]="item"
+              [uuid]="uuid"
+              [businessKey]="businessKey"
+              (refresh)="refreshDocuments(item)"
+            ></gosi-input-file-sc>
+          </ng-container>
+        </div>
+      </ng-container>
+      <accordion>
+        <accordion-group
+          class="accordion-group-class"
+          heading="{{ 'BILLING.COMMENTS' | translate }} ({{ 'BILLING.OPTIONAL' | translate }})"
+        >
+          <span class="arrow-up" accordion-heading>
+            <fa-icon icon="angle-up" size="lg"></fa-icon>
+          </span>
+          <span class="arrow-down" accordion-heading>
+            <fa-icon icon="angle-down" size="lg"></fa-icon>
+          </span>
+          <ng-container>
+            <gosi-input-text-area-dc
+              id="comments"
+              name="comments"
+              [ignoreLabel]="true"
+              label="BILLING.COMMENTS"
+              [control]="eventDateForm.get('workflow').get('comments')"
+              [maxLength]="100"
+            ></gosi-input-text-area-dc>
+          </ng-container>
+        </accordion-group>
+      </accordion>
+    </gosi-card-dc>
+    <div class="row form-action">
+      <div class="col-lg-12">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancelBtn" type="secondary" (submit)="popUp(cancelTemplate)">
+            {{ 'BILLING.CANCEL' | translate }}
+          </gosi-button-dc>
+        </div>
+        <span class="cancel-btn"></span>
+        <div class="btn-section float-right">
+          <gosi-button-dc
+            id="submit"
+            type="primary"
+            (submit)="onSubmit(eventDateForm.get('workflow').get('comments').value)"
+            [disabled]="selectedEventDateList.length === 0"
+          >
+            {{ 'BILLING.SUBMIT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

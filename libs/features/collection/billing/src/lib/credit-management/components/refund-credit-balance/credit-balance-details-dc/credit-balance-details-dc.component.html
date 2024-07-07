@@ -1,0 +1,137 @@
+<gosi-card-dc type="secondary">
+  <div class="heading-font">{{ 'BILLING.REFUND-CREDIT-BAL-DETAILS' | translate }}</div>
+  <ng-container *ngIf="isRefundCreditBalance">
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-input-radio-dc
+          id="selectCreditRetainedList"
+          [label]="'BILLING.REFUND-CREDIT-BALANCE-TYPE' | translate"
+          [control]="creditRetainedForm.get('creditRetained')"
+          (select)="selectValues($event)"
+          [list]="creditRetainedList"
+          [noMargin]="true"
+        ></gosi-input-radio-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="iscreditRetained || !isRefundCreditBalance">
+    <div [ngClass]="isRefundCreditBalance && iscreditRetained ? 'retained-align' : ''">
+      <div class="row margin-max-refund">
+        <div class="col-lg-5 font-clr margin-btn">
+          <div class="row lable-margin">
+            <div class="col-lg-12">
+              {{ 'BILLING.MAX-REFUNDABLE-CREDIT-BAL' | translate }}
+            </div>
+          </div>
+          <div class="row" *ngIf="creditBalanceDetails !== undefined">
+            <div class="col-lg-12">
+              <span class="credit-balances label-colour">{{
+                creditBalanceDetails.transferableBalance | number: '1.2-2'
+              }}</span>
+              <span class="currency margin-border label-colour"> {{ 'BILLING.SAR' | translate }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 font-clr margin-btn">
+          <div class="row lable-margin">
+            <div class="col-lg-12">
+              {{ 'BILLING.TOTAL-CREDIT-BALANCE' | translate }}
+            </div>
+          </div>
+          <div class="row label-colour" *ngIf="creditBalanceDetails !== undefined">
+            <div class="col-lg-12">
+              {{ creditBalanceDetails.totalCreditBalance | number: '1.2-2'
+              }}<span class="currency"> {{ 'BILLING.SAR' | translate }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 font-clr margin-btn">
+          <div class="row lable-margin">
+            <div class="col-lg-12">
+              <span>
+                {{ 'BILLING.CREDIT-REFUND-BALANCE-RETAINED' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" placement="top" [tooltip]="toolTemplateInfo"></fa-icon>
+              </span>
+            </div>
+          </div>
+          <div class="row label-colour" *ngIf="creditBalanceDetails !== undefined">
+            <div class="col-lg-12">
+              {{ creditBalanceDetails.retainedBalance | number: '1.2-2'
+              }}<span class="currency"> {{ 'BILLING.SAR' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!iscreditRetained && isRefundCreditBalance">
+    <div class="row margin-max-refund">
+      <div class="col-lg-4 font-clr margin-btn">
+        <div class="row lable-margin">
+          {{ 'BILLING.MAX-REFUNDABLE-CREDIT-BAL' | translate }}
+        </div>
+        <div class="row" *ngIf="creditBalanceDetails !== undefined">
+          <span class="credit-balances label-colour">{{
+            creditBalanceDetails.totalCreditBalance | number: '1.2-2'
+          }}</span>
+          <span class="currency margin-borders label-colour"> {{ 'BILLING.SAR' | translate }}</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <div class="row margin-textbox">
+    <div class="col-lg-6">
+      <div>
+        <gosi-input-currency-dc
+          id="amtrefunded"
+          [control]="amtRefundedForm?.get('refundedAmount')"
+          [label]="'BILLING.REFUND-AMOUNT' | translate"
+          [noMargin]="true"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="margin-remaining label-colour" *ngIf="refundBalFlag">
+        <span> <fa-icon class="text-info mr-2" [icon]="['fas', 'info-circle']" placement="top"></fa-icon></span>
+        {{ 'BILLING.REMAINING-REFUNDABLE-BALANCE' | translate }} {{ balance | number: '1.2-2' }}
+        {{ 'BILLING.SAR' | translate }}
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-right btn-section" *ngIf="refundBalFlag">
+      <gosi-button-dc id="saveAndNexts" type="primary" (submit)="saveAndNextDetails()">
+        {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section" *ngIf="!refundBalFlag">
+      <gosi-button-dc id="saveAndNexts" type="primary" disabled="false" (submit)="saveAndNextDetails()">
+        {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelButtons" type="secondary" (submit)="popUp(cancelTemplateModal)">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplateModal>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancelBtn()" (onCancel)="declinePopup()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #toolTemplateInfo>
+  <div class="d-flex flex-column">
+    <div *ngIf="fromPage === 'vic'">
+      {{ 'BILLING.CREDIT-BALANCE-INFO-VIC' | translate }}
+    </div>
+    <div *ngIf="fromPage === 'est' && creditBalanceDetails.retainedBalance !== 0">
+      {{ 'BILLING.CREDIT-BALANCE-INFO-EST' | translate }}
+    </div>
+    <div *ngIf="fromPage === 'est' && creditBalanceDetails.retainedBalance === 0">
+      {{ 'BILLING.CREDIT-REFUND-MESG' | translate }}
+    </div>
+  </div>
+</ng-template>

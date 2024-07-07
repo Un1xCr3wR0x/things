@@ -1,0 +1,164 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+
+  <div class="row mx-3 heading-row">
+  <!-- Heading -->
+  <cnt-header-section-dc
+    *ngIf="!isModifyCoverage"
+    heading="CONTRIBUTOR.CHANGE-ENGAGEMENT-DETAILS"
+    (goBack)="cancelTransaction()"
+  ></cnt-header-section-dc>
+  <cnt-header-section-dc
+    *ngIf="isModifyCoverage"
+    heading="CONTRIBUTOR.MODIFY-COVERAGE"
+    (goBack)="cancelTransaction()"
+  ></cnt-header-section-dc>
+  <span *ngIf="isGOL" class="d-flex">
+    <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+      <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+    </div>
+    <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+    <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+      {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+      <span class="ml-3" style="margin-top: -0.4rem">
+        <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+      </span>
+    </div>
+    <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+      <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+    </div>
+  </span>
+  </div>
+
+  <!-- Comment Section for Establishment admin -->
+  <ng-container *ngIf="isEditMode && !isAppPrivate">
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <gosi-comments-dc [comments]="transactionRefData"> </gosi-comments-dc>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Contributor details banner -->
+  <ng-container *ngIf="currentTab !== 0">
+    <div class="row mt-4">
+      <div class="col">
+        <cnt-contributor-banner-dc [contributor]="contributor"> </cnt-contributor-banner-dc>
+      </div>
+    </div>
+  </ng-container>
+
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!-- Progress Wizard -->
+  <ng-container *ngIf="currentTab !== 0">
+    <gosi-progress-wizard-dc [wizardItems]="wizardItems" (clickWizard)="selectWizard($event)" #changeEngagementWizard>
+    </gosi-progress-wizard-dc>
+  </ng-container>
+
+  <!-- Engagement details section -->
+  <ng-container *ngIf="currentTab === 1">
+    <cnt-engagement-period-dc
+      [establishment]="establishment"
+      [changeRequestTypes]="changeRequestTypes"
+      [editMode]="isEditMode"
+      [engagement]="engagement"
+      [leavingReasonList]="leavingReasonList$ | async"
+      [occupationList]="occupationList$ | async"
+      [workTypeList]="workTypeList$ | async"
+      [yesOrNoList]="yesOrNoList$ | async"
+      [isWageVerified]="isEngagementVerified"
+      [parentForm]="engagementForm"
+      [systemParameter]="systemParameter"
+      [updatedEngagement]="updatedEngagement"
+      [isWageDetailsUpdate]="isWageDetailsUpdate"
+      [contributor]="contributor"
+      [changesInPeriod]="periodLevelChanges"
+      [formSubmissionDate]="formSubmissionDate"
+      [(penaltyIndicator)]="penaltyIndicator"
+      (fieldChanged)="initializeWizard($event)"
+      (verify)="verifyEngagementWage($event)"
+      (save)="modifyEngagementWage($event)"
+      (cancel)="cancelTransaction()"
+      (editInProgress)="togglePeriodEditFlag($event)"
+      (joiningDateChange)="joiningDateChangeCheck($event)"
+      (showAlertError)="alertService.showErrorByKey($event)"
+      [isGccEstblishment]="establishment?.gccCountry"
+      [userRoles]="userRoles"
+      [isModifyCoverage]="isModifyCoverage"
+      (modifyCoverageValues)="modifyCoverage($event)"
+      (modifyCoverageDateValues)="modifyDateCoverage($event)"
+      [newCoverages]="newCoverages"
+      [reasonForChange]="reasonForChange$ | async"
+      [coveragePeriod]="coveragePeriod"
+      (edit)="modifyCoverageChange($event)"
+      (coverageValidity)="coverageValidity()"
+      [modifyCoverageValue]="modifyCoverageValue"
+      [isPrevious]="isPrevious"
+      (nicCall)="checkIndividualDetails($event.nicCheck, $event.queryParams, $event.leavingDeathReason)"
+      [nicDetails]="nicDetails"
+      [saveB]="saveB"
+      [isAppPublic]="isAppPublic"
+      [backdatedEngValidatorRequired]="backdatedEngValidatorRequired"
+      [isAdminReEdit]="isAdminReEdit"
+      [hijiriDateConst]="hijiriDateConst"
+      [ppaEstablishment]="isPpa"
+      [isUnclaimed]="isUnclaimed"
+    ></cnt-engagement-period-dc>
+  </ng-container>
+
+  <!-- Document section -->
+  <ng-container *ngIf="currentTab === 2">
+    <cnt-document-section-dc
+      [documentList]="documents"
+      [engagementId]="engagementId"
+      [documentTransactionId]="docTransactionId"
+      [parentForm]="engagementForm"
+      [referenceNo]="referenceNo"
+      [optionalInfo]="establishment.gccEstablishment ? 'CONTRIBUTOR.OPTIONAL-DOCUMENT-INFO' : ''"
+      (refresh)="refreshDocument($event)"
+      (previous)="navigateToPreviousSection()"
+      (reset)="cancelTransaction()"
+      (submit)="submitChangedEngagement()"
+    ></cnt-document-section-dc>
+  </ng-container>
+</div>
+
+<!-- Modals -->
+<ng-template #confirmTemplate>
+  <gosi-modal-dc>
+    <div class="row content-heading" modalContent>
+      <div class="col-lg-12 text-center mt-5">
+        {{ 'CONTRIBUTOR.CONFIRM-CHANGES-CANCEL' | translate }}
+      </div>
+      <div class="col-lg-12 text-center mt-3">{{ 'CONTRIBUTOR.DO-YOU-WISH-CONTINUE' | translate }}</div>
+    </div>
+    <div class="d-flex justify-content-around mt-5" modalAction>
+      <div class="btn-section">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="decline()">
+          {{ 'CONTRIBUTOR.NO' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section">
+        <gosi-button-dc id="continue" type="secondary" (submit)="confirm()">
+          {{ 'CONTRIBUTOR.YES' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #draftTemplate>
+  <cnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="onDiscard()"
+    (onCancel)="decline()"
+  ></cnt-transaction-cancel-popup-dc>
+</ng-template>
+
+

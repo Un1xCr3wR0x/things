@@ -1,0 +1,126 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content">
+  <div class="row no-gutters">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">Add Documents</div>
+    <!-- Adjustment details banner section -->
+    <div class="col-12 banner">
+      <div class="row">
+        <div class="col-md-3">
+          <gosi-label-dc
+            id="adjustmentId"
+            [value]="null"
+            label="{{ 'BENEFITS.ADJUSTMENT_ID' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-3">
+          <gosi-label-dc
+            id="adjustmentStatus"
+            [value]="null"
+            label="{{ 'BENEFITS.ADJUSTMENT-STATUS' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-3">
+          <gosi-label-dc
+            id="balanceAmount"
+            [value]="null"
+            label="{{ 'BENEFITS.BALANCE-AMOUNT' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-3">
+          <gosi-label-dc
+            id="monthlyDeductionAmount"
+            [value]="null"
+            label="{{ 'BENEFITS.MONTHLY-DEDUCTION-AMOUNT' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-3">
+          <gosi-label-dc
+            id="adjustmentReason"
+            [value]="null"
+            label="{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}"
+          ></gosi-label-dc>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Add Section -->
+    <div class="col-12">
+      <gosi-card-dc [type]="'secondary'">
+        <gosi-alert-dc *ngIf="documentsToAdd?.length > 0" [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info">
+        </gosi-alert-dc>
+        <!-- document input file section -->
+        <div class="col-12">
+          <ng-container *ngIf="documentsToAdd?.length > 0">
+            <ng-container *ngFor="let document of documentsToAdd; let i = index">
+              <gosi-input-file-sc
+                [index]="i"
+                [isScan]="isAppPrivate"
+                [document]="document"
+                [referenceNo]="referenceNo"
+                [businessKey]="ninContributor"
+                [transactionId]="transactionConstant"
+                [uuid]="documentuuid"
+                (delete)="onDelete($event)"
+                (refresh)="refreshDocument($event)"
+              ></gosi-input-file-sc>
+            </ng-container>
+          </ng-container>
+        </div>
+
+        <!-- document add button -->
+        <div class="col-12 d-flex justify-content-center">
+          <gosi-button-dc id="addDocumentButton" [popover]="addDocumentModel" placement="bottom right">
+            {{ 'BENEFITS.ACTIONS' | translate }}
+            <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+          </gosi-button-dc>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <!-- submit and cancel button section -->
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">
+          {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc id="submit" type="primary" (submit)="submitDocument()">
+          {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #addDocumentModel>
+  <ng-container *ngFor="let document of requiredDocuments; let i = index">
+    <button type="button" (click)="showAddDocument(document)" class="d-flex btn text-left option-button">
+      {{ document.name | bilingualText }}
+    </button>
+  </ng-container>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BENEFITS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

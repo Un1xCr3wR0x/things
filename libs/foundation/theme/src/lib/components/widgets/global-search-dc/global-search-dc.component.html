@@ -1,0 +1,374 @@
+<gosi-global-search-popover-dc [adaptivePosition]="false" id="poppopContentup-area" [btnOpen]="isOpen"
+  [isExpand]="isExpand" [stayFixedOnScreenChange]="true" [disallowHeightExpansion]="false">
+  <ng-container modalContent>
+    <div class="d-flex">
+      <div class="left-content" [ngClass]="isExpand ? 'col-md-7' : ''">
+
+        <!-- <div class="d-flex" style="justify-content: space-between;">
+          <div class="col-lg-6 date-head mb-2">
+            {{ 'THEME.SEARCH' | translate }}
+          </div>
+          <div style="min-width: 7rem;" type="button" *ngIf="!isExpand" [ngClass]="lang == 'en' ? 'close-helper' : 'close-helper-arabic'">
+            <span [ngClass]="isExpand ? 'clear-expand' : 'clear-all'" (click)="clearAll()"><a>{{ 'THEME.CLEAR-ALL' | translate }}</a></span>
+            <span class="expand-icon" *ngIf="!isExpand && (isShowCard || isShowTransCard || isShowContributorCard || transGlobalSearchList.length >= 1 ||contributorSearchList.length >= 1 || estGlobalSearchList.length >= 1) ">
+              <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon> </span>
+            <span *ngIf="isExpand">
+              <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon>
+            </span>
+            <fa-icon icon="times" (click)="onHide()" class="ml-lg-3"></fa-icon>
+          </div>
+        </div> -->
+
+        <div class="d-flex" style="justify-content: space-between;">
+          <div class="mb-2 date-head">
+            {{ 'THEME.SEARCH' | translate }}
+          </div>
+          <div type="button" *ngIf="!isExpand" [ngClass]="lang == 'en' ? 'close-helper' : 'close-helper-arabic'">
+            <span [ngClass]="isExpand ? 'clear-expand' : 'clear-all'" (click)="clearAll()"><a>{{ 'THEME.CLEAR-ALL' | translate }}</a></span>
+            <span [ngClass]="lang == 'en' ? 'expand-icon' : 'expand-icon-ar mr-2'" *ngIf="!isExpand && (isShowCard || isShowTransCard || isShowContributorCard || transGlobalSearchList.length >= 1 ||contributorSearchList.length >= 1 || estGlobalSearchList.length >= 1) ">
+              <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon> </span>
+            <span *ngIf="isExpand">
+              <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon>
+            </span>
+            <fa-icon icon="times" (click)="onHide()" class="ml-lg-3 mr-0"></fa-icon>
+          </div>
+        </div>
+        
+        <div>
+          <div class=" input-group custom-search">
+            <div class=" col-lg-5" [ngClass]="lang == 'en' ? 'input-wrap' : 'input-wrap-arabic'">
+              <gosi-input-select-dc class="sort-dropdown pr-2" [list]="list" [ignoreLabel]="true"
+                [hidePlaceholder]="'true'" [control]="sortListForm.get('sortMode')" (select)="selectType($event)"
+                [searchable]="false">
+              </gosi-input-select-dc>
+              <!-- <ng-select [clearable]="false" [searchable]="false" id="sortBy" [(ngModel)]="selectedOption">
+                <ng-option [value]="option.value" *ngFor="let option of list">{{ option.name | translate
+                  }}</ng-option>
+              </ng-select> -->
+            </div>
+            <div class=" col-lg-7 input-group-append" style="height: 50px;">
+              <input [formControl]="sortListForm.get('search')" style="
+              height: 49px;font-size: 15px;" type="text" class="form-control"
+                placeholder="{{'THEME.SEARCH-FOR' | translate}} {{'THEME.'+ placeholder | translate}}"
+                gosiSpecialCharacterMask
+                [onlyDigits]="showPreviousContributors? false : true"
+                (input)="onChange($event)" 
+                (keyup.enter)="onSearch($event)"
+               />
+              <button #searchicon class="btn" type="button" (click)="onSearch($event)">
+                <fa-icon class="icon-class search-icon" icon="search"></fa-icon>
+              </button>
+            </div>
+          </div>
+          <div class="row text-center no-search-items mb-3" *ngIf="!isShowCard && !isShowTransCard && !isShowContributorCard 
+                      && contributorSearchList.length === 0 && transGlobalSearchList.length === 0 && estGlobalSearchList.length === 0">
+            <div  class="col-sm-12 col-md-12 col-lg-12 searchIconnew mr-2"  size="1x">
+              <img src="assets/images/most-recent.svg" class="no-search-icon" alt="no-searches" />
+            </div>
+          </div>
+          <div *ngIf="isShowCard && !isError">
+            <div class="search-style">{{ 'THEME.SEARCH-RESULT' | translate }}</div>
+            <!-- <gosi-card-dc type="primary" *ngIf="isShowEstablishment"> -->
+            <div *ngIf="isShowEstablishment"  class="hover-state new-search"
+              (click)="navigationToProfile(undefined)">
+              <div class="name-style">{{estName | bilingualText}}</div>
+              <span style="color: #999999;">{{ 'THEME.STATUS' | translate }} : {{estStatus | bilingualText}}</span>
+            </div>
+            <!-- </gosi-card-dc> -->
+          </div>
+          <div *ngIf="isNumeric">
+            <span class="numeric-style">{{ 'CORE.NUMERIC-ONLY' | translate }}</span>
+          </div>
+          <div class="text-center error-style" *ngIf="isError">
+            <fa-icon icon="search" class="searchIcon mr-2" size="1x">
+            </fa-icon>
+            <br />
+            <p *ngIf="lang == 'en'" class="text-mute">Your search {{selectedOption}} did not fetch any results.</p>
+            <p *ngIf="lang == 'ar'" class="text-mute">لا تتوفر نتيجة لبحثك عن {{selectedOption}}</p>
+          </div>
+
+        </div>
+        <div>
+          <div *ngIf="!isExpand && estGlobalSearchList.length >= 1 && (isShowCard || showPreviousEstablishments)">
+            <div class="search-style"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}</div>
+            <div *ngFor="let item of estGlobalSearchList; let i = index" style="cursor: pointer;">
+              <!-- <gosi-card-dc type="primary"> -->
+              <div class="previous-search hover-state"
+                (click)="navigationToProfile(item.registrationNo)">
+                <div class="name-style">{{ item.name | bilingualText}}</div>
+                <span style="color: #999999;">{{ 'THEME.STATUS' | translate }} : {{item.status | bilingualText}}</span>
+              </div>
+              <!-- </gosi-card-dc> -->
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="isShowTransCard && !isError">
+          <div class="search-style">{{ 'THEME.SEARCH-RESULT' | translate }}</div>
+          <!-- <gosi-card-dc type="primary" *ngIf="isShowEstablishment"> -->
+          <div class="transaction-search hover-state new-search"
+            (click)="navigateToTransaction(transId,transNo)">
+            <div class="col-sm-9 col-md-9 col-lg-9">
+            <span class=" name-style"  [tooltip]="isTooltipForJustification(titleTrans) === 1 ? readMoreTemplate : ''"
+            placement="top"
+>{{titleTrans | bilingualText}}</span>
+            <span style="color: #999999;">{{ 'THEME.LAST-UPDATE-DATE' | translate }} : {{lastUpdatedDate?.gregorian |
+              date: 'dd/MM/yyyy'}}</span>
+            </div>
+            <div class="col-sm-3 col-md-3 col-lg-3"
+            [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+            <span class="badge contri-status" [ngClass]="[
+                transStatus.english == 'Completed' ? 'badge-success-completed' : '',
+                transStatus.english == 'In Progress' ? 'badge-warning' : '',
+                transStatus.english == 'Rejected' 
+                    ? 'badge-danger-new'
+                    : ''
+                ]">{{ transStatus | bilingualText }}</span>
+            </div>
+          </div>
+          <!-- </gosi-card-dc> -->
+        </div>
+        <ng-template #readMoreTemplate>
+          <div class="justification-expand ">
+            {{titleTrans | bilingualText}}
+          </div>
+        </ng-template>
+        <!-- <div> -->
+          <div *ngIf="!isExpand && transGlobalSearchList.length >= 1 && (isShowTransCard || showPreviousTransactions)">
+            <div class="search-style"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}</div>
+            <div *ngFor="let item of transGlobalSearchList; let i = index" style="cursor: pointer;">
+              <!-- <gosi-card-dc type="primary"> -->
+              <div class="transaction-search previous-search hover-state"
+                (click)="navigateToTransaction(item.transactionId,item.transactionRefNo)">
+                <div class="col-sm-9 col-md-9 col-lg-9">
+                  <span class=" name-style"  [tooltip]="isTooltipForJustification(titleTrans) === 1 ? readMoreTemplate : ''"
+                  placement="top"
+      >{{ item.title | bilingualText}}</span>
+                <span style="color: #999999;">{{ 'THEME.LAST-UPDATE-DATE' | translate }} :
+                  {{item.lastActionedDate?.gregorian | date: 'dd/MM/yyyy'}}</span>
+                </div>
+                <div class="col-sm-3 col-md-3 col-lg-3"
+                [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+                <span class="badge contri-status" [ngClass]="[
+
+                item.status.english == 'Completed' ? 'badge-success-completed' : '',
+                item.status.english == 'In Progress' ? 'badge-warning' : '',
+                item.status.english == 'Rejected' 
+                    ? 'badge-danger-new'
+                    : ''
+                ]">{{ item.status | bilingualText }}</span>
+              </div>
+              </div>
+              <!-- </gosi-card-dc> -->
+            </div>
+          </div>
+        <!-- </div> -->
+        <!-- contributor search -->
+        <div *ngIf="isShowContributorCard && !isError">
+          <div class="search-style">{{ 'THEME.SEARCH-RESULT' | translate }}</div>
+          <!-- <gosi-card-dc type="primary" *ngIf="isShowEstablishment"> -->
+            <ng-container *ngFor="let contributor of contributor">
+          <div class="row contributor hover-state new-search"
+            (click)="navigateToIndividual(contributor?.socialInsuranceNumber,contributor?.registrationNo)">
+            <div class="col-sm-2 col-md-2 col-lg-2 profile-icon">
+              <img *ngIf="contributor?.gender?.english === 'Female'" src="assets/images/female.svg" alt="Person" />
+              <img
+                *ngIf="contributor?.gender?.english === 'Male' && contributor?.nationality.english === 'Saudi Arabia'"
+                src="assets/images/gulf-male.svg" alt="Person" />
+              <img
+                *ngIf="contributor?.gender?.english === 'Male' && contributor?.nationality.english !== 'Saudi Arabia'"
+                src="assets/images/non-gulf-male.svg" alt="Person" />
+            </div>
+            <div class="col-sm-7 col-md-7 col-lg-7">
+              <span class="name-style contri-name">
+                <ng-container *ngIf="lang == 'en'">
+                  <span *ngIf="contributor?.name.english.name">
+                    {{contributor?.name.english.name}}
+                  </span>
+                  <span *ngIf="!contributor?.name.english.name">
+                    {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                  </span>
+                </ng-container>
+                <ng-container *ngIf="lang == 'ar'">
+                  {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                </ng-container>
+              </span>
+              <span class="contributorreg">{{contributor.establishmentName.english !== null
+                ? (contributor.establishmentName | bilingualText)
+                : contributor.establishmentName.arabic }}</span>
+              <span style="color: #999999;">{{ 'THEME.REG' | translate }} {{contributor.registrationNo }}</span>
+            </div>
+            <div class="col-sm-3 col-md-3 col-lg-3"
+              [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+              <span class="badge contri-status" [ngClass]="[
+              lang == 'en' ? 'badge-style' : 'badge-style-arabic',
+              contributor.status == 'ACTIVE' ? 'badge-success' : '',
+              contributor.status == 'TERMINATED' ? 'badge-danger' : '',
+              contributor.status == 'CANCELLED' 
+                  ? 'badge-secondary'
+                  : ''
+              ]">{{'THEME.' + (contributor.status) | translate}}</span>
+            </div>
+          </div>
+        </ng-container>
+          <!-- </gosi-card-dc> -->
+        </div>
+        <div>
+          <div
+            *ngIf="!isExpand && contributorSearchList.length >= 1 && (isShowContributorCard || showPreviousContributors)">
+            <div class="search-style"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}</div>
+            <div *ngFor="let contributor of contributorSearchList; let i = index" style="cursor: pointer;">
+              <div class="row contributor previous-search hover-state"
+                (click)="navigateToIndividual(contributor?.socialInsuranceNumber,contributor?.registrationNo)">
+                <div class="col-sm-2 col-md-2 col-lg-2 profile-icon">
+                  <img *ngIf="contributor.gender?.english === 'Female'" src="assets/images/female.svg"
+                    alt="Person" />
+                  <img
+                    *ngIf="contributor.gender?.english === 'Male' && contributor?.nationality.english === 'Saudi Arabia'"
+                    src="assets/images/gulf-male.svg" alt="Person" />
+                  <img
+                    *ngIf="contributor?.gender?.english === 'Male' && contributor?.nationality.english !== 'Saudi Arabia'"
+                    src="assets/images/non-gulf-male.svg" alt="Person" />
+                </div>
+                <div class="col-sm-7 col-md-7 col-lg-7">
+                  <span class="name-style contri-name">
+                    <ng-container *ngIf="lang == 'en'">
+                      <span *ngIf="contributor.name.english.name">
+                        {{contributor.name.english.name}}
+                      </span>
+                      <span *ngIf="!contributor.name.english.name">
+                        {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                      </span>
+                    </ng-container>
+                    <ng-container *ngIf="lang == 'ar'">
+                      {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                    </ng-container>
+                  </span>
+                  <span class="contributorreg">{{contributor.establishmentName.english !== null
+                    ? (contributor.establishmentName | bilingualText)
+                    : contributor.establishmentName.arabic }}</span>
+                  <span style="color: #999999;">{{ 'THEME.REG' | translate }} {{contributor.registrationNo }}</span>
+                </div>
+                <div class="col-sm-3 col-md-3 col-lg-3"
+                  [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+                  <span class="badge contri-status" [ngClass]="[
+                  lang == 'en' ? 'badge-style' : 'badge-style-arabic',
+                  contributor.status == 'ACTIVE' ? 'badge-success' : '',
+                  contributor.status == 'TERMINATED' ? 'badge-danger' : '',
+                  contributor.status == 'CANCELLED' 
+                      ? 'badge-secondary'
+                      : ''
+                  ]">{{ 'THEME.' + (contributor.status) | translate }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--  -->
+      </div>
+      <div class="col-md-5 " [ngClass]="lang == 'en' ? 'right-content' : 'right-content-arabic'" *ngIf="isExpand">
+        <div [ngClass]="[
+                lang == 'en' ? 'options' : 'options-arabic',
+                lang == 'en' ? 'close-helper' : 'close-helper-arabic'
+              ]" *ngIf="isExpand" type="button">
+              <span class="clear-all" (click)="clearAll()"><a>{{ 'THEME.CLEAR-ALL' | translate }}</a></span>
+          <span *ngIf="!isExpand"> <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon> </span>
+          <span *ngIf="isExpand">
+            <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon>
+          </span>
+          <fa-icon icon="times" (click)="onHide()" class="ml-3"></fa-icon>
+        </div>
+        <div *ngIf="isExpand && estGlobalSearchList.length >= 1 && (isShowCard || showPreviousEstablishments)">
+          <div class="search-style" style="padding-top: 35px !important;"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}
+          </div>
+          <div *ngFor="let item of estGlobalSearchList; let i = index" style="cursor: pointer;">
+            <!-- <gosi-card-dc type="primary"> -->
+            <div class="previous-search hover-state"
+              (click)="navigationToProfile(item.registrationNo)">
+              <div class="name-style">{{ item.name | bilingualText}}</div>
+              <span style="color: #999999;">{{ 'THEME.STATUS' | translate }} : {{item.status | bilingualText}}</span>
+            </div>
+            <!-- </gosi-card-dc> -->
+          </div>
+        </div>
+        <div *ngIf="isExpand && transGlobalSearchList.length >= 1 && (isShowTransCard || showPreviousTransactions)">
+          <div class="search-style" style="padding-top: 35px !important;"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}
+          </div>
+          <div *ngFor="let item of transGlobalSearchList; let i = index" style="cursor: pointer;">
+            <!-- <gosi-card-dc type="primary"> -->
+            <div class="transaction-search previous-search hover-state"
+              (click)="navigateToTransaction(item.transactionId,item.transactionRefNo)">
+              <div class="col-sm-9 col-md-9 col-lg-9">
+                <span class=" name-style"  [tooltip]="isTooltipForJustification(titleTrans) === 1 ? readMoreTemplate : ''"
+                placement="top"
+    >{{ item.title | bilingualText}}</span>
+              <span style="color: #999999;">{{ 'THEME.LAST-UPDATE-DATE' | translate }} :
+                {{item.lastActionedDate?.gregorian | date: 'dd/MM/yyyy'}}</span>
+                </div>
+                <div class="col-sm-3 col-md-3 col-lg-3"
+                [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+              <span class="badge contri-status" [ngClass]="[
+       
+          item.status.english == 'Completed' ? 'badge-success-completed' : '',
+          item.status.english == 'In Progress' ? 'badge-warning' : '',
+          item.status.english == 'Rejected' 
+              ? 'badge-danger-new'
+              : ''
+          ]">{{ item.status | bilingualText }}</span>
+            </div>
+            </div>
+            <!-- </gosi-card-dc> -->
+          </div>
+        </div>
+        <div
+          *ngIf="isExpand && contributorSearchList.length >= 1 && (isShowContributorCard || showPreviousContributors)">
+          <div class="search-style"> {{ 'THEME.PREVIOUS-SEARCHES' | translate }}</div>
+          <div *ngFor="let contributor of contributorSearchList; let i = index" style="cursor: pointer;">
+            <div class="row contributor previous-search hover-state"
+              (click)="navigateToIndividual(contributor?.socialInsuranceNumber,contributor?.registrationNo)">
+              <div class="col-sm-2 col-md-2 col-lg-2 profile-icon">
+                <img *ngIf="contributor.gender?.english === 'Female'" src="assets/images/female.svg" alt="Person" />
+                <img
+                  *ngIf="contributor.gender?.english === 'Male' && contributor?.nationality.english === 'Saudi Arabia'"
+                  src="assets/images/gulf-male.svg" alt="Person" />
+                <img
+                  *ngIf="contributor?.gender?.english === 'Male' && contributor?.nationality.english !== 'Saudi Arabia'"
+                  src="assets/images/non-gulf-male.svg" alt="Person" />
+              </div>
+              <div class="col-sm-7 col-md-7 col-lg-7">
+                <span class="name-style contri-name">
+                  <ng-container *ngIf="lang == 'en'">
+                    <span *ngIf="contributor.name.english.name">
+                      {{contributor.name.english.name}}
+                    </span>
+                    <span *ngIf="!contributor.name.english.name">
+                      {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="lang == 'ar'">
+                    {{contributor.name.arabic.firstName }} {{contributor.name.arabic.thirdName}}
+                  </ng-container>
+                </span>
+                <span class="contributorreg">{{contributor.establishmentName.english !== null
+                  ? (contributor.establishmentName | bilingualText)
+                  : contributor.establishmentName.arabic }}</span>
+                <span style="color: #999999;">{{ 'THEME.REG' | translate }} {{contributor.registrationNo }}</span>
+              </div>
+              <div class="col-sm-3 col-md-3 col-lg-3"
+                [ngClass]="lang == 'en' ? 'contributer-badge' : 'contributer-badge-arabic'">
+                <span class="badge contri-status" [ngClass]="[
+              lang == 'en' ? 'badge-style' : 'badge-style-arabic',
+              contributor.status == 'ACTIVE' ? 'badge-success' : '',
+              contributor.status == 'TERMINATED' ? 'badge-danger' : '',
+              contributor.status == 'CANCELLED' 
+                  ? 'badge-secondary'
+                  : ''
+              ]">{{ 'THEME.' + (contributor.status) | translate }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</gosi-global-search-popover-dc>

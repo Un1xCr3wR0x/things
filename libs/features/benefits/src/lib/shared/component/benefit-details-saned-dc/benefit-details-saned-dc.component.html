@@ -1,0 +1,188 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!------------------ BENEFIT-DETAILS --------------->
+<ng-container *ngIf="benefitDetails">
+  <gosi-card-dc type="secondary" lessPadding="true">
+    <div class="row">
+      <div class="col-12">
+        <div class="benefit-detail-section pl-0">
+          <div>
+            <span class="benefit-heading">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+          </div>
+          <div>
+            <div class="contribution-button">
+              <gosi-button-dc
+                [size]="isSmallScreen ? 'sm' : 'md'"
+                type="secondary"
+                [outlineOnly]="true"
+                (click)="showModal(moreDetails)"
+              >
+                {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+              </gosi-button-dc>
+            </div>
+            <gosi-button-dc
+              [size]="isSmallScreen ? 'sm' : 'md'"
+              class="calculation-button"
+              type="secondary"
+              [outlineOnly]="true"
+              (click)="showModal(viewWageCalculation)"
+            >
+              {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row py-2" *ngIf="benefitDetails.isReopen">
+      <div class="col-md-12 col-lg-12 mb-3">
+        <div class="months">
+          {{ 'BENEFITS.BENEFIT_DETAILS_REOPEN_INFO' | translate: { availedMonths: benefitDetails.availedMonths } }}
+        </div>
+      </div>
+    </div>
+    <div class="row details py-3">
+      <div class="col-sm-4 col-md-4 col-lg-4 mb-3" *ngIf="benefitDetails?.initialMonths">
+        <div class="months">
+          {{ 'BENEFITS.INITIAL-BENEFIT-AMOUNT' | translate }}
+          <!--
+          {{ 'BENEFITS.FIRST-MONTHS' | translate: { month: benefitDetails.initialMonths?.noOfMonths } }}
+          -->
+        </div>
+        <div class="amount">
+          {{ 'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.initialMonths?.amount | number } }}
+        </div>
+      </div>
+      <!-- changed next months as part of defect 516509 -->
+      <div class="col-sm-4 col-md-4 col-lg-4 mb-3">
+        <div class="months" *ngIf="benefitDetails?.initialMonths; else benefitAmount">
+          {{ 'BENEFITS.SUBS-BENEFIT-AMOUNT' | translate }}
+          <!--
+          {{ 'BENEFITS.NEXT-MONTHS' | translate: { month: getSufixForNum(benefitDetails.initialMonths?.noOfMonths + 1, lang)}}}
+          -->
+        </div>
+        <ng-template #benefitAmount>
+          <div class="months">
+            {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}
+          </div>
+        </ng-template>
+        <div class="amount">
+          {{ 'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.remainingMonths?.amount } }}
+        </div>
+      </div>
+      <!--<div class="col-sm-4 col-md-4 col-lg-4">
+        <div class="months">
+          {{ 'BENEFITS.SANED-ELIGIBLE-MONTHS' | translate: { month: benefitDetails.remainingMonths?.noOfMonths } }}
+          <div class="amount">
+            {{
+              'BENEFITS.SANED-MONTHS-COUNT'
+                | translate: { months: benefitDetails.noOfEligibleMonths || '0' | number: '1.2-2' }
+            }}
+          </div>
+        </div>
+      </div>-->
+    </div>
+
+    <div class="row pb-3">
+      <!--<div class="col-sm-4 col-md-4 col-lg-4">
+        <div class="average-wage">{{ 'BENEFITS.AVERAGE-WAGE' | translate }}</div>
+        <div class="avg-amount">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: benefitDetails.averageMonthlyContributoryWage | number }
+          }}
+        </div>
+      </div>-->
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="benefitDetails?.uiEligibilityPeriods && !isReopenCase">
+        <div class="months">
+          {{ 'BENEFITS.BENEFIT-ELIGIBILITY-PERIOD' | translate }}
+          <div class="amount">
+            {{ formatDate(benefitDetails?.uiEligibilityPeriods?.periodStartDate, 'dd/MM/yyyy', 'en-US') }}
+            <span>
+              <fa-icon class="arrow" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+            </span>
+            {{ formatDate(benefitDetails?.uiEligibilityPeriods?.periodStopDate, 'dd/MM/yyyy', 'en-US') }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="benefitDetails?.stopDate">
+        <div class="months">
+          {{ 'BENEFITS.DATE-OF-STOPPING' | translate }}
+          <div class="amount">
+            {{ benefitDetails?.stopDate | dateType }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="benefitDetails?.stopDate">
+        <div class="months">
+          {{ 'BENEFITS.REASON-FOR-STOPPING' | translate }}
+          <div class="amount">
+            {{ benefitDetails?.reasonForStop | bilingualText }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="benefitDetails?.suspensionDate">
+        <div class="months">
+          {{ 'BENEFITS.DATE-OF-SUSPENDING' | translate }}
+          <div class="amount">
+            {{ benefitDetails?.suspensionDate | dateType }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="benefitDetails?.suspensionDate">
+        <div class="months">
+          {{ 'BENEFITS.REASON-FOR-SUSPENDING' | translate }}
+          <div class="amount">
+            {{ benefitDetails?.reasonForSuspension | bilingualText }}
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4 col-md-4 col-lg-4">
+        <div class="months">
+          {{ 'BENEFITS.BENEFIT-REQUESTED-PENSION-REFORM' | translate }}
+          <div class="amount">
+            <ng-container *ngIf="eligibleForPensionReform; else nonReform">
+              {{ 'BENEFITS.YES' | translate }}
+            </ng-container>
+            <ng-template #nonReform>
+              {{ 'BENEFITS.NO' | translate }}
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- <div *ngIf="isIndividualApp" class="row py-3">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="average-wage">{{ 'BENEFITS.AVG-MONTHLYCONTRIBUTORY-WAGE' | translate }}</div>
+        <div class="avg-amount">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: benefitDetails.averageMonthlyContributoryWage | number }
+          }}
+        </div>
+      </div>
+    </div> -->
+    <div class="statusMessage">
+      <fa-icon class="grey-circle" icon="info-circle" size="md"></fa-icon>
+      <span> {{ 'BENEFITS.BENEFIT_AMOUNT_INFO' | translate }}</span>
+    </div>
+  </gosi-card-dc>
+  <ng-template #viewWageCalculation>
+    <bnt-amw-view-dc
+      [benefitDetails]="benefitDetails"
+      [eligibleForPensionReform]="eligibleForPensionReform"
+      (close)="closeModal()"
+    >
+    </bnt-amw-view-dc>
+  </ng-template>
+  <ng-template #moreDetails>
+    <bnt-annuity-calculation-details-dc
+      (close)="hideModal()"
+      [isSaned]="true"
+      [benefitCalculationDetails]="benefitDetails"
+      [eligibleForPensionReform]="eligibleForPensionReform"
+      [averageMonthlyWagePeriods]="benefitDetails?.averageMonthlyWagePeriods"
+      [isLumpsum]="false"
+      [lang]="lang"
+      [benefitType]="benefitType"
+    ></bnt-annuity-calculation-details-dc>
+  </ng-template>
+</ng-container>

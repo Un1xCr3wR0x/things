@@ -1,0 +1,188 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <frm-main-heading-dc
+    *ngIf="!uiEligibility?.appeal"
+    [heading]="'BENEFITS.REQUEST-SANED-HEADING' | translate"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="uiEligibility?.appeal"
+    [heading]="'BENEFITS.APPEAL-SANED-HEADING' | translate"
+  ></frm-main-heading-dc>
+
+  <frm-main-content-dc
+    [canEdit]="docsCanEdit"
+    [documents]="documentList"
+    [showComments]="routerData?.assignedRole | hasThisRole: [rolesEnum.VC]"
+    [comments]="transactionRefData"
+    (onEdit)="navigateToScan()"
+  >
+    <div id="contentArea">
+      <div class="row">
+        <div class="col-md-12">
+          <bnt-ui-contributor-details-dc
+            *ngIf="benefitRequest && benefitDetailsSaned"
+            [benefitRequest]="benefitRequest"
+            [benefitDetails]="benefitDetailsSaned"
+            [personNameEnglish]="personNameEnglish"
+            [personNameArabic]="personNameArabic"
+            [validatorCanEdit]="validatorCanEdit"
+            [role]="routerData?.assignedRole"
+            (navigateToEdit)="reDirectUsersToApplyScreens()"
+            (onNinClicked)="viewContributorDetails()"
+          ></bnt-ui-contributor-details-dc>
+        </div>
+        <div class="col-md-12">
+          <bnt-ui-validator-bank-details-dc
+            *ngIf="!(routerData?.assignedRole | hasThisRole: [rolesEnum.VC])"
+            [bankDetails]="bankDetails"
+          ></bnt-ui-validator-bank-details-dc>
+        </div>
+        <div class="col-md-12">
+          <bnt-contribution-details-dc
+            *ngIf="benefitDetailsSaned && !(routerData?.assignedRole | hasThisRole: [rolesEnum.VC])"
+            [benefitDetails]="benefitDetailsSaned"
+            [eligibleMonthsAmounts]="eligibleMonthsAmounts"
+            [benefitCalculationDetails]="benefitDetailsSaned"
+          ></bnt-contribution-details-dc>
+        </div>
+        <!--Saned Appeal-->
+        <div class="col-md-12 mt-4">
+          <bnt-validator-appeal-details-dc
+            *ngIf="benefitRequest && (routerData?.assignedRole | hasThisRole: [rolesEnum.VC])"
+            [appealDetails]="benefitRequest"
+            [lang]="lang"
+          ></bnt-validator-appeal-details-dc>
+        </div>
+        <div class="col-md-12 mt-3" *ngIf="benefitDetailsSaned?.adjustmentCalculationDetails">
+          <bnt-adjustment-detail-dc
+            [heading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+            [adjustmentCalculationDetails]="benefitDetailsSaned?.adjustmentCalculationDetails"
+            [lang]="lang"
+          >
+          </bnt-adjustment-detail-dc>
+        </div>
+        <div class="col-md-12 mt-3" *ngIf="benefitDetailsSaned?.adjustmentCalculationDetails">
+          <bnt-saned-net-adjustment-dc
+            [adjustmentCalculationDetails]="benefitDetailsSaned?.adjustmentCalculationDetails"
+            [checkForm]="payForm"
+            [disableDirectPayment]="routerData?.assignedRole === 'FC Approver'"
+            (onPreviousAdjustmentsClicked)="viewMaintainAdjustment()"
+          ></bnt-saned-net-adjustment-dc>
+        </div>
+      </div>
+    </div>
+
+    <div id="actionArea">
+      <div class="row">
+        <div class="col-lg-12 form-action">
+          <div class="btn-section float-right">
+            <gosi-button-dc
+              [disabled]="disableApprove"
+              id="approve"
+              type="primary"
+              (submit)="approveTransaction(approveTemplate)"
+            >
+              {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+            >
+          </div>
+
+          <ng-container>
+            <div
+              class="btn-section float-right"
+              *ngIf="canReject || (routerData?.assignedRole | hasThisRole: [rolesEnum.VC])"
+            >
+              <gosi-button-dc type="danger" id="reject" (submit)="rejectTransaction(rejectTemplate)">
+                {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div
+              class="btn-section float-right"
+              *ngIf="canReturn && !(routerData?.assignedRole | hasThisRole: [rolesEnum.VC])"
+            >
+              <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+              >
+            </div>
+            <!--<div class="btn-section float-right" *ngIf="routerData.assignedRole === rolesEnum.VALIDATOR_1">
+              <gosi-button-dc
+                type="secondary"
+                id="sanedRequestInspection"
+                (click)="requestInspection(requestInspectionTemplate)"
+              >
+                {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+              >
+            </div>-->
+          </ng-container>
+          <div class="btn-section float-left">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelEngagementTemplate)">
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="uiEligibility?.appeal ? 'BENEFITS.APPEAL-SANED-APPROVE' : 'BENEFITS.CONFIRM_SANED_APPROVE_HEADING'"
+    [isCommentsMandatory]="approveComments"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveSaned()"
+    [parentForm]="requestSanedForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    [heading]="uiEligibility?.appeal ? 'BENEFITS.REJECT-APPEAL-SANED-HEADING' : 'BENEFITS.REJECT-CONFIRM-HEADING'"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    (cancelEvent)="hideModal()"
+    [parentForm]="requestSanedForm"
+    (rejectEvent)="confirmRejectSaned()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Reject template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    [heading]="uiEligibility?.appeal ? 'BENEFITS.APPEAL-SANED-RETURN' : 'BENEFITS.RETURN-CONFIRM-HEADING'"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="requestSanedForm"
+    (returnEvent)="returnSaned()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!----Request Inspection---->
+<ng-template #requestInspectionTemplate>
+  <bnt-inspection-request-dc
+    *ngIf="selectedInspection"
+    [heading]="'BENEFITS.REQUEST-INSPECTION'"
+    (cancelEvent)="commonModalRef.hide()"
+    (submitEvent)="submitRequestInspection(requestSanedForm, selectedInspection)"
+    [parentForm]="requestSanedForm"
+    [inspectionList$]="inspectionList"
+    [inspectionSelected]="selectedInspection"
+  >
+  </bnt-inspection-request-dc>
+</ng-template>

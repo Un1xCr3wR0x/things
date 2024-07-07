@@ -1,0 +1,344 @@
+<div class="container my-4" *ngIf="benefitCalculationDetails || sanedRecalculationDetails">
+  <div class="modal-body">
+    <div class="row mb-3">
+      <div id="how-to-calculate-heading" class="col-lg-4 how-to-calculate">
+        {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+      </div>
+      <div class="col-lg-3"></div>
+      <div class="col-lg-5 p-0 text-right">
+        <div class="row">
+          <div class="border border-secondary rounded p-0 col-lg-11" *ngIf="!isSaned">
+            <div class="row m-0">
+              <div
+                id="newBenefit"
+                class="col-lg-6 py-1 text-center d-inline-block"
+                [ngClass]="selected === 0 ? 'selected' : 'not-selected'"
+                (click)="selectSwitch(0)"
+              >
+                {{ calculationModalTitle.title1 | translate }}
+              </div>
+              <div
+                id="currentBenefit"
+                class="col-lg-6 py-1 text-center d-inline-block"
+                [ngClass]="selected === 1 ? 'selected' : 'not-selected'"
+                (click)="selectSwitch(1)"
+              >
+                {{ calculationModalTitle.title2 | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-11 p-0" *ngIf="isSaned"></div>
+          <div class="col-lg-1 p-0 px-3 text-right d-inline-block">
+            <fa-icon
+              id="closeIcon"
+              class="text-secondary custom-pointer"
+              [icon]="['fas', 'times']"
+              (click)="closeModal()"
+            ></fa-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="selected == 0">
+      <bnt-rejoinig-equation-dc></bnt-rejoinig-equation-dc>
+    </div>
+    <div class="rounded border p-3" *ngIf="selected == 1">
+      <!--  Saned Benefit Calculation -->
+      <div *ngIf="isSaned">
+        <div class="row mb-3">
+          <div class="col-lg-12 heading">{{ 'BENEFITS.SANED-BC' | translate }}</div>
+        </div>
+        <div class="saned-border">
+          <div class="row mb-3 custom-font-pension align-items-center">
+            <div class="col-lg-4 ml-4">
+              <span>{{ 'BENEFITS.SANED-THREE-MONTH' | translate }}</span>
+              <div>(Maximum Benefit: 9,000 {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }})</div>
+            </div>
+            <span class="equal-sign ml-2"> = </span>
+            <div class="col-lg-3 text-center">
+              <div>{{ 'BENEFITS.FAW-60' | translate }}</div>
+            </div>
+            <span> = </span>
+            <div class="col-lg-2 ml-2 text-center">
+              <div>
+                {{
+                  sanedRecalculationDetails?.recalcPeriods[0]?.reCalculation?.afterRecalculation
+                    ?.initialMonthsBenefitAmount
+                }}
+                {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3 custom-font-pension align-items-center">
+            <div class="col-lg-4 ml-4">
+              <span>{{ 'BENEFITS.SANED-FOUR-MONTH' | translate }}</span>
+              <div>(Maximum Benefit: 7,500 {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }})</div>
+            </div>
+            <span class="equal-sign ml-2"> = </span>
+            <div class="col-lg-3 text-center">
+              <div>{{ 'BENEFITS.FAW-50' | translate }}</div>
+            </div>
+            <span> = </span>
+            <div class="col-lg-2 ml-2 text-center">
+              <div>
+                {{
+                  sanedRecalculationDetails?.recalcPeriods[0]?.reCalculation?.afterRecalculation
+                    ?.remainingMonthsBenefitAmount
+                }}
+                {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="saned-info row mx-2">
+            <span>
+              <fa-icon id="sanedInfoIcon" class="text-secondary" [icon]="['fas', 'info-circle']"></fa-icon>
+              <span class="mr-2"></span>
+              {{ 'BENEFITS.SANED-INFO-TEXT' | translate }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-lg-12">{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}</div>
+      </div>
+      <div class="table-responsive mb-3">
+        <table class="table table-bordered">
+          <thead>
+            <tr class="custom-table-header">
+              <td>{{ 'BENEFITS.PERIOD' | translate }}</td>
+              <td *ngIf="!isSaned">{{ 'BENEFITS.LAW-TYPE' | translate }}</td>
+              <td>
+                {{ 'BENEFITS.CONTRIBUTION-MONTHS' | translate }} <br />
+                {{ 'BENEFITS.SANED-MONTHS' | translate }} {{ 'BENEFITS.ONLY' | translate }}
+              </td>
+              <td>{{ 'BENEFITS.AMW-TYPE' | translate }}</td>
+              <td>
+                {{ 'BENEFITS.AMW' | translate }} ({{ 'BENEFITS.SR' | translate }})
+                <span>
+                  <fa-icon
+                    id="amwInfoIcon"
+                    class="text-secondary custom-pointer"
+                    [icon]="['fas', 'info-circle']"
+                  ></fa-icon>
+                </span>
+              </td>
+              <td>{{ 'BENEFITS.MONTHLY-CONTRIBUTORY-WAGE' | translate }} ({{ 'BENEFITS.SR' | translate }})</td>
+            </tr>
+          </thead>
+          <tbody
+            *ngFor="
+              let monthlyWage of benefitCalculationDetails?.averageMonthlyWagePeriods ||
+                sanedRecalculationDetails?.recalcPeriods;
+              let i = index
+            "
+          >
+            <tr>
+              <td rowspan="2" class="custom-table-header">
+                {{ monthlyWage.period | bilingualText }} <br />
+                {{ monthlyWage.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+                <fa-icon *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                <fa-icon *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                {{ monthlyWage.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+              </td>
+              <td rowspan="1" *ngIf="!isSaned">{{ 'BENEFITS.OLD' | translate }}</td>
+              <td [attr.rowspan]="isSaned ? 2 : 1">{{ monthlyWage.noOfOldLawMonths }}</td>
+              <td rowspan="2">{{ monthlyWage.amwType | bilingualText }}</td>
+              <td rowspan="2">
+                {{ monthlyWage.averageMonthlyWage | number: '1.2-2' }} <br />
+                <a id="seeCalculation" class="d-none view-link">See the calculation</a>
+              </td>
+              <td rowspan="2">{{ monthlyWage.benefitAmount | number: '1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="!isSaned">
+              <td rowspan="1">{{ 'BENEFITS.NEW' | translate }}</td>
+              <td rowspan="1">{{ monthlyWage.noOfNewLawMonths }}</td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr>
+              <td class="custom-table-header">{{ 'BENEFITS.TOTAL' | translate }}</td>
+              <td *ngIf="!isSaned">-</td>
+              <td>{{ benefitCalculationDetails?.totalContributionMonths }}</td>
+              <td>-</td>
+              <td>{{ averageMonthlyTotal | number: '1.2-2' }}</td>
+              <td>{{ totalBenefit | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!isSaned">
+        <div class="row mb-3"><div class="col-lg-12">Pension Calculation</div></div>
+        <gosi-card-dc type="secondary" class="mb-3">
+          <div class="row m-0 custom-font-pension align-items-center">
+            <div class="col-lg-2"><span>Pension Amount for a period</span></div>
+            <span> = </span>
+            <div class="col-lg-3 pr-0"><span>Average monthly contributory wage for the period</span></div>
+            <span> X ( </span>
+            <div class="col-lg-3 text-center">
+              <div class="border-bottom border-dark">Number of contribution months in old law</div>
+              <div>600</div>
+            </div>
+            <span>+</span>
+            <div class="col-lg-3 text-center">
+              <div class="border-bottom border-dark">Number of contribution months in new law</div>
+              <div>480</div>
+            </div>
+            <span> )</span>
+          </div>
+        </gosi-card-dc>
+        <div
+          class="row mb-4"
+          *ngFor="let monthlyWage of benefitCalculationDetails?.averageMonthlyWagePeriods; let i = index"
+        >
+          <div class="col-lg-12">
+            <span>Pension Amount for </span
+            ><span class="custom-underline">{{ monthlyWage.period | bilingualText }}</span
+            ><span> = {{ monthlyWage.averageMonthlyWage | number: '1.2-2' }} X (</span>
+            <span class="custom-relative border-bottom border-dark px-2">
+              <span>60</span>
+              <span class="custom-division">600</span>
+            </span>
+            <span> + </span>
+            <span class="custom-relative border-bottom border-dark px-2">
+              <span>12</span>
+              <span class="custom-division">480</span>
+            </span>
+            <span>)</span>
+            <span> = {{ monthlyWage.benefitAmount | number: '1.2-2' }} SAR </span>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-lg-12">
+            Contributor Component Pension Amount =
+            <span
+              *ngFor="
+                let monthlyWage of benefitCalculationDetails?.averageMonthlyWagePeriods;
+                let i = index;
+                let last = last
+              "
+              >{{ monthlyWage.benefitAmount | number: '1.2-2' }} <span *ngIf="!last">+</span></span
+            >
+            = {{ totalBenefit | number: '1.2-2' }} SAR
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-lg-12">
+            <span class="custom-underline">Dependent Component</span>
+            <span> Pension Amount = 15% of Pension Amount = {{ pensionAmount | number: '1.2-2' }} SAR</span>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-lg-12">Total Pension Amount = {{ totalPensionAmount | number: '1.2-2' }} SAR / Month</div>
+        </div>
+        <div class="row mb-4 border-bottom border-dark mx-1"><div class="col-lg-12"></div></div>
+        <div class="row mb-3">
+          <div class="col-lg-12">Net Average Monthly Contributory Wage</div>
+        </div>
+        <div class="row mb-3 custom-font-pension">
+          <div class="col-lg-12">
+            <gosi-card-dc type="secondary">
+              <div class="row mx-0 align-items-center">
+                <div class="col-lg-2 px-0">Net Average Monthly Contributory Wage</div>
+                <div class="col-auto pl-0 pr-4">=</div>
+                <div class="col-lg-9 pr-0">
+                  <div class="row justify-content-center border-bottom border-dark">
+                    Sum of pension amounts of all periods
+                  </div>
+                  <div class="row align-items-center">
+                    <div class="col-lg-5 px-0">
+                      <div class="row justify-content-center border-bottom border-dark">
+                        Total number of contribution months in old law
+                      </div>
+                      <div class="row justify-content-center">600</div>
+                    </div>
+                    <div class="col-lg-1">X</div>
+                    <div class="col-lg-5 px-0">
+                      <div class="row justify-content-center border-bottom border-dark">
+                        Total number of contribution months in new law
+                      </div>
+                      <div class="row justify-content-center">480</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-lg-4 custom-wrap">Net Average Monthly Contributory Wage =</div>
+          <div class="col-lg-3">
+            <div class="row">
+              <div class="col-lg-12 border-bottom border-dark">
+                <span
+                  *ngFor="
+                    let monthlyWage of benefitCalculationDetails?.averageMonthlyWagePeriods;
+                    let i = index;
+                    let last = last
+                  "
+                  >{{ monthlyWage.benefitAmount | number: '1.2-2' }} <span *ngIf="!last">+</span>
+                </span>
+              </div>
+              <div class="col-lg-12">
+                <span>(</span>
+                <span class="custom-relative border-bottom border-dark px-2">
+                  <span>75</span>
+                  <span class="custom-division">600</span>
+                </span>
+                <span> + </span>
+                <span class="custom-relative border-bottom border-dark px-2">
+                  <span>27</span>
+                  <span class="custom-division">480</span>
+                </span>
+                <span>)</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-auto">= 3200 SAR</div>
+        </div>
+      </div>
+      <div *ngIf="isSaned">
+        <div class="row mb-3">
+          <div class="col-lg-12 heading">{{ 'BENEFITS.AVERAGE-WAGE' | translate }}</div>
+        </div>
+        <gosi-card-dc type="secondary" class="mb-3">
+          <div class="row m-0 custom-font-pension align-items-center">
+            <div class="col-lg-2">
+              <span> {{ 'BENEFITS.AVERAGE-WAGE' | translate }}</span>
+            </div>
+            <span> = </span>
+            <div class="col-lg-6 text-center">
+              <div class="border-bottom border-dark">{{ 'BENEFITS.SUM-MCW' | translate }}</div>
+              <div class="quotient">{{ 'BENEFITS.TOTAL-CM' | translate }}</div>
+              <span>(</span>
+              <div class="border-bottom border-dark bottom-line1"></div>
+              <span>)</span>
+              <div class="bottom-line1">480</div>
+            </div>
+          </div>
+        </gosi-card-dc>
+        <div class="row m-0 custom-font-pension align-items-center">
+          <div class="col-lg-2">
+            <span>{{ 'BENEFITS.AVERAGE-WAGE' | translate }}</span>
+          </div>
+          <span> = </span>
+          <div class="col-lg-6 text-center">
+            <div class="border-bottom border-dark align-items-center mt-3">3,510 + 1,250</div>
+            <div class="quotient">27</div>
+            <span>(</span>
+            <div class="border-bottom border-dark bottom-line"></div>
+            <span>)</span>
+            <div>480</div>
+          </div>
+          <span> = </span>
+          <div class="col-lg-2">3,200 SAR</div>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-lg-12">
+          <a id="learnBenefitCalculation" class="view-link">{{ 'BENEFITS.LEARN-MORE-ABOUT-CALC' | translate }}</a>
+        </div>
+      </div>
+    </div>
+    <bnt-recalculation-contributory-wage-dc *ngIf="!isSaned && selected == 1"></bnt-recalculation-contributory-wage-dc>
+  </div>
+</div>

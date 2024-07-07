@@ -1,0 +1,110 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="form-group fc-margin" [ngClass]="[ignoreLabel ? 'no-label' : '', validateField() ? 'is-invalid' : '']">
+  <label *ngIf="!ignoreLabel" for="{{ id }}"
+    >{{ label | translate }}
+    <span class="optional-field" *ngIf="!isRequired()">({{ 'THEME.OPTIONAL' | translate }})</span>
+  </label>
+
+  <div class="input-group" *ngIf="selectedCountry">
+    <div
+      class="input-group-prepend"
+      [insideClick]="true"
+      (isOpenChange)="onCountryListFocus()"
+      #dropdown="bs-dropdown"
+      dropdown
+    >
+      <button
+        id="btn-{{ id }}"
+        class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+        dropdownToggle
+        type="button"
+        [ngClass]="[defaultOnly || disabled ? 'disabled' : '']"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span class="flag-icon fi fi-{{ selectedCountry.iso2 }}"></span>
+        <span class="flag-label px-1">{{ selectedCountry.iso2.toUpperCase() }}</span>
+        <fa-icon
+          *ngIf="!defaultOnly"
+          (mousedown)="dropdown.isOpen = !dropdown.isOpen"
+          [icon]="['fas', dropdown.isOpen ? 'caret-up' : 'caret-down']"
+        ></fa-icon>
+      </button>
+      <ng-container>
+        <ul *dropdownMenu class="dropdown-menu w-100 py-0 mt-0" role="menu" aria-labelledby="button-triggers-manual">
+          <input
+            type="text"
+            [formControl]="searchControl"
+            (input)="onSearch($event)"
+            class="search-input"
+            placeholder="{{ 'THEME.SEARCH-COUNTRY' | translate }}"
+            autocomplete="off"
+          />
+          <li role="menuitem" *ngIf="currentCountryList.length === 0" class="list-item">
+            <span class="dropdown-item no-items">
+              {{ 'THEME.NO-ITEMS-FOUND' | translate }}
+            </span>
+          </li>
+          <div class="country-list">
+            <li
+              role="menuitem"
+              class="list-item"
+              [ngClass]="[isPreferredList(country) ? 'preferred-list' : '']"
+              *ngFor="let country of currentCountryList"
+              (click)="dropdown.hide()"
+            >
+              <a class="dropdown-item" (click)="selectCountry(country)">
+                <span class="flag-list-icon fi fi-{{ country.iso2 }}"></span>
+                <span class="icon-text">{{ country.name | bilingualText }} </span
+                ><span *ngIf="selectedLanguage == 'en'" class="dial-code">+</span
+                ><span class="dial-code">{{ country.dialCode }}</span
+                ><span *ngIf="selectedLanguage == 'ar'" class="dial-code">+</span>
+              </a>
+            </li>
+          </div>
+        </ul>
+      </ng-container>
+    </div>
+    <span
+      class="prefix d-flex align-items-center text-center"
+      [ngClass]="[
+        validateField() ? 'is-invalid' : '',
+        disabled ? 'disabled' : '',
+        readOnly ? 'disabled' : '',
+        hasValue ? 'has-value' : ''
+      ]"
+    >
+      (+{{ selectedCountry.dialCode }})
+    </span>
+
+    <input
+      [formControl]="control"
+      class="number"
+      [ngClass]="[
+        validateField() ? 'is-invalid' : '',
+        disabled ? 'disabled' : '',
+        readOnly ? 'disabled' : '',
+        hasValue ? 'has-value' : ''
+      ]"
+      type="text"
+      placeholder="{{ selectedCountry.placeholder }}"
+      [readonly]="readOnly"
+      (blur)="onBlur($event)"
+      (keyup)="onKeyUp($event)"
+      id="{{ id }}"
+      mask="{{ selectedCountry.placeholder }}"
+      autocomplete="off"
+    />
+  </div>
+  <div class="invalid-feedback" id="{{ id }}-feedback" *ngIf="validationError">
+    {{ validationError.error | translate: validationError }}
+  </div>
+
+  <small class="form-text text-muted" *ngIf="helpText">
+    {{ helpText }}
+  </small>
+</div>

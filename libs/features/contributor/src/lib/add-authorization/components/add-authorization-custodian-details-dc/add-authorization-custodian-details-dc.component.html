@@ -1,0 +1,155 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZED-CUSTODIAN-DETAILS' | translate"
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <cnt-contributor-info-dc
+    *ngIf="person"
+    [personDetails]="person"
+    [personNameLabel]="
+      isAttorney ? 'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-NAME' : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODIAN-NAME'
+    "
+  >
+  </cnt-contributor-info-dc>
+  <div class="float-left btn-section" *ngIf="!isEditMode">
+    <gosi-button-dc id="reset" (submit)="resetForm()" type="secondary"
+      >{{ 'CONTRIBUTOR.RESET' | translate }}
+    </gosi-button-dc>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc
+  *ngIf="authDetails"
+  type="secondary"
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.INFO' | translate"
+  [noHeadingMargin]="false"
+>
+  <div class="row">
+    <div class="col" id="authNumber">
+      <gosi-label-dc
+        id="authNumber"
+        [control]="authNumber"
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY-NUMBER' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col" id="authSource">
+      <gosi-label-dc
+        id="authSource"
+        [control]="authSource | bilingualText"
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.SOURCE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col" id="authIssueDate">
+      <gosi-label-dc
+        id="authIssueDate"
+        [control]="authIssueDate.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.ISSUE-DATE' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col-md-auto">
+      <label>
+        {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.TEXT' | translate }}
+      </label>
+      <div class="row custody-text-frame">
+        <iframe #custodyTextIframe width="800" height="500" src="about:blank"></iframe>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.DETAILS' | translate"
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <div class="desktop-view-table" *ngIf="authDetails">
+    <gosi-table-dc>
+      <ng-container modalContent>
+        <table class="table" aria-describedby="title">
+          <!-- table-condensed -->
+          <thead>
+            <tr>
+              <th id="name">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.NAME' | translate }}
+              </th>
+              <th id="nId">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.ID' | translate }}
+              </th>
+              <th id="dateOfBirth">
+                {{ 'CONTRIBUTOR.DATE-OF-BIRTH' | translate }}
+              </th>
+              <th id="gender">
+                {{ 'CONTRIBUTOR.GENDER' | translate }}
+              </th>
+              <th id="minorType">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.TYPE' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of authList; let i = index">
+              <td *ngIf="!isEditMode">
+                {{ minorsNames[i] | bilingualText }}
+              </td>
+              <td *ngIf="isEditMode">
+                {{ item.fullName }}
+              </td>
+              <td>
+                {{ item.id }}
+              </td>
+              <td>
+                {{ calculatePersonAge(item) }}
+              </td>
+              <td>
+                {{ item.sex | bilingualText }}
+              </td>
+              <td id="minorTypeListHeader">
+                <gosi-input-select-dc
+                  id="minorTypeList"
+                  *ngIf="minorsType.at(i)"
+                  [control]="minorsType.at(i)"
+                  [list]="minorTypeList[i]"
+                  (select)="selectMinorType($event, i)"
+                >
+                </gosi-input-select-dc>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </gosi-table-dc>
+  </div>
+</gosi-card-dc>
+
+<div class="row form-action">
+  <div class="col-lg-12" modalAction>
+    <div class="float-right btn-separator">
+      <gosi-button-dc type="primary" (submit)="saveCustodyDetails()">
+        {{ 'CONTRIBUTOR.SAVE-AND-NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-left btn-margins">
+      <gosi-button-dc type="secondary" (submit)="popUp(cancelTemplate)">
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="float-right btn-separator">
+      <gosi-button-dc id="backBtn" type="secondary" (submit)="goToPreviousSection()">
+        {{ 'CONTRIBUTOR.PRE-SECTION' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

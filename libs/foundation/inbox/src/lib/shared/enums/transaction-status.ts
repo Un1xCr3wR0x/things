@@ -1,0 +1,7 @@
+export enum TransactionStatus {
+  COMPLETED = 'COMPLETED',
+  ASSIGNED = 'ASSIGNED',
+  WITHDRAWN = 'WITHDRAWN',
+  REASSIGNED = 'REASSIGNED',
+  RETURNED = 'RETURNED'
+}

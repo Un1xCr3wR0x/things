@@ -1,0 +1,73 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="row heading-section">
+      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.MODIFY-ALLOWANCE-PAYEE' | translate }}
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="card" [formGroup]="payeeListForm">
+    <div class="card-body">
+      <gosi-alert-dc
+        *ngIf="payeeListForm.get('payeeType').get('english').value === 'Contributor' && !complicationId"
+        [message]="'OCCUPATIONAL-HAZARD.INJURY.PAYEE-INFO' | translate"
+        [dismissible]="false"
+        type="warning"
+      ></gosi-alert-dc>
+      <gosi-input-radio-dc
+        id="payeeType"
+        name="payeeType"
+        class="payeeType"
+        [control]="payeeListForm.get('payeeType')"
+        [list]="payeeList"
+        (select)="selectedpayeeList($event)"
+        [disabled]="disabled"
+        [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+  <!--Document Section-->
+  <div class="row" *ngIf="isAppPrivate">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" [heading]="'OCCUPATIONAL-HAZARD.UPLOAD-DOCUMENT' | translate">
+        <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info"> </gosi-alert-dc>
+        <ng-container *ngIf="documents.length > 0">
+          <ng-container *ngFor="let item of documents; let i = index">
+            <gosi-input-file-sc
+              [uuid]="uuid"
+              [index]="i"
+              [document]="item"
+              [businessKey]="injuryId"
+              [transactionId]="payeeTransactionId"
+              (refresh)="refreshDocument($event)"
+              [isScan]="true"
+            ></gosi-input-file-sc>
+          </ng-container>
+        </ng-container>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="btn-section float-right">
+        <gosi-button-dc (submit)="saveAllowancePayee()" id="saveAndNext" type="primary">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelInjury>
+  <gosi-confirm-modal-dc
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

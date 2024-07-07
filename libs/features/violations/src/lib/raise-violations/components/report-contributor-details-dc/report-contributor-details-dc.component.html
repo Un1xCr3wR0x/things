@@ -1,0 +1,145 @@
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc heading="{{ 'VIOLATIONS.CONTRIBUTOR-DETAILS' | translate }}" type="secondary">
+      <div class="row" *ngIf="violationData.contributorDetails.length > 0; else noContributors">
+        <!--not this model need a new one and should be after response-->
+        <div class="col">
+          <!-- contributors listing section -->
+          <accordion
+            class="accordion-style"
+            id="addedContributorsAccordion"
+            *ngFor="let contributor of violationData?.contributorDetails; let i = index"
+          >
+            <accordion-group
+              id="{{ 'addedContributorsAccordionGroup' + i }}"
+              class="accordion-group-class"
+              [isDisabled]="!contributor?.enableEdit"
+              [isOpen]="accordionPanel === i + 1"
+              (isOpenChange)="selectPanel($event, i + 1)"
+            >
+              <div accordion-heading>
+                <span class="name-value">
+                  {{
+                    contributor?.contributorName?.english === null ||
+                    contributor?.contributorName?.english.trim() === ''
+                      ? contributor?.contributorName?.arabic
+                      : (contributor?.contributorName | bilingualText)
+                  }}
+                </span>
+                <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinValue">
+                  <div *ngFor="let identifier of contributor?.identity">
+                    <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinValue">
+                      <div *ngIf="identifier?.idType === 'NIN'">
+                        <div class="identity-value">
+                          {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'IQAMA'">
+                        <div class="identity-value">
+                          {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'GCCID'">
+                        <div class="identity-value">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}</div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </ng-container>
+                <ng-template #isSinValue>
+                  <div class="identity-value">
+                    {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                  </div>
+                </ng-template>
+              </div>
+              <div accordion-heading class="symbol-adjust">
+                <span accordion-heading accordion-button *ngIf="!isContributorEdit">
+                  <ng-container>
+                    <span class="ml-2 mr-0">
+                      <div class="btn" (click)="editAddedContributor(i)">
+                        <fa-icon icon="pencil-alt" size="md"></fa-icon>
+                      </div>
+                    </span>
+                  </ng-container>
+                  <ng-container>
+                    <span class="ml-1 mr-3">
+                      <div class="btn" (click)="deleteAddedContributor(i)">
+                        <fa-icon icon="trash-alt" size="md"></fa-icon>
+                      </div>
+                    </span>
+                  </ng-container>
+                </span>
+              </div>
+              <!-- body -->
+              <div class="row" *ngIf="isContributorEdit">
+                <div class="col">
+                  <vol-add-contributor-dc
+                    [violationYesOrNoList]="violationYesOrNoList"
+                    id="{{ 'editAdded' + i }}"
+                    [contributorSummaryDetails]="addedContributorDetail"
+                    [engagementsInfo]="engInfo"
+                    [wrongBenefitsType]="wrongBenefitsType"
+                    [isVerified]="true"
+                    [raiseViolationData]="raiseViolationData"
+                    [violationType]="violationType"
+                    (saveEngagement)="saveEngagement()"
+                    (saveContributor)="saveContributor.emit()"
+                    (cancelCurrentContributor)="cancelCurrentContributor.emit()"
+                    [isContributorEdit]="isContributorEdit"
+                    (cancelCurrentContributorEdit)="cancelCurrentContributorEdit($event)"
+                    [removeNewlyAdedEng]="removeNewlyAdedEng"
+                    [establishmentDetails]="establishmentDetails"
+                    [hasProactiveEng]="hasProactiveEng"
+                  >
+                  </vol-add-contributor-dc>
+                </div>
+              </div>
+            </accordion-group>
+          </accordion>
+        </div>
+      </div>
+      <div class="row">
+        <div class="add-contributor col-lg-12 col-md-12 col-sm-12">
+          <!-- add contributor button -->
+          <gosi-button-dc
+            *ngIf="!hideContributor && !isContributorEdit"
+            id="add-contributor"
+            (click)="addContributorBtn.emit()"
+            size="md"
+            [outlineOnly]="true"
+          >
+            <fa-icon class="pl-2 pr-2" icon="plus"></fa-icon>{{ 'VIOLATIONS.ADD-CONTRIBUTOR' | translate }}
+          </gosi-button-dc>
+          <!-- add contributor section -->
+          <vol-add-contributor-dc
+            *ngIf="hideContributor"
+            id="{{ 'addcontributor' }}"
+            [violationYesOrNoList]="violationYesOrNoList"
+            [wrongBenefitsType]="wrongBenefitsType"
+            [contributorSummaryDetails]="contributorSummaryDetails"
+            [engagementsInfo]="engagementsInfo"
+            [isVerified]="isVerified"
+            [raiseViolationData]="raiseViolationData"
+            [violationType]="violationType"
+            (verify)="verify.emit($event)"
+            (resetPerson)="resetPerson.emit()"
+            (saveEngagement)="saveEngagement()"
+            (saveContributor)="saveContributor.emit()"
+            (cancelCurrentContributor)="cancelCurrentContributor.emit()"
+            [removeNewlyAdedEng]="removeNewlyAdedEng"
+            [establishmentDetails]="establishmentDetails"
+            [makeAddContributorRed]="makeAddContributorRed"
+            [hasProactiveEng]="hasProactiveEng"
+          >
+          </vol-add-contributor-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+
+<!-- templates -->
+<ng-template #noContributors>
+  <div class="col-md-12 no-contributors">
+    {{ 'VIOLATIONS.NO-CONTRIBUTORS' | translate }}
+  </div>
+</ng-template>

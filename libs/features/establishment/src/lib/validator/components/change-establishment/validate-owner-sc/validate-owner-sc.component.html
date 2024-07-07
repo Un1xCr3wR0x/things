@@ -1,0 +1,142 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.MODIFY-EST-OWNERS' | translate"> </frm-main-heading-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc [establishment]="establishment"> </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn"
+          [heading]="'ESTABLISHMENT.EST-OWNERS-DETAILS-AFTER-CHANGES' | translate"
+          (onEdit)="navigateToEditOwnerDetails(0)"
+        ></frm-content-heading-dc>
+        <!-- Removed or Edit Owners  -->
+        <div class="row no-gutters legend-container" *ngIf="showModifiedLegend">
+          <div class="col-md-12 legend-wrapper">
+            <div class="legend">
+              {{ 'ESTABLISHMENT.MODIFIED-BY' | translate }} {{ 'ESTABLISHMENT.ADMIN' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="row" *ngIf="modifiedOwners.length > 0">
+          <div class="col-md-12">
+            <est-owner-list-dc
+              [showModified]="showModifiedLegend"
+              [owners]="modifiedOwners"
+              [currentOwners]="currentOwnerList"
+            ></est-owner-list-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="newOwners.length > 0">
+          <div class="col-md-12">
+            <h6 class="card-heading">
+              {{ 'ESTABLISHMENT.NEW-OWNER-DETAILS' | translate }}
+            </h6>
+          </div>
+        </div>
+        <!-- Added Owners -->
+        <div class="row">
+          <div class="col-md-12" *ngIf="newOwners.length > 0">
+            <accordion class="owner-accordion">
+              <ng-container *ngFor="let owner of newOwners; let i = index">
+                <accordion-group class="wrapper-accordion-group">
+                  <div accordion-heading class="float-left font-weight-bold">
+                    <est-owner-name-dc [owner]="owner" [ownerIndex]="i"> </est-owner-name-dc>
+                  </div>
+                  <div class="header-wrapper ml-auto" accordion-heading>
+                    <span class="arrow-up">
+                      <fa-icon class="icon-wrapper-angle" icon="angle-up" size="2x"></fa-icon>
+                    </span>
+                    <span class="arrow-down" accordion-heading>
+                      <fa-icon class="icon-wrapper-angle" icon="angle-down" size="2x"></fa-icon>
+                    </span>
+                  </div>
+                  <est-owner-details-dc
+                    [showDate]="true"
+                    [person]="owner.person"
+                    [startDate]="owner.startDate"
+                    [endDate]="owner.endDate"
+                    [showHeading]="false"
+                    [isGcc]="isGcc"
+                  >
+                  </est-owner-details-dc>
+                </accordion-group>
+              </ng-container>
+            </accordion>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(OwnerDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(OwnerDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(OwnerDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="OwnerDetailsValidatorForm"
+    heading="ESTABLISHMENT.REJECT.CHG-MOD-OWNER"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(OwnerDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="OwnerDetailsValidatorForm"
+    heading="ESTABLISHMENT.RETURN.CHG-MOD-OWNER"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(OwnerDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="OwnerDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(OwnerDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

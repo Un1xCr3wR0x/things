@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc [isHeading]="false">
+  <div class="card-heading">
+    <span class="heading">{{ 'DASHBOARD.TRANSACTION-IN-WORKFLOW' | translate }}</span>
+    <a (click)="navigateTo()" class="view-detail float-right">{{ 'DASHBOARD.VIEW-ALL-TRANSACTIONS' | translate }}</a>
+  </div>
+  <ng-container *ngIf="transactionDetails?.length !== 0; else noResults">
+    <div class="col-md-12 mobile-view">
+      <dsb-search-card-dc [isWorkflow]="true" [transactionDetails]="transactionDetails"> </dsb-search-card-dc>
+    </div>
+
+    <div class="table-responsive desktop-view">
+      <div class="row">
+        <div class="col-lg-12 table-transaction">
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>
+                  {{ 'DASHBOARD.DESCRIPTION' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'DASHBOARD.DATE' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'DASHBOARD.TRANSACTION' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'DASHBOARD.STATUS' | translate | uppercase }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="data-row"
+                *ngFor="
+                  let item of transactionDetails
+                    | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalRecords };
+                  let i = index
+                "
+              >
+                <td>
+                  <div class="description-title">
+                    {{ item.title | bilingualText }}
+                  </div>
+                  <div class="description-content" dir="ltr">
+                    {{ item.description | bilingualText }}
+                  </div>
+                </td>
+                <td>
+                  <div class="date">{{ item.lastActionedDate?.gregorian | gosiDate }}</div>
+                </td>
+                <td>
+                  <div class="txn-id">
+                    {{ item.transactionRefNo }}
+                  </div>
+                </td>
+                <td>
+                  <div class="task-status">{{ item.status | bilingualText }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="totalRecords > itemsPerPage"
+      [totalSize]="totalRecords"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+    >
+    </gosi-pagination-dc>
+  </ng-container>
+</gosi-card-dc>
+<ng-template #noResults>
+  <div class="no-result">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+</ng-template>

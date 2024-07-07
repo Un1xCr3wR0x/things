@@ -1,0 +1,277 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row no-gutters">
+  <div class="col-lg-12">
+    <div class="d-flex flex-row justify-content-between pb-2 py-2">
+      <div class="col-lg-6 px-1">
+        <span *ngIf="isHeir" class="heading">{{ 'BENEFITS.HEIR-BENEFIT-HISTORY' | translate }}</span>
+        <span *ngIf="!isHeir" class="heading">{{ 'BENEFITS.DEPENDENT-HISTORY' | translate }}</span>
+      </div>
+      <div class="col-lg-6 px-1 d-inline-flex justify-content-end">
+        <bnt-dependent-history-filter-dc
+          (dependentFilterEvent)="filterDependentHistory($event)"
+          [dependentDetails]="dependentDetails"
+          [dependentEventsList]="dependentEventsList"
+          [dependentHistory]="dependentHistory"
+          [isHeir]="isHeir"
+        ></bnt-dependent-history-filter-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="dependentHistory && dependentHistory.length > 0" class="row pl-2">
+  <div *ngFor="let dependentItem of dependentHistory; let i = index" class="col-md-12">
+    <bnt-timeline-dc *ngIf="dependentItem" [isFirstItem]="i === 0">
+      <div *ngIf="dependentItem?.dateFrom" class="row" timeline-date>
+        <div class="col-md-12 flag-timeline">
+          <span class="flag-date">{{ dependentItem?.dateFrom | dateType }}</span>
+          <ng-container *ngIf="lumpsumCheck(dependentItem?.dateTo)">
+            <span class="pr-1 pl-2 arrow-icons">
+              <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+              <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+            </span>
+            <span *ngIf="dependentItem?.dateTo; else onwards" class="pl-1 flag-date">
+              {{ dependentItem?.dateTo | dateType }}
+            </span>
+            <ng-template #onwards>
+              <span class="flag-endDate"> {{ 'BENEFITS.ONWARDS' | translate }}</span>
+            </ng-template>
+          </ng-container>
+          <ng-container *ngIf="showAmountAndMonth && !isHeir">
+            <span class="pl-3">
+              <span class="pr-3">|</span>
+              {{ 'BENEFITS.TOTAL-DEPENDENT-AMOUNT' | translate }}
+              :</span
+            >
+            <span class="pl-1 amount-month">
+              {{ 'BENEFITS.AMOUNT-MONTHS' | translate: { amount: dependentItem?.dependentAmount | number } }}</span
+            >
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="!dependentItem?.dateFrom && dependentItem?.statusDate" class="row" timeline-date>
+        <div class="col-md-12 flag-timeline">
+          <span>{{ dependentItem?.statusDate | dateType }}</span>
+        </div>
+      </div>
+      <!-- statusDate to be shown in timeline, not changeDate....changeDate to be shown inside white card -->
+      <!-- <div *ngIf="!dependentItem?.dateFrom && dependentItem?.dependentDetails?.changeDate" class="row" timeline-date>
+        <div class="col-md-12 flag-timeline">
+          <span>{{ dependentItem?.dependentDetails?.changeDate | dateType }}</span>
+        </div>
+      </div> -->
+      <div
+        *ngIf="
+          dependentItem && dependentItem?.dependentsDetails && !dependentItem?.dependentDetails?.dependentEventType
+        "
+        class="row"
+        timeline-content
+      >
+        <div *ngFor="let item of dependentItem?.dependentsDetails; let i = index" class="col-md-12">
+          <gosi-card-dc [lessPadding]="true" class="secondary-Item" type="secondary">
+            <div class="card-display justify-content-between">
+              <div class="section">
+                <span class="dependents-type" *ngIf="item?.name?.english && item?.name?.arabic; else AnyName">{{
+                  item?.name | bilingualText
+                }}</span>
+                <ng-template #AnyName>{{ item?.name?.english || item?.name?.arabic }}</ng-template>
+                <span class="relation"> ({{ 'BENEFITS.RELATION' | translate }}</span>
+                <span class="relation-type"> : {{ item?.relation | bilingualText }})</span>
+                &nbsp;<span *ngIf="item?.isOrphan" class="orphan-status">{{ 'BENEFITS.ORPHAN' | translate }}</span>
+                <div *ngIf="item" class="d-block mt-2">
+                  <span class="relation"> {{ getIdentityLabel(item?.dependentIdentifier) | translate }} :</span>
+                  <span class="relation"> {{ item?.dependentIdentifier?.id }}</span>
+                </div>
+              </div>
+              <div *ngIf="!isHeir && item?.dependentStatus" class="section">
+                <gosi-label-dc
+                  [value]="item?.dependentStatus | bilingualText"
+                  id="dependent-history-status"
+                  label="{{ 'BENEFITS.DEPENDENT-STATUS' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div *ngIf="isHeir && item?.dependentStatus" class="section">
+                <gosi-label-dc
+                  [value]="item?.dependentStatus | bilingualText"
+                  id="heir-status"
+                  label="{{ 'BENEFITS.HEIR-STATUS' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div *ngIf="isHeir && item?.marriageGrantAmount" class="section">
+                <gosi-label-dc
+                  id="marriageGrantAmount"
+                  [value]="
+                    'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: item?.marriageGrantAmount | number: '1.0-2' }
+                  "
+                  label="{{ 'BENEFITS.MARRIAGE-GRANT-AMOUNT' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div *ngIf="isHeir && item?.deathGrantAmount" class="section">
+                <gosi-label-dc
+                  id="deathGrantAmount"
+                  [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: item?.deathGrantAmount | number: '1.0-2' }"
+                  label="{{ 'BENEFITS.DEATH-GRANT-AMOUNT' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div *ngIf="item?.isDisabilityPresent" class="section">
+                <a class="view-link" routerLinkActive="active" (click)="showDisabilityDetails(dependentItem, i)">
+                  <span>{{ 'BENEFITS.DISABILITY-DETAILS-LOWER' | translate }}</span>
+                </a>
+              </div>
+              <div *ngIf="isHeir" class="section">
+                <a class="view-link" routerLinkActive="active" (click)="showBenefitWageDetails(dependentItem, i)">
+                  <span
+                    *ngIf="
+                      item?.otherBenefitAndWage?.wageDetailsList?.length &&
+                      item?.otherBenefitAndWage?.benefitDetailsList?.length
+                    "
+                    >{{ 'BENEFITS.WAGE-DETAILS-AND-OTHER-BENEFITS' | translate }}</span
+                  >
+                  <span
+                    *ngIf="
+                      item?.otherBenefitAndWage?.wageDetailsList?.length &&
+                      !item?.otherBenefitAndWage?.benefitDetailsList?.length
+                    "
+                    >{{ 'BENEFITS.WAGE-DETAILS' | translate }}</span
+                  >
+                  <span
+                    *ngIf="
+                      !item?.otherBenefitAndWage?.wageDetailsList?.length &&
+                      item?.otherBenefitAndWage?.benefitDetailsList?.length
+                    "
+                    >{{ 'BENEFITS.OTHER-BENEFITS-DETAILS' | translate }}</span
+                  >
+                </a>
+              </div>
+              <div *ngIf="isHeir && item?.amount" class="section">
+                <gosi-label-dc
+                  value="{{
+                    (isLumpsum ? 'BENEFITS.AVERAGE-AMOUNT' : 'BENEFITS.AMOUNT-MONTHS')
+                      | translate: { amount: item?.amount || 0 | number: '1.0-2' }
+                  }}"
+                  id="benefit-amount"
+                  label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div>&nbsp;</div>
+            </div>
+          </gosi-card-dc>
+        </div>
+      </div>
+      <div
+        *ngIf="dependentItem && dependentItem?.dependentDetails && dependentItem?.dependentDetails?.dependentEventType"
+        class="row"
+        timeline-content
+      >
+        <gosi-card-dc [lessPadding]="true" class="col-lg-11" type="primary">
+          <!-- Before marriagegrant card-col-8 first-col-6 sec-col-3 third-col-3 -->
+          <div class="card-display justify-content-between">
+            <div class="section">
+              <span
+                class="dependents-type"
+                *ngIf="
+                  dependentItem?.dependentDetails?.name?.english && dependentItem?.dependentDetails?.name?.arabic;
+                  else AnyDependentName
+                "
+                >{{ dependentItem?.dependentDetails?.name | bilingualText }}</span
+              >
+              <ng-template #AnyDependentName>{{
+                dependentItem?.dependentDetails?.name?.english || dependentItem?.dependentDetails?.name?.arabic
+              }}</ng-template>
+              <span class="relation"> ({{ 'BENEFITS.RELATION' | translate }}</span>
+              <span class="relation-type"> : {{ dependentItem?.dependentDetails?.relation | bilingualText }})</span>
+              <div class="d-block mt-2">
+                <div *ngIf="dependentItem?.dependentDetails?.eligibilityStarted" class="green-circle"></div>
+                <div *ngIf="dependentItem?.dependentDetails?.eligibilityStopped" class="orange-circle"></div>
+                <div *ngIf="dependentItem?.dependentDetails?.eligibilityStarted" class="ml-4">
+                  {{ 'BENEFITS.ELIGIBILITY-STARTED' | translate }}
+                </div>
+                <div *ngIf="dependentItem?.dependentDetails?.eligibilityStopped" class="ml-4">
+                  {{ 'BENEFITS.ELIGIBILITY-STOPPED' | translate }}
+                </div>
+              </div>
+            </div>
+            <div *ngIf="dependentItem?.dependentDetails?.changeDate?.gregorian" class="section">
+              <span>{{ 'BENEFITS.EVENT-RECEIVED-DATE' | translate }}</span>
+              <span class="dependents-type d-block mt-2">{{
+                dependentItem?.dependentDetails?.changeDate | dateType
+              }}</span>
+              <!--              <span-->
+              <!--                *ngIf="!checkHijiri(dependentItem?.dependentDetails?.changeDate?.gregorian)"-->
+              <!--                class="dependents-type d-block mt-2"-->
+              <!--              >{{ dependentItem?.dependentDetails?.changeDate?.gregorian | date: 'dd/MM/yyyy' }}</span-->
+              <!--              >-->
+              <!--              <span-->
+              <!--                *ngIf="checkHijiri(dependentItem?.dependentDetails?.changeDate?.gregorian)"-->
+              <!--                class="dependents-type d-block mt-2"-->
+              <!--              >{{ dependentItem?.dependentDetails?.changeDate?.hijiri | date: 'dd/MM/yyyy' }}</span-->
+              <!--              >-->
+            </div>
+            <div *ngIf="dependentItem?.dependentDetails?.dependentEventType" class="section">
+              <span>{{ 'BENEFITS.EVENT-TYPE' | translate }}</span>
+              <span class="dependents-type d-block mt-2">{{
+                dependentItem?.dependentDetails?.dependentEventType | bilingualText
+              }}</span>
+            </div>
+            <div *ngIf="dependentItem?.dependentDetails?.eventSource" class="d-flex align-items-center normal-card">
+              <!-- if no event source display manual else event source -->
+              <span class="event-source-card">
+                <span>
+                  <fa-icon
+                    *ngIf="!isIndividualApp"
+                    [ngClass]="
+                      dependentItem?.dependentDetails?.eventSource?.english === BenefitEventSource.MANUAL ||
+                      !dependentItem?.dependentDetails?.eventSource?.english
+                        ? 'red-circle'
+                        : 'green'
+                    "
+                    [icon]="
+                      dependentItem?.dependentDetails?.eventSource?.english === BenefitEventSource.MANUAL ||
+                      !dependentItem?.dependentDetails?.eventSource?.english
+                        ? 'exclamation-circle'
+                        : 'check-circle'
+                    "
+                    size="md"
+                  ></fa-icon>
+                  <fa-icon
+                    *ngIf="
+                      isIndividualApp &&
+                      dependentItem?.dependentDetails?.eventSource &&
+                      dependentItem?.dependentDetails?.eventSource?.english !== BenefitEventSource.MANUAL
+                    "
+                    [ngClass]="!dependentItem?.dependentDetails?.eventSource?.english ? 'red-circle' : 'green'"
+                    [icon]="
+                      !dependentItem?.dependentDetails?.eventSource?.english ? 'exclamation-circle' : 'check-circle'
+                    "
+                    size="md"
+                  ></fa-icon> </span
+                ><ng-container *ngIf="!isIndividualApp"
+                  ><span
+                    *ngIf="dependentItem?.dependentDetails?.eventSource; else manualEventSource"
+                    class="pl-2 pr-3"
+                    >{{ dependentItem?.dependentDetails?.eventSource | bilingualText }}</span
+                  ></ng-container
+                >
+                <ng-container
+                  *ngIf="
+                    isIndividualApp &&
+                    dependentItem?.dependentDetails?.eventSource &&
+                    dependentItem?.dependentDetails?.eventSource?.english !== BenefitEventSource.MANUAL
+                  "
+                  ><span *ngIf="dependentItem?.dependentDetails?.eventSource" class="pl-2 pr-3">{{
+                    dependentItem?.dependentDetails?.eventSource | bilingualText
+                  }}</span></ng-container
+                >
+                <ng-template #manualEventSource>
+                  <span class="pl-2 pr-3">{{ 'BENEFITS.MANUAL' | translate }}</span>
+                </ng-template>
+              </span>
+            </div>
+            <div>&nbsp;</div>
+          </div>
+        </gosi-card-dc>
+      </div>
+    </bnt-timeline-dc>
+  </div>
+</div>

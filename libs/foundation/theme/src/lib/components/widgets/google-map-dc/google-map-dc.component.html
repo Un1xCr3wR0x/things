@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- showing map for the selected location  -->
+<div class="dropdown-block" [formGroup]="placeForm">
+  <div class="row">
+    <!-- showing the list of country -->
+
+    <div class="col-lg-6" *ngIf="showCountry">
+      <gosi-input-select-dc
+        name="country"
+        [label]="'THEME.COUNTRY' | translate"
+        id="countryInWhichInjuryOccured"
+        [list]="countryList"
+        [placeholder]="'THEME.COUNTRY' | translate"
+        [control]="placeForm.get('country')"
+        (select)="selectCountry()"
+      >
+      </gosi-input-select-dc>
+    </div>
+
+    <!-- showing the list of city -->
+
+    <div class="col-lg-6" *ngIf="showCity">
+      <gosi-input-select-dc
+        name="city"
+        [label]="'THEME.CITY' | translate"
+        id="cityInWhichInjuryOccured"
+        [list]="cityList"
+        [placeholder]="'THEME.CITY' | translate"
+        [control]="placeForm.get('city')"
+        (selectLov)="selectCity($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+
+    <!-- showing the list of city district -->
+
+    <div class="col-lg-6" *ngIf="showCityDistrict">
+      <gosi-input-select-dc
+        id="districtInWhichInjuryOccured"
+        [label]="'OCCUPATIONAL-HAZARD.CITY-DISTRICT' | translate"
+        [control]="placeForm.get('cityDistrict')"
+        [disabled]="readOnlyAll"
+        [list]="cityDistrictList"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+</div>
+
+<!--Validation for the map-->
+
+<div class="map-area" [ngClass]="[validateMapArea() ? 'is-invalid' : '']" *ngIf="showMap">
+  <google-map
+    (centerChange)="onChoseLocation($event)"
+    *ngIf="showMap"
+    [center]="center"
+    [zoom]="zoom"
+    [options]="mapOptions"
+    (mapClick)="onChoseLocation($event)"
+    [control]="placeForm.get('latitude')"
+  >
+    <map-marker
+      *ngIf="showMarker"
+      [position]="{ lat: latitude, lng: longitude }"
+      [options]="markerOptions"
+    ></map-marker>
+  </google-map>
+
+  <div class="coordinates">
+    <span class="label">{{ 'THEME.LOCATION-COORDINATES' | translate }}:</span
+    ><span class="values">{{ latitude }},{{ longitude }}</span>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+<!-- <div class=" desktop-view row mt-4 p-2  smile" style="border: 1px solid #EFEFEF;">
+    <ng-container *ngFor="let smile of smiles; let i=index ; let last = last">
+        <div class="col-lg-2 custom-smile"  [ngClass]="{'icon-border' :!last && i!==smiles.length - 1}">
+            <img [src]="selectedIndex===i ? smile.newUrl : smile.image" alt="{{smile.name}}"
+                (click)="imageClick(smile,i)">
+            <p class="mt-1 ml-1">{{smile.name |translate}}</p>
+        </div>
+    </ng-container>
+</div> -->
+<div class="desktop-view smile-container mt-4">
+  <ng-container *ngFor="let smile of smiles; let i = index; let last = last">
+    <div class="smile-image" [ngClass]="{ 'icon-border': !last && i !== smiles.length - 1 }">
+      <img
+        [src]="selectedIndex === i ? smile.newUrl : smile.image"
+        alt="{{ smile.name }}"
+        (click)="imageClick(smile, i)"
+      />
+      <p class="mt-1 ml-1 smile-color smile-text">{{ smile.name | translate }}</p>
+    </div>
+  </ng-container>
+</div>
+
+<div class="m-2 mobile-border">
+  <ng-container *ngFor="let smile of smiles; let i = index; let last = last">
+    <div class="mobile-view row mt-4 p-2 mt-2 smile-mobile">
+      <div class="col-2 smile-margin d-flex">
+        <img [src]="selectedIndex === i ? smile.newUrl : smile.image" (click)="imageClick(smile, i)" />
+        <span class="mt-3 ml-3 smile-color">{{ smile.name | translate }}</span>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<div class="mt-4 ml-4 question">
+  <div class="paddingbot" *ngFor="let ques of checkBoxList; let i = index">
+    <div class="spac">
+      {{ ques.question | bilingualText }}
+      <span class="optional-field" *ngIf="!ques.required">({{ 'THEME.OPTIONAL' | translate }})</span>
+    </div>
+
+    <div class="displayrow mt-3" *ngFor="let option of ques.options; let j = index">
+      <gosi-input-checkbox-dc
+        id="option?.optionId"
+        [label]="option?.options | bilingualText"
+        [control]="checkListValue.controls[i].get('checkBoxFlag')"
+        (select)="onChannelSelect($event, option.options, ques, j, i)"
+      >
+      </gosi-input-checkbox-dc>
+    </div>
+  </div>
+  <div *ngFor="let ques of radioButtonList; let i = index">
+    {{ ques.question | bilingualText }}
+    <span class="optional-field" *ngIf="!ques.required">({{ 'THEME.OPTIONAL' | translate }})</span>
+
+    <div class="mt-4">
+      <gosi-input-radio-dc
+        id="radio-{{ i }}"
+        [ignoreLabel]="true"
+        [list]="ques.valueList"
+        [control]="radioListValue.controls[i].get('radioFlag')"
+        (select)="getSelectedAnswer($event, ques)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+
+  <div class="paddtext" *ngFor="let ques of textBoxList; let i = index">
+    {{ ques.question | bilingualText }}
+
+    <gosi-input-text-area-dc
+      [maxLength]="100"
+      [rowSize]="2"
+      id="answer"
+      [control]="textListValue.controls[i].get('answer')"
+      (blur)="onInputBlur(ques, i)"
+    ></gosi-input-text-area-dc>
+  </div>
+
+  <div class="row mt-4 padding-custom custom-margin-comments">
+    <div class="col mt-4 question">
+      <gosi-input-text-area-dc
+        label="{{ 'CUSTOMER-SURVEY.SUGGESTIONS-COMMENTS' | translate }}"
+        [maxLength]="100"
+        [rowSize]="2"
+        [control]="comments"
+        [overridePlaceholder]="true"
+        [placeholder]="'CUSTOMER-SURVEY.SUGGESTIONS-FOR-IMPROVEMENT' | translate"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+  </div>
+  <div class="justify-content-start padding-custom custom-margin">
+    <gosi-button-dc
+      type="primary"
+      (submit)="submit()"
+      [disabled]="isSubmitDisable || radioListValue.invalid || textListValue.invalid || checkListValue.invalid"
+    >
+      {{ 'CUSTOMER-SURVEY.SUBMIT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>

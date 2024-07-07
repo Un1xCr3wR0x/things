@@ -1,0 +1,153 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content" style="padding-bottom: 80px">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="col-md-6 col-lg-6 float-left">
+      <h4 class="main-heading">
+        {{
+          canAdd
+            ? ('ESTABLISHMENT.ADD-RELATIONSHIP-MANAGER' | translate)
+            : ('ESTABLISHMENT.MODIFY-RELATIONSHIP-MANAGER' | translate)
+        }}
+      </h4>
+    </div>
+  </div>
+  <!-- Establishment Edit Form -->
+  <gosi-card-dc
+    type="secondary"
+    [heading]="
+      canAdd
+        ? ('ESTABLISHMENT.ADD-RELATIONSHIP-MANAGER' | translate)
+        : ('ESTABLISHMENT.MODIFY-RELATIONSHIP-MANAGER' | translate)
+    "
+  >
+    <gosi-alert-sc></gosi-alert-sc>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 col-lg-6">
+        <gosi-input-number-dc
+          id="employeeId"
+          [label]="'ESTABLISHMENT.EMPLOYEE-ID' | translate"
+          [control]="relationshipManagerForm.get('employeeId')"
+          [disabled]="isVerified"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-sm-12 col-md-6 col-lg-6">
+        <gosi-button-dc
+          *ngIf="!isVerified"
+          id="lookUpBtn"
+          class="btn-lookup"
+          type="primary"
+          (click)="verifyEmployeeId()"
+        >
+          {{ 'ESTABLISHMENT.SEARCH' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          *ngIf="isVerified"
+          id="lookUpBtn"
+          class="btn-lookup"
+          type="secondary"
+          (click)="resetEmployeeId()"
+        >
+          {{ 'ESTABLISHMENT.RESET' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="isVerified || (isrelationshipManager && !isReset)">
+      <gosi-label-dc
+        class="col-md-3"
+        id="employeeName"
+        [control]="isrelationshipManager && !isReset ? getManager?.employeeName : manager.longNameArabic"
+        label="{{ 'ESTABLISHMENT.EMPLOYEE-NAME' | translate }}"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-3"
+        id="employeeEmail"
+        [control]="isrelationshipManager && !isReset ? getManager?.emailId : (manager.email | lowercase)"
+        label="{{ 'ESTABLISHMENT.EMPLOYEE-EMAIL' | translate }}"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-3"
+        id="phoneNumber"
+        [control]="isrelationshipManager && !isReset ? TpnNumber : managerTpnNo"
+        label="{{ 'ESTABLISHMENT.PHONE-NUMBER' | translate }}"
+      >
+      </gosi-label-dc>
+
+      <div class="col-lg-6 col-md-6 col-sm-12">
+        <gosi-input-intnl-tel-dc
+          id="mobileNo"
+          [label]="'ESTABLISHMENT.MOBILE-NUMBER' | translate"
+          [control]="relationshipManagerMobileForm.get('mobileNo')"
+          [isdControl]="relationshipManagerMobileForm.get('isdCodePrimary')"
+          [isOptional]="true"
+          [defaultOnly]="true"
+        ></gosi-input-intnl-tel-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <div class="row footer-buttons" *ngIf="canAdd">
+    <div class="col-md-12">
+      <div class="float-right">
+        <gosi-button-dc
+          class="btn-save"
+          [disabled]="canAdd && !isVerified"
+          type="primary"
+          (submit)="submitTransaction()"
+        >
+          {{ 'ESTABLISHMENT.ADD' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="float-left">
+        <gosi-button-dc type="secondary" (click)="showModal(cancelTemplate)">
+          {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+  <div class="row footer-buttons" *ngIf="canModify">
+    <div class="col-lg-12">
+      <div class="btn-section float-right btn-margins">
+        <gosi-button-dc class="btn-save" type="primary" (submit)="submitTransaction()">
+          {{ 'ESTABLISHMENT.SAVE' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section float-left btn-margins">
+        <gosi-button-dc type="danger" (click)="removeTransaction(removeTemplate)">
+          {{ 'ESTABLISHMENT.REMOVE' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section float-right btn-margins">
+        <gosi-button-dc class="btn-cancel" type="secondary" (click)="showModal(cancelTemplate)">
+          {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #removeTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'ESTABLISHMENT.CONFIRM-DELETE-MANAGER' | translate"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="hideModal()"
+    iconName="warning"
+  ></gosi-confirm-modal-dc>
+</ng-template>

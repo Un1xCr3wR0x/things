@@ -1,0 +1,291 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <gosi-card-dc [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.ADD-AUTHORIZATION' | translate">
+    <gosi-alert-sc></gosi-alert-sc>
+    <cnt-contributor-info-dc
+      *ngIf="person && !isSourceMOJ && activeTab === 1"
+      [personDetails]="person"
+      [personNameLabel]="
+        isAttorney ? 'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-NAME' : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODIAN-NAME'
+      "
+    >
+    </cnt-contributor-info-dc>
+    <gosi-progress-wizard-dc
+      *ngIf="activeTab !== -1 && activeTab < totalTab"
+      [wizardItems]="wizardItems"
+      (clickWizard)="selectFormWizard($event)"
+      #progressWizardItems
+    ></gosi-progress-wizard-dc>
+    <div class="hide-tab">
+      <tabset class="pills">
+        <tab [active]="activeTab === 0">
+          <div>
+            <gosi-card-dc type="secondary" [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.ADD-AUTHORIZATION' | translate">
+              <div class="row justify-content-md-center">
+                <div class="col-sm-12 col-md-12 col-lg-6">
+                  <gosi-input-radio-dc
+                    id="authTypeRadio"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-TYPE' | translate"
+                    [control]="mojAuthForm.authType"
+                    (select)="selectedAuth()"
+                    [list]="authTypeList"
+                  >
+                  </gosi-input-radio-dc>
+                </div>
+                <div class="col-sm-12 col-md-12 col-lg-6">
+                  <gosi-input-radio-dc
+                    id="authorizationSourceRadio"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-SOURCE' | translate"
+                    [control]="mojAuthForm.authSource"
+                    (select)="selectedAuthSource()"
+                    [list]="authSourceList"
+                  >
+                  </gosi-input-radio-dc>
+                </div>
+              </div>
+              <div class="row justify-content-md-center">
+                <div class="col-sm-12 col-md-12 col-lg-6">
+                  <gosi-input-number-dc
+                    id="authNumberField"
+                    *ngIf="isAttorney && isSourceMOJ"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-NUMBER' | translate"
+                    [control]="mojAuthForm.authNumber"
+                    [maxLength]="MAX_LENGTH_ENUM.AUTHORIZATION"
+                  >
+                  </gosi-input-number-dc>
+
+                  <gosi-input-number-dc
+                    id="authNumberField"
+                    *ngIf="!isAttorney && isSourceMOJ"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY-NUMBER' | translate"
+                    [control]="mojAuthForm.authNumber"
+                    [maxLength]="MAX_LENGTH_ENUM.AUTHORIZATION"
+                  >
+                  </gosi-input-number-dc>
+                  <!-- Birthday Calendar -->
+                  <cnt-gosi-calendar-dc
+                    id="attorneyBirthDateCalendar"
+                    *ngIf="isAttorney && isSourceMOJ"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-BIRTH-DATE' | translate"
+                    [calendarForm]="mojAuthForm.birthDate"
+                  >
+                  </cnt-gosi-calendar-dc>
+                </div>
+                <div class="col-sm-12 col-md-12 col-lg-6">
+                  <gosi-input-number-dc
+                    id="attorneyIdField"
+                    *ngIf="isAttorney && isSourceMOJ"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-ID' | translate"
+                    [control]="mojAuthForm.id"
+                    [maxLength]="identifierLengthEnum.NIN"
+                  >
+                  </gosi-input-number-dc>
+                  <gosi-input-number-dc
+                    id="custodianIdField"
+                    *ngIf="!isAttorney && isSourceMOJ"
+                    [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODIAN-ID' | translate"
+                    [control]="mojAuthForm.id"
+                    [maxLength]="identifierLengthEnum.NIN"
+                  >
+                  </gosi-input-number-dc>
+                </div>
+              </div>
+              <cnt-person-details-input-dc
+                *ngIf="!isSourceMOJ"
+                [isAttorney]="isAttorney"
+                [enableRelationshipToMinors]="!isAttorney"
+                [personDetailsSmartForm]="personDetailsSmartForm"
+                [nationalityList]="nationalityList"
+                [heading]="
+                  isAttorney
+                    ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZED-ATTORNEY-DETAILS'
+                    : 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZED-CUSTODIAN-DETAILS'
+                "
+              >
+              </cnt-person-details-input-dc>
+              <div class="row form-action">
+                <div class="col-lg-12">
+                  <div class="float-right btn-section">
+                    <gosi-button-dc id="verifyBtn" type="primary" (submit)="verifyPerson()">
+                      {{ 'CONTRIBUTOR.VERIFY' | translate }}
+                    </gosi-button-dc>
+                  </div>
+                  <div class="float-left btn-section">
+                    <gosi-button-dc id="cancelBtn" type="secondary" (submit)="refresh()">
+                      {{ 'CONTRIBUTOR.CANCEL' | translate }}
+                    </gosi-button-dc>
+                  </div>
+                </div>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </tab>
+        <tab [active]="activeTab === 1" *ngIf="activeTab === 1">
+          <cnt-add-authorization-custodian-details-dc
+            #custodianDetalisComponent
+            *ngIf="custodyDetails && person && !isAttorney && isSourceMOJ"
+            [isEditMode]="isEditMode"
+            [isAttorney]="isAttorney"
+            [person]="person"
+            [authDetails]="custodyDetails"
+            [minorsNames]="minorsNames"
+            [minorsType]="minorsType"
+            (onNext)="setNextSection()"
+            (onPrevious)="isEditMode ? navigateBackToTransaction() : setPreviousSection()"
+            (onCancel)="refresh()"
+          >
+          </cnt-add-authorization-custodian-details-dc>
+          <cnt-add-authorization-attorney-details-dc
+            *ngIf="attorneyDetails && person && isAttorney && isSourceMOJ"
+            [isEditMode]="isEditMode"
+            [person]="person"
+            [attorneyDetails]="attorneyDetails"
+            [isAttorney]="isAttorney"
+            [authorizersBirthDate]="authorizersBirthDate"
+            [authPurposeForm]="authPurposeForm"
+            (onNext)="navigateToAddressSection()"
+            (onPrevious)="isEditMode ? navigateBackToTransaction() : setPreviousSection()"
+            (onCancel)="refresh()"
+          >
+          </cnt-add-authorization-attorney-details-dc>
+          <cnt-add-custom-authorization-details-dc
+            *ngIf="showCustomAuthorizationDetailsForm"
+            [isAttorney]="isAttorney"
+            [person]="person"
+            [personDetailsSmartForm]="personDetailsSmartForm"
+            [authorizerPersonForm]="authorizerPersonForm"
+            [authPurposeForm]="authPurposeForm"
+            [customAuthDetailsForm]="customAuthDetailsForm"
+            [countryList]="countryList"
+            [genderList]="genderList"
+            [nationalityList]="nationalityList"
+            [authorizerList]="authorizerList"
+            (onNext)="saveDraftNonMOJAuthorization()"
+            (onPrevious)="isEditMode ? navigateBackToTransaction() : setPreviousSection()"
+            (onCancel)="refresh()"
+            (onError)="showErrorByKey($event)"
+            (onVerifyAuthorizer)="verifyAuthorizer($event)"
+            (onResetAuthorizer)="resetAuthorizer()"
+            (onAddAuthorizer)="addAuthorizerToList()"
+            (onDeleteAuthorizer)="deleteAuthorizer($event)"
+            (onEditAuthorizer)="editAuthorizer($event)"
+            #customAuthorizationDetails
+          >
+          </cnt-add-custom-authorization-details-dc>
+        </tab>
+        <tab [active]="activeTab === 2">
+          <gosi-card-dc type="secondary" [noHeadingMargin]="false" *ngIf="person">
+            <frm-address-dc
+              #addressDetails
+              [addressDetails]="person.contactDetail?.addresses"
+              [countryList]="countryList | async"
+              [cityList]="cityList | async"
+              [hasNationalAddress]="isSourceMOJ || personDetailsSmartForm.isSaudi"
+              [hasPOAddress]="isSourceMOJ || personDetailsSmartForm.isSaudi"
+              [hasOverseasAddress]="!isSourceMOJ"
+              [mandatoryOverseasAddress]="(!isSourceMOJ && personDetailsSmartForm.isSaudi) && bankDetailsForm.get('isIbanSelectedOption.english').value === 'No'"
+              [parentForm]="addressForms"
+              [currentMailingAddress]="person.contactDetail?.currentMailingAddress"
+            >
+            </frm-address-dc>
+          </gosi-card-dc>
+          <gosi-card-dc
+            heading="{{ 'CONTRIBUTOR.CONTACT-DETAILS' | translate }}"
+            [noHeadingMargin]="false"
+            type="secondary"
+            *ngIf="person"
+          >
+            <frm-contact-dc
+              #contactDetails
+              [isHeadingRequired]="false"
+              [contactDetails]="person.contactDetail"
+              [defaultOnly]="false"
+              [emailMandatory]="true"
+              [isOnlyGcc]="false"
+            ></frm-contact-dc>
+          </gosi-card-dc>
+          <gosi-card-dc
+            heading="{{ 'CONTRIBUTOR.ADD-AUTHORIZATION.BANK-DETAILS' | translate }}"
+            [noHeadingMargin]="false"
+            type="secondary"
+            *ngIf="person"
+          >
+            <cnt-bank-details-dc
+              [ibanType]="ibanType"
+              [bankAccountDetailsForm]="bankDetailsForm"
+              [bankDetails$]="personBankDetails$"
+              [bankNameList$]="bankNameList$"
+              (onChangeIbanType)="changeIbanType($event)"
+              (onSelection)="selectBankAccount($event)"
+              (onNew)="getBank($event)"
+              (isIbanINKSAChange)="onIsIbanINKSAChange($event)"
+            >
+            </cnt-bank-details-dc>
+          </gosi-card-dc>
+          <div class="row form-action">
+            <div class="col-lg-12">
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="saveAndNextBtn" type="primary" (submit)="setNextSection()" *ngIf="!isSourceMOJ">
+                  {{ 'CONTRIBUTOR.SAVE-AND-NEXT' | translate }}
+                </gosi-button-dc>
+                <gosi-button-dc id="verifyBtn" type="primary" (submit)="saveMOJ()" *ngIf="isSourceMOJ">
+                  {{ 'CONTRIBUTOR.SUBMIT' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc id="cancelBtn" type="secondary" (submit)="refresh()">
+                  {{ 'CONTRIBUTOR.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="backBtn" type="secondary" (submit)="setPreviousSection()">
+                  {{ 'CONTRIBUTOR.PRE-SECTION' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </tab>
+        <tab [active]="activeTab === 3">
+          <div class="row" *ngIf="documents.length > 0 && person">
+            <div class="col-12">
+              <cnt-document-upload-dc
+                [documentList]="documents"
+                [businessKey]="authorizationId"
+                [referenceNo]="referenceNo"
+                [uuid]="uuid"
+                [transactionId]="transactionId"
+                [showDocuments]="true"
+                [showComments]="true"
+                (refresh)="refreshDocument($event)"
+              ></cnt-document-upload-dc>
+            </div>
+          </div>
+          <div class="row form-action">
+            <div class="col-lg-12">
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="verifyBtn" type="primary" (submit)="completeNonMOJAuthorization()">
+                  {{ 'CONTRIBUTOR.SUBMIT' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc id="cancelBtn" type="secondary" (submit)="refresh()">
+                  {{ 'CONTRIBUTOR.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="backBtn" type="secondary" (submit)="setPreviousSection()">
+                  {{ 'CONTRIBUTOR.PRE-SECTION' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </tab>
+      </tabset>
+    </div>
+  </gosi-card-dc>
+</div>

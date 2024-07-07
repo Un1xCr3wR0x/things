@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="col-lg-9 col-md-9 col-sm-9">
+    <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.RESCHEDULE-SESSION' | translate }}"> </gosi-main-heading-dc>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-card-dc type="secondary" noPadding="true">
+    <div class="col-lg-12">
+      <mb-medical-board-session-details-dc [sessionData]="sessionData" [lang]="lang"> </mb-medical-board-session-details-dc>
+    </div>
+  </gosi-card-dc>
+  <gosi-card-dc type="secondary" noPadding="true">
+    <div class="col-lg-12">
+      <mb-new-session-details-dc
+        [parentForm]="reScheduleForm"
+        [sessionData]="sessionData"
+        (unAvailableList)="getUnAvailableList($event)"
+      ></mb-new-session-details-dc>
+    </div>
+    <div class="col-lg-12">
+      <mb-medical-board-member-table-dc
+        [sessionData]="sessionData"
+        [unAvailableMemberList]="unAvailableMemberList"
+        (addMember)="onAddContractedDoctor(addMemberTemplate, false)"
+        (addDoctor)="onAddContractedDoctor(addDoctorTemplate, true)"
+        (removeMember)="removeMember($event)"
+      >
+      </mb-medical-board-member-table-dc>
+    </div>
+  
+</gosi-card-dc>
+    
+      <gosi-card-dc *ngIf="isRegular" heading="{{ 'MEDICAL-BOARD.SESSION-INVITATION-DETAILS' | translate }}" type="secondary">       
+        <ng-container >
+          <div class="row" *ngIf="configurationDetails">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="sessionInvitationDays"
+                [label]="'MEDICAL-BOARD.NUMBER-DAYS-PRIOR-INVITATION' | translate"
+                [value]="configurationDetails.sessionCreationGraceDays"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="sessionCancellationDays"
+                [label]="'MEDICAL-BOARD.NUMBER-DAYS-PRIOR-CANCELLATION' | translate"
+                [value]="configurationDetails.doctorInviteCancelGraceDays"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </ng-container>
+      </gosi-card-dc>
+    
+    
+      <gosi-card-dc heading="{{ 'MEDICAL-BOARD.SESSION-SLOT-DETAILS' | translate }}" type="secondary">       
+        <ng-container *ngIf="configurationDetails">
+            <div class="row">
+              <div class="col-lg-6">
+                <gosi-label-dc
+                  id="minimumsessionDays"
+                  [label]="'MEDICAL-BOARD.MINIMUM-NUMBER-SESSION' | translate"
+                  [value]="configurationDetails.minimumBeneficiaries"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-lg-6">
+                <gosi-label-dc
+                  id="sessionCancellationDays"
+                  [label]="'MEDICAL-BOARD.MAXIMUM-BENEFICIARIES' | translate"
+                  [value]="configurationDetails.maximumBeneficiaries"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            </ng-container>
+            </gosi-card-dc>
+
+  
+
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="form-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelsTemplate)">
+            {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc id="submit" (submit)="onRescheduleSession()" type="primary">
+            {{ 'MEDICAL-BOARD.RESCHEDULE' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelsTemplate>
+  <gosi-confirm-modal-dc message="MEDICAL-BOARD.INFO-CANCEL" (onConfirm)="goBackToHome()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #addDoctorTemplate>
+  <mb-add-gosi-doctors-dc
+    #addDoctorList
+    (update)="onAddContractedMembers($event)"
+    (navigate)="navigateToProfile($event)"
+    (cancel)="declineValue()"
+    (select)="onLimit($event)"
+    [limitItem]="sessionRequest?.limit"
+    [gosiDoctors]="contractedMembers"
+    [totalRecords]="totalResponse"
+    [addDoctors]="false"
+    [fieldOfficeLists]="locationList$ | async"
+  >
+  </mb-add-gosi-doctors-dc>
+</ng-template>
+<ng-template #addMemberTemplate>
+  <mb-add-contracted-members-dc
+    #addMembersList
+    [contractedMembers]="contractedMembers"
+    (paginate)="onLimit($event)"
+    [limit]="sessionRequest?.limit"
+    (navigate)="navigateToProfile($event)"
+    [totalResponse]="totalResponse"
+    [isAmb]="isAmb"
+    (cancel)="declineValue()"
+    (update)="onAddContractedMembers($event)"
+    [specialityLists]="specialityList$ | async"
+    [fieldOfficeLists]="region$ | async"
+    (filter)="onFilterApply($event)"
+    (search)="onSearchMember($event)"
+    [addMembers]="false"
+    (checkAvailability)="onCheckAvailability($event)"
+    [showErrors]="showErrors"
+    [availableMsg]="availableMsg"
+  ></mb-add-contracted-members-dc>
+</ng-template>

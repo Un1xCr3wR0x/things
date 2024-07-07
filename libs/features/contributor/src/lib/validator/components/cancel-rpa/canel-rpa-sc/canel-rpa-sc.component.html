@@ -1,0 +1,114 @@
+<div class="content">
+  <frm-main-content-dc [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc *ngIf="isFirstScheme" [heading]="'CONTRIBUTOR.CANCEL-RPA-FIRST-SCHEME-HEADING' | translate">
+      </frm-main-heading-dc>
+      <frm-main-heading-dc *ngIf="!isFirstScheme" [heading]="'CONTRIBUTOR.CANCEL-RPA-LAST-SCHEME-HEADING' | translate">
+      </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <cnt-cancel-rpa-per-details-dc [contributor]="contributor"> </cnt-cancel-rpa-per-details-dc>
+
+      <div class="row ml-0 mr-0">
+        <div class="details">
+          <div class="aggregation-details">
+            <frm-content-heading-dc
+              icon="plus-square"
+              [canEdit]="false"
+              [heading]="'CONTRIBUTOR.AGGREGATION-DETAILS' | translate"
+            >
+            </frm-content-heading-dc>
+
+            <div class="row">
+              <div class="col-6">
+                <gosi-label-dc
+                  id="totalContributionMonths"
+                  [label]="'CONTRIBUTOR.TOTAL-CONTRIBUTION-MONTHS' | translate"
+                  [value]="cancelEngagment?.cancellationContribution | bilingualText "
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-6">
+                <gosi-label-dc
+                  id="wage"
+                  label="{{ 'CONTRIBUTOR.WAGE.WAGE' | translate }}"
+                  [value]="cancelEngagment?.cancellationWage"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-6">
+                <gosi-input-select-dc
+                (select)="selectedValue($event)"
+                id="cancelReason"
+                label="{{ 'CONTRIBUTOR.REASON-CANCEL-AGGREGATION' | translate }}"
+                [control]="cancelReasonForm.get('cancelReason')"
+                [list]="cancelReasonList$ | async"
+                [disabled]="!isValidator1"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+
+            <!-- <div class="col-sm-12 col-md-12 col-lg-12 row">
+              <gosi-label-dc
+                id="cancelReason"
+                label="{{ 'CONTRIBUTOR.REASON-CANCEL-AGGREGATION' | translate }}"
+                [value]="cancelEngagment?.cancellationReason | bilingualText "
+              ></gosi-label-dc>
+            </div> -->
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        [showApprove]="true"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="cancelReasonForm.dirty ? showModal(cancelTemplate, true) : locationBack()"
+        (approveEvent)="showModal(approveTemplate) "
+        (rejectEvent)="showModal(rejectTemplate)"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!------------------------  Modals ----------------------------->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleEInspectionActions(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.CANCEL-RPA-RETURN' | translate"
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-RETURN-VALIDATOR'"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="decline()"
+    (returnEvent)="handleEInspectionActions(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.CANCEL-RPA-REJECT' | translate"
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-REJECTION'"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="decline()"
+    (rejectEvent)="handleEInspectionActions(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

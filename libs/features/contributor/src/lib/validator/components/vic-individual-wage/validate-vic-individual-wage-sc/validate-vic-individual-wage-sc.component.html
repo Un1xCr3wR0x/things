@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="canEdit" (onEdit)="navigateToEdit(1)">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.WAGE.UPDATE-VIC-WAGE' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="updateVicWorkflowDetails?.formSubmissionDate?.gregorian"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item" *ngIf="contributor">
+        <!-- Personal Details Section -->
+        <cnt-vic-personal-details-dc
+          [contributor]="contributor"
+          [age]="age"
+          [isBeneficiary]="isBeneficiary"
+        ></cnt-vic-personal-details-dc>
+      </div>
+
+      <!-- Engagement Details Section -->
+      <div class="content-item" *ngIf="updateVicWorkflowDetails">
+        <cnt-view-vic-individual-wage-details-dc
+          [vicEngagement]="updateVicWorkflowDetails"
+          [eligiblePRBoolean]="isEligible"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToEdit(0)"
+        ></cnt-view-vic-individual-wage-details-dc>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        [disableApprove]="isBillBatch"
+        (cancelEvent)="navigateToInbox()"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="vicWageWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.VIC-WAGE-UPDATE.REJECT-UPDATE-VIC-WAGE'"
+    [rejectReasonList$]="rejectReasonList$"
+    [transactionNumber]="referenceNo"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="vicWageWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.VIC-WAGE-UPDATE.RETURN-UPDATE-VIC-WAGE'"
+    [returnReasonList$]="returnReasonList$"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    (cancelEvent)="hideModal()"
+    (returnEvent)="vicWageWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

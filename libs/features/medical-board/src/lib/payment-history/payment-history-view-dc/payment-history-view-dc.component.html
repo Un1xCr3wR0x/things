@@ -1,0 +1,100 @@
+<div class="content">
+<div class="row">
+    <div class="col-lg-12">
+      <div class="table-view">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.MEMBER' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-ID' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-DATE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-TYPE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.FIELD-OFFICE-LOCATION' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.AMOUNT-SAR' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.PAYMENT-DATE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-bottom" *ngFor="let payment of paymentHistory?.paymentDetails | paginate : {
+              id: paginationId,
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: paymentHistory?.totalCount
+            }">
+              <td>{{ payment?.name | nameToString: true }} <br />
+                <!-- <div class="row"> -->
+                  <ng-container *ngIf="payment?.nationalIdType === ninId">
+                    <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                  </ng-container>
+                  <ng-container *ngIf="payment?.nationalIdType === iqamaId || payment?.nationalIdType === iqamaNo">
+                    <span class="id-label"> {{ 'MEDICAL-BOARD.IQAMA-NUMBER' | translate }} :</span>
+                  </ng-container>
+                  <ng-container *ngIf="payment?.nationalIdType === gccId">
+                    <span class="id-label"> {{ 'MEDICAL-BOARD.GCCID' | translate }} :</span>
+                  </ng-container>
+                  <ng-container *ngIf="payment?.nationalIdType === borderNo">
+                    <span class="id-label"> {{ 'MEDICAL-BOARD.BORDER-NO' | translate }} :</span>
+                  </ng-container>
+                  <ng-container>
+                    <span *ngIf="!isFcLogin"
+                      ><a class="member-click" (click)="getMembers(payment?.nationalId)">{{
+                        payment?.nationalId
+                      }}</a></span
+                    >
+                    <span *ngIf="isFcLogin">{{ payment?.nationalId }}</span>
+                  </ng-container>
+                <!-- </div> -->
+              </td>
+              <td>
+                <div *ngIf="!isFcLogin">
+                  <a class="member-click" (click)="getSession(payment?.sessionId)">{{ payment?.sessionId }} </a>
+                </div>
+                <div *ngIf="isFcLogin">
+                  {{ payment?.sessionId }}
+                </div>
+              </td>        
+              <td>{{ payment?.sessionDate | dateType }}</td>
+              <td>{{ payment?.sessionType | bilingualText }}</td>
+              <td>{{ payment?.fieldOfficeCode | bilingualText }}</td>
+              <td>{{ payment?.amount }}</td>
+              <td>{{ payment?.paymentDate | dateType }}</td>
+              <td>
+                <span class="border p-2 rounded text-nowrap" ngClass="{{ getStatusColor(payment?.status?.english) }}">{{
+                  payment?.status | bilingualText
+                }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <gosi-pagination-dc
+  #paginationComponent
+    *ngIf="paymentHistory?.totalCount > itemsPerPage"
+    [totalSize]="paymentHistory?.totalCount"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    [paginationId]="paginationId"
+  >
+  </gosi-pagination-dc>
+</div>
+

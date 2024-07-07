@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="custom-header">
+      <h4 class="custom-heading">
+        {{ 'OCCUPATIONAL-HAZARD.DISABLED-BODY-PARTS' | translate }}
+      </h4>
+      <div class="action-btn ml-auto" id="id">
+        <div class="d-flex flex-row-reverse">
+          <gosi-button-dc
+            id="addButton"
+            type="secondary "
+            size="xl"
+            outlineOnly="true"
+            [disabled]="!disabilities.valid ? true : false"
+            (submit)="addBodyParts()"
+          >
+            {{ 'OCCUPATIONAL-HAZARD.ADD' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="table table-borderless">
+  <thead class="thead-light">
+    <tr>
+      <th class="col-md-5">
+        {{ 'OCCUPATIONAL-HAZARD.BODY-PARTS-CATEGORY' | translate }}
+      </th>
+      <th class="col-md-6">
+        {{ 'OCCUPATIONAL-HAZARD.BODY-PARTS' | translate }}
+      </th>
+      <th class="col-md-1"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container [formGroup]="form">
+      <ng-container formArrayName="disabilities">
+        <ng-container *ngFor="let control of disabilities.controls; let i = index">
+          <ng-container [formGroup]="control">
+            <tr class="border-bottom">
+              <td class="col-md-5">
+                <gosi-input-select-dc
+                  [id]="'category' + i"
+                  [label]="'OCCUPATIONAL-HAZARD.BODY-PARTS-CATEGORY' | translate"
+                  [placeholder]="'OCCUPATIONAL-HAZARD.BODY-PARTS-CATEGORY' | translate"
+                  [control]="control?.get('category')"
+                  [list]="bodyPartsCategoryList"
+                  [ignoreLabel]="true"
+                  (selectLov)="onCategorySelected($event, i)"
+                >
+                </gosi-input-select-dc>
+              </td>
+              <td class="col-md-6" *ngIf="injuredPerson">
+                <ng-container formArrayName="bodyParts">
+                  <gosi-input-multi-select-dropdown-dc
+                    name="'bodyParts' + i"
+                    [id]="'bodyParts' + i"
+                    [label]="'OCCUPATIONAL-HAZARD.BODY-PARTS' | translate"
+                    [control]="getControl(control)"
+                    [list]="bodyPartsCategoryList.items[control?.get('bodyPartsIndex')?.value]"
+                    [ignoreLabel]="true"
+                    (selected)="selectedBodyParts($event, i)"
+                  >
+                  </gosi-input-multi-select-dropdown-dc>
+                </ng-container>
+              </td>
+              <td class="col-md-1">
+                <a [id]="'delete' + i" class="delete-icon" (click)="onDeleteField(i)">
+                  <fa-icon size="lg" [icon]="['far', 'trash-alt']"></fa-icon>
+                </a>
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </tbody>
+</table>

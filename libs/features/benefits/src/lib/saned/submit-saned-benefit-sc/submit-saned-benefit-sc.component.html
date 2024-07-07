@@ -1,0 +1,268 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="row">
+    <div class="col-lg-1 back-icon" *ngIf="false">
+      <a class="back-icon-link">
+        <fa-icon *ngIf="lang === 'en'" icon="arrow-alt-circle-left" class="back-icon-left fa-2x"></fa-icon>
+        <fa-icon *ngIf="lang === 'ar'" icon="arrow-alt-circle-right" class="back-icon-left fa-2x"></fa-icon>
+      </a>
+    </div>
+    <div class="col-lg-12" *ngIf="!isReopenCase && !appealLateRequest">
+      <div class="heading">{{ 'BENEFITS.REQUEST-SANED-HEADING' | translate }}</div>
+    </div>
+    <div class="col-lg-12" *ngIf="isReopenCase && !appealLateRequest">
+      <div class="heading">{{ 'BENEFITS.REOPEN-SANED-HEADING' | translate }}</div>
+    </div>
+    <div class="col-lg-12" *ngIf="appealLateRequest">
+      <div class="heading">{{ 'BENEFITS.SANED-APPEAL-HEADING' | translate }}</div>
+    </div>
+  </div>
+  <gosi-alert-sc> </gosi-alert-sc>
+
+  <gosi-progress-wizard-dc
+    [ngClass]="{ hide: applyRequestWizardItems.length <= 1 }"
+    [wizardItems]="applyRequestWizardItems"
+    (clickWizard)="selectedWizard($event)"
+    #submitRequestWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="row" *ngIf="uibenefits && !uibenefits?.eligible && (requestDate?.gregorian || isIndividualApp)">
+    <div class="col-12">
+      <gosi-alert-dc [details]="[]" type="warning" [dismissible]="false" [noPadding]="true">
+        <!-- [message]="'BENEFITS.VC-NON-ELIGIBLE-MSG-1'" -->
+
+        <!--          (click)="showEligibilityPopup.emit()"-->
+        <div actOnAlert>
+          {{ 'BENEFITS.VC-NON-ELIGIBLE-MSG-1' | translate }}{{ requestDate | dateType
+          }}{{ 'BENEFITS.VC-NON-ELIGIBLE-MSG-2' | translate }}
+        </div>
+        <a
+          actOnAlert
+          class="view-link"
+          id="view-ineligible"
+          routerLinkActive="active"
+          (click)="viewIneligibleDetails()"
+          >{{ 'BENEFITS.VIEW-INELIGIBLE-DETAILS' | translate }}</a
+        >
+      </gosi-alert-dc>
+      <!-- <gosi-alert-dc
+        [message]="'BENEFITS.NOT-ELIGIBLE-SANED' | translate"
+        type="warning"
+        [dismissible]="false"
+        [noPadding]="true"
+      >
+        <a actOnAlert id="view-ineligible" (click)="viewIneligibleDetails()">{{
+          'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate
+        }}</a>
+      </gosi-alert-dc> -->
+    </div>
+  </div>
+  <div class="hide-tab">
+    <tabset type="pills" #submitRequestTabs>
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_SANED_DETAILS, currentTab, applyRequestWizardItems)">
+        <bnt-request-date-dc
+          [showConfirmButton]="true"
+          [maxDate]="maxDate"
+          [disableDate]="isReopenCase ? true : false"
+          [showConfirmButton]="isReopenCase ? false : true"
+          [parentForm]="benefitsForm"
+          [systemRunDate]="systemRunDate"
+          (confirm)="onConfirm($event)"
+        >
+        </bnt-request-date-dc>
+        <ng-container *ngIf="uibenefits && uibenefits?.eligible && (!uibenefits.appeal || isReopenCase )">
+          <bnt-benefit-details-saned-dc
+            *ngIf="benefitCalculation"
+            [benefitDetails]="benefitCalculation"
+            [isReopenCase]="isReopenCase"
+            [eligibleForPensionReform]="eligibleForPensionReform"
+            [benefitType]="benefitType"
+          ></bnt-benefit-details-saned-dc>
+          <ng-container *ngIf="isAppPrivate && benefitCalculation?.adjustments?.length > 0">
+            <gosi-card-dc>
+              <bnt-adjustments-dc
+                [adjustments]="benefitCalculation?.adjustments"
+                [totalAdjustmentAmount]="benefitCalculation?.adjustmentCalculationDetails.totalAdjustmentAmount"
+                [lang]="lang"
+              ></bnt-adjustments-dc>
+            </gosi-card-dc>
+          </ng-container>
+          <bnt-payment-details-dc
+            (clearSuccessMessage)="clearSuccessMessage()"
+            (getBankName)="getBankName($event)"
+            (loadBankInfoForId)="getBankDetails($event)"
+            (getAuthPerson)="getAttorneyDetailsById($event)"
+            (getGuardian)="getAttorneyDetailsById($event, null, true)"
+            [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+            [listOfGuardians]="guardianList"
+            [bankAccountList]="bankAccountList"
+            [bankDetails]="bankAccountList"
+            [isHeirAlive]="!personDetails?.deathDate?.gregorian"
+            [annuityResponse]="annuityResponse"
+            [bankName]="bankName"
+            [isValidator]="isValidator"
+            [lang]="lang"
+            [newBankForm]="true"
+            [parentForm]="payeeForm"
+            [payeeList]="payeeList"
+            [paymentMethodList]="paymentMethodList$ | async"
+            [personId]="personId ? personId : getPersonId()"
+            [isIndividualApp]="isIndividualApp"
+            [preselctdAttorney]="preSelectedAuthperson"
+            [saveApiResp]="saveApiResp"
+            [savedPayMethod]="savedPayMethod"
+            [savedPayeType]="savedPayeType"
+            [showAccountInfo]="true"
+            [showBankTransferOnly]="true"
+            [showInternationalBank]="false"
+            [showSelfOnly]="true"
+            [showInfo]="false"
+            [showPaymentMethod]="false"
+            [hidePayeeType]="true"
+            [ibanBankAccountNo]="ibanBankAccountNo"
+          >
+          </bnt-payment-details-dc>
+
+          <!-- Disclaimer content section -->
+<!--          <bnt-declaration-dc-->
+<!--            *ngIf="!isAppPrivate"-->
+<!--            [content]="'BENEFITS.SANED-REQUEST-DECLARATION'"-->
+<!--            [heading]="'BENEFITS.DECLARATION'"-->
+<!--            [checkBoxLabel]="'BENEFITS.ACCEPT-DECLARATION'"-->
+<!--            [parentForm]="benefitsForm"-->
+<!--            (checkBoxClicked)="changeCheck($event)"-->
+<!--          ></bnt-declaration-dc>-->
+        </ng-container>
+        <ng-container *ngIf="uibenefits && uibenefits.appeal && uibenefits.eligible && !isReopenCase && appealForm">
+          <bnt-appeal-tab-dc
+            [parentForm]="appealForm"
+            [lang]="lang"
+            [eligiblePeriod]="eligiblePeriod$ | async"
+            [systemRunDate]="systemRunDate"
+            [reasonForAppeal]="reasonForAppeal$"
+            [saveApiResp]="saveApiResp"
+            [bankDetails]="bankDetails"
+            [bankAccountList]="bankAccountList"
+            [benefitCalculation]="benefitCalculation"
+            [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+            [listOfGuardians]="guardianList"
+            [personDetails]="personDetails"
+            [annuityResponse]="annuityResponse"
+            [bankName]="bankName"
+            [isValidator]="isValidator"
+            [payeeList]="payeeList"
+            [paymentMethodList]="paymentMethodList$ | async"
+            [payeeForm]="payeeForm"
+            [personId]="getPersonId()"
+            [uibenefits]="uibenefits"
+            [ibanBankAccountNo]="ibanBankAccountNo"
+            [isIndividualApp]="isIndividualApp"
+            [buttonName]="isIndividualApp ? 'BENEFITS.SUBMIT' : 'BENEFITS.SAVE-AND-NEXT'"
+            (cancelTransaction)="cancelTransaction()"
+            (save)="saveAndNext()"
+            (clearSuccessMessage)="clearSuccessMessage()"
+            (getBankName)="getBankName($event)"
+            (getBankDetails)="getBankDetails($event)"
+            (onConfirm)="onConfirm($event)"
+          >
+          </bnt-appeal-tab-dc>
+        </ng-container>
+        <div class="row" *ngIf="(uibenefits && !uibenefits.appeal) || this.isReopenCase">
+          <!-- *ngIf="!isReopenCase || isIndividualApp" -->
+          <div class="col-lg-6 pb-2">
+            <gosi-button-dc
+              id="cancelButton"
+              type="secondary"
+              isFullWidth="isSmallScreen"
+              [ngClass]="!isSmallScreen ? 'float-left' : ''"
+              (submit)="cancelTransaction()"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div *ngIf="!isAppPrivate && !isReopenCase && !isIndividualApp" class="col-auto ml-auto">
+            <gosi-button-dc
+              class="float-right"
+              id="apply"
+              type="primary"
+              isFullWidth="isSmallScreen"
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              (submit)="validateDeclarationCheck()"
+            >
+              {{ 'BENEFITS.APPLY' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="col-lg-6" *ngIf="(!isAppPrivate && isReopenCase) || isIndividualApp">
+            <gosi-button-dc
+              id="apply"
+              type="primary"
+              isFullWidth="isSmallScreen"
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              [disabled]="uibenefits && !uibenefits?.eligible"
+              (submit)="validateDeclarationCheck()"
+            >
+              {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div
+            class="col-auto ml-auto"
+            *ngIf="isAppPrivate && applyRequestWizardItems && applyRequestWizardItems?.length > 1"
+          >
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              type="primary"
+              isFullWidth="isSmallScreen"
+              (submit)="apply()"
+            >
+              {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </tab>
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_DOCUMENTS, currentTab, applyRequestWizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="uibenefits?.appeal ? sanedAppealDocTransactionId : sanedDocTransactionId"
+              [referenceNo]="referenceNo"
+              [documentList]="requiredDocs"
+              [isWorkflow]="uibenefits?.appeal ? false : isWorkflow"
+              [parentForm]="documentForm"
+              [processType]="uibenefits?.appeal ? '' : processType"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+              [isEditMode]="isValidator"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransaction()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="uibenefits?.appeal ? docUploadSuccess($event) : showFormSuccessMessage($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #confirmTransactionTemplate>
+  <bnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="onDiscard()"
+    (onCancel)="hideModal()"
+  ></bnt-transaction-cancel-popup-dc>
+</ng-template>
+<ng-template #inEligibleReason>
+  <bnt-eligibility-criteria-dc [benefitInfo]="uibenefits" (close)="hideModal()"> </bnt-eligibility-criteria-dc>
+</ng-template>

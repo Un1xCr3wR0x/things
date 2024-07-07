@@ -1,0 +1,307 @@
+<gosi-alert-sc></gosi-alert-sc>
+<div class="row">
+  <div class="col-md-12 section-head">
+    {{ 'CUSTOMER-INFORMATION.FINANCIAL-DETAILS' | translate }}
+  </div>
+  <div *ngIf="!showdefault && addBankAccess && !hideButtonForPpa" class="button-style">
+    <gosi-button-dc type="primary" id="actionButton" size="sm" (click)="addNewBank()">
+      {{ 'CUSTOMER-INFORMATION.ADD-NEW-BANK' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+<div class="margin">
+  <gosi-card-dc [isHeading]="false">
+    <div class="card-heading">
+      <span class="heading">{{ 'CUSTOMER-INFORMATION.BANK-DETAILS' | translate }}</span> - 
+      <span> {{ 'CUSTOMER-INFORMATION.AMEEN-SYSTEM' | translate }} </span>
+
+    </div>
+    <div class="table-responsive">
+      <table class="table table-borderless margin">
+        <thead class="thead-light">
+          <tr *ngIf="count > 0; else noResult">
+            <th class="head-style" id="bankName">
+              {{ 'CUSTOMER-INFORMATION.ACCOUNT-OR-BANK-NAME' | translate }}
+            </th>
+            <th class="head-style" id="type">
+              {{ 'CUSTOMER-INFORMATION.TYPE' | translate }}
+            </th>
+            <th class="head-style" id="status">
+              {{ 'CUSTOMER-INFORMATION.STATUS' | translate }}
+            </th>
+            <th class="head-style" id="more"></th>
+            <th class="head-style" id="more"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="data-row border-style"
+            *ngFor="
+              let account of bankAccountList
+                | paginate
+                  : {
+                      id: estPagination,
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: count
+                    }
+            "
+          >
+            <td>
+              <div style="display: grid">
+                <span>
+                  {{ account.ibanBankAccountNo }}
+                </span>
+                <span class="benefits-link">
+                  {{ account.bankName | bilingualText }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <div *ngFor="let type of account.serviceType">
+                <span>
+                  {{ type | bilingualText }}
+                </span>
+              </div>
+              <!-- {{ account.serviceType[0] | bilingualText }} -->
+            </td>
+            <td>
+              <span
+                class="badge"
+                [ngClass]="[
+                  account.verificationStatus == 'Sama Verified' ? 'badge-success' : '',
+                  account.verificationStatus == 'Sama Not Verified' ? 'badge-secondary' : '',
+                  account.verificationStatus == 'Sama Verification Failed' ||
+                  account.verificationStatus == 'Sama Verification Pending'
+                    ? 'badge-danger'
+                    : ''
+                ]"
+                >{{ account.status | bilingualText }}</span
+              >
+            </td>
+            <td>
+              <gosi-button-dc
+                *ngIf="account.verificationStatus == 'Sama Not Verified'"
+                type="primary"
+                id="actionButton"
+                size="sm"
+                (click)="verification(account)"
+              >
+                {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+              </gosi-button-dc>
+            </td>
+            <td *ngIf="account.bankHoldStatus == true">
+              <fa-icon [icon]="'lock'"></fa-icon>
+            </td>
+            <td *ngIf="account.serviceType[0]?.english == 'DEFAULT'">
+              <gosi-dropdown-dc class="float-right code-value" [list]="dropdownList1" (selectedItem)="updateDefault()">
+                <fa-icon class="dropdown-icon" style="color: #999999" icon="ellipsis-v"></fa-icon>
+              </gosi-dropdown-dc>
+            </td>
+            <td *ngIf="account.serviceType.length == 0">
+              <gosi-dropdown-dc
+                class="float-right code-value"
+                [list]="dropdownList2"
+                (selectedItem)="showModal(confirmTemplate, account, 'md')"
+              >
+                <fa-icon class="dropdown-icon" style="color: #999999" icon="ellipsis-v"></fa-icon>
+              </gosi-dropdown-dc>
+            </td>
+            <td *ngIf="account.serviceType[0]?.english != 'DEFAULT' && account.bankHoldStatus">
+              <gosi-dropdown-dc
+                class="float-right code-value"
+                [list]="dropdownList"
+                (selectedItem)="showCommitment(viewCommitment, $event, account)"
+              >
+                <fa-icon class="dropdown-icon" style="color: #999999" icon="ellipsis-v"></fa-icon>
+              </gosi-dropdown-dc>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noResult>
+      <div class="mt-5 text-center">
+        <img src="assets/images/search-error.svg" style="width: 16%" alt="search-error" />
+        <br />
+        <p class="text-muted">{{ 'CUSTOMER-INFORMATION.NO-BANK-ACCOUNT' | translate | titlecase }}</p>
+      </div>
+    </ng-template>
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="count > itemsPerPage"
+      [totalSize]="count"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      [paginationId]="estPagination"
+    >
+    </gosi-pagination-dc>
+  </gosi-card-dc>
+</div>
+
+<!-- Pinched Bank Accounts   -->
+<div class="margin">
+  <gosi-card-dc [isHeading]="false">
+    <div class="card-heading">
+      <span class="heading">{{ 'CUSTOMER-INFORMATION.BANK-DETAILS' | translate }}</span> - 
+      <span> {{ 'CUSTOMER-INFORMATION.PENSION-SYSTEM' | translate }} </span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-borderless margin">
+        <thead class="thead-light">
+          <tr *ngIf="count > 0; else noResult">
+            <th class="head-style" id="bankName">
+              {{ 'CUSTOMER-INFORMATION.ACCOUNT-OR-BANK-NAME' | translate }}
+            </th>
+            <th class="head-style" id="type">
+              {{ 'CUSTOMER-INFORMATION.IBANACCOUNT-NUMBER' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="data-row border-style" *ngFor="let account of PPABankAccountList">
+            <td>
+              <span class="benefits-link">
+                {{ account.bankName | bilingualText }}
+              </span>
+            </td>
+             <td>
+              <span class="benefits-link">
+                {{ account.accountNumber }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noResult>
+      <div class="mt-5 text-center">
+        <img src="assets/images/search-error.svg" style="width: 16%" alt="search-error" />
+        <br />
+        <p class="text-muted">{{ 'CUSTOMER-INFORMATION.NO-BANK-ACCOUNT' | translate | titlecase }}</p>
+      </div>
+    </ng-template>
+  </gosi-card-dc>
+</div>
+<div class="margin">
+  <gosi-card-dc [isHeading]="false">
+    <div class="card-heading">
+      <span class="heading">{{ 'CONTRIBUTOR.ADD-AUTHORIZATION.DETAILS' | translate }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-borderless margin">
+        <thead class="thead-light">
+          <tr>
+            <th class="head-style" id="bankName">
+              {{ 'CUSTOMER-INFORMATION.AUTHORISED-PERSON' | translate }}
+            </th>
+            <th class="head-style" id="status">
+              {{ 'CUSTOMER-INFORMATION.SOURCE' | translate }}
+            </th>
+            <th class="head-style" id="more">
+              {{ 'CUSTOMER-INFORMATION.TYPE' | translate }}
+            </th>
+            <th class="head-style" id="expiry">
+              {{ 'ESTABLISHMENT.CRN-EXPIRY-DATE' | translate }}
+            </th>
+            <th class="head-style" id="status">
+              {{ 'CUSTOMER-INFORMATION.STATUS' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let account of t; let i = index">
+          <tr class="data-row border-style">
+            <td>
+              <div style="display: grid">
+                <span class="benefits-link name-style">
+                  {{ account.name | bilingualText }}
+                </span>
+                <span class="auth-style" (click)="navigateToAuthorizationView(account)">
+                  {{ 'CUSTOMER-INFORMATION.AUTHORIZATION-NUMBER' | translate }} : {{ account.authorisorId }}
+                </span>
+              </div>
+            </td>
+            <td>
+              {{ account.source | bilingualText }}
+            </td>
+            <td>
+              {{ account.type | bilingualText }}
+            </td>
+            <td>
+              {{ account.certificateExpiryDate | dateType }}
+            </td>
+            <td>
+              <span class="badge" [ngClass]="[account.status == 'INACTIVE' ? 'badge-danger' : 'badge-success']">{{
+                account.status | bilingualText | uppercase
+              }}</span>
+            </td>
+          </tr>
+        </tbody>
+        <tbody></tbody>
+      </table>
+    </div>
+  </gosi-card-dc>
+</div>
+<ng-template #viewCommitment>
+  <bnt-view-bank-template-dc
+    [documentList]="documentList"
+    (open)="openImage($event)"
+    [benefitDetails]="benefitDetails"
+    (close)="hideModal()"
+  ></bnt-view-bank-template-dc>
+</ng-template>
+
+<ng-template #confirmTemplate>
+  <div class="custom-modal">
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="confirmation-popup">
+          <div class="row">
+            <div class="col-lg-12 confirm-heading">
+              {{ 'CUSTOMER-INFORMATION.CHANGE-DEFAULT-BANK-ACC' | translate }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="acc_no"
+                [noMargin]="true"
+                [control]="bankDetails.ibanBankAccountNo"
+                label="CUSTOMER-INFORMATION.ACC-NO"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="bank_name"
+                [noMargin]="true"
+                [control]="bankDetails.bankName | bilingualText"
+                label="CUSTOMER-INFORMATION.BANK-NAME"
+              ></gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 pt-4">{{ 'CUSTOMER-INFORMATION.UPDATE_DEFAULT_BANK_CONFIRMATION' | translate }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div modalAction>
+        <div class="row">
+          <div class="col-md-12 form-action">
+            <div class="float-right btn-section">
+              <gosi-button-dc id="confirm" type="primary" (submit)="confirmChange()">
+                {{ 'CUSTOMER-INFORMATION.CHANGE' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="float-left btn-section">
+              <gosi-button-dc id="cancel" type="secondary" (submit)="hideModal()">
+                {{ 'CUSTOMER-INFORMATION.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

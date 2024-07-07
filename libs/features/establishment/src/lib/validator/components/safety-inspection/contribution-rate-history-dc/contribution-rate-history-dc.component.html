@@ -1,0 +1,63 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<accordion class="contributor-rate-accordion">
+  <accordion-group class="wrapper-accordion-group">
+    <div accordion-heading class="float-left pl-2">
+      {{ 'ESTABLISHMENT.OH-CONTRIBUTION-RATE' | translate }}
+    </div>
+    <div class="header-wrapper ml-auto" accordion-heading>
+      <span class="arrow-up">
+        <fa-icon class="icon-wrapper-angle" icon="angle-up" size="2x"></fa-icon>
+      </span>
+      <span class="arrow-down" accordion-heading>
+        <fa-icon class="icon-wrapper-angle" icon="angle-down" size="2x"></fa-icon>
+      </span>
+    </div>
+    <div class="row pr-3 pl-3 pb-4 mt-4">
+      <div class="col-md-12 col-sm-12">
+        <ng-container *ngFor="let history of loadedHistoryData; let i = index">
+          <est-timeline-dc
+            [isFirstItem]="i === 0"
+            [isLastItem]="i === loadedHistoryData?.length - 1"
+            class="timeline"
+            [colour]="ohRateHistoryColorMap.get(i)"
+          >
+            <div class="row justify-content-between" timeline-date>
+              <div class="date col-auto pb-3 pb-md-0">
+                <div>
+                  <span class="date">{{ history.startDate?.gregorian | date: 'dd/MM/yyyy' }}</span>
+                  <span class="pr-1 pl-2 arrow-icons">
+                    <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                    <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                  </span>
+                  <span class="pl-1 date" *ngIf="history.endDate?.gregorian">{{
+                    history.endDate?.gregorian | date: 'dd/MM/yyyy'
+                  }}</span>
+                  <span class="endDate" *ngIf="!history.endDate?.gregorian">
+                    {{ 'ESTABLISHMENT.ONWARDS' | translate }}</span
+                  >
+                </div>
+              </div>
+              <div class="col-auto icon-text" [ngClass]="ohRateHistoryColorMap.get(i)">
+                <span *ngIf="lang === 'en'" class="contribution-rate">{{ history?.contributionPercentage }}%</span>
+                <span *ngIf="lang === 'ar'" class="contribution-rate">%{{ history?.contributionPercentage }}</span>
+              </div>
+            </div>
+          </est-timeline-dc>
+        </ng-container>
+
+        <gosi-loadmore-dc
+          *ngIf="OHRateDetails?.ohRateHistory?.length > 0"
+          class="load-more"
+          [pageSize]="pageSize"
+          [currentPage]="currentPage"
+          [totalCount]="OHRateDetails?.ohRateHistory?.length"
+          (loadMore)="loadMore($event)"
+        ></gosi-loadmore-dc>
+      </div>
+    </div>
+  </accordion-group>
+</accordion>

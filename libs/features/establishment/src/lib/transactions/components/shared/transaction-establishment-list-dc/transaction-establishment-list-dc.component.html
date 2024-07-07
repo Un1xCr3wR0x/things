@@ -1,0 +1,77 @@
+<!-- 
+ Copyright GOSI. All Rights Reserved.
+ This software is the proprietary information of GOSI.
+ Use is subject to license terms. -->
+
+<div class="est-list align-items-center justify-content-between custom-scroll-bar" *ngIf="establishments">
+  <table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th>{{ 'ESTABLISHMENT.ESTABLISHMENT-NAME' | translate }}</th>
+        <th>{{ 'ESTABLISHMENT.LEGAL-ENTITY' | translate }}</th>
+        <th>{{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="
+          let establishment of establishments
+            | paginate
+              : { id: paginationId, itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalBranches }
+        "
+      >
+        <td class="single-line">
+          <div>
+            <span tooltip="{{ establishment.name | bilingualText: true }}">
+              {{ establishment.name | bilingualText: true }}
+            </span>
+          </div>
+        </td>
+        <td class="single-line">
+          <div>
+            <span tooltip="{{ establishment.legalEntity | bilingualText }}">
+              {{ establishment.legalEntity | bilingualText }}
+            </span>
+          </div>
+        </td>
+        <td class="single-line">
+          <div>
+            <span tooltip="{{ establishment.registrationNo }}">
+              {{ establishment.registrationNo }}
+            </span>
+          </div>
+        </td>
+        <td>
+          <div class="common-width">
+            <div
+              class="main"
+              *ngIf="
+                ((newGroupMainRegistrationNo && newGroupMainRegistrationNo === establishment.registrationNo) ||
+                  establishment.establishmentType.english === main) &&
+                !(showNewStatus && establishment.delinked)
+              "
+            >
+              {{ 'ESTABLISHMENT.MAIN' | translate | lowercase }}
+            </div>
+            <div *ngIf="showDelinkStatus && establishment.delinked" class="delinked-status">
+              {{ 'ESTABLISHMENT.DELINKED' | translate }}
+            </div>
+            <div *ngIf="showNewStatus && establishment.delinked" class="new-status">
+              {{ 'ESTABLISHMENT.NEW' | translate }}
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="d-flex justify-content-center" *ngIf="totalBranches > itemsPerPage">
+  <gosi-pagination-dc
+    [totalSize]="totalBranches"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectedPage($event)"
+    [paginationId]="paginationId"
+  ></gosi-pagination-dc>
+</div>

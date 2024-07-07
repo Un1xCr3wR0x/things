@@ -1,0 +1,111 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary" headingSize="md" heading="{{ 'BENEFITS.REASON_BENEFIT' | translate }}">
+      <div class="row" *ngIf="reasonForbenefits?.heirBenefitRequestReason">
+        <div class="col-md-6 col-lg-6">
+          <gosi-input-select-dc
+            [label]="'BENEFITS.REASON_BENEFIT' | translate"
+            [list]="benefitReasonList"
+            [control]="reportDateForm.get('reason')"
+            (selectLov)="selectReason($event)"
+            [noMargin]="true"
+            [disabled]="disableEdit"
+          >
+          </gosi-input-select-dc>
+        </div>
+
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf=
+            "reportDateForm.get('reason.english') &&
+            reportDateForm.get('reason.english').value === benefitValues.missingContributor ||
+            reportDateForm.get('reason.english').value === benefitValues.ohMissingContributor"
+        >
+          <gosi-input-date-dc
+            id="missingDate"
+            label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+            [maxDate]="maxDate"
+            [hideOptionalLabel]="true"
+            [control]="reportDateForm?.get('missingDate').get('gregorian')"
+            (changeEvent)="missingDateChanged()"
+            [noMargin]="true"
+            [disabled]="disableEdit"
+          >
+          </gosi-input-date-dc>
+        </div>
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="reportDateForm.get('reason.english') &&
+           reportDateForm.get('reason.english').value === benefitValues.deathOfTheContributor ||
+           reportDateForm.get('reason.english').value === benefitValues.ohDeathOfTheContributor"
+        >
+          <gosi-input-date-dc
+            id="deathDate"
+            label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+            [maxDate]="maxDate"
+            [hideOptionalLabel]="true"
+            [control]="reportDateForm?.get('deathDate').get('gregorian')"
+            (changeEvent)="deathDateChanged()"
+            [noMargin]="true"
+            [disabled]="disableEdit"
+          >
+          </gosi-input-date-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <!--request date card-->
+    <bnt-request-date-dc
+      *ngIf="isAppPrivate"
+      [showConfirmButton]="false"
+      [parentForm]="parentForm"
+      [minDate]="minDate"
+      [maxDate]="maxDate"
+      [systemRunDate]="systemRunDate"
+    >
+    </bnt-request-date-dc>
+    <!-- [disableDate]="isValidator && benefitStatus?.english !== benefitStatusEnum.DRAFT" -->
+    <div class="row mx-0 mt-5" *ngIf="isDeathByOhInjury()">
+      <div class="col-lg-12 px-0">
+        <gosi-input-checkbox-dc
+          id="deathOhInjury"
+          name="deathOhInjury"
+          [control]="reportDateForm?.get('checkBoxFlag')"
+          [label]="'BENEFITS.DEATH-DUE-TO-OH-INJURY' | translate"
+        >
+        </gosi-input-checkbox-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="!isRegisterPage">
+  <div class="col-lg-6 pb-2">
+    <gosi-button-dc
+      [ngClass]="!isSmallScreen ? 'float-left' : ''"
+      id="cancelButton"
+      type="secondary"
+      isFullWidth="isSmallScreen"
+      (submit)="cancelTransaction()"
+    >
+      {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+    >
+  </div>
+  <div class="col-lg-6 pb-2">
+    <gosi-button-dc
+      [ngClass]="!isSmallScreen ? 'float-right' : ''"
+      id="saveAndNextReasonBenefit"
+      isFullWidth="isSmallScreen"
+      type="primary"
+      [disabled]="disableSaveAndNext"
+      (submit)="applyForBenefit()"
+    >
+      {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>

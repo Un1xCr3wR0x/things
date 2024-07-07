@@ -1,0 +1,160 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+-->
+<div class="row engagement-period" *ngIf="engagement && engagement.engagementPeriod">
+  <ng-container *ngFor="let engagementPeriod of engagement.engagementPeriod; let i = index">
+    <!-- Accordian view for periods with timeline -->
+    <div
+      class="col-md-12 engagement-period-accordion timeline-section"
+      [ngClass]="{
+        active:
+          (!engagement.leavingReason?.english && !engagementPeriod.endDate?.gregorian) ||
+          (engagement.engagementType === typeVic && !engagement.leavingReason?.english),
+        'only-1':
+          (!engagement.leavingReason?.english &&
+            !engagementPeriod.endDate?.gregorian &&
+            engagement.engagementPeriod.length === 1) ||
+          (engagement.engagementType === typeVic &&
+            !engagement.leavingReason?.english &&
+            engagement.engagementPeriod.length === 1)
+      }"
+    >
+      <accordion>
+        <accordion-group [isOpen]="i === 0">
+          <!-- Accordion heading -->
+          <span accordion-heading class="accordion-title">
+            <ng-container
+              *ngTemplateOutlet="periodHeader; context: { engagementPeriod: engagementPeriod }"
+            ></ng-container
+          ></span>
+          <span accordion-heading class="chevron-right">
+            <fa-icon icon="angle-up" class="icon-size" size="1x"></fa-icon>
+          </span>
+          <span accordion-heading class="chevron-left">
+            <fa-icon icon="angle-up" class="icon-size" size="1x"></fa-icon>
+          </span>
+          <span accordion-heading class="chevron-down">
+            <fa-icon icon="angle-down" class="icon-size"></fa-icon>
+          </span>
+          <!-- Accordion content section -->
+          <div class="accordion-content">
+            <!-- Wage table section -->
+            <cnt-reactivate-vic-wage-table-dc
+              [isVic]="true"
+              [purposeOfReg]="engagement.purposeOfRegistration"
+              [engagementPeriod]="engagementPeriod"
+            ></cnt-reactivate-vic-wage-table-dc>
+            <!-- Coverage and contributory icons -->
+            <div>
+              <cnt-reactivate-coverage-wage-dc
+                [displayIcon]="true"
+                [engagementPeriod]="engagementPeriod"
+                [isTotalShare]="true"
+                [isVic]="true"
+              ></cnt-reactivate-coverage-wage-dc>
+            </div>
+          </div>
+        </accordion-group>
+      </accordion>
+    </div>
+  </ng-container>
+
+  <!-- Mobile view for period section with timeline - (without accordian) -->
+   <ng-container *ngFor="let engagementPeriod of engagement.engagementPeriod">
+    <div
+      class="col-md-12 engagement-periods timeline-section"
+      [ngClass]="{
+        active:
+          (!engagement.leavingReason?.english && !engagementPeriod.endDate?.gregorian) ||
+          (engagement.engagementType === typeVic && !engagement.leavingReason?.english),
+        'only-1':
+          (!engagement.leavingReason?.english &&
+            !engagementPeriod.endDate?.gregorian &&
+            engagement.engagementPeriod.length === 1) ||
+          (engagement.engagementType === typeVic &&
+            !engagement.leavingReason?.english &&
+            engagement.engagementPeriod.length === 1)
+      }"
+    >
+      <ng-container *ngTemplateOutlet="periodHeader; context: { engagementPeriod: engagementPeriod }"></ng-container>
+
+      <!-- <div class="period-breakup">
+        <cnt-wage-table-dc
+          [isVic]="engagement.engagementType === typeVic"
+          [purposeOfReg]="engagement.purposeOfRegistration"
+          [engagementPeriod]="engagementPeriod"
+        ></cnt-wage-table-dc>
+        <cnt-coverage-contributory-wage-section-dc
+          [displayIcon]="true"
+          [engagementPeriod]="engagementPeriod"
+          [isVic]="engagement.engagementType === typeVic"
+        ></cnt-coverage-contributory-wage-section-dc>
+      </div> -->
+    </div>
+  </ng-container>
+</div>
+
+ <!-- Period header template -->
+<ng-template #periodHeader let-period="engagementPeriod">
+  <div class="period-heading d-flex">
+    <div>
+      {{ period.startDate | dateType }}
+      <span class="arrow-right px-2">
+        <fa-icon icon="arrow-right"></fa-icon>
+      </span>
+      <span class="arrow-left px-2">
+        <fa-icon icon="arrow-left"></fa-icon>
+      </span>
+      <ng-container *ngIf="period.endDate && period.endDate.gregorian && !isFutureEndingEngagement; else onwards">
+        {{ period.endDate | dateType }}</ng-container
+      >
+    </div>
+    <ng-template #onwards> {{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+    <div id="duration" class="px-2">
+      (
+      <ng-container *ngIf="period?.duration?.noOfMonths || period?.duration?.noOfDays">
+        <ng-container *ngIf="period?.duration?.noOfMonths && period?.duration?.noOfMonths !== 0">
+          <ng-container
+            *ngIf="
+              !(lang === 'ar' && (period?.duration?.noOfMonths === 1 || period?.duration?.noOfMonths === 2))
+            "
+          >
+            {{ period?.duration?.noOfMonths }}
+          </ng-container>
+          {{
+            period?.duration?.noOfMonths === 1
+              ? ('CONTRIBUTOR.WAGE.MONTH' | translate | titlecase)
+              : period?.duration?.noOfMonths === 2
+              ? ('CONTRIBUTOR.WAGE.MONTHS' | translate | titlecase)
+              : period?.duration?.noOfMonths > 2 && period?.duration?.noOfMonths < 11
+              ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate | titlecase)
+              : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate | titlecase)
+          }}
+        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="period?.duration?.noOfMonths && period?.duration?.noOfDays"> ,</ng-container>
+      <ng-container *ngIf="period?.duration?.noOfDays && period?.duration?.noOfDays !== 0">
+        <ng-container
+          *ngIf="!(lang === 'ar' && (period?.duration?.noOfDays === 1 || period?.duration?.noOfDays === 2))"
+        >
+          {{ period?.duration?.noOfDays }}
+        </ng-container>
+        {{
+          period?.duration?.noOfDays === 1
+            ? ('CONTRIBUTOR.WAGE.DAY' | translate | titlecase)
+            : period?.duration?.noOfDays === 2
+            ? ('CONTRIBUTOR.WAGE.DAYS' | translate | titlecase)
+            : period?.duration?.noOfDays > 2 && period?.duration?.noOfDays < 11
+            ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate | titlecase)
+            : ('CONTRIBUTOR.WAGE.DAYS-11' | translate | titlecase)
+        }}
+      </ng-container>
+      <ng-container *ngIf="period?.contributorAbroad" class="engagement-seperator">
+        {{ 'CONTRIBUTOR.ABROAD' | translate }}</ng-container
+      >
+      )
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,71 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--------Heading Section------->
+<div class="content flag-details">
+  <est-heading-dc [isTransparent]="false" [canNavigate]="false" (backEvent)="navigateBack()">
+    {{ 'ESTABLISHMENT.ESTABLISHMENT-FLAGS' | translate }}
+    <div id="action-item" *gosiShow="addFlagAccessRoles; regNo: establishment?.registrationNo">
+      <gosi-button-dc (submit)="addFlag()">
+        {{ 'ESTABLISHMENT.ADD-FLAG' | translate }}
+      </gosi-button-dc>
+    </div>
+  </est-heading-dc>
+  <gosi-alert-sc noSpacing="true"></gosi-alert-sc>
+  <div class="flag-tab">
+    <est-icon-tabset-dc [tabs]="tabs" [selectedTab]="selectedTab" (selectTab)="selectTab($event)">
+      <div [hidden]="tabs[0].key !== selectedTab">
+        <div *ngIf="activeFlags">
+          <est-active-flags-dc
+            [flagMap]="flagMap"
+            (modifyReason)="navigateToModifyFlag($event)"
+            (applySearch)="searchActiveFlags($event)"
+            [flagNameMap]="flagNameMap"
+            [activeFlagForm]="activeFlagForm"
+            [hasModifyEligibility]="hasModifyEligibility"
+            #activeFlags
+          ></est-active-flags-dc>
+        </div>
+        <div class="row" *ngIf="activeFlags?.length === 0">
+          <div class="col-md-12 no-flags">
+            <div class="row">
+              <div class="col-md-12 flag-icon text-center">
+                <fa-icon [icon]="['fas', 'flag']" size="2x"></fa-icon>
+              </div>
+              <div class="col-md-12 flag-label pt-2 text-center">
+                {{ 'ESTABLISHMENT.NO-ACTIVE-FLAGS' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div [hidden]="tabs[1].key !== selectedTab">
+        <div>
+          <est-flag-history-dc
+            [inActiveFlags]="flagHistory"
+            [sortFlagsLovList]="sortFlagsLovList"
+            (applySearch)="getFlagHistory($event)"
+            [reasonList]="historyFlagReasons"
+            [creationTypeLovList]="historyCreationTypeLovList"
+            #historyFlags
+          >
+          </est-flag-history-dc>
+        </div>
+      </div>
+    </est-icon-tabset-dc>
+  </div>
+</div>
+<ng-template #restrictAddFlagTemplate>
+  <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.ADD-FLAG' | translate">
+    <div modalContent>
+      <gosi-alert-dc [message]="'ESTABLISHMENT.RESTRICT-ADD-FLAG' | translate" type="warning"> </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>

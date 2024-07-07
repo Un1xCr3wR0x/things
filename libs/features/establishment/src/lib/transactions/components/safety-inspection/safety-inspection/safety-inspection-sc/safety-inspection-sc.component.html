@@ -1,0 +1,209 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<ng-container *ngIf="transaction?.transactionId === tnxId">
+  <!-- establishment details -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="row">
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="registrationnumber"
+                  [isLink]="true"
+                  (select)="goToEstProfile(establishment?.registrationNo)"
+                  [value]="establishment?.registrationNo"
+                  label="ESTABLISHMENT.REGISTRATION-NO"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="arabicName"
+                  [control]="establishment?.name?.arabic"
+                  label="ESTABLISHMENT.ESTABLISHMENT-NAME-AR"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="englishName"
+                  [control]="establishment?.name?.english"
+                  label="ESTABLISHMENT.ESTABLISHMENT-NAME-EN"
+                >
+                </gosi-label-dc>
+              </div>
+              <ng-container *ngIf="isSafetyTransaction">
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    *ngIf="lang === 'en'"
+                    control="{{ OHCurrentRateDetails?.currentOhRate + '%' }}"
+                    label="ESTABLISHMENT.CURRENT-OH-RATE"
+                  >
+                  </gosi-label-dc>
+                  <gosi-label-dc
+                    *ngIf="lang === 'ar'"
+                    control="{{ '%' + OHCurrentRateDetails?.currentOhRate }}"
+                    label="ESTABLISHMENT.CURRENT-OH-RATE"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </ng-container>
+              <div class="col-sm-12 col-md-4 col-lg-4" *ngIf="isSelfEvaluation">
+                <gosi-label-dc
+                  id="evaluation-reason"
+                  [control]="estData?.selfEvaluationReason"
+                  label="ESTABLISHMENT.EVALUATION-REASON"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- inspection history details -->
+  <ng-container *ngIf="isSafetyTransaction">
+    <est-transactions-accordion-dc
+      class="contributor-rate-accordion"
+      heading="{{ 'ESTABLISHMENT.OH-CONTRIBUTION-RATE' | translate }}"
+    >
+      <div class="row pr-3 pl-3 pb-4 mt-4">
+        <div class="col-md-12 col-sm-12">
+          <ng-container *ngFor="let history of loadedHistoryData; let i = index">
+            <est-timeline-dc
+              [isFirstItem]="i === 0"
+              [isLastItem]="i === loadedHistoryData?.length - 1"
+              class="timeline"
+              [colour]="ohRateHistoryColorMap.get(i)"
+            >
+              <div class="row justify-content-between" timeline-date>
+                <div class="date col-auto pb-3 pb-md-0">
+                  <div>
+                    <span class="date">{{ history.startDate?.gregorian | gosiDate }}</span>
+                    <span class="pr-1 pl-2 arrow-icons">
+                      <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                      <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                    </span>
+                    <span class="pl-1 date" *ngIf="history.endDate?.gregorian">{{
+                      history.endDate?.gregorian | gosiDate
+                    }}</span>
+                    <span class="endDate" *ngIf="!history.endDate?.gregorian">
+                      {{ 'ESTABLISHMENT.ONWARDS' | translate }}</span
+                    >
+                  </div>
+                </div>
+                <div class="col-auto icon-text" [ngClass]="ohRateHistoryColorMap.get(i)">
+                  <span *ngIf="lang === 'en'" class="contribution-rate">{{ history?.contributionPercentage }}%</span>
+                  <span *ngIf="lang === 'ar'" class="contribution-rate">%{{ history?.contributionPercentage }}</span>
+                </div>
+              </div>
+            </est-timeline-dc>
+          </ng-container>
+
+          <gosi-loadmore-dc
+            *ngIf="OHRateDetails?.ohRateHistory?.length > 0"
+            class="load-more"
+            [pageSize]="pageSize"
+            [currentPage]="currentPage"
+            [totalCount]="OHRateDetails?.ohRateHistory?.length"
+            (loadMore)="loadMore($event)"
+          >
+          </gosi-loadmore-dc>
+        </div>
+      </div>
+    </est-transactions-accordion-dc>
+    <!-- inspection details -->
+    <div class="row">
+      <div class="col-md-12">
+        <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.OH-SAFETY-INSPECTION-DETAILS' | translate }}">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="row">
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc id="recommendation" [control]="recommendation" label="ESTABLISHMENT.SAFETY-ENGINEER">
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    id="inspectionRefNo"
+                    [control]="inspectionDetails?.inspectionRefNo"
+                    label="ESTABLISHMENT.INSPECTION-REQUEST-NO"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </est-transactions-accordion-dc>
+      </div>
+    </div>
+
+    <!-- New inspection Details section -->
+    <div class="row" *ngIf="OHRateDetails?.effectiveStartdate != null">
+      <div class="col-md-12">
+        <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.NEW-CONTRIBUTION-RATE' | translate }}">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="row">
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    id="effectiveStartDate"
+                    [control]="OHRateDetails?.effectiveStartdate?.gregorian | gosiDate"
+                    label="ESTABLISHMENT.EFFECTIVE-START-DATE"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    *ngIf="lang === 'en'"
+                    control="{{ OHRateDetails?.currentOhRate + '%' }}"
+                    label="ESTABLISHMENT.NEW-CONTRIBUTION-RATE"
+                  >
+                  </gosi-label-dc>
+                  <gosi-label-dc
+                    *ngIf="lang === 'ar'"
+                    control="{{ '%' + OHRateDetails?.currentOhRate }}"
+                    label="ESTABLISHMENT.NEW-CONTRIBUTION-RATE"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </est-transactions-accordion-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container>
+    <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ADMIN-IDENTIFIED-VIOLATIONS-SC' | translate }}">
+      <div class="row" *ngIf="estData?.latestSubmissions?.referenceNumber">
+        <div class="col-md-12">
+          <est-safety-check-violations-list-dc
+            [violationData]="estData?.latestSubmissions"
+          ></est-safety-check-violations-list-dc>
+        </div>
+      </div>
+      <div class="row mb-5" *ngIf="estData?.latestSubmissions?.referenceNumber">
+        <div class="col-md-12">
+          <a class="link-clr" (click)="viewFullCheckList()">{{ 'ESTABLISHMENT.VIEW-FULL-CHECKLIST' | translate }} </a>
+        </div>
+      </div>
+    </est-transactions-accordion-dc>
+  </ng-container>
+
+  <!-- Documents section -->
+
+  <div class="row" *ngIf="documentList?.length > 0">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

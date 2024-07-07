@@ -1,0 +1,175 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<frm-accordian-section-dc
+  *ngIf="isAccordianView; else normalView"
+  [icon]="'briefcase'"
+  [heading]="'CONTRIBUTOR.ENGAGEMENT-DETAILS'"
+  [isOpen]="false"
+>
+  <ng-container *ngTemplateOutlet="engagementView"></ng-container>
+</frm-accordian-section-dc>
+
+<ng-template #normalView>
+  <frm-content-heading-dc
+    icon="briefcase"
+    heading="CONTRIBUTOR.ENGAGEMENT-DETAILS"
+    [canEdit]="canEdit"
+    (onEdit)="onEditEngagementDetails()"
+  >
+  </frm-content-heading-dc>
+  <ng-container *ngTemplateOutlet="engagementView"></ng-container>
+</ng-template>
+
+<ng-template #engagementView>
+  <div class="row no-gutters" *ngIf="engagementDetails">
+    <div class="col-sm-12 col-md-12">
+      <h4 class="sub-heading">
+        {{ 'CONTRIBUTOR.ADD-VIC.REGISTRATION-REASON' | translate }}
+      </h4>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="purposeOfReg"
+        [value]="engagementDetails?.purposeOfRegistration | bilingualText: true"
+        label="CONTRIBUTOR.ADD-VIC.PURPOSE-OF-REGISTRATION"
+      ></gosi-label-dc>
+    </div>
+    <ng-container *ngFor="let engagement of engagementDetails.engagementPeriod">
+      <ng-container *ngFor="let coverage of engagement.coverageTypes">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="coverage"
+            [value]="coverage | bilingualText: true"
+            label="CONTRIBUTOR.COVERAGE"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="joiningDate"
+        [value]="engagementDetails?.joiningDate.gregorian | date: 'dd/MM/yyyy'"
+        label="CONTRIBUTOR.ADD-VIC.JOINING-DATE"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-12 col-md-12">
+      <h4 class="sub-heading" *ngIf="purposeOfEngagement && !purposeOfEngagement.pensionReformEligible">
+        {{ 'CONTRIBUTOR.ADD-VIC.WAGE-SELECTION' | translate }}
+      </h4>
+      <h3 class="sub-heading" *ngIf="purposeOfEngagement && purposeOfEngagement.pensionReformEligible">
+        {{ 'CONTRIBUTOR.WAGE.WAGE-DETAILS' | translate }}
+      </h3>
+    </div>
+    <ng-container *ngIf="purposeOfEngagement && !purposeOfEngagement.pensionReformEligible">
+      <ng-container *ngFor="let engagement of engagementDetails.engagementPeriod">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="wageCategory"
+            [value]="engagement.wageCategory"
+            label="CONTRIBUTOR.ADD-VIC.WAGE-CATEGORY"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc id="wage" [value]="engagement.basicWage" label="CONTRIBUTOR.ADD-VIC.WAGE"></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="monthlyContribution"
+            [value]="engagement.contributionAmount"
+            label="CONTRIBUTOR.ADD-VIC.MONTHLY-CONTRIBUTION-AMOUNT"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="engStartDate"
+          [value]="engagementDetails?.joiningDate?.gregorian | date: 'dd/MM/yyyy'"
+          label="CONTRIBUTOR.ENGAGEMENT-START-DATE"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-sm-12 col-md-12" *ngIf="purposeOfEngagement && purposeOfEngagement.pensionReformEligible">
+      <div class="row">
+        <div class="col-md-12  table-responsive">
+          <div>
+            <gosi-alert-dc></gosi-alert-dc>
+          </div>
+          <table class="table table-wage row_separate">
+            <thead>
+            <tr>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+              </th>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+              </th>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+              </th>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+              </th>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+              </th>
+              <th class="text-left" scope="col">
+                {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+              *ngFor="let wageDetail of engagementDetails.engagementPeriod; let i = index; last as isLast; first as isFirst"
+              style="height: 4rem"
+            >
+              <ng-container>
+                <td class="engagementPeriod">
+              <span  *ngIf="wageDetail.startDate.entryFormat == typeGregorian">
+                {{ wageDetail.startDate.gregorian | date: 'MMM yyyy' }}
+              </span>
+                  <span class="ml-1 faw-icons">
+                <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+              </span>
+                <span class="ml-1">
+                 <span>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                </span>
+<!--                  <span *ngIf="!isFirst && wageDetail?.endDate?.gregorian && wageDetail.startDate.entryFormat == typeGregorian">-->
+<!--                {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}-->
+<!--              </span>-->
+<!--                  <span *ngIf="isFirst && wageDetail?.endDate?.gregorian && wageDetail.endDate.entryFormat == typeGregorian">-->
+<!--                {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}-->
+<!--              </span>-->
+                </td>
+
+                <td>{{ wageDetail.basicWage | number }}</td>
+                <td>
+                  {{
+                     '-'
+                  }}
+                </td>
+                <td>
+                  {{
+                    '-'
+                  }}
+                </td>
+                <td>
+                  {{
+                    '-'
+                  }}
+                </td>
+                <td>{{ wageDetail.basicWage | number }}</td>
+              </ng-container>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="txn-modal">
+  <gosi-modal-dc>
+    <div modalContent>
+      <div class="modal-body px-0">
+        <div class="px-2 row d-md-flex justify-content-between align-items-center">
+          <div class="col-lg-7 col-10">
+            <span class="header"> {{ 'COMPLAINTS.PREVIOUS-TXN' | translate }}</span>
+          </div>
+          <div class="col-lg-4 d-none d-lg-flex justify-content-end filter-box">
+            <ng-container *ngTemplateOutlet="filter"></ng-container>
+          </div>
+          <div class="col-lg-1 col-2 d-flex justify-content-end arrow-icon">
+            <a (click)="hideModal()">
+              <fa-icon icon="times"></fa-icon>
+            </a>
+          </div>
+        </div>
+        <div class="row d-lg-none pt-2 d-md-block">
+          <div class="col-12 d-flex justify-content-end">
+            <ng-container *ngTemplateOutlet="filter"></ng-container>
+          </div>
+        </div>
+
+        <div #previousTransactionWrapper class="main-wrapper mt-4 pr-2" *ngIf="previousTransactions.length > 0">
+          <ul class="timeline">
+            <ng-container *ngFor="let transaction of previousTransactions; let i = index">
+              <li class="timeline-item">
+                <div class="timeline-badge"></div>
+                <span>
+                  {{ transaction.createdDate.gregorian | gosiDate }}
+                </span>
+                <ces-previous-transaction-item-dc
+                  (navigate)="onNavigate($event)"
+                  [transaction]="transaction"
+                ></ces-previous-transaction-item-dc>
+                <div *ngIf="i === previousTransactions.length - 1" class="timeline-badge"></div>
+              </li>
+            </ng-container>
+          </ul>
+          <div class="pl-4 mb-1 pt-2" *ngIf="previousTransactions.length < transactionCount">
+            <gosi-button-dc
+              [outlineOnly]="true"
+              [isFullWidth]="true"
+              type="secondary"
+              size="md"
+              (click)="loadTransactions()"
+            >
+              {{ 'COMPLAINTS.LOAD-MORE' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+        <div
+          *ngIf="previousTransactions?.length === 0 && !isLoading"
+          class="no-result d-flex align-items-center justify-content-center"
+        >
+          <gosi-no-result-dc></gosi-no-result-dc>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</div>
+
+<ng-template #filter>
+  <gosi-input-select-dc
+    id="category"
+    class="category"
+    [control]="categoryForm.get('category')"
+    [list]="categoryList"
+    (select)="onCategorySelection($event)"
+  >
+  </gosi-input-select-dc>
+</ng-template>

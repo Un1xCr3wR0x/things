@@ -1,0 +1,202 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!-- heading section -->
+<div class="content">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="col-md-6 col-lg-6 float-left">
+      <h4 class="main-heading">
+        {{ 'ESTABLISHMENT.ADD-ESTABLISHMENT-ADMIN' | translate }}
+      </h4>
+    </div>
+  </div>
+  <!-- progress wizard section -->
+  <gosi-progress-wizard-dc *ngIf="adminWizards" (clickWizard)="selectedWizard($event)" [wizardItems]="adminWizards">
+  </gosi-progress-wizard-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <tabset class="wrapper-tabset" *ngIf="estAdminForm">
+    <!-- verify admin details -->
+    <tab [active]="currentTab === 0">
+      <ng-container>
+        <gosi-card-dc type="secondary" [heading]="'ESTABLISHMENT.ADMIN-DETAILS' | translate">
+          <div class="row">
+            <div class="col-md-12" id="addAdminSearch">
+              <est-search-person-dc
+                [person]="person"
+                [viewOnly]="estAdminForm.get('isVerified').value === true"
+                [parentForm]="estAdminForm"
+                [nationalityList$]="nationalityList$"
+              >
+              </est-search-person-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="estAdminForm.get('isSaved').value === false">
+            <div class="col-md-6 col-sm-12 verify-admin">
+              <ng-container *ngIf="estAdminForm.get('isVerified').value === false; else reset">
+                <est-footer-buttons-dc
+                  [noMarginTop]="true"
+                  [showCancel]="false"
+                  [showPrevious]="false"
+                  [hasOnlyPrimary]="true"
+                  primaryId="{{ 'Verify' }}"
+                  primaryLabel="ESTABLISHMENT.VERIFY"
+                  (submit)="verifyEstAdmin(mainRegNo, adminId, false)"
+                ></est-footer-buttons-dc>
+              </ng-container>
+              <ng-template #reset>
+                <est-footer-buttons-dc
+                  [noMarginTop]="true"
+                  [showCancel]="false"
+                  [showPrevious]="false"
+                  [hasOnlyPrimary]="true"
+                  cancelId="{{ 'Reset' }}"
+                  primaryLabel="ESTABLISHMENT.RESET"
+                  (submit)="resetEventDetails(estAdminForm)"
+                ></est-footer-buttons-dc>
+              </ng-template>
+            </div>
+          </div>
+        </gosi-card-dc>
+        <!-- Person Details  -->
+        <ng-container *ngIf="estAdminForm.get('isVerified').value === true">
+          <gosi-card-dc type="secondary" id="addAdminDetails">
+            <est-person-details-dc
+              [parentForm]="estAdminForm"
+              [person]="personFormDetail"
+              [genderList]="genderList$ | async"
+              [readOnly]="estAdminForm.get('isSaved').value || estAdminForm.get('personExists').value"
+              [isSaved]="estAdminForm.get('isSaved').value"
+              [hasDateFields]="false"
+            >
+            </est-person-details-dc>
+          </gosi-card-dc>
+          <gosi-card-dc type="secondary" [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate">
+            <frm-contact-dc
+              [parentForm]="estAdminForm"
+              [emailMandatory]="true"
+              [isHeadingRequired]="false"
+              [contactDetails]="person.contactDetail"
+              [defaultOnly]="defaultToSaudi || estAdminForm.get('isSaved').value === true"
+            >
+            </frm-contact-dc>
+          </gosi-card-dc>
+        </ng-container>
+        <est-footer-buttons-dc
+          primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+          [showPrevious]="false"
+          (submit)="saveAdmin()"
+          (cancel)="showModal(cancelTemplate)"
+        >
+        </est-footer-buttons-dc>
+      </ng-container>
+    </tab>
+
+    <tab [active]="currentTab === 1">
+      <!-- branches and roles assigning section -->
+      <div class="row branch-roles">
+        <div class="col-md-12">
+          <div class="row mb-md-4" id="add-admin-actions action-item">
+            <div class="col-md-5 heading-value mb-4 mb-md-0">{{ 'ESTABLISHMENT.ADMIN-BRANCH-ROLE' | translate }}</div>
+            <div class="col-md-4 ml-auto d-flex justify-content-start search">
+              <gosi-search-dc
+                class="flex-grow-1"
+                id="add-admin-search"
+                [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+                (search)="searchBranches($event)"
+              >
+              </gosi-search-dc>
+              <div class="pl-2" id="add-admin-filter">
+                <est-branch-filter-dc
+                  [branchFilters]="branchFilters"
+                  [locationList$]="locations$"
+                  [showRoles]="false"
+                  [showLegalEntity]="false"
+                  [showLocation]="true"
+                  [showStatus]="false"
+                  (apply)="applyFilter($event)"
+                >
+                </est-branch-filter-dc>
+              </div>
+            </div>
+
+            <ng-container *ngIf="!isLoadingBranches">
+              <div class="col-md-12 search-result ml-2 pb-2" *ngIf="branchSearchParam">
+                <est-search-result-dc [count]="totalBranches" [value]="branchSearchParam"> </est-search-result-dc>
+              </div>
+              <div class="col-md-12" *ngIf="branchFilters?.length > 0">
+                <gosi-applied-filters-dc [filters]="branchFilters" (clearFilter)="applyFilter($event)">
+                </gosi-applied-filters-dc>
+              </div>
+              <div class="col-md-12" *ngIf="branches?.length === 0">
+                <est-no-result-dc></est-no-result-dc>
+              </div>
+            </ng-container>
+          </div>
+          <div class="branch-heading d-none d-md-block" *ngIf="branches?.length !== 0 && !isLoadingBranches">
+            <est-branch-role-heading-dc></est-branch-role-heading-dc>
+          </div>
+          <div class="row" *ngIf="!isLoadingBranches">
+            <div
+              class="col-md-12"
+              *ngFor="
+                let branch of branches
+                  | paginate
+                    : {
+                        id: 'editBranchRoleMapping',
+                        itemsPerPage: itemsPerPage,
+                        currentPage: currentPage,
+                        totalItems: totalBranches
+                      };
+                let i = index
+              "
+            >
+              <est-branch-role-mapping-dc
+                [branch]="branch"
+                [index]="i"
+                (updateRoles)="addBranches($event, branch.registrationNo)"
+                [isValid]="isValid"
+                [showOnlyRoleAdmins]="showOnlyRoleAdmins"
+              ></est-branch-role-mapping-dc>
+            </div>
+            <div class="col-md-12 d-flex justify-content-center">
+              <gosi-pagination-dc
+                *ngIf="totalBranches && totalBranches > itemsPerPage"
+                [totalSize]="totalBranches"
+                [itemsPerPage]="itemsPerPage"
+                [pageDetails]="pageDetails"
+                (pageChange)="selectBranches($event - 1)"
+                paginationId="editBranchRoleMapping"
+              >
+              </gosi-pagination-dc>
+            </div>
+          </div>
+          <div clas="row" *ngIf="isLoadingBranches">
+            <est-loading-dc></est-loading-dc>
+          </div>
+        </div>
+      </div>
+      <!-- branches and role  -->
+      <est-footer-buttons-dc
+        primaryLabel="ESTABLISHMENT.SUBMIT"
+        (submit)="submitTransaction()"
+        (cancel)="showModal(cancelTemplate)"
+        (previous)="selectedWizard(0)"
+      >
+      </est-footer-buttons-dc>
+    </tab>
+  </tabset>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

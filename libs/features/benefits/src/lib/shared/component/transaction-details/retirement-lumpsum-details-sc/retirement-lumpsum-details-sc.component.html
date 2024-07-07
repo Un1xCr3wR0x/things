@@ -1,0 +1,190 @@
+<div class="row">
+  <div class="col-md-12">
+    <bnt-annuity-contributor-details-dc
+      *ngIf="annuityBenefitDetails"
+      [lang]="lang"
+      [isIndividualApp]="isIndividualApp"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [isHeirBenefit]="isHeirBenefit"
+      [imprisonmentDetails]="imprisonmentDetails"
+      [benefitCalculationDetails]="benefitCalculationDetails"
+      [personDetails]="personDetails"
+      [personNameEnglish]="personNameEnglish"
+      [personNameArabic]="personNameArabic"
+      [benefitType]="benefitType"
+      [sin]="socialInsuranceNo"
+      [assignedRole]="routerData?.assignedRole"
+      [validatorCanEdit]="isOcc ? false : validatorCanEdit"
+      [dependentDetails]="dependentDetails"
+      [notificationDate]="notificationDate"
+      [dependentHistory]="dependentHistory"
+      [bankDetails]="bankDetails"
+      [systemRunDate]="systemRunDate"
+      (getDepHistory)="getDependentHistory($event)"
+      (navigateToEdit)="reDirectUsersToApplyScreens()"
+      (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+    ></bnt-annuity-contributor-details-dc>
+  </div>
+
+  <div
+    class="col-md-12"
+    *ngIf="
+      !isHeir &&
+      annuityBenefitDetails?.paymentMethod?.english === 'Bank Transfer' &&
+      !(routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+    "
+  >
+    <bnt-ui-validator-bank-details-dc
+      *ngIf="!isHeirBenefit && bankDetails && bankDetails.ibanBankAccountNo"
+      [bankDetails]="bankDetails"
+    ></bnt-ui-validator-bank-details-dc>
+  </div>
+  <div
+    *ngIf="
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      )
+    "
+    class="col-md-12"
+  >
+    <bnt-woman-contributor-details-dc
+      *ngIf="benefitCalculationDetails"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [benefitCalculationDetails]="benefitCalculationDetails"
+      [benefitType]="benefitType"
+      [lang]="lang"
+      [eligibleForPensionReform]="annuityBenefitDetails.pensionReformEligibility?.english === pensionReformEligibilityEnum.Eligible"
+      (navigateToInjury)="navigateToInjury($event)"
+      (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+    >
+    </bnt-woman-contributor-details-dc>
+  </div>
+  <div class="col-md-12" *ngIf="!isHeir">
+    <bnt-attorney-details-dc
+      *ngIf="preSelectedAuthperson"
+      [isHeir]="isHeir"
+      [preselctdAttorney]="preSelectedAuthperson"
+    >
+    </bnt-attorney-details-dc>
+  </div>
+
+  <div
+    class="col-md-12"
+    *ngIf="
+      !isHeir &&
+      personDetails?.personType === 'Authorized Person' &&
+      annuityBenefitDetails?.paymentMethod?.english === 'Cheque'
+    "
+  >
+    <bnt-person-contact-details-dc
+      *ngIf="personDetails.contactDetail"
+      [contactDetail]="personDetails.contactDetail"
+    ></bnt-person-contact-details-dc>
+  </div>
+  <!-- validator view disability  only visible for occ Lumpsum-->
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <bnt-validator-disability-details-dc
+      *ngIf="benefitType === 'Occupational Disability Lumpsum Benefit'"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      (injurySelected)="navigateToInjury($event)"
+    >
+    </bnt-validator-disability-details-dc>
+  </div>
+  <!-- Heir Adjsutment Details  -->
+  <div class="col-md-12 col-lg-12 col-md-12 col-sm-12">
+    <!-- adjustment details section to be removed if contributor is not applicable for previousAdjustmentAmount (Defect:454010) -->
+    <bnt-adjustment-detail-dc
+      *ngIf="!isHeirBenefit && !(isNonOcc && (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH]))"
+      [heading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+      [adjustmentCalculationDetails]="benefitCalculationDetails?.adjustmentCalculationDetails"
+      [lang]="lang"
+    >
+    </bnt-adjustment-detail-dc>
+    <bnt-heir-adjustment-details-dc
+      *ngIf="
+        isHeir &&
+        dependentDetails &&
+        benefitCalculationDetails?.heirBenefitDetails &&
+        benefitCalculationDetails?.heirBenefitDetails?.length
+      "
+      [lang]="lang"
+      [adjustmentDetails]="heirAdjustments"
+      [benefitType]="benefitType"
+      [heirOrDependentDetails]="dependentDetails"
+      [heirBenefitDetails]="benefitCalculationDetails?.heirBenefitDetails"
+      [parentForm]="retirementForm"
+      [approveScreen]="true"
+      [isLumpsum]="true"
+      [isValidator]="
+        routerData.assignedRole === rolesEnum.VALIDATOR_1 ||
+        routerData.assignedRole === rolesEnum.VALIDATOR_2 ||
+        enableDirectPayment
+      "
+      [isTransactionScreen]="isTransactionScreen"
+      [topHeading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+      [isIndividualApp]="isIndividualApp"
+      (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+      (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+      (getTpa)="getPersonAdjustmentDetails($event)"
+    >
+    </bnt-heir-adjustment-details-dc>
+  </div>
+  <!-- Third party adjustment details-->
+  <div
+    class="col-md-12 pt-5"
+    *ngIf="
+      !isHeirBenefit &&
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      )
+    "
+  >
+    <bnt-net-payment-details-dc
+      *ngIf="personAdjustments && !isDoctor"
+      [adjustmentDetails]="personAdjustments"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [requestType]="requestType"
+      [isRPALumpsum]="isRPALumpsum"
+      [samaVerified]="bankDetails?.verificationStatus === samaVerificationStatus.VERIFIED"
+      [adjustmentCalculationDetails]="benefitCalculationDetails?.adjustmentCalculationDetails"
+      [isValidator]="routerData.assignedRole === rolesEnum.VALIDATOR_2 || validatorCanEdit || validatorTaminaty"
+      [isValidator2]="routerData.assignedRole === rolesEnum.VALIDATOR_2"
+      [disableDirectPayment]="routerData.assignedRole === 'FC Approver' || routerData.assignedRole === 'FCApprover'"
+      [holdMessage]="'BENEFITS.ADJUSTMENT-THIRD-PARTY-HOLD'"
+      [parentForm]="retirementForm"
+      [isLumpsum]="true"
+      [showActionButtons]="!isIndividualApp"
+      (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+      (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+    >
+    </bnt-net-payment-details-dc>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="isDoctor">
+    <bnt-add-disability-details-dc [disabilityDetails]="disabilityDetails" [parentForm]="retirementForm">
+    </bnt-add-disability-details-dc>
+  </div>
+  <!--vic details-->
+  <div
+    *ngIf="creditBalanceDetails && benefitCalculationDetails?.beneficiaryBenType === 1025"
+    class="col-sm-12 col-md-12 col-lg-12"
+  >
+    <bnt-vic-details-dc
+      [creditBalanceDetails]="creditBalanceDetails"
+      (gotoVicViewPage)="gotoVicViewPage()"
+    ></bnt-vic-details-dc>
+  </div>
+  <!--Delay in late request-->
+  <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="!isDoctor && !isHoldBenefit && !isAddModifyBenefit">
+    <bnt-delay-in-request-dc
+      *ngIf="annuityBenefitDetails && annuityBenefitDetails.lateRequestDetails"
+      [lateRequestDetails]="annuityBenefitDetails.lateRequestDetails"
+      [parentForm]="retirementForm"
+      [isNonOcc]="isNonOcc"
+      [systemParameter]="systemParameter"
+      [listYesNo$]="listYesNo$"
+      [isEdit]="routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH]"
+    ></bnt-delay-in-request-dc>
+  </div>
+</div>

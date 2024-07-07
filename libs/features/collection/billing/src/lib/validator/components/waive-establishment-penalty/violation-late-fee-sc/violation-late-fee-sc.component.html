@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+  <div class="content">
+    <ng-container>
+      <frm-main-content-dc [documents]="documents" [comments]="comments">
+        <div id="mainHeading">
+            <frm-main-heading-dc [heading]="'BILLING.VIOLATION-LATE-FEE-WAIVER' | translate">
+            </frm-main-heading-dc>
+            </div>
+            <div id="contentArea">
+                <blg-waive-est-penalty-account-details-dc
+                  [establishmentDetails]="establishmentDetails"
+                  [waiverDetails]="waiverDetails"
+                  [isLateFeeViolation]="isLateFeeViolation"
+                  ></blg-waive-est-penalty-account-details-dc>
+                  </div>
+                  <div id="actionArea">
+                    <frm-action-area-dc
+                      [canReturn]="canReturn"
+                      [canReject]="canReject"
+                      [isReturn]="false"
+                      [disableApprove]="isEditApprove"
+                      (approveEvent)="approveTransaction(approveTemplate)"
+                      (rejectEvent)="rejectTransaction(rejectTemplate)"
+                      (returnEvent)="returnTransaction(returnTemplate)"
+                      (cancelEvent)="showPopup(cancelTemplate)"
+                    >
+                    </frm-action-area-dc>
+                  </div>
+                  </frm-main-content-dc>
+                  </ng-container>
+                  
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="waivePenaltyViolationEstablishmentForm"
+      (cancelEvent)="hidePopup()"
+      (approveEvent)="confirmApprove()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="waivePenaltyViolationEstablishmentForm"
+      [heading]="rejectHeading"
+      (cancelEvent)="hidePopup()"
+      [rejectReasonList$]="rejectReasonList"
+      (rejectEvent)="confirmReject()"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="waivePenaltyViolationEstablishmentForm"
+      [heading]="returnHeading"
+      [returnReasonList$]="returnReasonList"
+      (cancelEvent)="hidePopup()"
+      [warningMessage]="
+        isGOL
+          ? isFcApprove
+            ? 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+            : 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO'
+          : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+      "
+      (returnEvent)="confirmReturn()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+  </div>

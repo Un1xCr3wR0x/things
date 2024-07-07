@@ -1,0 +1,577 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row py-3">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <div class="contribution-heading">
+      <span class="contributor-heading-span"> {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }} </span>
+    </div>
+  </div>
+  <div class="col-sm-6" *ngIf="
+      benefitType !== 'Occupational Disability Pension Benefit' &&
+      benefitType !== 'Occupational Disability Lumpsum Benefit'
+    ">
+    <gosi-button-dc class="calc-button" [size]="isSmallScreen ? 'sm' : 'md'" type="secondary" [outlineOnly]="true"
+                    (click)="showModal(calculationDetails)">
+      {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      oldBenefitDetails && (requestType === benefitTypes.addModifyBenefit || requestType === benefitTypes.addModifyHeir)
+    ">
+    <gosi-label-dc id="AvgMonthlyContributoryWageModify"
+                   [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: oldBenefitDetails?.finalAverageWage | number: '1.2-2' }"
+                   label="{{ 'BENEFITS.AVERAGE-WAGE' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      oldBenefitDetails && (requestType === benefitTypes.addModifyBenefit || requestType === benefitTypes.addModifyHeir)
+    ">
+    <gosi-label-dc id="totalContributionMonths" [value]="oldBenefitDetails?.totalContributionMonths"
+                   label="{{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-MONTHS' | translate }}"></gosi-label-dc>
+  </div>
+  <!-- Benefit Start Date added as a part of Defect 464036 -->
+
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!requestType &&  !isPensionReform()">
+    <gosi-label-dc id="AvgMonthlyContributoryWage" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate: { amount: benefitCalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }
+      " [label]="
+        (benefitType === benefitTypes.heirMissingLumpsum ||
+        benefitType === benefitTypes.heirLumpsumDeadContributor ||
+        benefitType === benefitTypes.heirLumpsum
+          ? 'BENEFITS.AMW'
+          : 'BENEFITS.AVERAGE-WAGE'
+        ) | translate
+      "></gosi-label-dc>
+  </div>
+
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      !requestType &&
+      benefitType !== 'Occupational Disability Pension Benefit' &&
+      benefitType !== 'Occupational Disability Lumpsum Benefit'
+    ">
+    <gosi-label-dc id="TOTAL-ANNUITY-CONTRIBUTION-MONTHS" [value]="benefitCalculationDetails?.totalContributionMonths"
+                   label="{{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-MONTHS' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc *ngIf="
+        annuityBenefitDetails?.terminationDate &&
+        (benefitType === benefitTypes.occPension ||
+          benefitType === benefitTypes.nonOccPensionBenefitType ||
+          requestType === benefitTypes.addModifyBenefit ||
+          benefitType === benefitTypes.retirementPension)
+      " id="terminationDate" [value]="annuityBenefitDetails?.terminationDate | dateType"
+                   label="{{ 'BENEFITS.TERMINATION-DATE' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="
+    benefitType === 'Retirement Pension Benefit (Hazardous Occupation)' ||
+    benefitType === 'Retirement Lumpsum Benefit (Hazardous Occupation)'
+  "></div>
+<div class="row" *ngIf="!requestType && (isHeirPension || isHeirLumpsum) && isValidator">
+  <div class="col-sm-6 col-md-6 col-lg-6"
+       *ngIf="!isHeirLumpsum && benefitCalculationDetails?.additionalContribution?.additionalContributionMonths">
+    <gosi-label-dc id="additionalContributionMonths"
+                   [value]="benefitCalculationDetails?.additionalContribution?.additionalContributionMonths"
+                   label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-MONTH' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6"
+       *ngIf="benefitCalculationDetails?.additionalContribution?.additionalContributionAmount">
+    <gosi-label-dc id="additionalContributionAmount" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate
+            : {
+                amount:
+                  benefitCalculationDetails?.additionalContribution?.additionalContributionAmount | number: '1.2-2'
+              }
+      " label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-AMT' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6"
+       *ngIf="benefitCalculationDetails?.additionalContribution?.additionalContributionMonths">
+    <gosi-label-dc id="additionalContributionplan"
+                   [value]="'BENEFITS.PENSION-PERCENTAGE-MONTHLY' | translate: { percentage: 25 }"
+                   label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-PAYMENT-PLAN' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="
+    !requestType &&
+    (isHeirPension || isHeirLumpsum) &&
+    annuityBenefitDetails?.additionalContribution?.additionalContributionMonths
+  ">
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <div class="benefit-details-heading"
+         *ngIf="annuityBenefitDetails?.additionalContribution?.additionalContributionAmount">
+      {{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-DETAILS' | translate }}
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionMonths"
+                   [value]="annuityBenefitDetails?.additionalContribution?.additionalContributionMonths"
+                   label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-MONTH' | translate }}"></gosi-label-dc>
+  </div>
+
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionAmount" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate
+            : { amount: annuityBenefitDetails?.additionalContribution?.additionalContributionAmount | number: '1.2-2' }
+      " label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-AMT' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionplan" [value]="
+        'BENEFITS.PENSION-PERCENTAGE-MONTHLY'
+          | translate: { percentage: annuityBenefitDetails?.additionalContribution?.deductionPercent }
+      " label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-PAYMENT-PLAN' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="
+    !requestType && !isHeirPension && !isHeirLumpsum && annuityBenefitDetails?.additionalContribution?.deductionPercent
+  ">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionplan" [value]="
+        'BENEFITS.PENSION-PERCENTAGE-MONTHLY'
+          | translate: { percentage: annuityBenefitDetails?.additionalContribution?.deductionPercent }
+      " label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-PAYMENT-PLAN' | translate }}"></gosi-label-dc>
+  </div>
+
+  <div class="col-sm-6 col-md-6 col-lg-6 no-gutters" *ngIf="annuityBenefitDetails">
+    {{ 'BENEFITS.ADDITIONAL-PAYMENT-PERIOD' | translate }}
+    <div class="row py-2 px-3">
+      <span class="payment-period">
+        {{
+        geMonthForTrans(annuityBenefitDetails.additionalContribution.startDate)
+          | translate: {year: annuityBenefitDetails.additionalContribution.startDate?.gregorian | date: 'y'}
+        }}
+        <fa-icon icon="arrow-right" *ngIf="lang === 'en'"></fa-icon>
+        <fa-icon icon="arrow-left" *ngIf="lang === 'ar'"></fa-icon>
+        {{
+        geMonthForTrans(annuityBenefitDetails.additionalContribution.endDate)
+          | translate: {year: annuityBenefitDetails.additionalContribution.endDate?.gregorian | date: 'y'}
+        }}
+      </span>
+      <span class="additional-Months">
+        ({{ annuityBenefitDetails.additionalContribution.recoveryPeriodMonths }} {{ 'BENEFITS.MONTHS' | translate }})
+      </span>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6 no-gutters">
+    <gosi-label-dc id="amntToBePaid" [value]="
+        'BENEFITS.AMOUNT-MONTHS'
+          | translate
+            : { amount: annuityBenefitDetails?.additionalContribution?.deductionAmount || '0' | number: '1.2-2' }
+      " label="{{ 'BENEFITS.DEDUCTION-AMT' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+
+<div class="row" *ngIf="requestType && oldBenefitDetails?.additionalContribution?.additionalContributionMonths">
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <div class="benefit-details-heading">
+      {{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-DETAILS' | translate }}
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionMonths"
+                   [value]="oldBenefitDetails?.additionalContribution?.additionalContributionMonths"
+                   label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-MONTH' | translate }}"></gosi-label-dc>
+  </div>
+
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionAmount" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate
+            : { amount: oldBenefitDetails?.additionalContribution?.additionalContributionAmount | number: '1.2-2' }
+      " label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-AMT' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="requestType && oldBenefitDetails?.additionalContribution?.deductionPercent">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc id="additionalContributionplan" [value]="
+        'BENEFITS.PENSION-PERCENTAGE-MONTHLY'
+          | translate: { percentage: oldBenefitDetails?.additionalContribution?.deductionPercent }
+      " label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-PAYMENT-PLAN' | translate }}"></gosi-label-dc>
+  </div>
+
+  <div class="col-sm-6 col-md-6 col-lg-6 no-gutters" *ngIf="oldBenefitDetails?.additionalContribution">
+    {{ 'BENEFITS.ADDITIONAL-PAYMENT-PERIOD' | translate }}
+    <div class="row py-2 px-3">
+      <span class="payment-period">
+        {{
+        geMonthForTrans(oldBenefitDetails.additionalContribution.startDate)
+          | translate: {year: oldBenefitDetails?.additionalContribution.startDate?.gregorian | date: 'y'}
+        }}
+        <fa-icon icon="arrow-right" *ngIf="lang === 'en'"></fa-icon>
+        <fa-icon icon="arrow-left" *ngIf="lang === 'ar'"></fa-icon>
+        {{
+        geMonthForTrans(oldBenefitDetails?.additionalContribution.endDate)
+          | translate: {year: oldBenefitDetails?.additionalContribution.endDate?.gregorian | date: 'y'}
+        }}
+      </span>
+      <span class="additional-Months">
+        ({{ oldBenefitDetails?.additionalContribution.recoveryPeriodMonths }} {{ 'BENEFITS.MONTHS' | translate }})
+      </span>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6 no-gutters">
+    <gosi-label-dc id="amntToBePaid" [value]="
+        'BENEFITS.AMOUNT-MONTHS'
+          | translate: { amount: oldBenefitDetails?.additionalContribution?.deductionAmount || '0' | number: '1.2-2' }
+      " label="{{ 'BENEFITS.DEDUCTION-AMT' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+
+<!-- validator view disability only visible for occ pension and NON occ-->
+<!-- <div class="col-sm-12 col-md-12 col-lg-12"> -->
+<div *ngIf="requestType !== benefitTypes.startBenefitWaive">
+  <bnt-validator-disability-details-dc *ngIf="
+      benefitType === 'Occupational Disability Pension Benefit' ||
+      benefitType === 'Non-Occupational Disability Pension Benefit'
+    " [annuityBenefitDetails]="annuityBenefitDetails" (injurySelected)="viewInjuryDetails($event)">
+  </bnt-validator-disability-details-dc>
+</div>
+<!-- </div> -->
+
+<div class="row py-3">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <!-- hiding the heading if there is no value to display below -->
+    <div class="benefit-details-heading" *ngIf="
+        benefitCalculationDetails?.totalBenefitAmount !== 0 ||
+        annuityBenefitDetails?.additionalContribution?.paymentAmount !== 0 ||
+        benefitCalculationDetails?.helperAllowance !== 0
+      ">
+      {{ 'BENEFITS.BENEFIT-DETAIL' | translate }}
+    </div>
+  </div>
+  <div class="col-sm-6" *ngIf="benefitCalculationDetails && requestType !== benefitTypes.addModifyBenefit">
+    <gosi-button-dc class="calc-button" [size]="isSmallScreen ? 'sm' : 'md'" type="secondary" [outlineOnly]="true"
+                    (click)="isOccCalc ? showModal(calcDetails) : showModal(moreDetails)">
+      {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="col-sm-6" *ngIf="oldBenefitDetails && requestType === benefitTypes.addModifyBenefit">
+    <gosi-button-dc class="calc-button" [size]="isSmallScreen ? 'sm' : 'md'" type="secondary" [outlineOnly]="true"
+                    (click)="isOccCalc ? showModal(calcDetails) : showModal(moreDetails)">
+      {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+<div class="row" *ngIf="isAddModifyBenefit">
+  <!-- Benefit Amount hidden for non occ pension Defect 535844 -->
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="benefitType !== 'Non-Occupational Disability Pension Benefit'">
+    <gosi-label-dc [value]="annuityBenefitDetails?.benefitAmount | number: '1.2-2'"
+                   label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc [value]="annuityBenefitDetails?.benefitStartDate | dateType"
+                   label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="benefitType === 'Moved to Public Pension Lumpsum (RPA) Benefit'">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate: { amount: benefitCalculationDetails?.basicBenefitAmount | number: '1.2-2' }
+      " label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"></gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="
+    (benefitType === 'Retirement Pension Benefit' ||
+      benefitType === 'Early Retirement Pension Benefit' ||
+      benefitType === 'Non-Occupational Disability Pension Benefit' ||
+      benefitType === 'Jailed Contributor Pension Benefit' ||
+      benefitType === 'Retirement Pension Benefit (Hazardous Occupation)' ||
+      benefitType === 'Occupational Disability Pension Benefit') &&
+    !isAddModifyBenefit
+  ">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc [value]="
+        (benefitCalculationDetails?.benefitStartDate
+          ? benefitCalculationDetails?.benefitStartDate
+          : annuityBenefitDetails?.benefitStartDate
+        ) | dateType
+      " label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc [value]="
+        isNonOccBenefit()
+          ? ('BENEFITS.AMOUNT-MONTHS'
+            | translate
+              : {
+                  amount:
+                    (benefitCalculationDetails?.reCalculationDetails?.length > 0
+                      ? benefitCalculationDetails?.reCalculationDetails[0]?.basicBenefitAmount
+                      : 0
+                    ) | number: '1.2-2'
+                })
+          : ('BENEFITS.AMOUNT-MONTHS'
+            | translate: { amount: benefitCalculationDetails?.basicBenefitAmount || 0 | number: '1.2-2' })
+      "
+                   label="{{ 'BENEFITS.BASIC-BENEFIT-AMOUNT' | translate }}"
+    ></gosi-label-dc>
+  </div>
+  <!--  <div-->
+  <!--    class="col-sm-6 col-md-6 col-lg-6"-->
+  <!--    *ngIf="benefitCalculationDetails?.additionalContribution?.additionalContributionAmount"-->
+  <!--  >-->
+  <!--    <gosi-label-dc-->
+  <!--      [value]="benefitCalculationDetails?.additionalContribution?.additionalContributionAmount | number: '1.2-2'"-->
+  <!--      label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+  <!--    ></gosi-label-dc>-->
+  <!--  </div>-->
+  <!-- Defect 520968 : As confirmed by BA, raisedBasicBenefitAmount of latest event to be shown as Total Benefit Amount -->
+  <!--commenting out since TOTAL-BENEFIT-AMOUNT is already present in timeline  -->
+  <!-- <div
+    class="col-sm-6 col-md-6 col-lg-6"
+    *ngIf="benefitCalculationDetails?.reCalculationDetails?.length && latestRaisedBenefitAmount"
+  >
+    <gosi-label-dc
+      [value]="latestRaisedBenefitAmount | number: '1.2-2'"
+      label="{{ 'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate }}"
+    ></gosi-label-dc>
+  </div> -->
+
+  <!-- Dependent amount to be shown under dependent history -->
+  <!-- <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      [value]="benefitCalculationDetails?.dependentAmount || 0 | number: '1.2-2'"
+      label="{{ 'BENEFITS.DEPENDENT-AMOUNT' | translate }}"
+    ></gosi-label-dc>
+  </div> -->
+
+  <!-- Pension Benefit amount and first benfit start date
+       is not required for Backdated Dep as per the AC(Story 403204) -->
+
+  <!-- <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      *ngIf="benefitCalculationDetails.totalBenefitAmount || benefitCalculationDetails.totalBenefitAmount !== 0"
+      [value]="
+        'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitCalculationDetails.totalBenefitAmount | number: '1.2-2' }
+      "
+      label="{{ 'BENEFITS.PENSION-BENEFIT-AMOUNT' | translate }}"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      [value]="annuityBenefitDetails?.benefitStartDate?.gregorian | date: 'dd/MM/yyyy'"
+      label="{{ 'BENEFITS.FIRST-BENEFIT-START-DATE' | translate }}"
+    ></gosi-label-dc>
+  </div> -->
+</div>
+<div class="row">
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      benefitType === 'Heir Pension Benefit' ||
+      benefitType === 'Heir Pension Dead Contributor Benefit' ||
+      benefitType === 'Heir Pension Missing Contributor Benefit'
+    ">
+    <gosi-label-dc
+      [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitCalculationDetails.totalBenefitAmount | number }"
+      label="{{ 'BENEFITS.TOTAL-PENSION-BENEFIT-AMOUNT' | translate }}"></gosi-label-dc>
+  </div>
+  <!--
+  Removing conditions :
+  benefitType === 'Heir Lumpsum Benefit' ||
+  benefitType === 'Heir Lumpsum Missing Contributor Benefit' ||
+  benefitType === 'Heir Lumpsum Dead Contributor Benefit' ||
+  as BENEFIT-START-DATE is not required for lumpsum, new vd in Story 469840 -->
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      benefitType === 'Heir Pension Benefit' ||
+      benefitType === 'Heir Pension Dead Contributor Benefit' ||
+      benefitType === 'Heir Pension Missing Contributor Benefit'
+    ">
+    <gosi-label-dc [value]="benefitCalculationDetails?.benefitStartDate | dateType"
+                   label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      benefitType === 'Retirement Lumpsum Benefit' ||
+      benefitType === 'Woman Lumpsum Benefit' ||
+      benefitType === 'Non-Occupational Disability Lumpsum Benefit' ||
+      benefitType === 'Jailed Contributor Lumpsum Benefit' ||
+      benefitType === 'Retirement Lumpsum Benefit (Hazardous Occupation)' ||
+      benefitType === 'Occupational Disability Lumpsum Benefit'
+    ">
+    <gosi-label-dc id="LumpsumBenefitAmt" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate: { amount: benefitCalculationDetails?.totalBenefitAmount | number: '1.2-2' }
+      " label="{{ 'BENEFITS.LUMPSUM-BENEFIT-AMOUNT' | translate }}"></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      benefitType === benefitTypes.heirMissingLumpsum ||
+      benefitType === benefitTypes.heirLumpsumDeadContributor ||
+      benefitType === benefitTypes.heirLumpsum
+    ">
+    <gosi-label-dc id="LumpsumBenefitAmt" [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate: { amount: benefitCalculationDetails?.totalBenefitAmount | number: '1.2-2' }
+      " label="{{ 'BENEFITS.TOTAL-LUMPSUM-BENEFIT-AMOUNT' | translate }}"></gosi-label-dc>
+  </div>
+  <!-- <div
+    class="col-sm-6 col-md-6 col-lg-6"
+    *ngIf="
+      benefitType === benefitTypes.heirMissingLumpsum ||
+      benefitType === benefitTypes.heirLumpsumDeadContributor ||
+      benefitType === benefitTypes.heirLumpsum
+    "
+  >
+    <gosi-label-dc
+      id="eligibleHeirLumpsumAmount"
+      [value]="
+        'BENEFITS.AMOUNT-MONTHS'
+          | translate: { amount: benefitCalculationDetails?.totalBenefitAmount | number: '1.2-2' }
+      "
+      label="{{ 'BENEFITS.ELIGIBLE-HEIR-LUMPSUM-AMOUNT' | translate }}"
+    ></gosi-label-dc>
+  </div> -->
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      (benefitType === benefitTypes.heirMissingLumpsum ||
+        benefitType === benefitTypes.heirLumpsumDeadContributor ||
+        benefitType === benefitTypes.heirLumpsum) &&
+      benefitCalculationDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount &&
+      benefitCalculationDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount !== 0
+    ">
+    <gosi-label-dc id="netPrevAdjustment" [value]="
+        'BENEFITS.AMOUNT-MONTHS'
+          | translate
+            : {
+                amount:
+                  benefitCalculationDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount | number: '1.2-2'
+              }
+      " label="{{ 'BENEFITS.NET-PREV-ADJUSTMENT' | translate }}">
+    </gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="
+      (benefitType === benefitTypes.heirMissingLumpsum ||
+        benefitType === benefitTypes.heirLumpsumDeadContributor ||
+        benefitType === benefitTypes.heirLumpsum) &&
+      benefitCalculationDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction &&
+      benefitCalculationDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction !== 0 &&
+      benefitCalculationDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount > 0
+    ">
+    <gosi-label-dc id="lumpsumBenefitAmountDeduct" [value]="
+        'BENEFITS.AMOUNT-MONTHS'
+          | translate
+            : {
+                amount:
+                  benefitCalculationDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction | number: '1.2-2'
+              }
+      " label="{{ 'BENEFITS.HEIR-LUMPSUM-BENEFIT-AMOUNT-AFTER-DEDUCTIONS' | translate }}"></gosi-label-dc>
+  </div>
+  <!--  -->
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="benefitCalculationDetails?.helperAllowance">
+    <gosi-label-dc value="{{
+        (isLumpsum ? 'BENEFITS.AVERAGE-AMOUNT' : 'BENEFITS.AMOUNT-MONTHS')
+          | translate: { amount: benefitCalculationDetails.helperAllowance | number: '1.2-2' }
+      }}" label="{{ 'BENEFITS.HLP-ALWNCE-AMT' | translate }}"></gosi-label-dc>
+  </div>
+
+  <!--  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.additionalContribution?.paymentAmount">-->
+  <!--    <gosi-label-dc-->
+  <!--      id="additionalBnefitAmt"-->
+  <!--      [value]="-->
+  <!--        'BENEFITS.AMOUNT-MONTHS'-->
+  <!--          | translate: { amount: annuityBenefitDetails?.additionalContribution?.paymentAmount | number: '1.2-2' }-->
+  <!--      "-->
+  <!--      label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+  <!--    ></gosi-label-dc>-->
+  <!--  </div>-->
+</div>
+
+<!-- View Full Benefit Details link is not mentioned in the AC (story:403204, backdated Dep) -->
+<div class="row mb-4" *ngIf="!isHeirBenefit">
+  <div class="col-lg-12 benefit-details-pad" *gosiShow="viewOnly">
+    <!--433108-->
+    <span (click)="viewHistory()" class="full-benefit-details">{{ 'BENEFITS.VIEW-BENEFIT-HISTORY' | translate }}</span>
+  </div>
+</div>
+<!-- <div
+  *ngIf="
+    benefitType === 'Non-Occupational Disability Pension Benefit' ||
+    benefitType === 'Occupational Disability Pension Benefit'
+  "
+>
+  <bnt-occ-disability-details-dc [annuityBenefitDetails]="annuityBenefitDetails"> </bnt-occ-disability-details-dc>
+</div> -->
+
+<!-- As per new vd, table for heir benefit details is not required for heir lumpsum validator : Story 469840-->
+<!-- <div class="row" *ngIf="isHeirLumpsum">
+  <div
+    class="benefit-details-heading ml-3"
+    *ngIf="
+      benefitType === 'Heir Lumpsum Benefit' ||
+      benefitType === 'Heir Lumpsum Missing Contributor Benefit' ||
+      benefitType === 'Heir Lumpsum Dead Contributor Benefit'
+    "
+  >
+    {{ 'BENEFITS.HEIR-BENEFIT-DETAIL' | translate }}
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <table class="table table-borderless">
+      <thead>
+        <tr>
+          <th>
+            {{ 'BENEFITS.HEIR_NAME' | translate | titlecase }}
+          </th>
+
+          <th
+            *ngIf="
+              benefitType === 'Heir Lumpsum Benefit' ||
+              benefitType === 'Heir Lumpsum Missing Contributor Benefit' ||
+              benefitType === 'Heir Lumpsum Dead Contributor Benefit'
+            "
+          >
+            {{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        *ngFor="let heirBenefit of benefitCalculationDetails?.heirBenefitDetails; let i = index"
+        class="heir-benefit-details-body"
+      >
+        <tr class="data-row">
+          <td>
+            {{
+              heirBenefit?.name?.english === null || heirBenefit?.name?.english?.trim() === ''
+                ? heirBenefit?.name?.arabic
+                : (heirBenefit?.name | bilingualText)
+            }}
+          </td>
+          <td>{{ heirBenefit.benefitAmount | number: '1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div> -->
+
+<ng-template #moreDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculationDetails"
+    [eligibleForPensionReform]="eligibleForPensionReform || annuityBenefitDetails?.pensionReformEligibility?.english === pensionReformEligibilityEnum.Eligible"
+    [isLumpsum]="isLumpsum"
+    [benefitType]="benefitType" [averageMonthlyWagePeriods]="benefitCalculationDetails?.averageMonthlyWagePeriods"
+    [lang]="lang">
+
+  </bnt-annuity-calculation-details-dc>
+</ng-template>
+
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc
+    [benefitDetails]="benefitCalculationDetails"
+    [eligibleForPensionReform]="eligibleForPensionReform || annuityBenefitDetails?.pensionReformEligibility?.english === pensionReformEligibilityEnum.Eligible"
+    [isLumpsum]="isLumpsum"
+    [benefitType]="benefitType"
+    (close)="hideModal()"></bnt-amw-view-dc>
+</ng-template>
+<ng-template #calcDetails>
+  <bnt-benefit-calc-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculationDetails"
+    [averageMonthlyWagePeriods]="benefitCalculationDetails?.averageMonthlyWagePeriods"
+    [activeBenefitDetails]="annuityBenefitDetails"
+    [eligibleForPensionReform]="eligibleForPensionReform || annuityBenefitDetails?.pensionReformEligibility?.english === pensionReformEligibilityEnum.Eligible"
+  >
+  </bnt-benefit-calc-details-dc>
+</ng-template>

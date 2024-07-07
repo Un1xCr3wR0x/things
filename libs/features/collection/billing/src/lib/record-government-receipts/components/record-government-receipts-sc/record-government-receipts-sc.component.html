@@ -1,0 +1,122 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc *ngIf="!disableNotification"></gosi-alert-sc>
+  <div *ngIf="currentTab === 0">
+    <div class="row">
+      <div class="col-lg-4 col-md-12 header pb-3">{{ 'BILLING.RECORDING-GOVERMENT-RECEIPT' | translate }}</div>
+      <div class="col-lg-8 col-md-12">
+        <div class="row d-flex flex-row full-width m-0 pt-2">
+          <div class="pt-2 pr-3">
+            <gosi-input-checkbox-dc
+              id="showAll"
+              [label]="'BILLING.SHOW-UPLOADED-RECEIPTS'"
+              name="declaration"
+              [control]="governmentReceiptsForm.get('showUploadedReceipts')"
+              (select)="showUploadedReceipts()"
+            >
+            </gosi-input-checkbox-dc>
+          </div>
+          <div class="pl-0">
+            <gosi-search-dc
+              [placeholder]="'BILLING.ENTER-PAYMENT-REFERENCE-NUMBER' | translate"
+              (search)="onSearch($event)"
+              (keyup)="onKeyUp($event.target.value)"
+              (reset)="resetReceiptList()"
+              [allowOnlyNumbers]="true"
+              [minimumLength]="minimumLength"
+            >
+            </gosi-search-dc>
+          </div>
+          <div class="pl-4 pr-0">
+            <gosi-button-dc
+              id="uploadReceiptFile"
+              type="primary"
+              [size]="'sm'"
+              (click)="uploadTab()"
+              (submit)="uploadReceiptsFile()"
+            >
+              {{ 'BILLING.UPLOAD-RECEIPT-FILE' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="pl-4 pr-0">
+            <gosi-button-dc id="receivePayment" type="primary" [size]="'sm'" (click)="showModal(receivePaymentModal)">
+              {{ 'BILLING.UPLOAD-RECEIPT-RECEIVE-PAYMENT' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row h-100 w-100">
+      <div
+        *ngIf="!governmentReceiptsForm.get('showUploadedReceipts').value && !isSucsessSearch; else result"
+        class="col-lg-12 h-100"
+      >
+        <div class="note-align h-100">
+          {{ 'BILLING.RECORD-GOVERMENT-PAYMENT-SHOW-ALL-NOTE' | translate }}
+        </div>
+      </div>
+      <ng-template #result>
+        <blg-government-receipts-list-view-dc
+          class="full-width"
+          [receipts]="receipts"
+          [pageNo]="pageNo"
+          [pageSize]="pageSize"
+          (selectPageNo)="getSelectPageNo($event)"
+        >
+        </blg-government-receipts-list-view-dc>
+      </ng-template>
+    </div>
+  </div>
+  <div *ngIf="currentTab === 1">
+    <blg-government-receipts-file-upload-dc (submit)="onFileSubmit($event)" (cancelBtn)="previousTab()">
+    </blg-government-receipts-file-upload-dc>
+  </div>
+  <ng-template #receivePaymentModal>
+    <blg-government-receipts-receive-payment-dc
+      [parentForm]="governmentReceiptsForm"
+      (next)="getPaymentByReferenceNo()"
+      [receiptDetails]="receiptdetails"
+      [allowContinue]="allowContinue"
+      (continue)="submitAndContinue()"
+      (cancel)="cancelReceivePayment()"
+    >
+    </blg-government-receipts-receive-payment-dc>
+  </ng-template>
+
+  <ng-template #confirmModal>
+    <gosi-modal-dc> </gosi-modal-dc>
+    <div id="warning" class="container p-4">
+      <div *ngIf="containsFailedReceipts || isExponential" class="row justify-content-center">
+        <fa-icon class="exclamation" icon="exclamation-triangle" size="3x"></fa-icon>
+      </div>
+      <div
+        *ngIf="containsFailedReceipts && !isExponential"
+        class="row justify-content-center text-left mb-4 mt-4 pl-5 pr-5"
+      >
+        {{ 'BILLING.REJECTED-RECEIPTS-NOTE' | translate }}
+      </div>
+      <div *ngIf="isExponential" class="row justify-content-center text-left mb-4 mt-4 pl-5 pr-5">
+        {{ 'BILLING.UNCORRECT-REFNO-FORMAT' | translate }}
+      </div>
+      <div *ngIf="!containsFailedReceipts && !isExponential" class="row justify-content-center">
+        <fa-icon class="check" icon="check-circle" size="3x"></fa-icon>
+      </div>
+      <div
+        *ngIf="!containsFailedReceipts && !isExponential"
+        class="row justify-content-center text-left mb-4 mt-4 pl-5 pr-5"
+      >
+        {{ 'BILLING.SUCCESS-RECEIPTS-NOTE' | translate }}
+      </div>
+      <div class="row justify-content-center">
+        <gosi-button-dc
+          id="okButton"
+          type="primary"
+          [size]="'md'"
+          (click)="isExponential ? hideModal() : navigateToGovPayment()"
+        >
+          {{ 'BILLING.OK' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </ng-template>
+</div>

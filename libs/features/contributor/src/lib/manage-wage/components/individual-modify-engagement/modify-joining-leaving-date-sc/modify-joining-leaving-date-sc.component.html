@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!--This html is used for updating wage for vic contributor-->
+<ng-container>
+  <div class="pt-2 pb-4">
+    <gosi-breadcrumb-dc #brdcmb></gosi-breadcrumb-dc>
+  </div>
+</ng-container>
+<div class="content">
+  <div class="header" *ngIf="EngagementType === 'JoiningDate'">
+    {{ 'CONTRIBUTOR.E-INSPECTION-MODIFY-JOINING-DATE' | translate }}
+  </div>
+  <div class="header" *ngIf="EngagementType === 'LeavingDate'">
+    {{ 'CONTRIBUTOR.E-INSPECTION-MODIFY-LEAVING-DATE' | translate }}
+  </div>
+  <div class="header" *ngIf="EngagementType === 'Cancelengagement'">
+    {{ 'CONTRIBUTOR.E-INSPECTION-CANCEL-ENGAGEMENT' | translate }}
+  </div>
+  <div class="header" *ngIf="EngagementType === 'Terminateengagement'">
+    {{ 'CONTRIBUTOR.TERMINATE-ENGAGEMENT' | translate }}
+  </div>
+  <ng-container>
+    <ng-container *ngIf="showError"><gosi-alert-sc></gosi-alert-sc></ng-container>
+    <!-- Progress Wizard -->
+    <div class="wizard">
+      <gosi-progress-wizard-dc
+        [wizardItems]="engagementWizardItems"
+        (clickWizard)="selectWizard($event)"
+        [isMargin]="true"
+        #engagementWizard
+      >
+      </gosi-progress-wizard-dc>
+    </div>
+    <div *ngIf="currentTab === 0 || !isNexttab">
+      <cnt-engagement-details-dc
+        [engagementType]="EngagementType"
+        (save)="saveandNext($event)"
+        [leavingReason]="leavingReasonlist$ | async"
+        [lang]="lang"
+        (cancel)="cancelLogin()"
+        [newEngagementDate]="newEngagementDate"
+        [engagementLeavingReason]="modifyEngagement.leavingReason"
+        [engagementDetails]="engagementDetails"
+      ></cnt-engagement-details-dc>
+    </div>
+    <div *ngIf="currentTab === 1 && isNexttab">
+      <cnt-verify-engagement-details-dc
+        (onContinueClicked)="sendOTP($event)"
+        (onVerifyClicked)="verifyOTP($event)"
+        (onCancelClicked)="cancelLogin()"
+        (onApplicationReload)="reload()"
+        (onResendOTPClicked)="reSendOTP()"
+        (showError)="showErrorAlert($event)"
+        (refresh)="getCaptcha()"
+        [isValid]="isValid"
+        [validUuid]="validUuid"
+        [errorRes]="errorRes"
+        [captcha]="captcha"
+        [otpError]="otpError"
+        [otpUnathorizedError]="otpUnathorizedError"
+        [newEngagementDate]="newEngagementDate"
+        [engagementType]="EngagementType"
+        [engagementDetails]="engagementDetails"
+        [engagementLeavingReason]="modifyEngagement.leavingReason"
+      >
+      </cnt-verify-engagement-details-dc>
+    </div>
+  </ng-container>
+</div>

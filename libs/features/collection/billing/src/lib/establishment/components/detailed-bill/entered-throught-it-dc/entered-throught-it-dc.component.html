@@ -1,0 +1,140 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ 'BILLING.ENTERED-THROUGH-IT' | translate }}">
+        <span class="arrow-ups arrow-color" accordion-heading>
+          <span>({{ 'BILLING.TOTAL' | translate }}: {{ total * exchangeRate | number: '1.2-2' }} {{ currencyType | bilingualText }} )</span>
+          <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+        </span>
+    <span class="arrow-downs arrow-color" accordion-heading>
+          <span>({{ 'BILLING.TOTAL' | translate }}: {{ total * exchangeRate | number: '1.2-2' }} {{ currencyType | bilingualText }} )</span>
+          <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+        </span>
+    <div class="col-lg-12">
+      <div class="table-scroll table-responsive">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="header-align" rowspan="2">{{ 'BILLING.RELATED-TO-CONTRIBUTOR' | translate }}</th>
+              <th class="header-align" rowspan="2">{{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}</th>
+              <th class="header-align" rowspan="2">{{ 'BILLING.ADJUSTMENT-DATE' | translate }}</th>
+              <th class="header-align" rowspan="2">{{ 'BILLING.DESCRIPTION' | translate }}</th>
+              <th class="header-align" colspan="2">{{ 'BILLING.ADJUSTMENT-PERIOD' | translate }}</th>
+              <th *ngIf="!hidenDetails.annuity" class="header-align" colspan="2">
+                {{ 'BILLING.ANNUITY' | translate }}
+              </th>
+              <th *ngIf="!hidenDetails.PPAAnnuity" class="header-align" colspan="2">
+                {{ 'BILLING.PPA-ANNUITY' | translate }}
+              </th>
+              <th *ngIf="!hidenDetails.PRAnnuity" class="header-align" colspan="2">
+                {{ 'BILLING.PPA-PENSION' | translate }}
+              </th>
+              <th *ngIf="!hidenDetails.ui" class="header-align" colspan="2">{{ 'BILLING.UI' | translate }}</th>
+              <th *ngIf="!hidenDetails.oh" class="header-align" colspan="2">{{ 'BILLING.OH' | translate }}</th>
+              <th *ngIf="!hidenDetails.rejectedOh" class="header-align">
+                {{ 'BILLING.REJECTED-OH' | translate }}
+              </th>
+              <th *ngIf="!hidenDetails.violation" class="header-align">
+                {{ 'BILLING.VIOLATION' | translate }}
+              </th>
+              <th class="header-align" rowspan="2">{{ 'BILLING.TOTAL-AMOUNT' | translate }}</th>
+            </tr>
+            <tr>
+              <!-- Adjustment Period -->
+              <th class="header-align">{{ 'BILLING.START-DATE' | translate }}</th>
+              <th class="header-align">{{ 'BILLING.END-DATE' | translate }}</th>
+              <!-- Annuity -->
+              <th *ngIf="!hidenDetails.annuity">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+              <th *ngIf="!hidenDetails.annuity">{{ 'BILLING.LATE-FEES' | translate }}</th>
+              <!-- PPA Annuity -->
+              <th *ngIf="!hidenDetails.PPAAnnuity">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+              <th *ngIf="!hidenDetails.PPAAnnuity">{{ 'BILLING.LATE-FEES' | translate }}</th>
+               PR Annuity
+              <th *ngIf="!hidenDetails.PRAnnuity">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+              <th *ngIf="!hidenDetails.PRAnnuity">{{ 'BILLING.LATE-FEES' | translate }}</th>
+              <!-- UI -->
+              <th *ngIf="!hidenDetails.ui">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+              <th *ngIf="!hidenDetails.ui">{{ 'BILLING.LATE-FEES' | translate }}</th>
+              <!-- OH -->
+              <th *ngIf="!hidenDetails.oh">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+              <th *ngIf="!hidenDetails.oh">{{ 'BILLING.LATE-FEES' | translate }}</th>
+              <!-- Rejected OH -->
+<!--              <th *ngIf="!hidenDetails.rejectedOh">{{ 'BILLING.CASE-NUMBER' | translate }}</th>-->
+              <th colspan="1" class="header-align" *ngIf="!hidenDetails.rejectedOh">{{ 'BILLING.AMOUNT' | translate }}</th>
+              <!-- Violation -->
+<!--              <th *ngIf="!hidenDetails.violation">{{ 'BILLING.VIOLATION-NUMBER' | translate }}</th>-->
+              <th colspan="1" class="header-align" *ngIf="!hidenDetails.violation">{{ 'BILLING.AMOUNT' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let adjustment of miscAdjustmentResponse.adjustments">
+              <td *ngIf="adjustment.relatedToContributor === false">{{ 'BILLING.NO' | translate }}</td>
+              <td *ngIf="adjustment.relatedToContributor === true">{{ 'BILLING.YES' | translate }}</td>
+              <td *ngIf="adjustment.relatedToContributor === false">_____</td>
+              <td *ngIf="adjustment.relatedToContributor === true">{{ adjustment.contributorId }}</td>
+              <td>{{ adjustment.adjustmentDate | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ adjustment.description }}</td>
+              <td>{{ adjustment.periodStartDate | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ adjustment.periodEndDate | date: 'dd/MM/yyyy' }}</td>
+              <td *ngIf="!adjustment.annContribution && !hidenDetails.annuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.annContribution && !hidenDetails.annuity">
+                {{ adjustment.annContribution * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.annPenality && !hidenDetails.annuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.annPenality && !hidenDetails.annuity">
+                {{ adjustment.annPenality * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.ppaAnnContribution && !hidenDetails.PPAAnnuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.ppaAnnContribution && !hidenDetails.PPAAnnuity">
+                {{ adjustment.ppaAnnContribution * exchangeRate | number: '1.2-2' }}</td>
+                <td *ngIf="!adjustment.ppaAnnPenality && !hidenDetails.PPAAnnuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.ppaAnnPenality && !hidenDetails.PPAAnnuity">
+                {{ adjustment.ppaAnnPenality * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.prAnnContribution && !hidenDetails.PRAnnuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.prAnnContribution && !hidenDetails.PRAnnuity">
+                {{ adjustment.prAnnContribution * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.prAnnPenality && !hidenDetails.PRAnnuity">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.prAnnPenality && !hidenDetails.PRAnnuity">
+                {{ adjustment.prAnnPenality * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.uicontribution && !hidenDetails.ui">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.uicontribution && !hidenDetails.ui">
+                {{ adjustment.uicontribution * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.uipenality && !hidenDetails.ui">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.uipenality && !hidenDetails.ui">
+                {{ adjustment.uipenality * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.ohcontribution && !hidenDetails.oh">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.ohcontribution && !hidenDetails.oh">
+                {{ adjustment.ohcontribution * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td *ngIf="!adjustment.ohpenality && !hidenDetails.oh">{{ 0 | number: '1.2-2' }}</td>
+              <td *ngIf="adjustment.ohpenality && !hidenDetails.oh">
+                {{ adjustment.ohpenality * exchangeRate | number: '1.2-2' }}
+              </td>
+<!--              <td *ngIf="!adjustment.rejectedOHCaseNo && !hidenDetails.rejectedOh">_____</td>-->
+<!--              <td *ngIf="adjustment.rejectedOHCaseNo && !hidenDetails.rejectedOh">{{ adjustment.rejectedOHCaseNo }}</td>-->
+<!--              <td *ngIf="!adjustment.rejectedOHAmount && !hidenDetails.rejectedOh">{{ 0 | number: '1.2-2' }}</td>-->
+              <td *ngIf="adjustment.rejectedOHAmount && !hidenDetails.rejectedOh">
+                {{ adjustment.rejectedOHAmount * exchangeRate | number: '1.2-2' }}
+              </td>
+<!--              <td *ngIf="!adjustment.violationNo && !hidenDetails.violation">_____</td>-->
+<!--              <td *ngIf="adjustment.violationNo && !hidenDetails.violation">{{ adjustment.violationNo }}</td>-->
+<!--              <td *ngIf="!adjustment.violationAmount && !hidenDetails.violation">{{ 0 | number: '1.2-2' }}</td>-->
+              <td *ngIf="adjustment.violationAmount && !hidenDetails.violation">
+                {{ adjustment.violationAmount * exchangeRate | number: '1.2-2' }}
+              </td>
+              <td>{{ adjustment.totalAmount * exchangeRate | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </accordion-group>
+</accordion>

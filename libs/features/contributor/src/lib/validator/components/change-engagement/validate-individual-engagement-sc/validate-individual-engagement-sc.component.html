@@ -1,0 +1,135 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content" *ngIf="contributor && establishment && engagement">
+  <frm-main-content-dc
+    [comments]="comments"
+    [documents]="documents"
+    [canEdit]="disableIconReopen ? false : canEdit"
+    (onEdit)="navigateToScan()"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="
+          !isModifyCoverage
+            ? ('CONTRIBUTOR.CHANGE-ENGAGEMENT-DETAILS' | translate)
+            : ('CONTRIBUTOR.MODIFY-COVERAGE' | translate)
+        "
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="engagement?.formSubmissionDate?.gregorian"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+        [badge]="hasInspectionCompleted ? ('CONTRIBUTOR.INSPECTION-PERFORMED' | translate | uppercase) : ''"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <!-- alter message on establishment reopened closing in progress -->
+      <div id="contentArea" class="row" *ngIf="disableIconReopen">
+        <div class="col-lg-12 mt-4">
+          <gosi-alert-dc [message]="'CONTRIBUTOR.EST-REOPEN'" type="info" [dismissible]="false" [noPadding]="true">
+          </gosi-alert-dc>
+        </div>
+      </div>
+
+      <div class="content-item">
+        <!-- Personal Details Section -->
+        <cnt-contributor-personal-details-dc
+          [contributor]="contributor"
+          [age]="age"
+          [canEdit]="disableIconReopen ? false : canEdit"
+          [isBeneficiary]="isBeneficiary"
+          (onEdit)="navigateToEdit()"
+        >
+        </cnt-contributor-personal-details-dc>
+      </div>
+
+      <!-- Engagement Details Section -->
+      <cnt-engagement-basic-details-dc
+        [establishment]="establishment"
+        [engagementStatus]="engagement?.engagementStatus"
+      >
+      </cnt-engagement-basic-details-dc>
+
+      <!-- Wage Details Section -->
+      <cnt-updated-wage-dc
+        *ngIf="!isModifyCoverage"
+        [updatedWageDetails]="engagement"
+        [isPpa]="establishment?.ppaEstablishment"
+      ></cnt-updated-wage-dc>
+      <cnt-update-modify-coverage-dc
+        *ngIf="isModifyCoverage"
+        [updatedModifyCoverageDetails]="engagement"
+      ></cnt-update-modify-coverage-dc>
+      <ng-container *ngIf="!establishment?.ppaEstablishment && !isModifyCoverage">
+        <gosi-input-radio-dc
+          id="applyLateFees"
+          label="CONTRIBUTOR.APPLY-LATE-FEES"
+          [control]="validatorForm.get('penalty')"
+          [list]="yesOrNoList | async"
+          [disabled]="!canEditPenalty"
+        ></gosi-input-radio-dc>
+      </ng-container>
+    </div>
+
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [showApprove]="true"
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        [showRequestInspection]="canRequestInspection && !establishment?.ppaEstablishment"
+        [isReInspection]="hasInspectionCompleted"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (requestInspection)="checkForActiveInspection()"
+        (cancelEvent)="navigateToInbox()"
+        [disableApprove]="isBillBatch"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="
+      !isModifyCoverage ? 'CONTRIBUTOR.REJECT-CHANGE-ENGAGEMENT-DETAILS' : 'CONTRIBUTOR.REJECT-MODIFY-COVERAGE'
+    "
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="
+      !isModifyCoverage ? 'CONTRIBUTOR.RETURN-CHANGE-ENGAGEMENT-DETAILS' : 'CONTRIBUTOR.RETURN-MODIFY-COVERAGE'
+    "
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

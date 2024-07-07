@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+
+<div class="content">
+  <div class="d-flex justify-content-between">
+    <gosi-main-heading-dc [header]="typeAov?.transactionId == appealTransactionIdEnum.REQUEST_VIEW
+    ? ('VIOLATIONS.REVIEW-DOCUMENT' | translate)
+    : ('VIOLATIONS.VIOLATION-APPEAL' | translate)"></gosi-main-heading-dc>
+  </div>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <ng-container>
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-summary-dc [transaction]="transaction"></gosi-summary-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-workflow-sc [workflowItems]="workflow"></gosi-workflow-sc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <vol-customer-summary-dc [summary]="customerSummary"></vol-customer-summary-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <vol-appeal-summary-dc [violationDetail]="violationDetail"
+                               (routeViolation)="goToViolation($event)"
+                               [employeeComment]="employeeComment"
+        ></vol-appeal-summary-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <vol-contributor-list-dc [contributorList]="contributorList"
+                                 [referenceNo]="referenceNo"
+                                 (pageChange)="selectPage($event)"
+                                 [canEdit]="canEdit"
+                                 [canUserModified]="canUserModified"
+                                 [transactionId]="typeAov?.transactionId || null"
+                                 [appealId]="appealId"
+                                 [formContributors]="formsContributor"
+        ></vol-contributor-list-dc>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end" *ngIf="canUserModified && !canEdit">
+      <gosi-button-dc class="mx-2"
+                      (submit)="openAppealTxn()"
+                      type="primary"
+      >{{'COMPLAINTS.RE-OPEN' | translate}}
+      </gosi-button-dc>
+    </div>
+    <div class="d-flex justify-content-end" *ngIf="canUserModified && canEdit">
+      <gosi-button-dc class="mx-2"
+                      (submit)="showCancelModal(cancelTemplate)"
+                      type="secondary"
+      >{{'CORE.CANCEL' | translate}}
+      </gosi-button-dc>
+      <gosi-button-dc class="mx-2"
+                      (submit)="onUpdateAppeal()"
+      >{{'VIOLATIONS.SUBMIT-AOV' | translate}}</gosi-button-dc>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'COMPLAINTS.INFO-CANCEL' | translate"
+                         (onConfirm)="onConfirmCancel()"
+                         (onCancel)="onCancel()"></gosi-confirm-modal-dc>
+</ng-template>

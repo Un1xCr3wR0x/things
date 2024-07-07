@@ -1,0 +1,207 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc [showCard]="!noPadding" type="secondary" [heading]="!hasPerson ? (label | translate) : ''">
+  <ng-container *ngIf="!submitted && !hasPerson; else cardView">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="nationalityLovList">
+        <gosi-input-select-dc
+          name="nationality"
+          [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+          (select)="selectIdType($event)"
+          [id]="idValue + 'Nationality'"
+          [list]="nationalityLovList"
+          [disabled]="hasPerson"
+          [control]="verifyPersonForm.get('nationality')"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="saudiNationality">
+        <gosi-input-number-dc
+          name="newNin"
+          [readOnly]="hasPerson"
+          [id]="idValue + 'Nin'"
+          [label]="'ESTABLISHMENT.NIN' | translate"
+          [control]="verifyPersonForm.get('newNin')"
+          [maxLength]="ninLength"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="gccNationality">
+        <gosi-input-number-dc
+          name="nationalId"
+          [readOnly]="hasPerson"
+          [id]="idValue + 'GccId'"
+          (blur)="fieldRequired()"
+          [label]="'ESTABLISHMENT.GCC-ID' | translate"
+          [control]="verifyPersonForm.get('id')"
+          [maxLength]="getIdMaxLength()"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="others || gccNationality">
+        <gosi-input-number-dc
+          [readOnly]="hasPerson"
+          name="iqamaNo"
+          [id]="idValue + 'Iqama'"
+          [label]="'ESTABLISHMENT.IQAMA-NUMBER' | translate"
+          [control]="verifyPersonForm.get('iqamaNo')"
+          (blur)="fieldRequired()"
+          [maxLength]="iqamaLength"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="gccNationality">
+        <gosi-input-text-dc
+          [readOnly]="hasPerson"
+          name="passportNo"
+          (blur)="fieldRequired()"
+          [id]="idValue + 'PassportNumber'"
+          [label]="'ESTABLISHMENT.PASSPORT-NO' | translate"
+          [control]="verifyPersonForm.get('passportNo')"
+          [maxLength]="passportNoMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          [disabled]="hasPerson"
+          name="birthDate"
+          [id]="idValue + 'Dob'"
+          label="ESTABLISHMENT.BIRTH-DATE"
+          [control]="verifyPersonForm.get('birthDate').get('gregorian')"
+          [maxDate]="currentDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+    </div>
+    <div [ngClass]="{ 'pb-4': noPadding }" *ngIf="!hasPerson">
+      <est-footer-buttons-dc
+        [noMarginTop]="true"
+        [showCancel]="false"
+        [showPrevious]="false"
+        [hasOnlyPrimary]="true"
+        primaryLabel="ESTABLISHMENT.VERIFY"
+        primaryId="{{ idValue + 'Verify' }}"
+        (submit)="verifyPerson()"
+      >
+      </est-footer-buttons-dc>
+    </div>
+  </ng-container>
+  <ng-template #cardView>
+    <div class="row" *ngIf="person">
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="person.nationality">
+        <ng-container *ngIf="isNationalityRequired; else nationalityNotRequired">
+          <gosi-input-select-dc
+            name="nationality"
+            [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+            [id]="idValue + 'Nationality'"
+            [list]="nationalityLovList"
+            [control]="verifyPersonForm.get('nationality')"
+          >
+          </gosi-input-select-dc>
+        </ng-container>
+        <ng-template #nationalityNotRequired>
+          <gosi-label-dc
+            [id]="idValue + 'cardNationality'"
+            [control]="person.nationality"
+            label="ESTABLISHMENT.NATIONALITY"
+          ></gosi-label-dc>
+        </ng-template>
+      </div>
+
+      <ng-container *ngIf="!checkNull(person.identity)">
+        <ng-container *ngFor="let item of person.identity">
+          <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeNIN">
+            <gosi-label-dc [id]="idValue + 'cardNin'" [control]="item.newNin" label="ESTABLISHMENT.NIN">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeNATIONALID">
+            <gosi-label-dc [id]="idValue + 'cardNationalId'" [control]="item.id" label="ESTABLISHMENT.GCC-ID">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeIQAMA">
+            <gosi-label-dc [id]="idValue + 'cardIqama'" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typePASSPORT">
+            <gosi-label-dc
+              [id]="idValue + 'cardPassportNumber'"
+              [control]="item.passportNo"
+              label="ESTABLISHMENT.PASSPORT-NO"
+            ></gosi-label-dc>
+          </div>
+        </ng-container>
+      </ng-container>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="person.birthDate">
+        <ng-container *ngIf="isDateRequired; else notRequired">
+          <gosi-input-date-dc
+            name="birthDate"
+            [id]="idValue + 'Dob'"
+            label="ESTABLISHMENT.BIRTH-DATE"
+            [control]="verifyPersonForm.get('birthDate').get('gregorian')"
+            [maxDate]="currentDate"
+          >
+          </gosi-input-date-dc>
+        </ng-container>
+        <ng-template #notRequired>
+          <gosi-label-dc
+            [date]="true"
+            [id]="idValue + 'cardBirthDate'"
+            [control]="person.birthDate.gregorian"
+            label="ESTABLISHMENT.BIRTH-DATE"
+          ></gosi-label-dc>
+        </ng-template>
+      </div>
+    </div>
+    <div class="fc-margin" [ngClass]="{ 'pb-4': noPadding }">
+      <est-footer-buttons-dc
+        [noMarginTop]="true"
+        *ngIf="!hasPerson && isResetRequired"
+        [showCancel]="!isDateRequired && !isNationalityRequired"
+        cancelLabel="ESTABLISHMENT.RESET"
+        cancelId="{{ idValue + 'Reset' }}"
+        (cancel)="resetVerifiedData()"
+        [showPrevious]="false"
+        [showPrimary]="isDateRequired || isNationalityRequired"
+        primaryLabel="ESTABLISHMENT.VERIFY"
+        [hasOnlyPrimary]="isDateRequired || isNationalityRequired"
+        (submit)="verifyPerson()"
+      ></est-footer-buttons-dc>
+    </div>
+  </ng-template>
+</gosi-card-dc>
+<ng-container *ngIf="idValue === 'admin' && !submitted && !hasPerson">
+  <est-footer-buttons-dc
+    [showPrimary]="true"
+    primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+    primaryId="{{ idValue + 'SaveAndNext' }}"
+    cancelId="{{ idValue + 'cancel' }}"
+    previousId="{{ idValue + 'previous' }}"
+    (cancel)="popUp(draftTemplate)"
+    (previous)="previousSection()"
+    (submit)="triggerVerifyEvent()"
+  >
+  </est-footer-buttons-dc>
+</ng-container>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #draftTemplate>
+  <est-draft-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="decline()"
+    (onCancel)="confirmCancel()"
+  ></est-draft-popup-dc>
+</ng-template>

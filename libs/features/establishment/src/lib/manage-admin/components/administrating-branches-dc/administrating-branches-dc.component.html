@@ -1,0 +1,164 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row admin-branch ml-0 mr-0">
+  <div class="col-md-12 d-flex justify-content-between header-container">
+    <div class="heading">
+      {{ 'ESTABLISHMENT.SEC-EST-ADMIN-DETAILS' | translate }}
+    </div>
+    <div class = "actionsAndLeave">
+        <div class="col-auto pr-0" *ngIf="actionDropDown && actionDropDown.length > 0; else filterAndSearch">
+          <gosi-dropdown-dc [list]="actionDropDown" (selectedItem)="actionType.emit($event)" minWidthInRem="21.42rem">
+            <gosi-button-dc class="actions-button-wrapper" size="md" type="primary" id="groupActions">
+              {{ 'ESTABLISHMENT.ACTIONS' | translate }} <fa-icon class="options-icon" icon="ellipsis-v"></fa-icon>
+            </gosi-button-dc>
+          </gosi-dropdown-dc>
+        </div>
+          <gosi-button-dc
+            *ngIf="compareIdNum() && isAppPublic"
+            class="gosi-button-wrapper" size="md" type="secondary" id="leaveGroup" (click)="leaveGroupAction(leaveGroup)" >
+            {{ 'ESTABLISHMENT.LEAVE-GROUP' | translate }}
+          </gosi-button-dc>
+    </div>
+
+  </div>
+  <div class="col-md-12 pl-0 pr-0" *ngIf="branchFilters?.length > 0 && !(actionDropDown && actionDropDown.length > 0)">
+    <gosi-applied-filters-dc [filters]="branchFilters" (clearFilter)="applyFilter($event)"></gosi-applied-filters-dc>
+  </div>
+  <div class="col-md-12" *ngIf="actionDropDown && actionDropDown.length > 0">
+    <div class="row" id="action-item">
+      <ng-container *ngTemplateOutlet="filterAndSearch"></ng-container>
+      <div class="col-md-12 pl-0 pr-0" *ngIf="branchFilters?.length > 0">
+        <gosi-applied-filters-dc
+          [filters]="branchFilters"
+          (clearFilter)="applyFilter($event)"
+        ></gosi-applied-filters-dc>
+      </div>
+    </div>
+  </div>
+  <div
+    class="col-md-12 search-result pl-0 pr-0 pb-2"
+    *ngIf="branchList?.length != 0 && branchSearchParam && !isLoading"
+  >
+    <est-search-result-dc [count]="totalBranches" [value]="branchSearchParam"> </est-search-result-dc>
+  </div>
+  <div class="col-md-12" *ngIf="branchList?.length == 0 && !isLoading">
+    <div class="search-result pl-0 pr-0 pb-2">
+      <est-search-result-dc [count]="0" [value]="branchSearchParam"> </est-search-result-dc>
+    </div>
+    <est-no-result-dc></est-no-result-dc>
+  </div>
+  <div class="col-md-12" *ngIf="branchList?.length > 0 && !isLoading">
+    <div class="d-none d-md-block">
+      <div class="row branch-role align-items-center">
+        <div class="col-md-6 pl-4">
+          {{ 'ESTABLISHMENT.BRANCHES' | translate }}
+        </div>
+        <div class="col-md-6">
+          {{ 'ESTABLISHMENT.YOUR-ROLE' | translate }}
+        </div>
+      </div>
+    </div>
+    <ng-container
+      *ngFor="
+        let branch of branchList
+          | paginate
+            : {
+                id: paginationId,
+                itemsPerPage: itemsPerPage,
+                currentPage: currentPage,
+                totalItems: totalBranches
+              }
+      "
+    >
+      <est-administrating-branch-item-dc [branch]="branch"></est-administrating-branch-item-dc>
+    </ng-container>
+    <gosi-pagination-dc
+      *ngIf="totalBranches > itemsPerPage"
+      class="pagination justify-content-center mt-4"
+      [totalSize]="totalBranches"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      [paginationId]="paginationId"
+    ></gosi-pagination-dc>
+  </div>
+  <div class="col-md-12" *ngIf="isLoading">
+    <est-loading-dc></est-loading-dc>
+  </div>
+</div>
+
+<ng-template #filterAndSearch>
+  <div class="col-md-6 ml-auto d-flex pl-0 pr-0 justify-content-between">
+    <gosi-search-dc
+      [parentForm]="searchForm"
+      class="flex-grow-1"
+      (search)="search.emit($event)"
+      [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+      [isLoading]="isLoading"
+    >
+    </gosi-search-dc>
+    <est-branch-filter-dc
+      class="filter ml-3 mr-0"
+      [isDynamicPositionRequired]="false"
+      [branchFilters]="branchFilters"
+      [roleList$]="roles$"
+      [showRoles]="true"
+      [showLegalEntity]="false"
+      [showLocation]="false"
+      [showStatus]="false"
+      (apply)="applyFilter($event)"
+    ></est-branch-filter-dc>
+  </div>
+</ng-template>
+<ng-template #leaveGroup>
+  <div class="popup-container">
+    <div class="confirmation-popup ">
+      <div>
+        <h2 class="modal-title" id = "leave-group-header" >{{ 'ESTABLISHMENT.LEAVE-GROUP-HEADER' | translate }} </h2>
+      </div>
+      <gosi-alert-dc
+        [message]="'ESTABLISHMENT.LEAVE-GROUP-ALERT-HEADER' | translate"
+        type="warning">
+      </gosi-alert-dc>
+
+      <P id = "leave-group-content">{{ 'ESTABLISHMENT.LEAVE-GROUP-CONFIRM' | translate }}</P>
+      <div class="btn-container">
+        <div class="btn-section float-left" id="button-left">
+          <gosi-button-dc (click)="cancelLeaveGroup()" size="lg" type="secondary" >
+            {{ 'ESTABLISHMENT.CANCEL' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="btn-section float-right" id="button-right">
+          <gosi-button-dc size="lg" type="secondary"
+                          (click)="confirmLeaveGroup()">
+            {{ 'ESTABLISHMENT.CONFIRM' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</ng-template>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

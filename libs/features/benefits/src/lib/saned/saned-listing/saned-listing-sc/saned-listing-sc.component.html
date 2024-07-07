@@ -1,0 +1,187 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-alert-dc
+  *ngIf="annuitybenefits.length && annuitybenefits[0]?.eligibleForVicCancellation"
+  [message]="'BENEFITS.VIC-INFO-BENEFITS-PAGE' | translate"
+  type="info"
+  [dismissible]="false"
+  [noPadding]="true"
+>
+  <a actOnAlert id="cancel-vic" (click)="cancelVic()">{{ 'BENEFITS.CANCEL-VIC-LINK' | translate }}</a>
+</gosi-alert-dc>
+<div class="row mb-3" *ngIf="contributorService?.nin || personId">
+  <div class="col-lg-8"></div>
+  <div class="col-lg-4">
+    <span *gosiShow="directPaymentHistory">
+      <a id="cancel-vic" *ngIf="contributorService?.nin" (click)="directPaymentNavigate()">{{
+        'BENEFITS.DIRECT-PAYMENT' | translate
+      }}</a>
+    </span>
+    <span class="mx-3" *ngIf="personId"></span>
+    <a id="cancel-vic" *ngIf="personId" (click)="adjustmentDetailsNavigate()">{{
+      'BENEFITS.ADJUSTMENT-DETAILS' | translate
+    }}</a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="col-sm-12">
+    <bnt-active-benefits-carousel-dc
+      class="pb-2"
+      [activeBenefitsList]="activeBenefitsList"
+      (accept)="routeToPension($event)"
+      (appeal)="onAppeal($event)"
+      (onTransactionIdClicked)="navigateToTransactionView($event)"
+      [benefitType]="benefitType"
+      [isStandalone]="isAppMb"
+      (onDisabledNinClicked)="onDisabledNinNavigation($event)"
+    >
+    </bnt-active-benefits-carousel-dc>
+  </div>
+</div>
+
+<!-- tabset for UI Annuity and OCC -->
+<div class="row">
+  <div class="col-sm-12">
+    <tabset class="saned-listing-tabset" #benefitsTab>
+      <tab *ngIf="person" heading="{{ 'BENEFITS.UNEMPLOYMENT-INSURANCE' | translate }}" id="UItab">
+        <bnt-un-employment-listing-dc
+          [uibenefits]="uibenefits"
+          [routerData]="routerData"
+          [isIndividualApp]="isIndividualApp"
+        ></bnt-un-employment-listing-dc>
+      </tab>
+      <!-- *ngIf="showAnnuityTab" -->
+      <tab heading="{{ 'BENEFITS.ANNUITIES-BENEFITS' | translate }}" id="annuity_tab">
+        <bnt-annuity-benefits-listing-dc
+          [annuitybenefits]="annuitybenefits"
+          [routerData]="routerData"
+          [lang]="lang"
+          [annuityitemsPresent]="annuityitemsPresent"
+          [systemParameter]="systemParameter"
+          [isIndividualApp]="isIndividualApp"
+        ></bnt-annuity-benefits-listing-dc>
+      </tab>
+      <!-- *ngIf="showOHTab" -->
+      <tab heading="{{ 'BENEFITS.OCCUPATIONAL-DISABILITY-BENEFITS' | translate }}" id="occ_tab">
+        <bnt-occupational-benefits-listing-dc [isIndividualApp]="isIndividualApp" [occBenefits]="occBenefits">
+        </bnt-occupational-benefits-listing-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<!-- need to check where it is used  -->
+<!-- Modal for benefit adjustment-->
+<ng-template #benefitAdjustment>
+  <gosi-modal-dc
+    [modalHeader]="'BENEFITS.BENEFIT-ADJUSTMENT-DETAILS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="hideModal()"
+  >
+    <div class="row" modalContent>
+      <div class="col-md-12">
+        <div>
+          <span> {{ 'BENEFITS.ADJUSTMENTS' | translate }}</span>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th id="transaction">
+                {{ 'BENEFITS.PREVIOUS-TRANSACTION' | translate }}
+              </th>
+              <th id="adjustmentReason">
+                {{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}
+              </th>
+              <th id="adjustmentType">
+                {{ 'BENEFITS.TYPE' | translate }}
+              </th>
+              <th id="adjustment">
+                {{ 'BENEFITS.ADJUSTMENT' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let adjustment of adjustments; let i = index">
+            <tr class="data-row">
+              <td>
+                <div class="benefits-link">
+                  {{ adjustment.previousTransaction }}
+                </div>
+              </td>
+              <td>
+                {{ adjustment.adjustmentReason }}
+              </td>
+              <td>
+                {{ adjustment.type }}
+              </td>
+              <td>{{ adjustment.adjustment }} {{ 'BENEFITS.SR' | translate }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="row total">
+          <div class="col-sm-4">
+            {{ 'BENEFITS.TOTAL-ADJUSTMENT' | translate }}
+          </div>
+          <div class="col-sm-3">
+            {{ 'BENEFITS.ADJUSTMENT-PLAN' | translate }}
+          </div>
+        </div>
+        <div class="row total">
+          <div class="col-sm-4">{{ initialAdjustment }} {{ 'BENEFITS.SR' | translate }}</div>
+          <div class="col-sm-3">25% / Month</div>
+        </div>
+        <div class="row total-adjustment">
+          <div class="col-sm-4">
+            <span>
+              {{ 'BENEFITS.ADJUSTMENT-MONTH' | translate }}
+            </span>
+          </div>
+        </div>
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th id="transactionMonth">
+                {{ 'BENEFITS.MONTH' | translate }}
+              </th>
+              <th id="transactionBenefit">
+                {{ 'BENEFITS.BENEFIT' | translate }}
+              </th>
+              <th id="monthlyAdjustment">
+                {{ 'BENEFITS.MONTHLY-ADJUSTMENT' | translate }}
+              </th>
+              <th id="finalAdjustment">
+                {{ 'BENEFITS.FINAL-BENEFIT' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let adjustment of adjustments; let i = index">
+            <tr class="data-row">
+              <td>
+                {{ adjustment.month }}
+              </td>
+              <td>{{ adjustment.benefit }} {{ 'BENEFITS.SR' | translate }}</td>
+              <td>{{ adjustment.monthlyAdjustment }} {{ 'BENEFITS.SR' | translate }}</td>
+              <td>
+                {{ adjustment.benefit + adjustment.monthlyAdjustment }}
+                {{ 'BENEFITS.SR' | translate }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <gosi-button-dc modalAction id="closeBtn" type="secondary" (submit)="hideModal()">
+      {{ 'BENEFITS.CLOSE' | translate }}
+    </gosi-button-dc>
+  </gosi-modal-dc>
+</ng-template>
+<!-- <ng-template #viewAppeal>
+  <bnt-website-navigation-popup-dc (proceed)="proceedAction()" (cancel)="hideModal()">
+  </bnt-website-navigation-popup-dc>
+</ng-template> -->
+<router-outlet></router-outlet>

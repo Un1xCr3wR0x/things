@@ -1,0 +1,267 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!--TODO heir benefits details for startwaive and stop waive-->
+<div class="row" *ngIf="heirOrDependentDetails?.length > 0 || heirBenefitDetails?.length > 0">
+  <div class="col-lg-12">
+    <div class="row pl-4">
+      <span class="pb-2 sub-header">{{ 'BENEFITS.HEIR-BENEFIT-DETAIL' | translate }}&nbsp;</span>
+      <span class="flag-date">({{ annuityBenefitDetails?.benefitStartDate | dateType }}</span>
+      <span class="pr-1 pl-2">
+        <span *ngIf="lang === 'en'">&gt;</span>
+        <span *ngIf="lang === 'ar'">&lt;</span>
+      </span>
+      <!-- <span class="pl-1 flag-date"> 20/02/14786) </span> -->
+      <span class="flag-endDate"> {{ 'BENEFITS.ONWARDS' | translate }})</span>
+    </div>
+    <div class="row">
+      <div class="col-md-8 pl-0 item-card ml-3" *ngIf="heirOrDependentDetails && heirOrDependentDetails.length > 0">
+        <div class="col-md-12 sub-header">{{ 'BENEFITS.EVENTS-CHANGED-BENEFIT-AMOUNT' | translate }}</div>
+        <div class="col-md-12">
+          <table class="table table-scroll table-borderless">
+            <tbody class="heir-benefit-details-body" *ngFor="let heir of heirOrDependentDetails">
+              <tr class="data-row" *ngIf="heir?.actionType !== null">
+                <ol class="pl-3">
+                  <li>
+                    <div class="row">
+                      <div class="col-12">
+                        {{ 'BENEFITS.BENEFIT-WAIVED' | translate }}
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-4">
+                        {{ 'BENEFITS.START-DATE' | translate }} :{{ heir?.waiveStartDate | dateType }}
+                      </div>
+                      <div class="col-md-4" *ngIf="lang === 'en'">
+                        {{ 'BENEFITS.HEIR' | translate }} : {{ heir?.name?.english?.name }}
+                      </div>
+                      <div class="col-md-4" *ngIf="lang === 'ar'">
+                        {{ 'BENEFITS.HEIR' | translate }} : >{{ heir?.name?.arabic?.firstName }}
+                        {{ heir?.name?.arabic?.secondName }} {{ heir?.name?.arabic?.thirdName
+                        }}{{ heir?.name?.arabic.familyName }}
+                      </div>
+                      <div class="col-md-4">
+                        {{ 'BENEFITS.WAIVED-TOWARDS' | translate }} :{{ heir?.benefitWaivedTowards | bilingualText }}
+                      </div>
+                    </div>
+                  </li>
+                </ol>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12" *ngIf="heirBenefitDetails && heirBenefitDetails.length > 0">
+        <table class="table table-scroll table-responsive table-borderless">
+          <thead>
+            <tr>
+              <th>{{ 'BENEFITS.HEIR_NAME_VALIDATOR' | translate }}</th>
+              <th>{{ 'BENEFITS.PERVIOUS-BENEFIT-PERIOD' | translate }}</th>
+              <th>{{ 'BENEFITS.BENEFIT-BEFORE-UPDATE-SAR-MONTH' | translate }}</th>
+              <th>{{ 'BENEFITS.BENEFIT-AFTER-UPDATE-SAR-MONTH' | translate }}</th>
+              <th>{{ 'BENEFITS.ADJUSTMENTS-SAR' | translate }}</th>
+              <th *ngIf="false"></th>
+            </tr>
+          </thead>
+          <tbody class="heir-benefit-details-body">
+            <tr class="data-row" *ngFor="let heiradjustment of heirBenefitDetails; let i = index">
+              <td>{{ heiradjustment?.name | bilingualText }}</td>
+              <ng-container *ngIf="heirOrDependentDetails && heirOrDependentDetails?.length > 0">
+                <td *ngIf="heirOrDependentDetails[i]?.benefitStartDate || heirOrDependentDetails[i]?.benefitEndDate">
+                  {{ heirOrDependentDetails[i]?.benefitStartDate | dateType }}
+                  <span class="pr-1 pl-2">
+                    <span *ngIf="lang === 'en'">&gt;</span>
+                    <span *ngIf="lang === 'ar'">&lt;</span>
+                  </span>
+                  {{ heirOrDependentDetails[i]?.benefitEndDate | dateType }}
+                </td>
+                <td
+                  *ngIf="!heirOrDependentDetails[i]?.benefitStartDate && !heirOrDependentDetails[i]?.benefitEndDate"
+                ></td>
+              </ng-container>
+              <td>{{ heiradjustment?.amountBeforeUpdate | number }}</td>
+              <td>{{ heiradjustment?.benefitAmount | number }}</td>
+              <td>{{ heiradjustment?.adjustmentCalculationDetails?.netAdjustmentAmount | number }}</td>
+              <td *ngIf="false">
+                <a id="paymentoptions" class="link-value" routerLinkActive="active">
+                  <u>{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</u>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-button-dc [size]="'md'" [outlineOnly]="true" type="secondary">{{
+          'BENEFITS.VIEW-HEIR-HISTORY' | translate
+        }}</gosi-button-dc>
+        <!-- Click functionality will be added after BA confirmation -->
+        <!-- <gosi-button-dc [size]="'md'" [outlineOnly]="true" type="secondary" (click)="showModal(depTimeline, annuityBenefitDetails?.personId)">{{
+            'BENEFITS.VIEW-HEIR-HISTORY' | translate
+          }}</gosi-button-dc> -->
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #depTimeline>
+  <gosi-modal-dc
+    [modalHeader]="'BENEFITS.DEPENDENT-STATUS-HISTORY' | translate"
+    [needCloseButton]="true"
+    (closeModal)="closeModal()"
+  >
+    <div modalContent class="amw pt-3" *ngIf="dependentHistory">
+      <div class="row">
+        <div class="col-md-6" *ngIf="dependentHistory.dependentHistoryDetails[0]?.name">
+          <gosi-label-dc
+            id="name"
+            [value]="dependentHistory.dependentHistoryDetails[0]?.name | bilingualText: true"
+            label="{{ 'BENEFITS.NAME' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-6" *ngIf="dependentHistory.dependentHistoryDetails[0]?.identifier[0]">
+          <gosi-label-dc
+            id="identifier"
+            [value]="getIdentifierLabelOrValue('value', dependentHistory.dependentHistoryDetails[0]?.identifier[0])"
+            label="{{
+              getIdentifierLabelOrValue('label', dependentHistory.dependentHistoryDetails[0]?.identifier[0]) | translate
+            }}"
+          ></gosi-label-dc>
+        </div>
+        <div
+          class="col-md-12 ml-2"
+          *ngFor="let statusHistory of dependentHistory.dependentHistoryDetails[0]?.statusHistory; let i = index"
+        >
+          <bnt-timeline-dc [isFirstItem]="i === 0">
+            <div class="row" timeline-date>
+              <div class="col-md-12 flag-timeline">
+                <span class="flag-date">{{ statusHistory?.statusDate | dateType }}</span>
+              </div>
+            </div>
+            <div class="row" timeline-content>
+              <gosi-card-dc class="col-lg-12" type="secondary" [lessPadding]="true">
+                <div class="row">
+                  <div class="col-md-6">
+                    <gosi-label-dc
+                      id="dep-history-status"
+                      [value]="statusHistory?.heirStatus | bilingualText"
+                      label="{{ 'BENEFITS.STATUS' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div
+                    [ngClass]="{ 'text-black-50': statusHistory?.status.english === 'Inactive' }"
+                    class="col-md-6 d-flex flex-column justify-content-center text-center dep-history-status"
+                  >
+                    {{ statusHistory?.status | bilingualText }}
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </div>
+          </bnt-timeline-dc>
+        </div>
+        <!-- Benefit request started -->
+        <div class="col-md-12 ml-2">
+          <bnt-timeline-dc>
+            <div class="row" timeline-date>
+              <div class="col-md-12 flag-timeline">
+                <span class="flag-date">{{ dependentHistory?.requestDate | dateType }}</span>
+              </div>
+            </div>
+            <div class="row" timeline-content>
+              <gosi-card-dc class="col-lg-6" type="secondary" [lessPadding]="true">
+                <div class="row">
+                  <div class="col-md-12">
+                    <span class="dep-history-status">
+                      {{ 'BENEFITS.BENEFIT-REQUESTED' | translate }}
+                    </span>
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </div>
+          </bnt-timeline-dc>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<!-- <div class="row px-2 mx-2">
+        <div
+          *ngIf="
+            isHeirBenefit &&
+            (annuityBenefitDetails?.actionType === 'HOLD' ||
+              annuityBenefitDetails?.actionType === 'START_WAIVE' ||
+              annuityBenefitDetails?.actionType === 'STOP_WAIVE')
+          "
+        >
+          <div class="mt-3 heir-detail-heading">
+            <span>{{ 'BENEFITS.HEIR-BENEFIT-DETAIL' | translate }}</span>
+            <span> ({{ annuityBenefitDetails.requestDate.gregorian | date: 'dd/MM/yyyy' }} {{ '>' }} </span>
+            <span>{{ 'BENEFITS.ONWARDS' | translate }})</span>
+          </div>
+          <div class="heir-details col-lg-12 pt-3 mt-3">
+            <span>{{ 'BENEFITS.EVENTS-CHANGED-BENEFIT-AMOUNT' | translate }}</span>
+            <table class="table table-borderless">
+              <tbody *ngFor="let heir of dependentDetails; let i = index" class="heir-benefit-details-body">
+                <tr class="data-row" *ngIf="heir?.actionType === 'HOLD'">
+                  <td>
+                    <div class="d-block">
+                      {{ 'BENEFITS.HOLD-BENEFIT' | translate }}
+                    </div>
+                    <div class="d-block">
+                      <span>{{ 'BENEFITS.DATE' | translate }} :</span>
+                      {{ heir.statusDate?.gregorian | date: 'dd/MM/yyyy' }}
+                      <span>{{ 'BENEFITS.HEIR' | translate }} :</span>
+                      {{ heir?.name | nameToString: true }}
+                    </div>
+                  </td>
+                </tr>
+                <tr class="data-row" *ngIf="heir?.actionType === 'START_WAIVE' || heir?.actionType === 'STOP_WAIVE'">
+                  <div class="d-block">
+                    {{ 'BENEFITS.BENEFIT-WAIVED' | translate }}
+                  </div>
+                  <div class="d-block">
+                    <span>{{ 'BENEFITS.START-DATE' | translate }} :</span>
+                    {{ heir.statusDate?.gregorian | date: 'dd/MM/yyyy' }}
+                    <span>{{ 'BENEFITS.HEIR' | translate }} :</span>
+                    {{ heir?.name | nameToString: true }}
+                    <span>{{ 'BENEFITS.WAIVED-TOWARDS' | translate }} :</span>
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <table class="table table-borderless">
+            <thead>
+              <tr>
+                <th>{{ 'BENEFITS.HEIR_NAME_VALIDATOR' | translate }}</th>
+                <th>{{ 'BENEFITS.PERVIOUS-BENEFIT-PERIOD' | translate }}</th>
+                <th>{{ 'BENEFITS.BENEFIT-BEFORE-UPDATE-SAR-MONTH' | translate }}</th>
+                <th>{{ 'BENEFITS.BENEFIT-AFTER-UPDATE-SAR-MONTH' | translate }}</th>
+                <th>{{ 'BENEFITS.ADJUSTMENTS-SAR' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody *ngFor="let heirBenefit of heirBenefitPayments; let i = index" class="heir-benefit-details-body">
+              <tr class="data-row">
+                <td>
+                  {{ heirBenefit.name | bilingualText }}
+                </td>
+                <td>
+                  {{ heirBenefit.lastPaidDate?.gregorian | date: 'dd/MM/yyyy' || '-' }}
+                </td>
+                <td>
+                  {{ heirBenefit.payeeType | bilingualText }}
+                </td>
+                <td *ngIf="benefitCalculationDetails">
+                  {{ benefitCalculationDetails.dependentAmount | number }}
+                </td>
+                <td>
+                  {{ heirBenefit.benefitAmount | number: '1.2-2' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div> -->

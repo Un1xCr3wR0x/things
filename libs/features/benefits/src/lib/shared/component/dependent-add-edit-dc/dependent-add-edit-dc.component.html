@@ -1,0 +1,254 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row dependent-text" *ngIf="!isSmallScreen">
+  <div class="col-md-3 col-lg-3">
+    <gosi-label-dc
+      *ngIf="dependentDetails?.name?.arabic && lang === 'ar'"
+      id="dependentArabicName"
+      value="{{ dependentDetails?.name?.arabic?.firstName }} {{ dependentDetails?.name?.arabic?.secondName }} {{
+        dependentDetails?.name?.arabic?.thirdName
+      }}
+                {{ dependentDetails?.name?.arabic.familyName }}"
+      [label]="'BENEFITS.NAME' | translate"
+    >
+    </gosi-label-dc>
+    <gosi-label-dc
+      *ngIf="dependentDetails?.name?.english && lang === 'en'"
+      id="dependentNameEnglish"
+      [value]="dependentDetails?.name?.english?.name"
+      [label]="'BENEFITS.NAME' | translate"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-md-3">
+    <gosi-label-dc [label]="idLabel | translate" [value]="idValue"> </gosi-label-dc>
+  </div>
+  <div class="col-md-3">
+    <gosi-label-dc
+      id="dob"
+      [control]="
+        'BENEFITS.AGE'
+          | translate
+            : {
+                age:
+                  (dependentDetails?.ageInHijiri
+                    ? dependentDetails?.ageInHijiri
+                    : dependentDetails?.age
+                    ? dependentDetails?.age
+                    : 0
+                  ) | number: '1.0-0'
+              }
+      "
+      label="BENEFITS.DATE-OF-BIRTH"
+      ><span id="prefixValue">{{ dependentDetails.birthDate | dateType }} </span></gosi-label-dc
+    >
+  </div>
+  <div class="col-md-3">
+    <gosi-label-dc [label]="'BENEFITS.MARITAL-STATUS' | translate" [control]="dependentDetails.maritalStatus">
+    </gosi-label-dc>
+  </div>
+</div>
+<div class="row dependent-text pb-5" *ngIf="!update">
+  <div class="col-md-3">
+    <gosi-button-dc type="secondary" (click)="resetSearch()">
+      {{ 'BENEFITS.RESET' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+
+<div class="row dependent-text">
+  <ng-container *ngIf="!isAlive && deathStatusDisplay">
+    <div class="col-md-6 statusDiv mb-5">
+      <span class="statusLabel">{{ 'BENEFITS.STATUS' | translate }}</span>
+      <span class="statusValue">{{ 'BENEFITS.DEAD' | translate }}</span>
+    </div>
+    <div class="col-md-6 statusDiv mb-5">
+      <span class="statusLabel">{{ 'BENEFITS.DEATH_DATE' | translate }}</span>
+      <span class="statusValue">{{ dependentDetails.deathDate?.gregorian | date: 'dd/MM/yyyy' }} </span>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isDepRelationEditable">
+    <div class="col-md-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate"
+        [list]="annuityRelationShipList"
+        [control]="dependentForm?.get('relationship')"
+        (selectLov)="selectRelationShipForDependent($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!isDepRelationEditable">
+    <div class="col-md-6">
+      <gosi-label-dc
+        [label]="'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate"
+        [value]="dependentDetails?.relationship | bilingualText"
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="dependentForm.get('checkBoxForAlive')">
+    <div class="col-md-12">
+      <gosi-input-checkbox-dc
+        id="checkBoxAlive"
+        [label]="'BENEFITS.DEPENDENT-ALIVE'"
+        (select)="checkAlive()"
+        [control]="dependentForm?.get('checkBoxForAlive')"
+        [lessPadding]="false"
+        [noSpacing]="true"
+      >
+      </gosi-input-checkbox-dc>
+    </div>
+    <!--shows only if above checkbox selected-->
+    <div class="col-md-6" *ngIf="dependentForm?.get('deathDate')">
+      <gosi-input-date-dc
+        id="deathDate"
+        label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+        [hideOptionalLabel]="true"
+        [maxDate]="maxDate"
+        [control]="dependentForm?.get('deathDate')?.get('gregorian')"
+        (changeEvent)="deathDateSelected()"
+      >
+      </gosi-input-date-dc>
+    </div>
+  </ng-container>
+  <div class="col-md-6" *ngIf="isAlive && dependentForm?.get('maritalStatus')">
+    <!-- Defect 504348  - mail: Confirmation Regarding Marital Status From NIC -->
+    <gosi-input-select-dc
+      [label]="'BENEFITS.MARITAL-STATUS' | translate"
+      [disabled]="
+        isValidator
+          ? dependentDetails?.maritalStatusFromNicMoj
+          : dependentDetails?.maritalStatus &&
+            dependentDetails?.maritalStatusDate?.gregorian &&
+            dependentDetails?.maritalStatus?.english !== maritalValues.unavailable &&
+            dependentDetails.maritalStatus?.english === dependentForm?.get('maritalStatus.english')?.value &&
+            !dependentDetails.maritalStatusDateUpdatedFromUi
+      "
+      [list]="maritalStatusList"
+      [control]="dependentForm?.get('maritalStatus')"
+      (selectLov)="selectMaritalStatus($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+
+  <div class="col-md-6" *ngIf="!isAlive && dependentForm?.get('maritalStatus')">
+    <gosi-input-select-dc
+      [label]="'BENEFITS.MARITAL-STATUS-DEATH' | translate"
+      [list]="maritalStatusList"
+      [disabled]="true"
+      [control]="dependentForm?.get('maritalStatus')"
+      (selectLov)="selectMaritalStatus($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-md-6" *ngIf="dependentForm?.get('maritalStatusDate')">
+    <gosi-input-date-dc
+      id="maritalStatusDate"
+      label="{{ 'BENEFITS.MARITAL-STATUS-DATE' | translate }}"
+      [hideOptionalLabel]="true"
+      [disabled]="
+        isValidator
+          ? dependentDetails?.maritalStatusFromNicMoj
+          : dependentDetails?.maritalStatusDate?.gregorian &&
+            dependentDetails.maritalStatus?.english === dependentForm?.get('maritalStatus.english')?.value &&
+            !dependentDetails.maritalStatusDateUpdatedFromUi
+      "
+      [control]="dependentForm?.get('maritalStatusDate')?.get('gregorian')"
+      (changeEvent)="maritalStatusDateChanged()"
+      (blur)="maritalStatusDateChanged()"
+      [maxDate]="depHeirDeathDate ? depHeirDeathDate.toDate() : currentDate"
+    >
+    </gosi-input-date-dc>
+  </div>
+  <!--eventErrorWithoutEventCategory-->
+  <ng-container *ngIf="eventErrorWithoutEventCategory && eventErrorWithoutEventCategory?.length">
+    <div class="col-md-12" *ngFor="let validatedEvent of eventErrorWithoutEventCategory">
+      <gosi-alert-dc [bilingualMessage]="validatedEvent.message" type="warning" [dismissible]="true"> </gosi-alert-dc>
+    </div>
+  </ng-container>
+  <!--end eventErrorWithoutEventCategory-->
+  <!-- questions -->
+  <ng-container *ngIf="questionsForm">
+    <div class="col-md-12" *ngFor="let question of questions; index as k">
+      <bnt-heir-add-question-dc
+        [qnControl]="questionsForm?.at(k)"
+        [lang]="lang"
+        [benefitType]="benefitType"
+        [pensionEligibilityStartDate]="eligibilityStartDateInDateFormat"
+        [addedEvent]="addedEvent"
+        [question]="question"
+        [sex]="dependentDetails?.sex"
+        [systemRunDate]="systemRunDate"
+        [maritalStatusDate]="statusDate"
+        [maritalStatus]="getStatus(status) | bilingualText"
+        [widowOrDivorceStatus]="getMaritalStatusFemale() | bilingualText"
+        [requestDate]="parentForm?.get('requestDate.gregorian')?.value"
+        (changeToggle)="changeToggleForQuestion(question, $event, questionsForm?.at(k))"
+        (addEvent)="addEventPopup($event)"
+      ></bnt-heir-add-question-dc>
+    </div>
+  </ng-container>
+  <div class="col-md-12">
+    <gosi-alert-dc
+      *ngIf="depHeirDeadBeforeEligibility"
+      [message]="
+        'BENEFITS.DEP-DEAD-BEFORE-ELIGIBILITY'
+          | translate: { pensionEligibilityStartDate: eligibilityStartDateInDateFormat.toDate() | date: 'dd/MM/yyyy' }
+      "
+      type="danger"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </div>
+
+  <div class="col-md-12 action-btns d-flex justify-content-center mb-5">
+    <div class="col-auto cancel">
+      <gosi-button-dc id="cancel" [type]="'secondary'" [isFullWidth]="isSmallScreen" (click)="cancel()">
+        {{ 'BENEFITS.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="col-auto">
+      <gosi-button-dc
+        id="save"
+        [type]="'primary'"
+        [disabled]="depHeirDeadBeforeEligibility || disableSave"
+        [isFullWidth]="isSmallScreen"
+        (click)="save(update)"
+      >
+        {{ 'BENEFITS.SAVE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>
+<!-- <div
+  class="row d-flex justify-content-center"
+  *ngIf="!update && dependentForm?.get('relationship').valid && !disableValidateButton"
+>
+  <gosi-button-dc
+    [size]="'md'"
+    [outlineOnly]="true"
+    (click)="validate()"
+    [disabled]="dependentForm.invalid"
+    *ngIf="dependentForm.valid"
+  >
+    <fa-icon class="pl-2 pr-2" icon="plus"></fa-icon>
+    {{ 'BENEFITS.ADD-DEPENDENT' | translate }}
+  </gosi-button-dc>
+</div>
+<div class="row d-flex justify-content-center" *ngIf="update">
+  <div class="col-auto">
+    <gosi-button-dc type="outline-secondary" id="cancel" size="md" (submit)="cancel()">{{
+      'BENEFITS.CANCEL' | translate
+    }}</gosi-button-dc>
+  </div>
+  <div class="col-auto">
+    <gosi-button-dc type="outline-primary" id="save" size="md" (submit)="save()">{{
+      'BENEFITS.SAVE' | translate
+    }}</gosi-button-dc>
+  </div>
+</div> -->
+<!-- </div> -->

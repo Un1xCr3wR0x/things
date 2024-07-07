@@ -1,0 +1,168 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row" *ngIf="actionItem">
+  <ng-container *ngIf="currentRole !== departmentHead">
+    <div class="col-lg-6" *ngIf="actionItem.canLocation">
+      <gosi-input-select-dc
+        id="location"
+        [list]="locationList"
+        [label]="deptLabel | translate"
+        [control]="parentForm.get('office')"
+        (selectLov)="selectLocation($event)"
+        [placeholder]="'COMPLAINTS.LOCATION' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <ng-container *ngIf="actionItem.canDepartment">
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="department"
+          [list]="departmentLovList"
+          [label]="'COMPLAINTS.REQUEST-INFO-LABEL' | translate"
+          [control]="parentForm.get('department')"
+          (selectLov)="selectDepartment($event)"
+          [placeholder]="'COMPLAINTS.DEPARTMENT-MORE-INFO' | translate"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div
+        class="px-4 pb-4"
+        [ngClass]="[!isSuggestion ? 'pb-lg-0' : '', lang === 'en' ? 'col-lg-6 offset-lg-6' : 'mr-lg-auto col-lg-6']"
+        *ngIf="parentForm && parentForm.value && parentForm.value.head && parentForm.value.head"
+      >
+        <span class="label" [dir]="lang === 'en' ? 'ltr' : 'rtl'"> {{ headName | bilingualText | titlecase }} </span>
+        <span class="designation" [dir]="lang === 'en' ? 'ltr' : 'rtl'">({{ headJobTitle | bilingualText }})</span>
+      </div>
+    </ng-container>
+  </ng-container>
+  <div class="col-lg-6" *ngIf="actionItem.canClerk && currentRole === departmentHead">
+    <gosi-input-select-dc
+      id="clerk"
+      [list]="clerkLovList"
+      [label]="
+        'COMPLAINTS.' + (currentAction === delegateAction ? 'SELECT-DEPARTMENT-CLERK' : 'REQUEST-INFO-CLERK')
+          | translate
+      "
+      [control]="parentForm.get('clerk')"
+      (selectLov)="selectClerk($event)"
+      [placeholder]="
+        'COMPLAINTS.' + (currentAction === delegateAction ? 'CLERK-DELEGATE-MORE-INFO' : 'CLERK-MORE-INFO') | translate
+      "
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-lg-12" *ngIf="actionItem.canComment && this.parentForm.get('comments')">
+    <gosi-input-text-area-dc
+      id="requestInfo"
+      [label]="commentsLabel | translate"
+      name="approveComments"
+      [overridePlaceholder]="true"
+      [placeholder]="'COMPLAINTS.TEXT' | translate"
+      [control]="parentForm.get('comments')"
+      gosiSpecialCharacterMask
+      [maxLength]="1200"
+      *ngIf="
+        currentAction === workflowActions.RETURN_TO_CUSTOMER ||
+          currentAction === workflowActions.RESOLVE ||
+          currentAction === workflowActions.ACKNOWLEDGE;
+        else commentTemplate
+      "
+    >
+    </gosi-input-text-area-dc>
+    <ng-template #commentTemplate>
+      <gosi-input-text-area-dc
+        id="requestInfo"
+        [label]="commentsLabel | translate"
+        name="approveComments"
+        [overridePlaceholder]="true"
+        [placeholder]="'COMPLAINTS.TEXT' | translate"
+        [control]="parentForm.get('comments')"
+        gosiSpecialCharacterMask
+        [maxLength]="1200"
+        gosiMaxLength
+        [maxByteLength]="2000"
+      >
+      </gosi-input-text-area-dc>
+    </ng-template>
+  </div>
+  <div class="col-lg-12" *ngIf="actionItem.canDocument && documents">
+    <ces-complaint-file-upload-dc
+      [documents]="documents"
+      [transactionId]="transactionId"
+      (refresh)="refreshDocument($event)"
+      [uuid]="uuid"
+      [businessKey]="referenceNo"
+      (add)="addDocument()"
+      (remove)="removeDocument($event)"
+      *ngIf="documents?.length > 0"
+      [referenceNo]="referenceNo"
+      [disableAutoDoc]="true"
+      [isScan]="isScan"
+    >
+    </ces-complaint-file-upload-dc>
+  </div>
+  <div class="col-lg-12 audit-transaction" *ngIf="actionItem.canValidateTransactionType">
+    <div class="row">
+      <div class="col-lg-12 heading">
+        <h6>{{ 'COMPLAINTS.AUDIT-TRANSACTION-LABEL' | translate }}</h6>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="rightCategory"
+          [label]="'COMPLAINTS.AUDIT-TRANSACTION-CATEGORY' | translate"
+          [list]="categoryList"
+          [placeholder]="'COMPLAINTS.AUDIT-TRANSACTION-CATEGORY' | translate"
+          [control]="parentForm.get('rightCategory').get('category')"
+          [bindValueIsCode]="bindValueIsCode"
+          (select)="onCategorySelection($event)"
+          [disabled]="categoryList == null || categoryList.items.length == 0"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="rightType"
+          [label]="'COMPLAINTS.AUDIT-TYPE-LABEL' | translate"
+          [list]="rightTypeList"
+          [control]="parentForm.get('rightCategory').get('type')"
+          [placeholder]="'COMPLAINTS.AUDIT-TYPE-LABEL' | translate"
+          [bindValueIsCode]="bindValueIsCode"
+          (select)="onCategoryTypeSelect($event)"
+          [disabled]="true"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="rightSubtype"
+          [label]="'COMPLAINTS.AUDIT-SUB-TYPE-LABEL' | translate"
+          [list]="rightSubtypeList"
+          [control]="parentForm.get('rightCategory').get('subtype')"
+          [bindValueIsCode]="bindValueIsCode"
+          [placeholder]="'COMPLAINTS.AUDIT-SUB-TYPE-LABEL' | translate"
+          [disabled]="true"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 heading">
+        <h6>{{ 'COMPLAINTS.VALIDITY-OF-TRANSACTION' | translate }}</h6>
+      </div>
+    </div>
+    <gosi-input-radio-dc
+      [label]="'COMPLAINTS.VALIDITY-OF-TRANSACTION-LABEL' | translate"
+      id="isValid"
+      name="isValid"
+      [control]="parentForm.get('rightCategory').get('isValid')"
+      [list]="ValidityList"
+    >
+    </gosi-input-radio-dc>
+  </div>
+</div>

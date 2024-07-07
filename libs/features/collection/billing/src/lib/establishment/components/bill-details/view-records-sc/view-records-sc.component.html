@@ -1,0 +1,125 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--   Bill History Header Section-->
+<div class="row header-section">
+  <div class="col-auto heading-main border-right">
+    {{ 'BILLING.BILL' | translate }}
+  </div>
+  <div class="col-auto heading-main" *ngIf="recordHeaderValue.name?.english !== undefined">
+    {{ recordHeaderValue.name?.english === null ? recordHeaderValue.name?.arabic : recordHeaderValue.name?.english }}
+  </div>
+  <div class="col-auto float-left pt-2">({{ 'BILLING.REGISTRATION-NO' | translate }} : {{ recordidNumber }})</div>
+  <div class="d-flex justify-content-end col pr-5">{{ 'BILLING.CURRENCY' | translate }} : {{ selectedCurrency }}</div>
+</div>
+<div class="content">
+  <div class="row pt-3 pb-3">
+    <div class="col-auto header">
+      <span
+        >{{ 'BILLING.SEARCH-RESULT' | translate }}
+        <span class="col-auto mr-auto sub-header">
+          {{ 'BILLING.BILL-COUNT' | translate: { bills: noOfRecords } }}
+        </span>
+      </span>
+    </div>
+    <div class="col-lg-9 d-flex justify-content-end" *ngIf="isPreviousBill">
+      <div class="serch-sort-sec menu">
+        <div class="row d-flex flex-row">
+          <div class="search" id="searchid">
+            <gosi-search-dc [placeholder]="'BILLING.ENTER-RECEIPT-NUMBER' | translate"></gosi-search-dc>
+          </div>
+          <div class="filter">
+            <gosi-filter-dc></gosi-filter-dc>
+          </div>
+        </div>
+        <div class="sort" id="searchid">
+          <gosi-sort-dc [list]="receiptSortFields$ | async"></gosi-sort-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="receiptList?.length > 0; else noResult">
+    <div class="table-effect">
+      <div class="table-responsive">
+        <table class="table table-borderless">
+          <thead class="table-header">
+            <tr>
+              <th>{{ 'BILLING.CALENDAR-TYPE' | translate | titlecase }}</th>
+              <th>
+                {{ 'BILLING.CATEGORY' | translate | titlecase }}
+              </th>
+              <th>{{ 'BILLING.BILL-MONTH' | translate | titlecase }}</th>
+              <th>
+                {{ 'BILLING.CLOSING-BALANCE-DEBIT' | translate | titlecase }}
+              </th>
+              <th>
+                {{ 'BILLING.CLOSING-BALANCE-PENALTY' | translate | titlecase }}
+              </th>
+              <th>
+                {{ 'BILLING.CLOSING-DEBIT' | translate | titlecase }}
+              </th>
+              <th>{{ 'BILLING.CLOSING-CREDIT' | translate | titlecase }}</th>
+              <th>{{ 'BILLING.ADJUSTMENT-INDICATOR' | translate | titlecase }}</th>
+              <th>{{ 'BILLING.FIELD-OFFICE' | translate | titlecase }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="
+                let receipt of receiptList
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: noOfRecords
+                      };
+                let i = index
+              "
+            >
+              <tr class="border-bottom view-details" (click)="getReceipt(receipt.ESTACCMAPPINGID)">
+                <td id="parentReceiptNo{{ i }}">
+                  {{ receipt.CALENDARTYPE === 'G' ? ('BILLING.GREGORIAN' | translate) : ('BILLING.HIJRI' | translate) }}
+                </td>
+                <td>
+                  {{ 'BILLING.' + (receipt.CATEGORY | uppercase) | translate }}
+                </td>
+                <td>{{ getMonth(i) }}/{{ getYear(i) }}</td>
+                <td>{{ receipt.ClosingContributionDebit | number: '1.2-2' }}</td>
+
+                <td>{{ receipt.ClosingPenaltyDebit | number: '1.2-2' }}</td>
+                <td>{{ receipt.ClosingDebit | number: '1.2-2' }}</td>
+                <td>{{ receipt.ClosingCredit | number: '1.2-2' }}</td>
+                <td>{{ 'BILLING.' + (receipt.ADJIND | uppercase) | translate }}</td>
+                <td>{{ receipt.Office | titlecase }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <ng-container>
+      <div>
+        <gosi-pagination-dc
+          *ngIf="noOfRecords > itemsPerPage"
+          [totalSize]="noOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          paginationId="paginationId"
+        >
+        </gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-template #noResult>
+    <div class="mt-5 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,144 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-alert-sc></gosi-alert-sc>
+    </div>
+  </div>
+  <!-- heading -->
+  <div class="row">
+    <div class="col-lg-10 col-md-10 col-sm-10">
+      <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.SESSION-CONFIGURATION' | translate }}" (back)="navigateBack()">
+      </gosi-main-heading-dc>
+    </div>
+    <div class="col-lg-2 col-md-2 col-sm-2 d-flex flex-row-reverse" *gosiShow="allowedMbofficer">
+      <div *ngIf="individualSessionDetails?.status.english === 'Cancel'">
+        <gosi-button-dc
+          class="mb-2 action-btn"
+          [ngClass]="disabled ? 'disabled' : ''"
+          type="secondary"
+          size="sm"
+          id="actionsBtn"
+          [disabled]="true"
+        >
+          {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+          <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+        </gosi-button-dc>
+      </div>
+      <div
+        *ngIf="
+          individualSessionDetails?.status.english === 'Active' ||
+          individualSessionDetails?.status.english === 'Scheduled' ||
+          individualSessionDetails?.status.english === 'Hold' ||
+          individualSessionDetails?.status.english === 'Mbo trigger'
+        "
+      >
+        <gosi-dropdown-dc
+          [ngClass]="disabled ? 'actions-disabled-cmp' : 'actions-cmp'"
+          [list]="sessionDropDown"
+          minWidthRem="21.42rem"
+          *gosiShow="allowedSessionOfficerRole && !canHide"
+          (selectedItem)="navigateToSession($event, stopSessionModal)"
+        >
+          <gosi-button-dc
+            class="mb-2 action-btn"
+            [ngClass]="disabled ? 'disabled' : ''"
+            type="secondary"
+            size="sm"
+            id="actionsBtn"
+            [disabled]="disabled || canHide"
+          >
+            {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+            <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+          </gosi-button-dc>
+        </gosi-dropdown-dc>
+      </div>
+    </div>
+  </div>
+  <!-- content -->
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-details-dc
+        [isCreateSession]="false"
+        [sessionList]="specialityList"
+        [isRegularSession]="isRegular"
+        [individualSessionDetails]="individualSessionDetails"
+      ></mb-session-details-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-hold-periods-dc
+        *ngIf="isRegular"
+        [individualSessionDetails]="individualSessionDetails"
+        (holdSessionDetails)="holdSession($event)"
+        [holdReasonList]="holdReasonList$ | async"
+        (open)="getHoldDetails($event)"
+        (remove)="removeHold($event)"
+        (hide)="hideModal()"
+        [holdSessionForm]="stopSessionForm"
+      ></mb-session-hold-periods-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <mb-doctor-details-session-dc
+        *ngIf="isRegular"
+        [individualSessionDetails]="individualSessionDetails"
+      ></mb-doctor-details-session-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-invitation-dc
+        *ngIf="isRegular"
+        [individualSessionDetails]="individualSessionDetails"
+        [isCreateSession]="false"
+      ></mb-session-invitation-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <mb-adhoc-members-list-dc
+        *ngIf="!isRegular"
+        [individualSessionDetails]="individualSessionDetails"
+        (navigate)="navigateTo($event)"
+      ></mb-adhoc-members-list-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <mb-adhoc-partcipants-list-dc
+        *ngIf="!isRegular"
+        [lang]="lang"
+        [adhocParticipantList]="individualSessionDetails"
+        (navigate)="navigateToParticipantProfile($event)"
+      ></mb-adhoc-partcipants-list-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-slot-details-dc
+        [individualSessionDetails]="individualSessionDetails"
+        [isCreateSession]="false"
+      ></mb-session-slot-details-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #stopSessionModal>
+  <mb-stop-session-modal-dc
+    [reasonList]="stopReasonList$ | async"
+    (cancelEvent)="hideModal()"
+    [startDate]="individualSessionDetails.startDate"
+    [parentForm]="stopSessionForm"
+    (action)="stopSession($event)"
+  ></mb-stop-session-modal-dc>
+</ng-template>

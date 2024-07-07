@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- This html is used to handle table section for list of contributorWages-->
+<div class="section-heading" *ngIf="contributorWageDetailsResponse.numberOfContributors > 0">
+  <div class="row">
+    <!-- Table heading-->
+    <div class="col-sm-3">
+      {{ 'CONTRIBUTOR.WAGE.CONTRIBUTOR-DETAILS' | translate | uppercase }}
+    </div>
+    <div class="col-sm-9">
+      {{ 'CONTRIBUTOR.WAGE.ENGAGEMENT-DETAILS' | translate | uppercase }}
+    </div>
+  </div>
+</div>
+
+<!-- Table body-->
+<div
+  class="table-row"
+  *ngFor="
+    let contributorWage of contributorWageDetailsResponse.contributors
+      | paginate: { id: id, itemsPerPage: 10, currentPage: currentPage, totalItems: totalSize };
+    let i = index
+  "
+>
+  <div class="row">
+    <div class="col-lg-3 col-sm-12">
+      <!-- Employee details section-->
+      <div class="employee-details">
+        <cnt-employee-details-dc
+          [contributorWage]="contributorWage"
+          [enableNavigation]="enableNavigation"
+          (navigateToProfile)="handleNavigation($event)"
+        ></cnt-employee-details-dc>
+      </div>
+    </div>
+    <div class="col-lg-9 col-sm-12 engagement-details">
+      <div [tooltip]="contributorWage.anyPendingRequest ? tolTemplate : null">
+        <!--Wage and occupation details  -->
+        <cnt-multiple-wage-update-dc
+          *ngIf="contributorWage.wageDetails && parentForm && parentForm.get('wageForms')"
+          [occupationList]="occupationList"
+          [updateWageForm]="wageFormArray.controls[i]"
+          [legalEntity]="legalEntity"
+          [contributorWage]="contributorWage"
+          [index]="i"
+          (jobClassListChange)="jobClassListChangeForPPA($event, i)"
+          (jobRankListChange)="jobRankListChangeForPPA($event, i)"
+          [isPPA]="isPPA"
+          [lookUpDatas]="lookUpDatas[i]"
+        >
+        </cnt-multiple-wage-update-dc>
+        <!-- Errror message in each row -->
+        <div *ngIf="contributorWage.message">
+          <gosi-alert-dc
+            [alert]="contributorWage.message"
+            [dismissible]="false"
+            [transparent]="true"
+            [noPadding]="true"
+            type="danger"
+          ></gosi-alert-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #tolTemplate>
+    <ng-container>
+      <div d-flex flex-column>
+        <span *ngIf="contributorWage?.pendingWorkflowType === WorkFlowTypeEnum.MANAGE_WAGE">
+          {{
+            'CONTRIBUTOR.WAGE.UPDATE-CURRENT-WAGE-PENDING-INFO'
+              | translate: { transactionRefNo: contributorWage?.transactionRefNo }
+          }}
+        </span>
+        <span *ngIf="contributorWage?.pendingWorkflowType === WorkFlowTypeEnum.CHANGE_ENGAGMENT">
+          {{
+            'CONTRIBUTOR.WAGE.UPDATE-CHANGE-ENGAGEMENT-PENDING-INFO'
+              | translate: { transactionRefNo: contributorWage?.transactionRefNo }
+          }}
+        </span>
+      </div>
+    </ng-container>
+  </ng-template>
+</div>

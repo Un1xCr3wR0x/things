@@ -1,0 +1,196 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="head">
+  {{ 'DASHBOARD.HELLO' | translate }}
+  <span
+    *ngIf="
+      personDetails?.name?.english?.name !== null &&
+      personDetails?.name?.english?.name !== undefined &&
+      personDetails?.name?.english?.name.trim() !== '' &&
+      lang === 'en'
+    "
+    >{{ personDetails?.name?.english?.name }},</span
+  ><span
+    *ngIf="
+      personDetails?.name?.english?.name === undefined ||
+      personDetails?.name?.english?.name === null ||
+      (personDetails?.name?.english?.name.trim() === '' && lang === 'en') ||
+      lang === 'ar'
+    "
+    >{{ personDetails?.name?.arabic?.firstName }} {{ personDetails?.name?.arabic?.familyName }},</span
+  >
+</div>
+<!-- <div class="sub-head pb-4">
+  {{ 'DASHBOARD.WELCOME-MESSAGE' | translate }}
+</div> -->
+<!-- show the user roles start -->
+<div class="d-flex row badge">
+  <div class="col-12 d-flex flex-wrap">
+    <ng-container *ngFor="let userType of userTypesArray">
+      <div *ngIf="isActive(userType)" class="role d-flex flex-wrap user-margin">
+        <span class="role-value">
+          {{ getUserTypeName(userType) | translate }}
+        </span>
+        <fa-icon class="check-circle" icon="check-circle"></fa-icon>
+        <!-- <fa-icon *ngIf="!isActive(userType)" class="check-circle" icon="times-circle"></fa-icon> -->
+      </div>
+      <!-- need not show inactive tags : story in enhancement feature -->
+      <!-- <div *ngIf="!isActive(userType)" class="role d-flex flex-wrap user-margin">
+        <span class="inactive-value">
+          {{ getUserTypeName(userType) | translate }}
+        </span>
+        <fa-icon class="times-circle" icon="times-circle"></fa-icon>
+      </div> -->
+    </ng-container>
+  </div>
+</div>
+<!-- show the user roles end -->
+<div class="d-flex justify-content-start arabic-screen" [ngClass]="mobileView ? 'row' : ''">
+  <div
+    class="d-flex pl-4 pr-4 id-padding card-value ipad-mini-pr"
+    [ngClass]="!mobileView && lang == 'ar' ? 'padding-card' : ''"
+  >
+    <div class="cnt-details container">
+      <div class="d-flex">
+        <div class="d-flex pt-3 pb-3 label-left flex-column">
+          <!-- <ng-container *ngFor="let item of contributorResponse?.identity">
+                  <ng-container *ngIf="item && item !== null"> -->
+          <div *ngIf="isIqama !== true">
+            <div class="label">{{ 'DASHBOARD.NATIONAL-ID' | translate }}</div>
+            <div class="value">{{ identifier }}</div>
+          </div>
+          <div *ngIf="isIqama === true">
+            <div class="label">{{ 'DASHBOARD.IQAMA-NUMBER' | translate | titlecase }}</div>
+            <div class="value">{{ identifier }}</div>
+          </div>
+          <!-- <div *ngIf="item?.idType === 'PASSPORT'">
+                        <div class="label">{{ 'DASHBOARD.PASSPORT-NUMBER' | translate | titlecase }}</div>
+                        <div class="value">{{item?.passportNo}}</div>
+                    </div>
+                    <div *ngIf="item?.idType === 'BORDERNO'">
+                        <div class="label">{{ 'DASHBOARD.BORDER-NO' | translate | titlecase }}</div>
+                        <div class="value">{{item?.id}}</div>
+                    </div> -->
+          <!-- </ng-container>
+                      </ng-container> -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex card-value small-value id-padding" *ngIf="sin">
+    <div class="cnt-details container">
+      <div class="d-flex">
+        <div class="d-flex pt-3 pb-3 label-left flex-column">
+          <div class="label">{{ 'DASHBOARD.SOCIAL-INSURANCE-NUMBER' | translate | titlecase }}</div>
+          <div class="value">{{ sin }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="d-flex card-value emp-value small-value id-padding date-padding ipad-mini-pr"
+    *ngIf="overallEngagements?.length > 0 && (firstEmployment?.gregorian || firstEmployment !== undefined)"
+  >
+    <div class="cnt-details container">
+      <div class="d-flex">
+        <div class="d-flex pt-3 pb-3 label-left flex-column">
+          <div class="label">{{ 'DASHBOARD.FIRST-EMPLOYMENT' | translate | titlecase }}</div>
+          <div class="value">{{ firstEmployment?.gregorian | gosiDate }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="d-flex card-value last-value small-value id-padding ipad-mini-mr"
+    [ngClass]="firstEmployment?.gregorian || firstEmployment !== undefined ? '' : 'duration-card'"
+  >
+    <div class="cnt-details container">
+      <div class="d-flex">
+        <div class="d-flex pt-3 pb-3 label-left flex-column">
+          <div class="label">{{ 'DASHBOARD.CONTRIBUTION-DURATION' | translate }}</div>
+          <div class="value-wrapper">
+            <ng-container *ngIf="noOfDays === 0 && noOfMonths === 0">
+              {{ 0 }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }}, {{ 0 }}
+              {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+            </ng-container>
+            <ng-container *ngIf="noOfMonths && noOfMonths !== 0">
+              <ng-container *ngIf="!(lang === 'ar' && (noOfMonths === 1 || noOfMonths === 2))">
+                {{ noOfMonths | numToPositive }}
+              </ng-container>
+              {{
+                noOfMonths === 1
+                  ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                  : noOfMonths === 2
+                  ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                  : noOfMonths > 2 && noOfMonths < 11
+                  ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                  : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+              }}
+              <span *ngIf="noOfDays && noOfDays !== 0">,</span>
+            </ng-container>
+            <ng-container *ngIf="noOfDays && noOfDays !== 0">
+              <ng-container *ngIf="!(lang === 'ar' && (noOfDays === 1 || noOfDays === 2))">
+                {{ noOfDays | numToPositive }}
+              </ng-container>
+              {{
+                noOfDays === 1
+                  ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                  : noOfDays === 2
+                  ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                  : noOfDays > 2 && noOfDays < 11
+                  ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                  : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+              }}
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="inboxtaskCount !== null && inboxtaskCount !== undefined && inboxtaskCount !== 0">
+  <div class="col-12 pl-5 pr-5">
+    <gosi-alert-dc
+      type="warning"
+      [dismissable]="false"
+      message="{{
+        lang === 'en'
+          ? personDetails?.name?.english?.name !== null &&
+            personDetails?.name?.english?.name !== undefined &&
+            personDetails?.name?.english?.name.trim() !== ''
+            ? ('DASHBOARD.WARNING-MESSAGE' | translate: { firstname: personDetails?.name?.english?.name })
+            : ('DASHBOARD.WARNING-MESSAGE-NO-NAME' | translate)
+          : personDetails?.name?.arabic?.firstName !== null &&
+            personDetails?.name?.arabic?.firstName !== undefined &&
+            personDetails?.name?.arabic?.firstName.trim() !== ''
+          ? ('DASHBOARD.WARNING-MESSAGE'
+            | translate
+              : { firstname: personDetails?.name?.arabic?.firstName + ' ' + personDetails?.name?.arabic?.familyName })
+          : ('DASHBOARD.WARNING-MESSAGE-NO-NAME' | translate)
+      }}"
+    >
+      <div actOnAlert>
+        <ng-container *ngFor="let task of bpmTask?.tasks; let i = index">
+          <div *ngIf="lang === 'en' && i <= 1">
+            {{ i + 1 }}.
+            <span class="description-title" (click)="navigateToInboxItem(task)"
+              >{{ task.titleEnglish }}: #{{ task.referenceNo }}
+            </span>
+          </div>
+          <div *ngIf="lang === 'ar' && i <= 1">
+            {{ i + 1 }}.
+            <span class="description-title" (click)="navigateToInboxItem(task)"
+              >{{ task.titleArabic }} {{ 'DASHBOARD.NUMBER' | translate }}: {{ task.referenceNo }}</span
+            >
+          </div>
+        </ng-container>
+        <div *ngIf="inboxtaskCount >= 3" class="description-title" (click)="navigateToInbox()">
+          +{{ 'DASHBOARD.MORE-TRANSACTIONS' | translate: { count: inboxtaskCount - 2 | numToPositive } }}
+        </div>
+      </div>
+    </gosi-alert-dc>
+  </div>
+</div>

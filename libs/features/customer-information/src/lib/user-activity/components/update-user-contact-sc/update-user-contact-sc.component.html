@@ -1,0 +1,471 @@
+<div class="content m-3">
+  <gosi-card-dc [noBorder]="true">
+    <div class="d-flex">
+      <div class="flex-column">
+        <div><label class="main-headings">{{'CUSTOMER-INFORMATION.CONTACT-DETAILS'|translate}}</label></div>
+        <div><label>{{'CUSTOMER-INFORMATION.UPDATE-CONTACT-NOTIFICATION-HEADER'|translate}}</label></div>
+      </div>
+      <div class="ml-auto p-2">
+        <gosi-button-dc type="primary" (click)="addContacts()">
+          {{ 'CUSTOMER-INFORMATION.ADD-NEW-CONTACT' | translate}}
+        </gosi-button-dc>
+      </div>
+    </div>
+
+    <div *ngIf="isAddContactSuccess">
+      <gosi-alert-dc
+      type="success"
+      [noPadding]="true"
+      [dismissible]="true"
+      [message]="'CUSTOMER-INFORMATION.UPDATE-CONTACT-ADD-SUCCESS-MSG' | translate"
+      ></gosi-alert-dc>
+    </div>
+    <div *ngIf="isUpdateEstablishmentSuccess">
+      <gosi-alert-dc
+      type="success"
+      [noPadding]="true"
+      [dismissible]="true"
+      [message]="'CUSTOMER-INFORMATION.UPDATE-CONTACT-ESTABLISHMENT-SUCCESS-MSG' | translate"
+      ></gosi-alert-dc>
+    </div>
+    <div *ngIf="isUpdateContactSuccess">
+      <gosi-alert-dc
+      type="success"
+      [noPadding]="true"
+      [dismissible]="true"
+      [message]="'CUSTOMER-INFORMATION.UPDATE-CONTACT-SUCCESS-MSG' | translate"
+      ></gosi-alert-dc>
+    </div>
+    <div *ngIf="isDeleteContactSuccess">
+      <gosi-alert-dc
+      type="success"
+      [noPadding]="true"
+      [dismissible]="true"
+      [message]="'CUSTOMER-INFORMATION.UPDATE-CONTACT-DELETE-MSG' | translate"
+      ></gosi-alert-dc>
+    </div>
+
+
+    <div *ngIf="contactDetailsList.length == 0" class="p-5">
+      <div class="d-flex justify-content-center"><label
+          class="text-center">{{'CUSTOMER-INFORMATION.EMPTY-CONTACT_LIST-MESSAGE'|translate}}</label></div>
+      <div class="d-flex justify-content-center">
+        <gosi-button-dc type="primary" [outlineOnly]="true" (click)="addContacts()">
+          {{'CUSTOMER-INFORMATION.ADD-NEW-CONTACT' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+
+    <div *ngIf="contactDetailsList.length > 0">
+      <div  *ngFor="let contact of contactDetailsList" class="col-lg-12 contact-card px-3 mt-3">
+        <div  class="row fixed-part p-4" id="{{contact.id}}">
+          <div class="col-lg-4"><span> {{ 'CUSTOMER-INFORMATION.MOBILE-NUMBER' | translate}} : <span
+                class="green-labels" dir="ltr">+{{contact.isdCodePrimary}}{{contact.mobileNo}}</span> </span></div>
+          <div class="col-lg-4"><span> {{ 'CUSTOMER-INFORMATION.EMAIL-ADDRESS' | translate}} : <span
+                class="green-labels">{{contact.email}}</span></span></div>
+          <div class="col-lg-4 d-flex">
+            <div>
+              <span> {{ 'CUSTOMER-INFORMATION.STATUS' | translate }} :
+                <span *ngIf="contact.isVerified" class="green-labels">{{ 'CUSTOMER-INFORMATION.VERIFIED' | translate }}</span>
+                <span *ngIf="!contact.isVerified" class="red-labels">{{ 'CUSTOMER-INFORMATION.NOT-VERIFIED' | translate }}</span>
+              </span>
+            </div>
+            <div class="ml-auto">
+              <span class="item">
+                <div class="btn-group mx-3" dropdown>
+                  <button id="button-actions" type="button" class="d-flex btn-actions" dropdownToggle
+                    aria-controls="dropdown-actions">
+                    <fa-icon class="options-icon" icon="ellipsis-v"></fa-icon>
+                  </button>
+                  <ul id="dropdown-actions" *dropdownMenu class="dropdown-menu" role="menu"
+                    aria-labelledby="button-actions">
+                    <li role="menuitem">
+                      <a class="dropdown-item d-flex py-1" (click)="showModifyMobileNumberPopUp(contact.id,contact.mobileNo,contact.isdCodePrimary)">
+                        <span class="options-icon"><fa-icon icon="pencil-alt">
+                          </fa-icon> {{ 'CUSTOMER-INFORMATION.MODIFY-MOBILE'| translate}}
+                        </span>
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="dropdown-item d-flex" (click)="showModifyEmailPopUp(contact.id,contact.email)">
+                        <span class="options-icon" > <fa-icon icon="pencil-alt">
+                          </fa-icon> {{ 'CUSTOMER-INFORMATION.MODIFY-EMAIL'| translate}}
+                        </span>
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="dropdown-item d-flex" (click)="showModifyEstablishmentPopUp(contact.id)">
+                        <span class="options-icon" >
+                          <fa-icon icon="pencil-alt">
+                          </fa-icon> {{'CUSTOMER-INFORMATION.MODIFY-ESTABLISHMENT' | translate}}
+                        </span>
+                      </a>
+                    </li>
+                    <li role="menuitem">
+                      <a class="dropdown-item d-flex" (click)="showDeleteContactPopUp(contact.id)">
+                        <span class="options-icon" ><fa-icon icon="trash-alt"></fa-icon>
+                          {{ 'CUSTOMER-INFORMATION.REMOVE' | translate}}
+                        </span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <span>
+                  <fa-icon class="options-icon" icon="angle-down" (click)="showHideEst(contact.id)"></fa-icon>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div id="estDiv{{contact.id}}" style="display: none;">
+          <div *ngFor="let establishment of contactEstablishments" >
+            <div *ngIf="contact.id == establishment.contactId"  class="card-body">
+              <div class="item white-back">
+              <div class="d-flex flex-column">
+                <div class="font-weight-normal">
+                  {{
+                  lang == 'en'?
+                  establishment.establishmentName.english :
+                  establishment.establishmentName.arabic
+                  }}
+                </div>
+                <div class="d-flex">
+                  <div class="font-weight-bold">{{ 'CUSTOMER-INFORMATION.EST-ID' | translate }}: <span class="font-weight-normal">{{establishment.registrationNo}}</span></div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </gosi-card-dc>
+</div>
+
+
+<ng-template #addMobileNumberPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6 cutom-tel-input-field">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.ADD-MOBILE' | translate }}</div>
+      <gosi-input-intnl-tel-dc label=" {{ 'CUSTOMER-INFORMATION.MOBILE-NUMBER' | translate }}" id="mobile"
+        [control]="contactForm.get('mobileNo')" [isdControl]="contactForm.get('isdCode')">
+      </gosi-input-intnl-tel-dc>
+    </div>
+    <div class="pt-4 pb-2 d-flex justify-content-end">
+      <gosi-button-dc type="primary" (click)="showMobileNumberPopUp()">
+        {{ 'CUSTOMER-INFORMATION.NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #addEmailPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()">
+        <fa-icon icon="times"></fa-icon>
+      </div>
+      <div class="d-flex pb-5 main-headings">
+        {{ 'CUSTOMER-INFORMATION.ADD-EMAIL' | translate }}
+      </div>
+      <gosi-input-text-dc label="CUSTOMER-INFORMATION.EMAIL-ID" [control]="contactForm.get('email')">
+      </gosi-input-text-dc>
+    </div>
+    <div class="pt-4 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc type="secondary" (click)="backToPopUp(addMobileNumberPopUp)">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc type="primary" (click)="showEmailPopUp()">
+          {{ 'CUSTOMER-INFORMATION.NEXT' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #linkEstablishmentPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()">
+        <fa-icon icon="times"></fa-icon>
+      </div>
+      <div class="d-flex pb-5 main-headings">
+        {{ 'CUSTOMER-INFORMATION.ADD-ESTABLISHMENT' | translate }}
+      </div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex">
+        <span>&nbsp;&nbsp;{{ 'CUSTOMER-INFORMATION.SELECT-EST-LABEL' | translate }} </span>
+        <fa-icon class="px-1" [icon]="['fas', 'info-circle']" [tooltip]="linkEstablishmentToolTemplate"></fa-icon>
+      </div>
+      <gosi-input-multi-select-dropdown-est [hideOptionalLabel]="true" [control]="contactForm.get('establishmentList')"
+        [list]="dropDownEstablishmentsList" (selected)="selectEstablishments($event)">
+      </gosi-input-multi-select-dropdown-est>
+    </div>
+    <div class="pt-4 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc id="cancelBtn" type="secondary">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc id="saveBtn" type="primary" (click)="linkContactToEstablishment()">
+          {{ 'CUSTOMER-INFORMATION.SAVE' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #deleteContactPopUp>
+  <gosi-modal-dc></gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()">
+        <fa-icon icon="times"></fa-icon>
+      </div>
+      <div class="d-flex justify-content-center"><img src="assets/icons/confirm_popup.svg"></div>
+      <div class="d-flex justify-content-center mt-3">{{ 'CUSTOMER-INFORMATION.CONFIRM-DELETE-MSG' | translate }}</div>
+    </div>
+    <div class="pt-4 pb-3 d-flex justify-content-center">
+      <gosi-button-dc class="m-2" type="secondary" (click)="closePopUp()">
+        {{ 'CUSTOMER-INFORMATION.NO' | translate }}
+      </gosi-button-dc>
+      <gosi-button-dc class="m-2" type="secondary" (click)="deleteContact()">
+        {{ 'CUSTOMER-INFORMATION.YES' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #verifyMobilePopUp>
+  <gosi-modal-dc></gosi-modal-dc>
+  <div class="container p-4">
+    <div class="pb-5">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.VERIFY-MOBILE' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex justify-content-center custom-otp-fields">
+        <gosi-input-otp-dc [otpLength]="4" [control]="contactForm.get('otp')" [isValid]="isValid"></gosi-input-otp-dc>
+      </div>
+      <div *ngIf="isResend" class="d-flex justify-content-center mt-3">
+        <div class="timer-icon my-2 mx-1"><fa-icon icon="clock"></fa-icon></div>
+        <div  class="d-flex timer-bg py-2 px-2">
+          {{'CUSTOMER-INFORMATION.TIMER-RESEND-TEXT'|translate}}
+          <gosi-timer-dc dir="ltr" class="pl-1 pr-1" [min]="min" [sec]="sec"></gosi-timer-dc>
+        </div>
+      </div>
+    </div>
+    <div class="pt-5 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc *ngIf="!isClose"  type="secondary" (click)="backToPopUp(addMobileNumberPopUp)">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="isResend && !isClose" type="primary" (click)="verifyMobileNo()">
+          {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="!isResend && !isClose" type="secondary" (click)="resendOTP(mobileUuid)">
+            {{'CUSTOMER-INFORMATION.RESEND'|translate}}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="isClose" type="secondary" (click)="closePopUp()">
+          {{'CUSTOMER-INFORMATION.CLOSE'|translate}}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #verifyEmailPopUp>
+  <gosi-modal-dc></gosi-modal-dc>
+  <div class="container p-4">
+    <div class="pb-5">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.VERIFY-EMAIL' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex justify-content-center custom-otp-fields">
+        <gosi-input-otp-dc [otpLength]="4" [control]="contactForm.get('otp')" [isValid]="isValid"></gosi-input-otp-dc>
+      </div>
+      <div *ngIf="isResend" class="d-flex justify-content-center mt-3">
+        <div class="timer-icon my-2 mx-1"><fa-icon icon="clock"></fa-icon></div>
+        <div  class="d-flex timer-bg py-2 px-2">
+          {{'CUSTOMER-INFORMATION.TIMER-RESEND-TEXT'|translate}}
+          <gosi-timer-dc dir="ltr" class="pl-1 pr-1" [min]="min" [sec]="sec"></gosi-timer-dc>
+        </div>
+      </div>
+    </div>
+    <div class="pt-5 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc *ngIf="!isClose"  type="secondary" (click)="backToPopUp(addEmailPopUp)">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="isResend && !isClose"  type="primary" (click)="verifyEmail()">
+          {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="!isResend && !isClose" type="secondary" (click)="resendOTP(emailUuid)">
+          {{'CUSTOMER-INFORMATION.RESEND'|translate}}
+      </gosi-button-dc>
+      <gosi-button-dc *ngIf="isClose" type="secondary" (click)="closePopUp()">
+        {{'CUSTOMER-INFORMATION.CLOSE'|translate}}
+      </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #modifyMobileNumberPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6 cutom-tel-input-field">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.MODIFY-MOBILE' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <gosi-input-intnl-tel-dc label=" {{ 'CUSTOMER-INFORMATION.MOBILE-NUMBER' | translate }}" id="mobile"
+        [control]="contactForm.get('mobileNo')" [isdControl]="contactForm.get('isdCode')">
+      </gosi-input-intnl-tel-dc>
+    </div>
+    <div class="pt-4 pb-2 d-flex justify-content-end">
+      <gosi-button-dc type="primary" (click)="validateModifyMobileNo()">
+        {{ 'CUSTOMER-INFORMATION.NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #modifyEmailPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()">
+        <fa-icon icon="times"></fa-icon>
+      </div>
+      <div class="d-flex pb-5 main-headings">
+        {{ 'CUSTOMER-INFORMATION.MODIFY-EMAIL' | translate }}
+      </div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <gosi-input-text-dc label="CUSTOMER-INFORMATION.EMAIL-ID" [control]="contactForm.get('email')">
+      </gosi-input-text-dc>
+    </div>
+    <div class="pt-4 pb-2 d-flex justify-content-end">
+      <gosi-button-dc type="primary" (click)="validateModifyEmail()">
+        {{ 'CUSTOMER-INFORMATION.NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #modifyEstablishmentPopUp>
+  <gosi-modal-dc>
+  </gosi-modal-dc>
+  <div class="container p-4">
+    <div class="mt-6">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()">
+        <fa-icon icon="times"></fa-icon>
+      </div>
+      <div class="d-flex pb-5 main-headings">
+        {{ 'CUSTOMER-INFORMATION.MODIFY-ESTABLISHMENT' | translate }}
+      </div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex">
+        <span>&nbsp;&nbsp;{{ 'CUSTOMER-INFORMATION.SELECT-EST-LABEL' | translate }} </span>
+        <fa-icon class="px-1" [icon]="['fas', 'info-circle']" [tooltip]="linkEstablishmentToolTemplate"></fa-icon>
+      </div>
+      <gosi-input-multi-select-dropdown-est [hideOptionalLabel]="true" [control]="contactForm.get('establishmentList')"
+        [list]="dropDownEstablishmentsList" (selected)="selectEstablishments($event)" [selectedValues]="selectedEstablishmentsToBeModified">
+      </gosi-input-multi-select-dropdown-est>
+    </div>
+    <div class="pt-4 pb-2 d-flex justify-content-end">
+      <gosi-button-dc id="saveBtn" type="primary" (click)="modifyContactToEstablishment()">
+        {{ 'CUSTOMER-INFORMATION.SAVE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #verifyEmailModificationPopUp>
+  <gosi-modal-dc></gosi-modal-dc>
+  <div class="container p-4">
+    <div class="pb-5">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.VERIFY-EMAIL' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex justify-content-center custom-otp-fields">
+        <gosi-input-otp-dc [otpLength]="4" [control]="contactForm.get('otp')" [isValid]="isValid"></gosi-input-otp-dc>
+      </div>
+      <div *ngIf="isResend" class="d-flex justify-content-center mt-3">
+        <div class="timer-icon my-2 mx-1"><fa-icon icon="clock"></fa-icon></div>
+        <div  class="d-flex timer-bg py-2 px-2">
+          {{'CUSTOMER-INFORMATION.TIMER-RESEND-TEXT'|translate}}
+          <gosi-timer-dc dir="ltr" class="pl-1 pr-1" [min]="min" [sec]="sec"></gosi-timer-dc>
+        </div>
+      </div>
+    </div>
+    <div class="pt-5 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc *ngIf="!isClose" type="secondary" (click)="showModifyEmailPopUp(selectedContactId,selectedContactEmail)">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="isResend && !isClose"  type="primary" (click)="verifyUpdatingEmail()">
+          {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="!isResend && !isClose" type="secondary" (click)="resendOTP(emailUuid)">
+          {{'CUSTOMER-INFORMATION.RESEND'|translate}}
+      </gosi-button-dc>
+      <gosi-button-dc *ngIf="isClose" type="secondary" (click)="closePopUp()">
+        {{'CUSTOMER-INFORMATION.CLOSE'|translate}}
+      </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #verifyMobileModificationPopUp>
+  <gosi-modal-dc></gosi-modal-dc>
+  <div class="container p-4">
+    <div class="pb-5">
+      <div class="d-flex justify-content-end x-button" (click)="closePopUp()"><fa-icon icon="times"></fa-icon></div>
+      <div class="d-flex pb-5 main-headings">{{ 'CUSTOMER-INFORMATION.VERIFY-MOBILE' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="d-flex justify-content-center custom-otp-fields">
+        <gosi-input-otp-dc [otpLength]="4" [control]="contactForm.get('otp')" [isValid]="isValid"></gosi-input-otp-dc>
+      </div>
+      <div *ngIf="isResend" class="d-flex justify-content-center mt-3">
+        <div class="timer-icon my-2 mx-1"><fa-icon icon="clock"></fa-icon></div>
+        <div  class="d-flex timer-bg py-2 px-2">
+          {{'CUSTOMER-INFORMATION.TIMER-RESEND-TEXT'|translate}}
+          <gosi-timer-dc dir="ltr" class="pl-1 pr-1" [min]="min" [sec]="sec"></gosi-timer-dc>
+        </div>
+      </div>
+    </div>
+    <div class="pt-5 pb-2">
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc *ngIf="!isClose"  type="secondary" (click)="showModifyMobileNumberPopUp(selectedContactId,selectedContactMoblieNo,selectedIsdCode)">
+          {{ 'CUSTOMER-INFORMATION.BACK' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="isResend && !isClose"  type="primary" (click)="verifyUpdatingMobileNo()">
+          {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc *ngIf="!isResend && !isClose" type="secondary" (click)="resendOTP(mobileUuid)">
+          {{'CUSTOMER-INFORMATION.RESEND'|translate}}
+      </gosi-button-dc>
+      <gosi-button-dc *ngIf="isClose" type="secondary" (click)="closePopUp()">
+        {{'CUSTOMER-INFORMATION.CLOSE'|translate}}
+      </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #linkEstablishmentToolTemplate>
+  <ng-container>
+    <div class="d-flex flex-column">
+      <div>{{ 'CUSTOMER-INFORMATION.LINK-ESTABLISHMENTS-TOOLTIP' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>

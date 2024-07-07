@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class= "col-lg-12" *ngIf="isShow">
+      <gosi-alert-dc
+      type="info"
+      [message]="'BILLING.VALIDATOR-MSG-MCI'">
+    </gosi-alert-dc>
+    </div>
+<div class="col-lg-12" *ngIf="isReopenClosingInProgress">
+  <gosi-alert-dc type="info" [message]="'BILLING.REOPEN-PROGRESS'"> </gosi-alert-dc>
+</div>
+
+<div class="content">
+  <frm-main-content-dc
+    [canEdit]="!canReturn && !isReopenClosingInProgress"
+    [documents]="documents"
+    (onEdit)="navigateToEditScreen()"
+    [comments]="comments"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'BILLING.CANCEL-RECEIPT' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <!-- Establishment details -->
+      <div class="content-item" *ngIf="establishment">
+        <div class="row">
+          <div class="col-lg-12">
+            <frm-content-heading-dc icon="building" heading="BILLING.ESTABLISHMENT-DETAILS" [canEdit]="false">
+            </frm-content-heading-dc>
+            <blg-establishment-payment-banner-dc [estDetails]="establishment" [gccFlag]="isGccCountry" [isMOF]="false">
+            </blg-establishment-payment-banner-dc>
+          </div>
+        </div>
+      </div>
+      <!-- Receipt details -->
+      <div class="content-item" *ngIf="receipt">
+        <div class="row" >
+          <div class="col-lg-12">
+            <frm-content-heading-dc
+              icon="file-invoice-dollar"
+              heading="BILLING.RECEIPT-DETAILS"
+              [canEdit]="canEdit"
+              (onEdit)="navigateToEditScreen()"
+            >
+            </frm-content-heading-dc>
+            <div class="sub-content-item">
+              <blg-view-receipt-summary-dc
+                [receipt]="receipt"
+                [currencyDetails]="currencyDetails"
+                [gccFlag]="isGccCountry"
+                [isMOF]="false"
+              >
+              </blg-view-receipt-summary-dc>
+            </div>
+          </div>
+        </div>
+        <!-- Cancellation details -->
+        <div class="content-item" *ngIf="receipt">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="sub-heading">
+                {{ 'BILLING.CANCEL-DETAILS' | translate }}
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="reasonForCancellation"
+                label="BILLING.CANCELLATION-REASON"
+                [value]="receipt.reasonForCancellation | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-6" *ngIf="receipt.cancellationReasonOthers !== null">
+              <gosi-label-dc id="reasonForOther" label="BILLING.OTHER-REASON" [value]="receipt.cancellationReasonOthers"> </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+
+        <!-- Branch allocation details -->
+        <div *ngIf="receipt">
+          <div class="row">
+            <div class="col-lg-12">
+              <ng-container *ngIf="isBranchPresent">
+                <blg-view-branch-amount-dc
+                  [branchBreakup]="receipt.branchAmount"
+                  [gccFlag]="isGccCountry"
+                  [currency]="currency"
+                  [showOutsideGroup]="false"
+                ></blg-view-branch-amount-dc>
+              </ng-container>
+              <ng-container *ngIf="isOutsideGroupPresent">
+                <blg-view-branch-amount-dc
+                  [branchBreakup]="receipt.branchAmount"
+                  [gccFlag]="isGccCountry"
+                  [currency]="currency"
+                  [showOutsideGroup]="true"
+                >
+                </blg-view-branch-amount-dc>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea" *ngIf="receipt">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        [disableApprove]="isEditApprove"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    heading="BILLING.REJECT-CANCEL-RECEIPT"
+    warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+    [parentForm]="validatorForm"
+    [rejectReasonList$]="rejectReasonList$"
+    [transactionNumber]="transactionNumber"
+    (rejectEvent)="confirmReject()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    heading="BILLING.RETURN-CANCEL-RECEIPT"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+    [parentForm]="validatorForm"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-return-template-dc>
+</ng-template>

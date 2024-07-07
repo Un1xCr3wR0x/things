@@ -1,0 +1,197 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZED-ATTORNEY-DETAILS' | translate"
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <cnt-contributor-info-dc
+    *ngIf="person"
+    [personDetails]="person"
+    [personNameLabel]="
+      isAttorney ? 'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-NAME' : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODIAN-NAME'
+    "
+  >
+  </cnt-contributor-info-dc>
+  <div class="float-left btn-section" *ngIf="!isEditMode">
+    <gosi-button-dc id="reset" (submit)="goToPreviousSection()" type="secondary"
+      >{{ 'CONTRIBUTOR.RESET' | translate }}
+    </gosi-button-dc>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.INFO' | translate"
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <div>
+    <div *ngIf="isAttorney" class="row">
+      <div class="col-md-4" id="attorneyNumber">
+        <gosi-label-dc
+          [control]="attorneyNumber"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-NUMBER' | translate"
+          id="attorneyNumber"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-md-4" id="authSource">
+        <gosi-label-dc
+          [control]="authSource | bilingualText"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-SOURCE' | translate"
+          id="authSource"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4" id="authStatus">
+        <gosi-label-dc
+          [control]="authStatus"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.STATUS' | translate"
+          id="authStatus"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4" id="authIssueDate">
+        <gosi-label-dc
+          [control]="authIssueDate.gregorian | date: 'dd/MM/yyyy'"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.ISSUE-DATE' | translate"
+          id="authIssueDate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4" id="authExpireDate">
+        <gosi-label-dc
+          [control]="authExpireDate.gregorian | date: 'dd/MM/yyyy'"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.EXPIRE-DATE' | translate"
+          id="authExpireDate"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-md-4">
+        <label>
+          {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.AUTH-PURPOSE' | translate }}
+        </label>
+        <div
+          class="invalid-feedback invalid-purpose-error-msg"
+          id="authorization-purpose-feedback"
+          *ngIf="authPurposeForm.invalid"
+        >
+          {{ 'CORE.THIS-FIELD-IS-REQUIRED' | translate }}
+        </div>
+        <div class="row auth-purpose-checkbox">
+          <gosi-input-checkbox-dc
+            id="requestBenefit"
+            [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.REQUEST-BENEFIT' | translate"
+            name="requestBenefit"
+            [control]="authPurposeForm.get('isRequestBenefitPurpose')"
+          >
+          </gosi-input-checkbox-dc>
+          <gosi-input-checkbox-dc
+            id="receiveBenefit"
+            [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.RECEIVE-BENEFIT' | translate"
+            name="receiveBenefit"
+            [control]="authPurposeForm.get('isReceiveBenefitPurpose')"
+          >
+          </gosi-input-checkbox-dc>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8" id="authText">
+        <gosi-input-text-area-dc
+          [control]="authText"
+          [hideOptionalLabel]="true"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.TEXT' | translate"
+          [readOnly]="true"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-DETAILS' | translate"
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <div *ngIf="authorizerList" class="desktop-view-table">
+    <gosi-table-dc>
+      <ng-container modalContent>
+        <table aria-describedby="title" class="table">
+          <!-- table-condensed -->
+          <thead>
+            <tr>
+              <th id="name">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-NAME' | translate }}
+              </th>
+              <th id="nId">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.ID' | translate }}
+              </th>
+              <th id="dob">
+                {{ 'CONTRIBUTOR.DATE-OF-BIRTH' | translate }}
+              </th>
+              <th id="gender">
+                {{ 'CONTRIBUTOR.GENDER' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of authorizerList; let i = index">
+              <td>
+                {{ item.fullName }}
+              </td>
+              <td>
+                {{ item.id }}
+              </td>
+              <td *ngIf="!isEditMode && authorizersBirthDate.at(i)">
+                <gosi-input-date-dc
+                  id="birthDate"
+                  [control]="authorizersBirthDate.at(i).get('gregorian')"
+                  [maxDate]="systemDate"
+                  [noMargin]="true"
+                >
+                </gosi-input-date-dc>
+              </td>
+              <td *ngIf="isEditMode">
+                {{ calculatePersonAge(item.dateOfBirth) | bilingualText }}
+              </td>
+              <td>
+                {{ item.sex | bilingualText }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </gosi-table-dc>
+  </div>
+</gosi-card-dc>
+<div class="row form-action">
+  <div class="col-lg-12" modalAction>
+    <div class="float-right btn-separator">
+      <gosi-button-dc (submit)="saveAttorneyDetails()" type="primary">
+        {{ 'CONTRIBUTOR.SAVE-AND-NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-left btn-margins">
+      <gosi-button-dc (submit)="popUp(cancelTemplate)" type="secondary">
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="float-right btn-separator">
+      <gosi-button-dc id="backBtn" type="secondary" (submit)="goToPreviousSection()">
+        {{ 'CONTRIBUTOR.PRE-SECTION' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc (onCancel)="decline()" (onConfirm)="confirmCancel()" message="BILLING.INFO-CANCEL">
+  </gosi-confirm-modal-dc>
+</ng-template>

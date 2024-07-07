@@ -1,0 +1,130 @@
+<gosi-card-dc
+  [heading]="
+    (isAttorney ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-DETAILS' : 'CONTRIBUTOR.ADD-AUTHORIZATION.MINOR-DETAILS')
+      | translate
+  "
+  [noHeadingMargin]="false"
+  type="secondary"
+>
+  <div class="desktop-view-table authorizer-list-table" *ngIf="authorizerList.length > 0">
+    <gosi-table-dc>
+      <ng-container modalContent>
+        <table aria-describedby="title" class="table">
+          <thead>
+            <tr>
+              <th id="name">
+                {{
+                  (isAttorney
+                    ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-NAME'
+                    : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.NAME'
+                  ) | translate
+                }}
+              </th>
+              <th id="nationality">
+                {{ 'CONTRIBUTOR.NATIONALITY' | translate }}
+              </th>
+              <th id="nId">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.ID' | translate }}
+              </th>
+              <th id="dob">
+                {{ 'CONTRIBUTOR.DATE-OF-BIRTH' | translate }}
+              </th>
+              <th id="gender">
+                {{ 'CONTRIBUTOR.GENDER' | translate }}
+              </th>
+              <th id="minorType" *ngIf="!isAttorney">
+                {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.TYPE' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of authorizerList; let i = index">
+              <td>
+                {{ item.form.arabicFullName }}
+              </td>
+              <td>
+                {{ item.form.nationality.value | bilingualText }}
+              </td>
+              <td>
+                {{ item.form.id.value }}
+              </td>
+              <td>
+                {{ calculatePersonAge(item.form.birthDate.value, item.form.age) }}
+              </td>
+              <td>
+                {{ item.form.gender.value | bilingualText }}
+              </td>
+              <td *ngIf="!isAttorney" id="minorTypeListHeader">
+                <gosi-input-select-dc
+                  id="minorTypeList"
+                  [control]="item.form.minorType"
+                  [list]="item.form.minorTypeList"
+                  (select)="item.form.selectMinorType($event)"
+                >
+                </gosi-input-select-dc>
+              </td>
+              <td>
+                <span>
+                  <a [id]="'delete' + i" class="delete-icon" (click)="onDeleteAuthorizer.emit(i)">
+                    <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                  </a>
+                </span>
+                <span>
+                  <a *ngIf="item.allowEdit" id="'edit' + i" class="edit-icon" (click)="onEditAuthorizer.emit(i)">
+                    <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                  </a>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </gosi-table-dc>
+  </div>
+
+  <cnt-person-details-input-dc
+    #personDetailsInput
+    *ngIf="state !== formState.ReadyToContinue"
+    [isAttorney]="isAttorney"
+    [personDetailsSmartForm]="personForm"
+    [showPersonNameFields]="showAuthorizerPersonNameFields"
+    [showPersonIdentityFields]="showAuthorizerPersonIdentityFields"
+    [showName]="personForm.showName"
+    [enableMinorType]="!isAttorney"
+    [nationalityList]="nationalityList"
+    [genderList]="genderList"
+    [cardType]="'secondary'"
+  >
+  </cnt-person-details-input-dc>
+
+  <div class="row form-action justify-content-center" *ngIf="state !== formState.ReadyToCompleteDetails">
+    <gosi-button-dc
+      *ngIf="state === formState.ReadyToVerify"
+      type="primary"
+      (submit)="onVerifyAuthorizer.emit(personForm)"
+    >
+      {{ 'CONTRIBUTOR.VERIFY' | translate }}
+    </gosi-button-dc>
+    <gosi-button-dc *ngIf="state === formState.ReadyToContinue" type="secondary" (submit)="addAuthorizer()">
+      {{
+        (isAttorney
+          ? 'CONTRIBUTOR.ADD-AUTHORIZATION.ADD-ANOTHER-AUTHORIZER'
+          : 'CONTRIBUTOR.ADD-AUTHORIZATION.ADD-ANOTHER-MINOR'
+        ) | translate
+      }}
+    </gosi-button-dc>
+  </div>
+
+  <div class="row float-right" *ngIf="state === formState.ReadyToCompleteDetails">
+    <div class="float-right btn-separator">
+      <gosi-button-dc id="resetBtn" type="secondary" (submit)="resetAuthorizer()">
+        {{ 'CONTRIBUTOR.RESET' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="float-right btn-separator">
+      <gosi-button-dc type="primary" (submit)="onAddAuthorizer.emit()">
+        {{ 'CONTRIBUTOR.SAVE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</gosi-card-dc>

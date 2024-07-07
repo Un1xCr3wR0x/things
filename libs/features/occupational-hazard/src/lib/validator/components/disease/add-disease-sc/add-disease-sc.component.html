@@ -1,0 +1,460 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <frm-main-heading-dc
+        *ngIf="isDisease"
+        [heading]="'OCCUPATIONAL-HAZARD.DISEASE.REPORT-OCCUPATIONAL-DISEASE' | translate"
+      ></frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="isTransferredInjury"
+        [heading]="'OCCUPATIONAL-HAZARD.DISEASE.TRANSFER-INJURY' | translate"
+      ></frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="reopenDisease"
+        [heading]="'OCCUPATIONAL-HAZARD.DISEASE.REOPEN-DISEASE-TRANSACTION' | translate"
+      ></frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="closeDisease"
+        [heading]="'OCCUPATIONAL-HAZARD.DISEASE.CLOSE-DISEASE' | translate"
+      ></frm-main-heading-dc>
+    </ng-container>
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="documents ? documents : []"
+      [comments]="comment ? comment : []"
+      (onEdit)="navigateToScan()"
+    >
+      <div id="contentArea">
+        <div class="ml-0 mr-0">
+          <!-- Contributor Details-->
+          <oh-engagement-details-dc [contributor]="contributor" [OH]="true"></oh-engagement-details-dc>
+
+          <div class="col-sm-12 col-md-12 col-lg-12 engagement-details mt-4">
+            <!-- Contact Details -->
+            <div class="row custom-content-heading mt-4">
+              {{ 'OCCUPATIONAL-HAZARD.CONTACT-DETAILS' | translate }}
+            </div>
+            <div class="row pt-4 contact">
+              <div class="col-md-6">
+                <gosi-label-dc
+                  id="mobileNumber"
+                  [value]="contributor?.person?.contactDetail?.mobileNo?.primary"
+                  [label]="'OCCUPATIONAL-HAZARD.MOBILE-NUMBER' | translate"
+                  ><span id="prefixValue" *ngIf="contributor?.person?.contactDetail?.mobileNo?.isdCodePrimary">{{
+                    getISDCodePrefix()
+                  }}</span>
+                </gosi-label-dc>
+              </div>
+
+              <div class="col-md-6">
+                <gosi-label-dc
+                  id="emergencyContactNumber"
+                  [value]="diseaseDetails?.emergencyContactNo?.primary"
+                  [label]="'OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER' | translate"
+                  ><span id="prefixValue" *ngIf="diseaseDetails?.emergencyContactNo?.isdCodePrimary">{{
+                    getISDCodePrefix()
+                  }}</span>
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row pt-4 pb-4 contact">
+              <div class="col-md-6 form-action">
+                <div class="btn-section float-left">
+                  <gosi-button-dc
+                    class="btn-font"
+                    type="secondary"
+                    [outlineOnly]="true"
+                    id="previousMbAssesment"
+                    (click)="showPreviousAssessments(prevousMedicalBoard)"
+                  >
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </div>
+
+              <div class="col-md-6 form-action">
+                <div class="btn-section float-right">
+                  <gosi-button-dc
+                    class="btn-font"
+                    id="previousOH"
+                    [outlineOnly]="true"
+                    type="secondary"
+                    (click)="previousOH()"
+                  >
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--Transfer Injury Details-->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-transfer-injury-details-dc
+              [canEdit]="false"
+              *ngIf="isTransferredInjury"
+              [injury]="injury"
+              (injurySelected)="viewInjury()"
+            ></oh-transfer-injury-details-dc>
+          </div>
+          <!--Establishment & Occupation Details-->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-vltr-establishment-occupation-details-dc
+              [diseaseDetails]="diseaseDetails"
+              [diseaseDetailsWrapper]="diseaseDetailsWrapper"
+              [canEdit]="canEdit"
+              (onEdit)="navigateToDiseasePage()"
+            ></oh-vltr-establishment-occupation-details-dc>
+          </div>
+          
+          <!--Disease Details-->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-occupational-disease-details-dc
+              *ngIf="!closeDisease"
+              [canEdit]="false"
+              [diseaseDetails]="diseaseDetails"
+              [reopenDisease]="reopenDisease"
+              [reopenDetails]="reopenDetails"
+              [diseaseDetailsWrapper]="diseaseDetailsWrapper"
+              [isContributor]="isContributor"
+            >
+            </oh-occupational-disease-details-dc>
+          </div>
+          <!--Close Disease Details-->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-close-disease-dc *ngIf="closeDisease" 
+              [diseaseClosingStatus]="diseaseClosingStatus" 
+              [diseaseDetails]="diseaseDetails" 
+              (onEdit)="navigateToClose()" 
+              [canEdit]="true">
+            </oh-close-disease-dc>
+          </div>
+          <!-- To Do disabilty assessment details  -->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-occupational-disease-assessment-details-dc
+              *ngIf="gosiDoctor || (closeDisease && isWithDisability)"
+              [parentForm]="parentForm"
+              [specialtyList]="specialtyList"
+              [specialtyArray]="specialtyArray"
+              [disabilityDetails]="disabilityDetails"
+              (specialtyArraylist)="specialtyArraylist($event)"
+            >
+            </oh-occupational-disease-assessment-details-dc>
+          </div>
+          <!-- To Do Visiting doctor details  -->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details">
+            <oh-visiting-doctor-dc
+              *ngIf="gosiDoctor || (closeDisease && isWithDisability)"
+              [parentForm]="parentForm"
+              [specialtyList]="specialtyList"
+              [visitingReasonList]="visitingReasonList$ | async"
+              [disabilityDetails]="disabilityDetails"
+            ></oh-visiting-doctor-dc>
+          </div>
+          <!-- To view Health Inspection details  -->
+          <div class="col-sm-12 col-md-12 col-lg-12 disease-details"></div>
+          <oh-health-inspection-details-dc
+            *ngIf="healthController"
+            [parentForm]="parentForm"
+            [healthInspectionDetails]="healthInspectionDetails"
+            [diseaseDetails]="diseaseDetails"
+          ></oh-health-inspection-details-dc>
+        </div>
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="add-injury">
+              <div class="btn-section float-right" *ngIf="canApprove">
+                <gosi-button-dc id="approve" type="primary" (click)="approveTransaction(approveTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canReject">
+                <gosi-button-dc type="danger" id="reject" (click)="rejectTransaction(rejectTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right position-relative" *ngIf="gosiDoctor">
+                <gosi-button-dc type="secondary" [popover]="optionsModal" placement="top" [outsideClick]="true">
+                  {{ 'OCCUPATIONAL-HAZARD.MORE-OPTIONS' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div
+                class="btn-section float-right"
+                *ngIf="
+                  (validator1 && (isContributor || returnToEstAdmin)) || validator2 || fcController || healthController
+                "
+              >
+                <gosi-button-dc
+                  [type]="'secondary'"
+                  id="return"
+                  name="returnDisease"
+                  (submit)="showModal(modalAddDisease, 'showReturnAddDisease')"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-left">
+                <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelEngagementTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc
+    (onCancel)="hideModal()"
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<!-- Approve template -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.CNF-APPROVE'"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveDisease()"
+    [parentForm]="reportInjuryForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    [warningMessage]="warning"
+    (cancelEvent)="hideModal()"
+    [parentForm]="reportInjuryForm"
+    (rejectEvent)="confirmRejectDisease()"
+    [isRejectInjury]="false"
+    [type]="type"
+    [transactionNumber]="transactionNumber"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #optionsModal>
+  <button
+    *ngIf="(reopenDisease && (isContributor || returnToEstAdmin)) || isDisease || isTransferredInjury"
+    [type]="'button'"
+    id="return"
+    name="returnDisease"
+    (click)="showModal(modalAddDisease, 'showReturnAddDisease')"
+    class="d-flex btn text-left more-action-button"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}
+  </button>
+
+  <button
+    type="button"
+    (click)="healthInspectionModal(healthInspection)"
+    class="d-flex btn text-left more-action-button"
+    *ngIf="gosiDoctor && !reopenDisease && !closeDisease"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.REQUEST-HEALTH-INSPECTION' | translate }}
+    <!--Use labels-->
+  </button>
+  <button
+    type="button"
+    (click)="showModal(modalAddDisease, 'showSubmitAddDisease')"
+    class="d-flex btn text-left more-action-button"
+    *ngIf="reopenDisease || closeDisease"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+    <!--Use labels-->
+  </button>
+</ng-template>
+
+<ng-template #modalAddDisease>
+  <gosi-modal-dc [modalHeader]="headingTextAddDisease | translate">
+    <div modalContent class="row">
+      <div *ngIf="noteRequestAddDisease">
+        <div *ngIf="validator1 && !isContributor" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN' | translate }}</i>
+        </div>
+        <div *ngIf="validator1 && isContributor" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-CONTRIBUTOR-RETURN' | translate }}</i>
+        </div>
+
+        <div *ngIf="validator2 || gosiDoctor || fcController" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN-VALIDATOR' | translate }}</i>
+        </div>
+        <div *ngIf="healthController" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-HEALTHCONTROLLER-RETURN-GOSIDOCTOR' | translate }}</i>
+        </div>
+
+        <div *ngIf="reopenDisease && !isContributor" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN' | translate }}</i>
+        </div>
+
+        <div *ngIf="reopenDisease && isContributor" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-CONTRIBUTOR-RETURN' | translate }}</i>
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div class="col-lg-12" *ngIf="commentAlert">
+          <gosi-alert-dc message="CORE.ERROR.MANDATORY-FIELDS" type="danger" [dismissible]="true"></gosi-alert-dc>
+        </div>
+        <div class="col-lg-12" *ngIf="docAlert">
+          <gosi-alert-dc
+            message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+            type="warning"
+            [dismissible]="true"
+          ></gosi-alert-dc>
+        </div>
+      </div>
+      <div *ngIf="returnToEstAdmin || returnTpa" class="col-md-12">
+        <gosi-input-multi-select-dropdown-dc
+          id="requestDocuments"
+          name="requestedDocuments"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          [control]="reportDiseaseModal.get('document')"
+          [list]="documentListLov"
+          (selected)="receiveDocumentList($event)"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+
+      <div
+        class="col-md-12"
+        *ngIf="(validator2 || gosiDoctor || fcController || healthController) && !showConfirmSubmitBtnAddDisease"
+      >
+        <gosi-input-select-dc
+          id="reasonForReturnDisease"
+          [label]="'OCCUPATIONAL-HAZARD.RETURN-REASON' | translate"
+          [control]="reportDiseaseModal.get('reasonForReturn')"
+          [list]="reasonForReturnList$ | async"
+          (select)="commentMandatory($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          [maxLength]="maxLengthComments"
+          label="OCCUPATIONAL-HAZARD.COMMENTS"
+          [name]="'rejectionComments'"
+          [control]="reportDiseaseModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right" *ngIf="showConfirmReturnBtnAddDisease">
+        <gosi-button-dc
+          id="confirmReturnBtn"
+          [type]="'primary'"
+          name="returnDisease"
+          class="action-button"
+          (submit)="returnDisease()"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right" *ngIf="showConfirmSubmitBtnAddDisease">
+        <gosi-button-dc id="confirmSubmitBtn" type="danger" class="action-button" (submit)="requestTpa()">
+          {{ 'OCCUPATIONAL-HAZARD.CONFIRM' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right" *ngIf="showConfirmSubmitBtnCloseDisease">
+        <gosi-button-dc id="confirmSubmitBtn" type="danger" class="action-button" (submit)="requestContributor()">
+          {{ 'OCCUPATIONAL-HAZARD.CONFIRM' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancelApproveBtn" name="cancelDisease" [type]="'secondary'" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<!-- Add healthinspection POP-UP -->
+<ng-template #healthInspection>
+  <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.REQUEST-HEALTH-INSPECTION' | translate">
+    <div class="row" modalContent>
+      <div class="col-lg-12" *ngIf="showMandatoryMessage">
+        <gosi-alert-dc [message]="'CORE.ERROR.MANDATORY-FIELDS'" [dismissible]="true" type="danger"></gosi-alert-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="showWarning && !showMandatoryMessage">
+        <gosi-alert-dc
+          [message]="warningMessage ? warningMessage : null"
+          [dismissible]="true"
+          type="warning"
+        ></gosi-alert-dc>
+      </div>
+      <div class="col-lg-12">
+        <div class="row message-style">
+          <div class="col-lg-12">
+            <gosi-input-select-dc
+              id="inspectionReason"
+              [label]="'OCCUPATIONAL-HAZARD.REASON-HEALTH-INSPECTION' | translate"
+              [placeholder]="'OCCUPATIONAL-HAZARD.REASON-HEALTH-INSPECTION' | translate"
+              [hideOptionalLabel]="true"
+              [list]="healthReasonList$ | async"
+              [control]="healthInspectionForm.get('inspectionReason')"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row message-style">
+          <div class="col-lg-12">
+            <gosi-input-multi-select-dropdown-dc
+              id="establishementrequired"
+              [label]="'OCCUPATIONAL-HAZARD.EST-INSPECTION-REQUIRE' | translate"
+              [control]="healthInspectionForm?.get('establishementrequired')"
+              [list]="establishmentlist"
+              (selected)="onSelectedEst($event)"
+              [selectedValues]="selectedEst"
+            ></gosi-input-multi-select-dropdown-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-text-area-dc
+              id="comments"
+              label="OCCUPATIONAL-HAZARD.COMMENTS"
+              [control]="reportDiseaseModal.get('comments')"
+            >
+            </gosi-input-text-area-dc>
+          </div>
+        </div>
+        <div class="row" style="min-height: 110px"></div>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-left">
+        <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="cancel()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc name="savenext" type="primary" (submit)="confirmHealthInspection()">
+          {{ 'OCCUPATIONAL-HAZARD.CONFIRM' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div></gosi-modal-dc
+  >
+</ng-template>
+
+<ng-template #prevousMedicalBoard>
+  <oh-previous-medicalboard-assessments-dc
+    [previousMedicalAssessmentList]="previousMedicalAssessments"
+    (close)="closeModal()"
+  >
+  </oh-previous-medicalboard-assessments-dc>
+</ng-template>

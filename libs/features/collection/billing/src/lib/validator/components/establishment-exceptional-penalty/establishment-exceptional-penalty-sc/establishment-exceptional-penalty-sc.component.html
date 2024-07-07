@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="col-lg-12" *ngIf="isShow">
+  <gosi-alert-dc type="info" [message]="'BILLING.VALIDATOR-MSG-MCI'"> </gosi-alert-dc>
+</div>
+<div class="col-lg-12" *ngIf="isReopenClosingInProgress">
+  <gosi-alert-dc type="info" [message]="'BILLING.REOPEN-PROGRESS'"> </gosi-alert-dc>
+</div>
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documents" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.WAIVE-ESTABLISHMENT-LATE-FEES' | translate"> </frm-main-heading-dc>
+      </div>
+
+      <div id="contentArea">
+        <frm-content-heading-dc icon="building" heading="BILLING.ESTABLISHMENT-DETAILS" [canEdit]="false && !isReopenClosingInProgress">
+        </frm-content-heading-dc>
+        <blg-exceptional-penalty-details-dc
+          [isPPA]="isPPA"
+          [vicExceptionalFlag]="vicExceptionalFlag"
+          [establishmentDetails]="establishmentDetails"
+          [waiverDetails]="waiverDetails"
+        >
+        </blg-exceptional-penalty-details-dc>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="canReject"
+          [isReturn]="false"
+          [disableApprove]="isEditApprove"
+          (approveEvent)="approveTransaction(approveTemplate)"
+          (rejectEvent)="rejectTransactions(rejectTemplate)"
+          (returnEvent)="returnTransactions(returnTemplate)"
+          (cancelEvent)="showModals(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancels()" (onCancel)="declineCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="waivePenaltyEstablishmentForm"
+      (cancelEvent)="hideModals()"
+      (approveEvent)="confirmApproves()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="waivePenaltyEstablishmentForm"
+      [heading]="rejectHeading"
+      (cancelEvent)="hideModals()"
+      [rejectReasonList$]="rejectReasonLists"
+      (rejectEvent)="confirmRejects()"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="waivePenaltyEstablishmentForm"
+      [heading]="returnHeading"
+      [returnReasonList$]="returnReasonLists"
+      (cancelEvent)="hideModals()"
+      [warningMessage]="
+        fcReturnFlag ? 'BILLING.RETURN-TO-GDISO-TRANSACTION-INFO' : 'BILLING.RETURN-TO-GDIC-TRANSACTION-INFO'
+      "
+      (returnEvent)="confirmReturns()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

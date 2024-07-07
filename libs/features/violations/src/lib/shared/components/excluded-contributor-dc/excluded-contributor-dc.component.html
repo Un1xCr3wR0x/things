@@ -1,0 +1,162 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <div class="custom-modal mb-5"> -->
+<gosi-modal-dc
+  [modalHeader]="'VIOLATIONS.EXCLUDE-CONTRIBUTOR-DETAILS' | translate"
+  [needCloseButton]="true"
+  (closeModal)="hideModal()"
+>
+  <div modalContent>
+    <div class="confirmation-popup">
+      <div class="confirm-content pb-2">
+        <div class="row d-flex align-items-center">
+          <div class="col-md-12">
+            <div class="table-responsive excluded-contributor pb-5 mb-5">
+              <div class="mobile-view">
+                <div
+                  *ngFor="
+                    let contributor of excludedContributors
+                      | paginate
+                        : {
+                            id: 'paginationId',
+                            itemsPerPage: itemsPerPage,
+                            totalItems: noOfRecords,
+                            currentPage: currentPage
+                          };
+                    let i = index;
+                    let odd = odd
+                  "
+                >
+                  <div
+                    class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                    [ngClass]="odd ? 'odd' : 'even'"
+                  >
+                    <div class="card-body align-items-center">
+                      <div class="first-row d-flex flex-row justify-content-between my-2">
+                        <div class="first-cell">
+                          <p class="title">
+                            {{
+                              contributor.contributorName.english === null ||
+                              contributor?.contributorName?.english.trim() === ''
+                                ? contributor.contributorName.arabic
+                                : (contributor.contributorName | bilingualText)
+                            }}
+                          </p>
+                          <ng-container *ngFor="let members of transactionDetails?.penaltyInfo; let c = index">
+                            <div>
+                              <div class="title" *ngIf="(c === assigneeIndex || isVch) || isViolationTransactionPage">
+                                {{ members.decisionBy | titlecase }} :
+                                <span class="excluded-val" *ngIf="getExcludedCommitee(c, i) === 1">
+                                  {{ 'VIOLATIONS.EXCLUDED' | translate }}</span
+                                >
+                                <span class="excluded-val" *ngIf="getExcludedCommitee(c, i) === 0" class="text-center">
+                                  _</span
+                                >
+                                <div class="text-grayed sub-title">
+                                  ( {{ 'VIOLATIONS.' + getValidatorRole(members.role) | translate }})
+                                </div>
+                              </div>
+                            </div>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="desktop-view">
+                <table class="table table-borderless">
+                  <thead class="thead-light">
+                    <tr>
+                      <th id="contributor">
+                        {{ 'VIOLATIONS.CONTRIBUTOR-NAME' | translate }}
+                      </th>
+                      <ng-container *ngFor="let memberValue of transactionDetails?.penaltyInfo; let i = index">
+                        <th id="comiteeMemeber1" *ngIf="(i === assigneeIndex || isVch) || isViolationTransactionPage">
+                          {{ memberValue.decisionBy | titlecase }}
+                          <div class="lighter-label">
+                            ( {{ 'VIOLATIONS.' + getValidatorRole(memberValue.role) | translate }})
+                          </div>
+                        </th>
+                      </ng-container>
+                    </tr>
+                  </thead>
+                  <tbody class="content border-bottom">
+                    <tr
+                      class="border-bottom"
+                      *ngFor="
+                        let contributor of excludedContributors
+                          | paginate
+                            : {
+                                id: 'paginationId',
+                                itemsPerPage: itemsPerPage,
+                                totalItems: noOfRecords,
+                                currentPage: currentPage
+                              };
+                        let i = index
+                      "
+                    >
+                      <ng-container>
+                        <td>
+                          <ng-template #excludedTemplate>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                excludedTemplateInfo;
+                                context: { contributor: contributor.contributorName }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+                          <div
+                            class="contributor-name row ml-2 mr-2"
+                            [tooltip]="isTooltipNeeded(contributor.contributorName) === 1 ? excludedTemplate : ''"
+                            placement="right"
+                          >
+                            {{
+                              contributor.contributorName.english === null
+                                ? contributor.contributorName.arabic
+                                : (contributor.contributorName | bilingualText)
+                            }}
+                          </div>
+                        </td>
+                        <ng-template #excludedTemplateInfo let-contributorName="contributor">
+                          <div class="d-flex flex-column">
+                            {{
+                              contributorName.english === null
+                                ? contributorName.arabic
+                                : (contributorName | bilingualText)
+                            }}
+                          </div>
+                        </ng-template>
+                        <ng-container *ngFor="let members of transactionDetails?.penaltyInfo; let c = index">
+                          <td *ngIf="(c === assigneeIndex || isVch) || isViolationTransactionPage">
+                            <span *ngIf="getExcludedCommitee(c, i) === 1">{{ 'VIOLATIONS.EXCLUDED' | translate }}</span>
+                            <span *ngIf="getExcludedCommitee(c, i) === 0" class="text-center">_</span>
+                          </td>
+                        </ng-container>
+                      </ng-container>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-modal-dc>
+<!-- </div> -->
+<ng-container>
+  <gosi-pagination-dc
+    *ngIf="noOfRecords > itemsPerPage"
+    [totalSize]="noOfRecords"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    paginationId="paginationId"
+  ></gosi-pagination-dc>
+</ng-container>

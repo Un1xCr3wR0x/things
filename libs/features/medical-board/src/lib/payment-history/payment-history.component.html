@@ -1,0 +1,230 @@
+<div class="content">
+  <div class="row">
+    <div class="col-lg-12 sub-heading">
+      <div class="d-flex justify-content-between">
+        <div>
+          {{ 'MEDICAL-BOARD.FEE-PAYMENT-HISTORY' | translate }}
+        </div>
+        <div class="d-flex">
+          <div>
+            <gosi-search-dc
+              id="search-area"
+              [placeholder]="'MEDICAL-BOARD.SEARCH' | translate"
+              (search)="onSearch($event)"
+              (keyup)="onSearch($event.target.value)"
+            >
+            </gosi-search-dc>
+          </div>
+          <span class="mr-2"></span>
+          <!-- Filter -->
+          <gosi-filter-dc
+            (scroll)="onScroll()"
+            (apply)="applyFilter()"
+            (reset)="clearAllFiters()"
+            [noScroll]="true"
+            #filterbutton
+            filterId="paymentHistoryFilter"
+          >
+            <ng-container modalContent>
+              <div class="row">
+                <div class="col-lg-12">
+                  <gosi-input-daterange-dc
+                    #dateRangePicker
+                    [label]="'MEDICAL-BOARD.SESSION-PERIOD' | translate"
+                    [control]="paymentHistoryForm?.get('sessionPeriod')"
+                    [maxDate]="maxDate"
+                    [hideOptionalLabel]="true"
+                  >
+                  </gosi-input-daterange-dc>
+                </div>
+                <div class="col-lg-12">
+                  <gosi-input-multi-select-dropdown-dc
+                    [label]="'MEDICAL-BOARD.PAYMENT-STATUS' | translate"
+                    id="paymentStatus"
+                    [list]="statusList"
+                    [control]="paymentHistoryForm?.get('paymentStatus')"
+                    (selected)="selectedValue($event)"
+                    [selectedValues]="filteredPaymentStatus"
+                    [hideOptionalLabel]="true"
+                  >
+                  </gosi-input-multi-select-dropdown-dc>
+                </div>
+                <div class="col-lg-12">
+                  <gosi-input-radio-dc
+                    id="sessionType"
+                    name="sessionType"
+                    label="{{ 'MEDICAL-BOARD.SESSION-TYPE' | translate }}"
+                    [control]="paymentHistoryForm?.get('sessionType')"
+                    [list]="sessionTypeList"
+                    (select)="listenForsessionType($event)"
+                  ></gosi-input-radio-dc>
+                </div>
+                <div class="col-lg-12">
+                  <gosi-input-multi-select-dropdown-dc
+                    [label]="'MEDICAL-BOARD.FIELD-OFFICE' | translate"
+                    id="fieldOffice"
+                    [list]="fieldOfficeList"
+                    [control]="paymentHistoryForm?.get('foCode')"
+                    (selected)="selectedVal($event)"
+                    [selectedValues]="filteredFieldOffice"
+                    [hideOptionalLabel]="true"
+                  >
+                  </gosi-input-multi-select-dropdown-dc>
+                </div>
+                <!-- <div class="col-lg-12">
+                  <gosi-input-multi-select-dropdown-dc
+                    [label]="'MEDICAL-BOARD.MEMBER-TYPE' | translate"
+                    id="memberType"
+                    [list]="memberTypeList"
+                    [control]="paymentHistoryForm.get('memberType')"
+                    (selected)="selectedData($event)"
+                    [selectedValues]="filteredMemberType"
+                    [hideOptionalLabel]="true"
+                  >
+                  </gosi-input-multi-select-dropdown-dc>
+                </div> -->
+              </div>
+            </ng-container>
+          </gosi-filter-dc>
+          <span class="mr-2"></span>
+          <div>
+            <gosi-button-dc [disabled]="false" type="primary" id="exportToXls" size="sm" (submit)="downloadXLS()">
+              {{ 'MEDICAL-BOARD.EXPORT-TO-XLS' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <tabset>
+    <tab
+      heading="{{ 'MEDICAL-BOARD.CONTRACTED-DOCTOR' | translate }}"
+      (selectTab)="selectTab(contractDoctor)"
+    >
+      <mb-payment-history-view-dc
+        [paymentHistory]="paymentHistory"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        [paymentGroup]="contractDoctor"
+        [currentPage]="currentPage"
+        (pageSelect)="selectPage($event)"
+        (navigateToProfile)="getMembers($event)"
+        (navigateToSession)="getSession($event)"
+        (statusColour)="getStatusColor($event)"
+      ></mb-payment-history-view-dc>
+    </tab>
+    <tab
+      heading="{{ 'MEDICAL-BOARD.NURSE' | translate }}"
+      (selectTab)="selectTab(nurse)"
+    >
+      <mb-payment-history-view-dc
+        [paymentHistory]="paymentHistory"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        [paymentGroup]="nurse"
+        [currentPage]="currentPage"
+        (pageSelect)="selectPage($event)"
+        (navigateToProfile)="getMembers($event)"
+        (navigateToSession)="getSession($event)"
+        (statusColour)="getStatusColor($event)"
+      ></mb-payment-history-view-dc>
+    </tab>
+    
+    <tab
+    heading="{{ 'MEDICAL-BOARD.VISITING-DOCTOR' | translate }}"
+    (selectTab)="selectTab(visitingDoctor)"
+  >
+    <mb-payment-history-view-dc
+      [paymentHistory]="paymentHistory"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      [paymentGroup]="visitingDoctor"
+      (pageSelect)="selectPage($event)"
+      (navigateToProfile)="getMembers($event)"
+      (navigateToSession)="getSession($event)"
+      (statusColour)="getStatusColor($event)"
+    ></mb-payment-history-view-dc>
+  </tab>
+  </tabset>
+  <!-- <div class="row">
+    <div class="col-lg-12">
+      <div class="table-view">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.MEMBER' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-ID' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-DATE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.SESSION-TYPE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.FIELD-OFFICE-LOCATION' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.AMOUNT-SAR' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.PAYMENT-DATE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-bottom" *ngFor="let payment of paymentHistory?.paymentDetails">
+              <td>
+                {{ payment?.name | nameToString: true }} <br />
+
+                <ng-container *ngIf="payment?.nationalIdType === ninId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="payment?.nationalIdType === iqamaId || payment?.nationalIdType === iqamaNo">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.IQAMA-NUMBER' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="payment?.nationalIdType === gccId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.GCCID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="payment?.nationalIdType === borderNo">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.BORDER-NO' | translate }} :</span>
+                </ng-container>
+                <span
+                  ><a class="member-click" (click)="getMembers(payment?.nationalId)">{{ payment?.nationalId }}</a></span
+                >
+              </td>
+              <td>
+                <a class="member-click" (click)="getSession(payment?.sessionId)">{{ payment?.sessionId }} </a>
+              </td>
+              <td>{{ payment?.sessionDate | dateType }}</td>
+              <td>{{ payment?.sessionType | bilingualText }}</td>
+              <td>{{ payment?.fieldOfficeCode | bilingualText }}</td>
+              <td>{{ payment?.amount }}</td>
+              <td>{{ payment?.paymentDate | dateType }}</td>
+              <td>
+                <span class="border p-2 rounded text-nowrap" ngClass="{{ getStatusColor(payment?.status?.english) }}">{{
+                  payment?.status | bilingualText
+                }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <gosi-pagination-dc
+    *ngIf="paymentHistory?.totalCount > itemsPerPage"
+    [totalSize]="paymentHistory?.totalCount"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    id="historyData"
+  >
+  </gosi-pagination-dc> -->
+</div>

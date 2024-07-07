@@ -1,0 +1,103 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ heading | translate }}
+    </div>
+    <ng-container *gosiShow="restoreLumpsumAccess">
+    <div class="pr-3 pb-3" *ngIf="activeBenefits?.isEnableReturnEligible === true">
+      <gosi-button-dc size="sm" (click)="navigateToRestoreLumpsum()">{{
+        'BENEFITS.ENABLE-RETURN-LUMPSUM-HEADING' | translate
+      }}</gosi-button-dc>
+    </div>
+    </ng-container>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <gosi-alert-sc></gosi-alert-sc>
+    </div>
+  </div>
+  <!--BENEFIT DETAILS-->
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary" lessPadding="true">
+      <div class="d-flex flex-row justify-content-between">
+        <div class="benefit-details-heading">
+          <span class="annuity-type pl-3">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+        </div>
+        <div class="float-right">
+          <gosi-button-dc size="md" type="secondary" [outlineOnly]="true" (click)="showModal(calculationDetails)">
+            {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+      <div class="row benefit-content">
+        <div class="col-md-4 col-lg-4 req-Date">
+          <gosi-label-dc
+            id="requestDate"
+            label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+            [value]="activeBenefits?.requestDate?.gregorian | date: 'dd/MM/yyyy'"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-4 col-lg-4">
+          <gosi-label-dc
+            id="lumpsumBenefitAmountlbl"
+            label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+            [value]="
+              'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: activeBenefits?.benefitAmount || 0 | number: '1.2-2' }
+            "
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-4 col-lg-4">
+          <gosi-label-dc
+            id="benefitStatus"
+            label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+            [value]="activeBenefits?.status | bilingualText"
+          ></gosi-label-dc>
+        </div>
+        <div *ngIf="activeBenefits?.isReturnEligible === true">
+          <div class="flex-row statusMessage">
+            <div class="d-flex">
+              <fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon>
+              <span> {{ 'BENEFITS.RETURN-LUMPSUM-MSG-TXT' | translate }}</span>
+            </div>
+            <br />
+            <div class="col-md-12 ml-3 contribution-month">
+              <gosi-label-dc
+                id="contributionMonths"
+                label="{{ 'BENEFITS.CONTRIBUTION-MONTHS-CREDITED' | translate }}"
+                [value]="activeBenefits?.contributionMonthsToBeCredited || 0"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-md-12 ml-3 return-btn" *gosiShow="returnLumpsumAccess">
+              <gosi-button-dc size="sm" (click)="navigateToReturnLumpsum()">
+                {{ 'BENEFITS.RETURN-BENEFIT-AMOUNT' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc [benefitDetails]="benefitCalculationDetails" (close)="hideModal()"></bnt-amw-view-dc>
+</ng-template>

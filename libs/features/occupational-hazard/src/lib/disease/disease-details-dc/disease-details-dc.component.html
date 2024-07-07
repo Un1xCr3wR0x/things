@@ -1,0 +1,201 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card-heading float-left">
+            {{ 'OCCUPATIONAL-HAZARD.DISEASE.SEC-DISEASE-DETAILS' | translate }}
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                id="diagnosisDate"
+                [label]="'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-DIAGNOSIS-DATE' | translate"
+                [control]="diseaseDetailsForm?.get('diseaseDiagnosisDate')?.get('gregorian')"
+                [maxDate]="currentDate"
+                [disabled]="disableEst"
+                (changeEvent)="diagnosisDateChange()"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6"></div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="dead-confirmation-block mb-4">
+            <div class="d-flex bd-highlight">
+              <div class="p-4 w-100 bd-highlight diseaseDescription">
+                <span>{{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-LEADS-TO-DEATH' | translate }}</span>
+              </div>
+              <div class="p-2 flex-shrink-1 bd-highlight">
+                <gosi-input-toggle-dc
+                  id="diseaseToDeathIndicator"
+                  name="diseaseToDeathIndicator"
+                  [control]="diseaseDetailsForm?.get('diseaseLeadToDeathOfContributor')"
+                  class="slider"
+                  [disabled]="disableEst"
+                  (changeEvent)="validationCheck()"
+                ></gosi-input-toggle-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" *ngIf="isPersonDead">
+              <gosi-input-date-dc
+                id="deathDate"
+                label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+                [control]="diseaseDetailsForm?.get('deathDate')?.get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorDiseaseDate"
+                (changeEvent)="deathDateChanged()"
+                [disabled]="disableDeath"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12" *ngIf="!disableEst">
+          <gosi-alert-dc
+            [message]="'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-DIAGNOSIS-CAUSE-MANDATORY' | translate"
+            type="info"
+          ></gosi-alert-dc>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                id="diseaseDiagnosis"
+                [label]="'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-DIAGNOSIS' | translate"
+                [control]="diseaseDetailsForm?.get('diseaseDiagnosis')"
+                [list]="diseaseDiagnosisList"
+                [hideOptionalLabel]="true"
+                [disabled]="disableEst"
+                (select)="clearMandatory()"
+              ></gosi-input-select-dc>
+            </div>
+
+            <div class="col-lg-6">
+              <gosi-input-multi-select-dropdown-dc
+                id="diseaseCause"
+                [label]="'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-CAUSE' | translate"
+                [control]="diseaseDetailsForm?.get('diseaseCause')"
+                [list]="diseaseCauseList"
+                [hideOptionalLabel]="true"
+                [disabled]="disableEst"
+                (selected)="selectDiseaseCause($event)"
+                [selectedValues]="diseaseDetails?.diseaseCause"
+              ></gosi-input-multi-select-dropdown-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                id="workDisabilityDate"
+                [label]="'OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE' | translate"
+                [control]="diseaseDetailsForm?.get('workDisabilityDate')?.get('gregorian')"
+                [maxDate]="deathDate"
+                [minDate]="contributorDiseaseDate"
+                [disabled]="disableEst"
+                (changeEvent)="workDisabilityDateChange()"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                id="contributorInformedOn"
+                [label]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE' | translate"
+                [control]="diseaseDetailsForm?.get('contributorInformedDate')?.get('gregorian')"
+                [minDate]="minContributorDate"
+                [disabled]="contributorDateDisable || disableEst"
+                [maxDate]="currentDate"
+                (changeEvent)="contributorDateChange()"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12" *ngIf="isCsr">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                id="employerInformedOn"
+                [label]="'OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON' | translate"
+                [control]="diseaseDetailsForm?.get('employerInformedDate')?.get('gregorian')"
+                [minDate]="minEmployerDate"
+                [maxDate]="currentDate"
+                [disabled]="employerDateDisable || disableEst"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <gosi-input-text-area-dc
+            id="diseaseDescription"
+            [label]="'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-DISCRIPTION' | translate"
+            name="diseaseDescription"
+            [maxLength]="diseaseDescriptionMaxLength"
+            [hideOptionalLabel]="true"
+            [disabled]="disableEst"
+            [control]="diseaseDetailsForm?.get('diseaseDescription')"
+          ></gosi-input-text-area-dc>
+        </div>
+        <!-- <div class="col-lg-12">
+          <div class="row" *ngIf="processType === 're-open'">
+            <div class="col-lg-6">
+              <gosi-input-mobile-dc
+                [isdControl]="getISDCodePrefix(diseaseDetailsForm?.get('emergencyContactNo')?.get('isdCodePrimary'))"
+                [control]="diseaseDetailsForm?.get('emergencyContactNo')?.get('primary')"
+                label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+                id="emergencyContactNo"
+                [disabled]="disableEst"
+              ></gosi-input-mobile-dc>
+            </div>
+            <div *ngIf="processType === 're-open'">
+              <div class="col-lg-12">
+                <gosi-input-radio-dc
+                  id="payeeType"
+                  name="payeeType"
+                  [control]="diseaseDetailsForm?.get('payeeType')"
+                  [list]="payeeList"
+                  [disabled]="true"
+                  [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate"
+                >
+                </gosi-input-radio-dc>
+              </div>
+            </div>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 form-action">
+    <div class="disease-details">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="diseaseSaveAndNext" (submit)="submitDiseaseDetails()" type="primary">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>

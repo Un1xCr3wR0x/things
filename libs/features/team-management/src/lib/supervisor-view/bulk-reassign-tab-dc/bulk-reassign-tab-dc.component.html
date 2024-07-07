@@ -1,0 +1,98 @@
+<div class="sort-box d-flex mt-3 ">
+  <div><gosi-ui-history-search (searchCallbaclEvent)="handleSearchCallbackEvent($event)"></gosi-ui-history-search> </div>
+  <div class="status-label">{{ 'TEAM-MANAGEMENT.STATUS' | translate }}:</div>
+  <div class="sort-dropdown px-2">
+    <ng-select [clearable]="false" [searchable]="false" id="sortBy" [(ngModel)]="selectedOption" (change)="onFilter()" [placeholder]="'TEAM-MANAGEMENT.ALL-STATUS' | translate ">
+      <ng-option value="allstatus">{{ 'TEAM-MANAGEMENT.ALL-STATUS' | translate }}</ng-option>
+      <ng-option value="success">{{ 'TEAM-MANAGEMENT.SUCCESS' | translate }}</ng-option>
+      <ng-option value="failed">{{ 'TEAM-MANAGEMENT.FAILED' | translate }}</ng-option>
+      <ng-option value="inprogress">{{ 'TEAM-MANAGEMENT.IN-PROGRESS' | translate }}</ng-option>
+      <ng-option value="reclaimed">{{ 'TEAM-MANAGEMENT.RECLAIMED' | translate }}</ng-option>
+      <ng-option value="reclaiming">{{ 'TEAM-MANAGEMENT.RECLAIMING' | translate }}</ng-option>
+      
+    </ng-select>
+  </div>
+  <div class="sort-box vertical-line">
+    <gosi-sort-dc [list]="sortByList" 
+    (direction)="sortOrderList($event)"
+    (sortItemSelected)="sortListDetails($event)"
+     [hidePlaceholder]="false" [initialValue]="sortByList.items[0].value"></gosi-sort-dc>
+  </div>
+</div>
+<div class="desktop-view-table">
+  <gosi-table-dc>
+    <ng-container modalContent>
+      <table class="table table-condensed" aria-describedby="title">
+        <thead>
+          <tr *ngIf="count > 0; else noResult">
+            <th id="request-date">
+              {{ 'TEAM-MANAGEMENT.REQUEST-DATE' | translate }}
+            </th>
+            <th id="trasaction-id">
+              {{ 'TEAM-MANAGEMENT.REASSIGN-TRANSACTION-ID' | translate }}
+            </th>
+            <th id="source-employee">
+              {{ 'TEAM-MANAGEMENT.SOURCE-EMPLOYEE' | translate }}
+            </th>
+            <th id="target-employee">
+              {{ 'TEAM-MANAGEMENT.TARGET-EMPLOYEE' | translate }}
+            </th>
+            <th id="requested-by">
+              {{ 'TEAM-MANAGEMENT.REQUESTED-BY' | translate}}
+            </th>
+            <th id="transaction-status">
+              {{ 'TEAM-MANAGEMENT.STATUS' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="
+            let account of bulkReassignList | paginate
+            : {
+                id: estPagination,
+                itemsPerPage: itemsPerPage,
+                currentPage: pageDetails.currentPage,
+                totalItems: count
+              }">
+            <td>
+              {{ account.date.gregorian | date: 'dd/MM/yyyy' }}
+              <div> {{ account.date.gregorian | date: 'hh:mm a':'GMT' }}</div>
+            </td>
+            <td>
+              {{ account.transactionTraceId }}
+            </td>
+            <td>
+              {{ account.sourceUserId }}
+            </td>
+            <td>
+              {{ account.targetUserId }}
+            </td>
+            <td>
+              {{ account.requestedBy }}
+            </td>
+            <td>
+              <span class="badge"
+                [ngClass]="[account.status.english == 'Failed' ? 'badge-danger' : '',
+                account.status.english == 'SUCCESS' ? 'badge-success': '',
+                account.status.english == 'In Progress' ? 'badge-warning' : '',
+                account.status.english == 'Reclaimed' ? 'badge-success' : '',
+                account.status.english == 'Reclaiming' ? 'badge-warning' : '']">{{account.status | bilingualText
+                }}</span>
+                <div class="reason-style" *ngIf="account.message != null">{{ 'TEAM-MANAGEMENT.REASON' | translate }} : {{account.message | bilingualText}}</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </gosi-table-dc>
+</div>
+<ng-template #noResult>
+  <div class="mt-5 text-center">
+    <img src="assets/images/search-error.svg" style="width: 16%" alt="search-error" />
+    <br />
+    <p class="text-muted">{{ 'TEAM-MANAGEMENT.NO-RESULTS' | translate | titlecase }}</p>
+  </div>
+</ng-template>
+<gosi-pagination-dc #paginationComponent *ngIf="count > itemsPerPage" [totalSize]="count" [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails" (pageChange)="selectPage($event)" [paginationId]="estPagination">
+</gosi-pagination-dc>

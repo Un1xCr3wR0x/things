@@ -1,0 +1,197 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--   Report complication Main Heading  -->
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading" *ngIf="processType !== 'reopen' && processType !== 'modify'">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REPORT-COMPLICATION' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 'modify'">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.MODIFY-COMPLICATION-TRANSACTION' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 're-open'">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REOPEN-COMPLICATION-TRANSACTION' | translate }}
+      </div>
+    </div>
+  </div>
+  <!-- Contributor details view  -->
+  <oh-contributor-info-dc *ngIf="currentTab < totalTabs - 1" #personDetails [personDetails]="personalDetails">
+  </oh-contributor-info-dc>
+  <gosi-comments-dc
+    *ngIf="
+      (isWorkflow && currentTab !== 4 && processType != 'modify' && !isAppPrivate && processType != 'reopen') ||
+      (routerData?.taskId && !isAppPrivate && processType === 'reopen')
+    "
+    [comments]="comment ? comment : []"
+  ></gosi-comments-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+<div class="mb-4">
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab != totalTabs - 1"
+    [wizardItems]="reportComplicationWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #reportComplicationWizard
+  >
+  </gosi-progress-wizard-dc>
+</div>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="currentTab === 0">
+            <div class="row">
+              <div class="col-md-12">
+                <gosi-card-dc type="secondary" [heading]="'OCCUPATIONAL-HAZARD.INJURY.INJURIES' | translate">
+                  <!-- Injury list View   -->
+                  <ng-container *ngFor="let injury of injuryList">
+                    <oh-injury-disease-item-dc
+                      [registrationNo]="registrationNo"
+                      [injuryHistory]="injury"
+                      (injurySelected)="viewInjury($event)"
+                      (viewInjury)="viewInjuryDetails($event)"
+                    >
+                    </oh-injury-disease-item-dc>
+                  </ng-container>
+                  <!--Disease list view
+                  <ng-container *ngFor="let disease of diseaseList">
+                    <oh-disease-item-dc
+                      [registrationNo]="registrationNo"
+                      [diseaseHistory]="disease"
+                      (diseaseSelected)="viewDisease($event)"
+                      (diseaseInjury)="viewDiseaseDetails($event)"
+                    >
+                    </oh-disease-item-dc>
+                  </ng-container>-->
+
+                  <span *ngIf="injuryList && injuryList.length > 4">
+                    <gosi-loadmore-dc
+                      [currentPage]="currentPage"
+                      [totalCount]="pageTotal"
+                      [pageSize]="pageLimit"
+                      (loadMore)="onLoadMore($event)"
+                    >
+                    </gosi-loadmore-dc>
+                  </span>
+                </gosi-card-dc>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 1">
+            <div class="row">
+              <div class="col-md-12">
+                <!--  Displaying Injury details corresponding to an injury  -->
+                <oh-complication-details-dc 
+                  [registrationNo]="sessionRegistrationNo"
+                  [injuryHistory]="viewInjuryDetail"
+                  (viewInjury)="injuryView($event)"
+                  [establishmentRegNo]="establishmentRegNo"
+                  [socialInsuranceNo]="socialInsuranceNo"
+                >
+                </oh-complication-details-dc>
+                <!-- <oh-disease-tab-dc *ngIf="isDisease"
+                  [registrationNo]="sessionRegistrationNo"
+                  [establishmentRegNo]="establishmentRegNo"
+                  [socialInsuranceNo]="socialInsuranceNo"
+                  [diseaseHistory]="viewdiseaseDetail"
+                  (viewDisease)="diseaseView($event)"
+                  [isDisease]="isDisease"
+                >
+                </oh-disease-tab-dc> -->
+                <!--  Reporting complication  -->
+
+                <oh-report-complication-dc
+                  [processType]="processType"
+                  [isAddressAvailable]="isAddressPresent"
+                  (submit)="saveComplication($event)"
+                  (cancel)="cancelInjury()"
+                  (template)="showCancelTemplate()"
+                  [parentForm]="reportComplicationMainForm"
+                  [isWorkflow]="isWorkflow"
+                  [complicationDetails]="complicationDetails"
+                  [assignedRole]="assignedRole"
+                  [booleanList]="booleanList$ | async"
+                  [isEdit]="isEdit"
+                  [closingDate]="closingDate"
+                >
+                </oh-report-complication-dc>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 2">
+            <div class="row">
+              <div class="col-md-12">
+                <!--  Display emergency contact number and address if address is not present  -->
+                <oh-personal-details-dc
+                  [emergencyContact]="emergencyContact"
+                  [isdControl]="isdControl"
+                  [isAddressOptional]="isAddressOptional"
+                  [cityList]="cityList$ | async"
+                  [countryList]="countryList$ | async"
+                  [person]="personalDetails"
+                  [workFlowType]="workFlowType"
+                  [processType]="processType"
+                  [isAddressPresent]="isAddressPresent"
+                  (submit)="saveEmergencyNumber($event)"
+                  (contactNumberDetails)="showFormValidation()"
+                  (previous)="previousForm()"
+                  (template)="showCancelTemplate()"
+                ></oh-personal-details-dc>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 3">
+            <div class="row">
+              <div class="col-md-12 upload-document">
+                <oh-document-dc
+                  [businessKey]="complicationId"
+                  [transactionId]="injuryTransactionId"
+                  [isIndividualApp]="isIndividualApp"
+                  [documentList]="complicationDocumentList"
+                  [documents]="ReqdocumentLists"
+                  [requiredList]="documentLists"
+                  [isWorkflow]="isWorkflow"
+                  [assignedRole]="assignedRole"
+                  [isWorkflow]="isWorkflow"
+                  [isValidator1]="isValidator1"
+                  [isValidator2]="isValidator2"
+                  (submit)="submitComplicationDocuments($event)"
+                  (uploadFailed)="showMandatoryDocErrorMessage($event)"
+                  (documentFormDetails)="showFormValidation()"
+                  (previous)="previousForm()"
+                  (refresh)="refreshDocument($event)"
+                  [taskId]="taskid"
+                  [processType]="processType"
+                  [parentForm]="documentForm"
+                  (template)="showCancelTemplate()"
+                >
+                </oh-document-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <ng-template #cancelEngagementTemplate>
+                  <gosi-confirm-modal-dc
+                    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                    (onConfirm)="confirmCancel()"
+                    (onCancel)="decline()"
+                  >
+                  </gosi-confirm-modal-dc>
+                </ng-template>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 4">
+            <div class="row">
+              <div class="col-md-12">
+                <oh-feedback-dc [complicationId]="complicationId" [feedbackdetails]="feedbackdetails"> </oh-feedback-dc>
+              </div>
+            </div>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>

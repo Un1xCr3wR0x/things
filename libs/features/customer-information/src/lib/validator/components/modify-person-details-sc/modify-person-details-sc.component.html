@@ -1,0 +1,179 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading">
+        <frm-main-heading-dc
+          [heading]="'CUSTOMER-INFORMATION.MOD_PERSONAL_DTLS' | translate"
+        >
+        </frm-main-heading-dc>
+      </div>
+    <!--  Person Details -->
+
+    <div id="contentArea">
+      <div class="content-item">
+<div class="row">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="user"
+      heading="CUSTOMER-INFORMATION.PERSONAL-DETAILS"
+      [canEdit]="false"
+    >
+    </frm-content-heading-dc>
+  </div>
+  <!-- Section 1 -->
+  <div class="col-lg-12">
+    <div class="row sub-content-last-item">
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="person?.name?.arabic">
+        <gosi-label-dc
+          id="arabicName"
+          label="CUSTOMER-INFORMATION.NAME-IN-ARABIC"
+          [control]="name"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="person?.name?.english">
+        <gosi-label-dc
+          id="englishName"
+          [control]="nameEnglish"
+          label="CUSTOMER-INFORMATION.NAME-IN-ENGLISH"
+        >
+        </gosi-label-dc>
+      </div>
+      <ng-container *ngIf="!checkNull(person?.identity)">
+        <ng-container *ngFor="let item of person?.identity">
+          <ng-container *ngIf="item.idType !== null && [typeNin, typeGcc, typeIqama].indexOf(item.idType) !== -1">
+            <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeNin">
+              <gosi-label-dc id="nin" [control]="item.newNin" [label]="'NIN'"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeGcc">
+              <gosi-label-dc id="nationalId" [control]="item.id" label="CUSTOMER-INFORMATION.GCC-ID"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === typeIqama">
+              <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="CUSTOMER-INFORMATION.IQAMA-NUMBER">
+              </gosi-label-dc>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      
+        <ng-container>
+          <div class="col-sm-6 col-md-6 col-lg-4">
+
+        <gosi-label-dc
+        id="birthDate"
+       
+        [control]="ageGreg"
+        [label]="'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate"
+        ><span *ngIf="person?.birthDate" id="prefixValue">{{
+          person?.birthDate?.gregorian |gosiDate
+        }}</span></gosi-label-dc>
+</div>
+<div class="col-sm-6 col-md-6 col-lg-4">
+
+        <gosi-label-dc
+     id="birthDate"
+    
+     [control]="ageHij"
+     [label]="'CUSTOMER-INFORMATION.DATE-OF-BIRTH-HIJIRI' | translate"
+     ><span *ngIf="person?.birthDate" id="prefixValue">{{
+      person?.birthDate?.hijiri | gosiDate
+     }}</span></gosi-label-dc>
+     </div>
+    </ng-container>
+    </div>
+  </div>
+</div>
+
+      </div>
+      <div class="col-md-12">
+        <h5>{{'CUSTOMER-INFORMATION.PERSONAL-DETAILS-MODIFICATIONS' | translate}}</h5>
+      </div>
+      <div class="col-md-12">
+        <div class="wage-block">
+    
+          <div class="wage-card">
+    
+            <table class="table-dd table-responsive">
+              <table>
+                <tr>
+                  <th></th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.BEFORE-MODIFICATION' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.AFTER-MODIFICATION' | translate}}</th>
+    
+    
+                </tr>
+                <tr *ngIf="dobInfo">
+                  <th scope="row">{{'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate}}</th>
+                  <td class="data-row">{{dobInfo?.oldDate ?.gregorian | gosiDate }}</td>
+                  <td class="data-row">{{ dobInfo?.newDate ?.gregorian | gosiDate}}</td>
+    
+                </tr>
+                <tr *ngIf="passport">
+                  <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-NO' | translate}}</th>
+                  <td class="data-column">{{passport?.oldValue }}</td>
+                  <td class="data-column">{{passport?.newValue }}</td>
+    
+                </tr>
+                <tr *ngIf="passportIssueDetails">
+                  <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-ISSUE-DATE' | translate}}</th>
+                  <td class="data-row">{{passportIssueDetails?.oldDate
+                    ?.gregorian | gosiDate}}</td>
+                  <td class="data-row">{{passportIssueDetails?.newDate?.gregorian | gosiDate}}</td>
+    
+                </tr>
+                <tr *ngIf="passportExpiryDetails">
+                  <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-EXPIRY-DATE' | translate}}</th>
+                  <td class="data-column">{{passportExpiryDetails?.oldDate
+                    ?.gregorian | gosiDate}}</td>
+                  <td class="data-column">{{passportExpiryDetails?.newDate
+                    ?.gregorian | gosiDate}}</td>
+    
+                </tr>
+              </table>
+            </table>
+          </div>
+    
+        <!-- </div> -->
+      </div>
+    </div>
+    </div>
+        <div id="actionArea">
+            <frm-action-area-dc  [canReturn]="canReturn" (approveEvent)="approveTransaction( approveTemplate)"
+              (rejectEvent)="rejectTransaction(rejectTemplate)"  (returnEvent)="returnTransaction(returnTemplate)" (cancelEvent)="showModals(cancelTemplate)">
+            </frm-action-area-dc>
+          </div>
+  </frm-main-content-dc>
+</div>
+
+
+<ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc [message]="'CUSTOMER-INFORMATION.INFO-CANCEL' | translate" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc [parentForm]="personForm" (approveEvent)="confirmApproveTransaction()"
+      (cancelEvent)="hideModal()"></frm-approve-template-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc [parentForm]="personForm" [heading]="'CUSTOMER-INFORMATION.REJECT-MODIFY-PERSONAL-DETAILS'"
+    [transactionNumber]="transactionID"
+    [warningMessage]="'CUSTOMER-INFORMATION.INFO-VALIDATOR-NATIONALITY-REJECTION' | translate" (rejectEvent)="confirmRejectTransaction()" (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList$">
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="personForm"
+      [heading]="'CUSTOMER-INFORMATION.RETURN-MODIFY-PERSONAL-DETAILS'"
+      (cancelEvent)="hideModal()"
+      [returnReasonList$]="returnReasonList$"
+      (returnEvent)="confirmReturn()"
+      [warningMessage]="'CUSTOMER-INFORMATION.INFO-VALIDATOR-RETURNED' | translate" 
+    >
+    </frm-return-template-dc>
+  </ng-template>
+  

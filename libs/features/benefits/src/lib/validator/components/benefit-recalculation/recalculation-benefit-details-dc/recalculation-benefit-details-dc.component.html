@@ -1,0 +1,361 @@
+<ng-container>
+  <!-- benefit details section -->
+  <ng-container *ngIf="benefitDetails && !lumpsumToPension">
+    <div class="row mx-0">
+      <div class="col-sm-6 col-md-6 col-lg-4">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+          value="{{ benefitDetails?.benefitType | bilingualText }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="isBenefitTypeLumpSum(benefitDetails?.benefitType?.english)">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+          value="{{ benefitDetails?.status | bilingualText }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="isBenefitTypeLumpSum(benefitDetails?.benefitType?.english)">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+          value="{{benefitDetails?.benefitStartDate?.gregorian | date: 'dd/MM/yyyy'}}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="disabilityAssessment && !isOcc">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-MONTHS' | translate }}"
+          value="{{ benefitDetails?.totalContributionMonths }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="disabilityAssessment">
+        <gosi-label-dc label="{{ 'BENEFITS.AVERAGE-WAGE' | translate }} {{'('}} {{'BENEFITS.SR' | translate}} {{')'}}" value="{{ benefitDetails?.amw }}">
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="isBenefitTypeLumpSum(benefitDetails?.benefitType?.english)">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.LAST-PAYMENT-DATE' | translate }}"
+          value="{{ benefitDetails?.paymentDetails[0]?.lastPaidDate?.gregorian | date: 'dd/MM/yyyy' }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- only for lumpsum to lumpsum -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="disabilityAssessment && !isOcc">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-PAYMENT-DATE' | translate }}"
+          value="{{ benefitDetails?.nextPaymentDate?.gregorian | date: 'dd/MM/yyyy' }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="disabilityAssessment && !isOcc">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.DISABILITY-AFTER-TERMINATION' | translate }}"
+          value="{{ (benefitDetails?.isDisabilityAfterTermination ? 'BENEFITS.YES' : 'BENEFITS.NO') | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- only for occ-pension to pension -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="isOcc && !disabilityAssessment">
+        <gosi-label-dc 
+        label="{{ 'BENEFITS.DISABILITY-PERCENTAGE' | translate }}" 
+        value="{{ benefitDetails?.disabilityPercentage || 0 }}{{ '%' }}">
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="isOcc && disabilityAssessment">
+          <gosi-label-dc 
+          label="{{ 'BENEFITS.DISABILITY-PERCENTAGE' | translate }}" 
+          value="{{ assessmentDetails?.oldDisabilityPercentage || 0 }}{{ '%' }}">
+          </gosi-label-dc>
+      </div>
+    </div>
+
+    <div class="row mx-0 px-3" *ngIf="disabilityAssessment && currentBenefit">
+      <gosi-label-dc
+        [label]="'BENEFITS.VIEW-PAYMENT-HISTORY' | translate"
+        [value]="'BENEFITS.VIEW-PAYMENT-HISTORY' | translate"
+        (select)="onViewPaymentHistory(benefitRecalculationDetails)"
+        [ignoreLabel]="true"
+        [isLink]="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-12 header" *ngIf="!disabilityAssessment">
+      {{ 'BENEFITS.BENEFIT-RECALCULATION-DETAILS' | translate }}
+    </div>
+
+    <div class="row mx-0 pb-3" *ngIf="disabilityAssessment">
+      <div class="col-md-8 pt-3 header">{{ 'BENEFITS.BENEFIT-RECALCULATION-DETAILS' | translate }}</div>
+      <span *ngIf="false">
+        <gosi-button-dc class="info-btns" size="sm" type="secondary" [outlineOnly]="true">
+          {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+        </gosi-button-dc>
+      </span>
+    </div>
+    <div class="row" *ngIf="disabilityAssessment">
+      <div class="col-lg-10 px-4 benefits-table">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <td></td>
+              <td class="benefit-heading">{{ 'BENEFITS.BEFORE-ASSESSMENT' | translate }}</td>
+              <td class="benefit-heading">{{ 'BENEFITS.AFTER-ASSESSMENT' | translate }}</td>
+            </tr>
+            <!-- occ-pension to pension only -->
+            <tr>
+              <td class="benefit-heading">
+                {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }} ({{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }})
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.beforeRecalculation?.basicBenefitAmount || 0) | number: '1.0-2' }}
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.afterRecalculation?.basicBenefitAmount || 0) | number: '1.0-2' }}
+              </td>
+            </tr>
+            <tr
+              *ngIf="
+                recalculationDetails?.beforeRecalculation?.helperComponentAmount ||
+                recalculationDetails?.afterRecalculation?.helperComponentAmount
+              "
+            >
+              <td class="benefit-heading">
+                {{ 'BENEFITS.HLP-ALWNCE-AMT' | translate }} ({{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }})
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.beforeRecalculation?.helperComponentAmount || 0) | number: '1.0-2' }}
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.afterRecalculation?.helperComponentAmount || 0) | number: '1.0-2' }}
+              </td>
+            </tr>
+            <tr
+              *ngIf="
+                recalculationDetails?.beforeRecalculation?.dependentComponentAmount ||
+                recalculationDetails?.afterRecalculation?.dependentComponentAmount
+              "
+            >
+              <td class="benefit-heading">
+                {{ 'BENEFITS.DEPENDENT-COMP-AMOUNT' | translate }} ({{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }})
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.beforeRecalculation?.dependentComponentAmount || 0) | number: '1.0-2' }}
+              </td>
+              <td class="bg-white">
+                {{ (recalculationDetails?.afterRecalculation?.dependentComponentAmount || 0) | number: '1.0-2' }}
+              </td>
+            </tr>
+            <tr
+              *ngIf="
+                recalculationDetails?.beforeRecalculation?.benefitAmount ||
+                recalculationDetails?.afterRecalculation?.benefitAmount
+              "
+            >
+              <td class="benefit-heading">
+                {{ 'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate }} ({{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }})
+              </td>
+              <td>
+                {{ (recalculationDetails?.beforeRecalculation?.benefitAmount || 0) | number: '1.0-2' }}
+              </td>
+              <td>
+                {{ (recalculationDetails?.afterRecalculation?.benefitAmount || 0) | number: '1.0-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row" *ngIf="!disabilityAssessment">
+      <div class="col-lg-12 px-4 benefits-table">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <td></td>
+              <td class="benefit-heading">{{ 'BENEFITS.BEFORE-RECALCULATION' | translate }}</td>
+              <td class="benefit-heading">{{ 'BENEFITS.AFTER-RECALCULATION' | translate }}</td>
+            </tr>
+            <tr>
+              <td class="benefit-heading">
+                {{ 'BENEFITS.AVERAGE-WAGE' | translate }} ({{ 'BENEFITS.SR' | translate }})
+              </td>
+              <td class="bg-white">{{ (recalculationDetails?.beforeRecalculation?.amw || 0) | number: '1.0-2' }}</td>
+              <td class="bg-white">{{ (recalculationDetails?.afterRecalculation?.amw || 0) | number: '1.0-2' }}</td>
+            </tr>
+            <!-- <tr>
+              <td class="benefit-heading">{{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}</td>
+              <td>{{ (recalculationDetails?.beforeRecalculation?.basicBenefitAmount || 0) | number: '1.0-2' }}</td>
+              <td>{{ (recalculationDetails?.afterRecalculation?.basicBenefitAmount || 0) | number: '1.0-2' }}</td>
+            </tr> -->
+            <tr>
+              <td class="benefit-heading">{{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}</td>
+              <td class="bg-white">{{ (recalculationDetails?.beforeRecalculation?.benefitAmount || 0) | number: '1.0-2' }}</td>
+              <td class="bg-white">{{ (recalculationDetails?.afterRecalculation?.benefitAmount || 0) | number: '1.0-2' }}</td>
+            </tr>
+            <tr *ngIf="recalculationDetails?.beforeRecalculation?.deathGrantAmount || recalculationDetails?.afterRecalculation?.deathGrantAmount">
+              <td class="benefit-heading">
+                {{ 'BENEFITS.DEATH-GRANT' | translate }} ({{ 'BENEFITS.SR' | translate }})
+              </td>
+              <td>{{ (recalculationDetails?.beforeRecalculation?.deathGrantAmount || 0) | number: '1.0-2' }}</td>
+              <td>{{ (recalculationDetails?.afterRecalculation?.deathGrantAmount || 0) | number: '1.0-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- current and new benefit details -->
+  <ng-container *ngIf="lumpsumToPension">
+    <div class="row mx-0">
+      <div class="col-sm-6 col-md-6 col-lg-4">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+          value="{{
+            (currentBenefit
+              ? benefitDetails?.benefitType
+              : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.benefitType
+            ) | bilingualText
+          }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- status -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment && currentBenefit">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+          [value]="benefitDetails?.status | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- start date -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+          [value]="
+            (currentBenefit
+              ? benefitDetails?.benefitStartDate?.gregorian
+              : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.benefitStartDate?.gregorian
+            ) | date: 'dd/MM/yyyy'
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="!(lumpsumToPension && disabilityAssessment)">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+          [value]="
+            disabilityAssessmentData?.disabilityAssessmentDetails?.newBenefitDetails?.benefitAmount | number: '1.0-2'
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- helper allowance -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment && currentBenefit">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.HLP-ALWNCE-AMT' | translate }}"
+          value="{{ benefitDetails?.helperAllowanceAmount }} {{ 'BENEFITS.AMOUNT' | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.AVERAGE-WAGE' | translate }}"
+          value="{{
+            currentBenefit
+              ? benefitDetails?.amw
+              : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.amw
+          }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- PAYMENT-DATE -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment && currentBenefit">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.PAYMENT-DATE' | translate }}"
+          value="{{benefitDetails?.nextPaymentDate?.gregorian | date: 'dd/MM/yyyy'}}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- disability % -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && !disabilityAssessment && currentBenefit">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.DISABILITY-PERCENTAGE' | translate }}"
+          value="{{ benefitDetails?.disabilityPercentage || 0 }}{{ '%' }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment && currentBenefit">
+          <gosi-label-dc 
+          label="{{ 'BENEFITS.DISABILITY-PERCENTAGE' | translate }}" 
+          value="{{ assessmentDetails?.oldDisabilityPercentage || 0 }}{{ '%' }}">
+          </gosi-label-dc>
+      <div>
+      <!-- benefit amount -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && disabilityAssessment">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+          value="{{
+            currentBenefit
+              ? benefitDetails?.benefitAmount
+              : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.benefitAmount
+          }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- </div>
+        <div class="row mx-0"> -->
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="!disabilityAssessment">
+        <gosi-label-dc label="{{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-MONTHS' | translate }}" value="123">
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && !disabilityAssessment">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+          value="{{
+            (currentBenefit
+              ? benefitDetails?.benefitStartDate?.gregorian
+              : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.benefitStartDate?.gregorian
+            ) | date: 'dd/MM/yyyy'
+          }}
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="lumpsumToPension && !disabilityAssessment">
+        <gosi-label-dc
+          label="{{ 'BENEFITS.LAST-PAYMENT-DATE' | translate }}"
+          value="{{ benefitDetails?.paymentDetails[0]?.lastPaidDate?.gregorian | date: 'dd/MM/yyyy' }}"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row mx-0 px-3" *ngIf="disabilityAssessment">
+      <gosi-button-dc class="info-btns" size="sm" type="secondary" [outlineOnly]="true">
+        {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="row mx-0 px-3 pt-4" *ngIf="disabilityAssessment && lumpsumToPension && currentBenefit">
+      <gosi-label-dc
+        [label]="'BENEFITS.VIEW-PAYMENT-HISTORY' | translate"
+        [value]="'BENEFITS.VIEW-PAYMENT-HISTORY' | translate"
+        (select)="onViewPaymentHistory(benefitRecalculationDetails)"
+        [ignoreLabel]="true"
+        [isLink]="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </ng-container>
+  <!-- buttons -->
+  <div class="row" *ngIf="!disabilityAssessment">
+    <div class="col-lg-12 px-4 benefits-table">
+      <gosi-button-dc class="info-btns" size="sm" type="secondary" [outlineOnly]="true">
+        {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+      </gosi-button-dc>
+
+      <gosi-button-dc class="info-btns" size="sm" type="secondary" [outlineOnly]="true">
+        {{ 'BENEFITS.VIEW-HEIRS-HISTORY' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-container>

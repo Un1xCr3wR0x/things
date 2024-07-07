@@ -1,0 +1,579 @@
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc
+      [ngClass]="makeAddContributorRed ? 'border-red-card' : ''"
+      class="add-contributor-card"
+      heading="{{ 'VIOLATIONS.ADD-CONTRIBUTOR' | translate }}"
+      type="secondary"
+    >
+      <div class="row" *ngIf="!isContributorEdit">
+        <div class="col-sm-12 col-md-6 col-lg-6">
+          <gosi-input-text-dc
+            gosiSpecialCharacterMask
+            gosiSpaceMask
+            [onlyDigits]="true"
+            id="{{ 'contributorId' + id }}"
+            [label]="'VIOLATIONS.NATIONAL-IDENTIFICATION-OR-IQAMA' | translate"
+            [maxLength]="10"
+            [control]="identifierForm?.get('identifier')"
+            [disabled]="isVerified"
+          >
+            <!-- label need to be changed-->
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-sm-12 col-md-3 col-lg-3 verify-reset-section">
+          <gosi-button-dc
+            *ngIf="!isVerified"
+            id="{{ 'verify' + id }}"
+            class="check-button"
+            type="primary"
+            size="md"
+            (click)="verifyId()"
+          >
+            {{ 'VIOLATIONS.VERIFY' | translate }}</gosi-button-dc
+          >
+          <gosi-button-dc
+            *ngIf="isVerified"
+            id="{{ 'reset' + id }}"
+            class="check-button"
+            type="secondary"
+            size="md"
+            (click)="resetId()"
+          >
+            {{ 'VIOLATIONS.RESET' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+      <!-- contributor name and Id -->
+      <ng-container *ngIf="isVerified || isContributorEdit">
+        <div class="row" *ngIf="!isContributorEdit">
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.CONTRIBUTOR-NAME' | translate"
+              [control]="
+                contributorSummaryDetails?.contributorName?.english === null ||
+                contributorSummaryDetails?.contributorName?.english === ''
+                  ? contributorSummaryDetails?.contributorName?.arabic
+                  : (contributorSummaryDetails?.contributorName | bilingualText)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6 col-lg-6">
+            <ng-container *ngIf="isSinNeeded(contributorSummaryDetails?.identity) === 1; else isSinValue">
+              <div *ngFor="let identifier of contributorSummaryDetails?.identity">
+                <ng-container *ngIf="isSinNeeded(contributorSummaryDetails?.identity) === 1; else isSinValue">
+                  <div *ngIf="identifier?.idType === 'NIN'">
+                    <gosi-label-dc [label]="'VIOLATIONS.NATIONAL-ID-NUMBER' | translate" [control]="identifier?.newNin">
+                    </gosi-label-dc>
+                  </div>
+                  <div *ngIf="identifier?.idType === 'IQAMA'">
+                    <gosi-label-dc [label]="'VIOLATIONS.IQAMA-NUMBER' | translate" [control]="identifier?.iqamaNo">
+                    </gosi-label-dc>
+                  </div>
+                  <div *ngIf="identifier?.idType === 'GCCID'">
+                    <gosi-label-dc [label]="'VIOLATIONS.GCCID' | translate" [control]="identifier?.id"> </gosi-label-dc>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-template #isSinValue>
+              <div class="identity-value">
+                <gosi-label-dc
+                  [label]="'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate"
+                  [control]="contributorSummaryDetails?.socialInsuranceNo"
+                >
+                </gosi-label-dc>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+        <ng-container *ngIf="isWrongBenefitEng == true">
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12 pb-3">
+              {{ 'VIOLATIONS.SELECT_ENGAGEMENTS' | translate }}
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- eng section -->
+        <div class="row">
+          <div
+            *ngIf="!(hasProactiveEng && engagementsInfo?.engagements.length === 0)"
+            class="col-sm-12 col-md-12 col-lg-12"
+          >
+            <gosi-alert-dc
+              *ngIf="isWrongBenefits && !isWrongBenefitEng"
+              [bilingualMessage]="'VIOLATIONS.WRONG-BENEFITS-NO-ENG' | translate"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="false"
+            >
+            </gosi-alert-dc>
+            <gosi-alert-dc
+              *ngIf="isIncorrectReason && !isAnyTerminatedEng"
+              [bilingualMessage]="'VIOLATIONS.IRT-NO-ENGAGEMENTS' | translate"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="false"
+            >
+            </gosi-alert-dc>
+            <gosi-alert-dc
+              *ngIf="!isCancelEng && !isAnyActiveEng && !isAnyTerminatedEng && !isIncorrectReason"
+              [bilingualMessage]="'VIOLATIONS.COMMON-NO-ENGAGEMENTS' | translate"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div
+            *ngIf="hasProactiveEng && engagementsInfo?.engagements.length === 0"
+            class="col-sm-12 col-md-12 col-lg-12"
+          >
+            <gosi-alert-dc
+              [bilingualMessage]="'VIOLATIONS.PROACTIVE-ERROR-MSG' | translate"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12 eng-section">
+            <ng-container *ngFor="let engagement of engagementsInfo?.engagements; let i = index">
+              <div
+                class="row"
+                *ngIf="
+                  !(
+                    isIncorrectReason &&
+                    (engagement.status === engagementLive || engagement.status === engagementCancelled)
+                  )
+                "
+              >
+                <ng-container *ngIf="!(!isCancelEng && engagement.status === engagementCancelled)">
+                  <div class="mt-3">
+                    <gosi-input-checkbox-dc
+                      *ngIf="!(isWrongBenefits && engagement?.benefitIndicator === false)"
+                      id="{{ 'engagementCheckBox' + id }}"
+                      [control]="addContributorForm?.controls[i].get('selectEng')"
+                      [disabled]="engagement?.benefitIndicator === true && !isWrongBenefits ? true : false"
+                      (select)="selectEngagement(i)"
+                      [noSpacing]="true"
+                      [showToolTipOnDisabled]="engagement?.benefitIndicator === true && !isWrongBenefits ? true : false"
+                      [tooltip]="engagement?.benefitIndicator && !isWrongBenefits ? commentBox : ''"
+                    >
+                    </gosi-input-checkbox-dc>
+                  </div>
+                  <ng-template #commentBox>
+                    <ng-container>
+                      <div>
+                        {{ 'VIOLATIONS.WRONG-BENEFITS-POPUP' | translate }}
+                      </div>
+                    </ng-container>
+                  </ng-template>
+                  <div class="col" *ngIf="!(isWrongBenefits && engagement?.benefitIndicator === false)">
+                    <accordion class="accordion-style" id="{{ 'engagementid' + id }}">
+                      <accordion-group
+                        id="{{ id + i }}"
+                        class="accordion-group-class-eng"
+                        [isDisabled]="
+                          !engagement?.isSelected || isIncorrectWage || isViolatingProvisions || isWrongBenefits
+                        "
+                        [ngClass]="
+                          showEngAccordionError[i] &&
+                          engagement.isSelected === true &&
+                          !(isIncorrectWage || isViolatingProvisions)
+                            ? 'accordion-error'
+                            : ''
+                        "
+                        (isOpenChange)="selectPanel($event, i + 1)"
+                        [isOpen]="accordionPanel === i + 1"
+                      >
+                        <div accordion-heading>
+                          <span class="date-section">
+                            <span class="start-date">
+                              {{
+                                (getDateType(engagement?.joiningDate?.entryFormat) === 'Hijiri'
+                                  ? engagement?.joiningDate?.hijiri
+                                  : engagement?.joiningDate?.gregorian
+                                ) | gosiDate
+                              }}</span
+                            >
+                            <span class="date-arrow">
+                              <fa-icon icon="arrow-right" *ngIf="lang === 'en'" class="icon-size" size="1x"></fa-icon>
+                              <fa-icon icon="arrow-left" *ngIf="lang === 'ar'" class="icon-size" size="1x"></fa-icon>
+                            </span>
+                            <ng-container
+                              *ngIf="
+                                engagement?.leavingDate?.gregorian || engagement?.leavingDate?.hijiri;
+                                else ownwards
+                              "
+                            >
+                              <span class="end-date"
+                                >{{
+                                  (getDateType(engagement?.leavingDate?.entryFormat) === 'Hijiri'
+                                    ? engagement?.leavingDate?.hijiri
+                                    : engagement?.leavingDate?.gregorian
+                                  ) | gosiDate
+                                }}
+                              </span>
+                            </ng-container>
+                            <!-- </div> -->
+                            <!-- show duration in accordion heading -->
+                            <ng-container>
+                              <span
+                                class="end-date date-duration"
+                                *ngIf="
+                                  engagement?.engagementDuration?.noOfMonths ||
+                                  engagement?.engagementDuration?.noOfDays ||
+                                  (engagement?.engagementDuration?.noOfMonths === 0 &&
+                                    engagement?.engagementDuration?.noOfDays === 0)
+                                "
+                              >
+                                (
+                                <span
+                                  *ngIf="
+                                    engagement?.engagementDuration?.noOfMonths &&
+                                    engagement?.engagementDuration?.noOfMonths !== 0
+                                  "
+                                >
+                                  <span>
+                                    {{ engagement?.engagementDuration?.noOfMonths }}
+                                  </span>
+                                  {{
+                                    engagement?.engagementDuration?.noOfMonths >= 3 &&
+                                    engagement?.engagementDuration?.noOfMonths <= 10
+                                      ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                                      : engagement?.engagementDuration?.noOfMonths === 1
+                                      ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                                      : engagement?.engagementDuration?.noOfMonths === 2
+                                      ? ('VIOLATIONS.MONTHS' | translate | titlecase)
+                                      : ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                                  }}
+                                </span>
+                                <span
+                                  *ngIf="
+                                    engagement?.engagementDuration?.noOfMonths &&
+                                    engagement?.engagementDuration?.noOfDays
+                                  "
+                                  >,</span
+                                >
+                                <span
+                                  *ngIf="
+                                    (engagement?.engagementDuration?.noOfDays === 0 &&
+                                      engagement?.engagementDuration?.noOfMonths === 0) ||
+                                    engagement?.engagementDuration?.noOfDays
+                                  "
+                                >
+                                  <span>
+                                    {{
+                                      engagement?.engagementDuration?.noOfDays === 0
+                                        ? 0
+                                        : engagement?.engagementDuration?.noOfDays
+                                    }}
+                                  </span>
+                                  {{
+                                    engagement?.engagementDuration?.noOfDays === 2
+                                      ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                                      : engagement?.engagementDuration?.noOfDays === 1
+                                      ? ('VIOLATIONS.DAY' | translate | titlecase)
+                                      : engagement?.engagementDuration?.noOfDays > 2 &&
+                                        engagement?.engagementDuration?.noOfDays < 11
+                                      ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                                      : engagement?.engagementDuration?.noOfDays >= 11
+                                      ? ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                                      : ('VIOLATIONS.DAY-0' | translate | titlecase)
+                                  }}
+                                </span>
+                                )
+                              </span>
+                            </ng-container>
+                          </span>
+                        </div>
+                        <div accordion-heading class="symbol-adjust">
+                          <span accordion-heading>
+                            <ng-container *ngIf="engagement.status === engagementLive">
+                              <span class="ml-3 mr-3">
+                                <fa-icon [icon]="['fas', 'check-circle']" class="eng-active" size="md"></fa-icon>
+                                <span class="active-value"> {{ 'VIOLATIONS.ACTIVE' | translate }}</span>
+                              </span>
+                            </ng-container>
+                            <ng-container *ngIf="engagement.status === engagementTerminated">
+                              <span class="ml-3 mr-3">
+                                <fa-icon [icon]="['fas', 'ban']" class="eng-terminate" size="md"></fa-icon>
+                                <span class="active-value"> {{ 'VIOLATIONS.TERMINATE' | translate }}</span>
+                              </span>
+                            </ng-container>
+                            <ng-container *ngIf="engagement?.status === engagementCancelled && isCancelEng">
+                              <span class="ml-3 mr-3">
+                                <fa-icon [icon]="['fas', 'times-circle']" class="eng-cancel" size="md"></fa-icon>
+                                <span class="active-value">{{ 'VIOLATIONS.CANCELLED' | translate }}</span>
+                              </span>
+                            </ng-container>
+                          </span>
+                          <ng-container *ngIf="!(isIncorrectWage || isViolatingProvisions || isWrongBenefits)">
+                            <span class="eng-arrow-up-period arrow-color" accordion-heading>
+                              <span>
+                                <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+                              </span>
+                            </span>
+                            <span class="eng-arrow-down-period arrow-color" accordion-heading>
+                              <span>
+                                <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+                              </span>
+                            </span>
+                          </ng-container>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-12">
+                            <vol-engagement-details-dc
+                              #engagementComponent
+                              id="{{ 'engDetail' + id }}"
+                              [violationYesOrNoList]="violationYesOrNoList"
+                              [contributorSummaryDetails]="contributorSummaryDetails"
+                              [engagementDetails]="engagement"
+                              [parentForm]="addContributorForm?.controls[i]"
+                              [engagementForm]="addContributorForm?.controls[i].get('engagement')"
+                              [isCancelEng]="isCancelEng"
+                              [isIncorrectWage]="isIncorrectWage"
+                              [isAddNewEng]="isAddNewEng"
+                              [isIncorrectReason]="isIncorrectReason"
+                              [isViolatingProvisions]="isViolatingProvisions"
+                              [engIndex]="i"
+                              [isContributorEdit]="isContributorEdit"
+                              [setCancelEngForm]="setCancelEngForm"
+                              (getStartDate)="getPeriodStartDate($event)"
+                              (getEndDate)="getPeriodEndDate($event)"
+                              [establishmentDetails]="establishmentDetails"
+                              (bindData)="bindDataToForm(i)"
+                            ></vol-engagement-details-dc>
+                          </div>
+                          <!-- save and cancel button -->
+                          <div class="col-md-12 mt-3 mb-3 engagement-buttons" *ngIf="true">
+                            <div class="float-right">
+                              <gosi-button-dc
+                                *ngIf="!isContributorEdit"
+                                id="{{ 'save-next' + id }}"
+                                type="primary"
+                                size="md"
+                                (click)="saveEng(i)"
+                              >
+                                {{ 'VIOLATIONS.VIOLATIONS-SAVE' | translate }}</gosi-button-dc
+                              >
+                              <gosi-button-dc
+                                *ngIf="isContributorEdit"
+                                id="{{ 'save-next-edit' + id }}"
+                                type="primary"
+                                size="md"
+                                (click)="saveEng(i)"
+                              >
+                                {{ 'VIOLATIONS.VIOLATIONS-SAVE' | translate }}</gosi-button-dc
+                              >
+                            </div>
+                            <div class="float-left">
+                              <gosi-button-dc
+                                *ngIf="!isContributorEdit"
+                                id="{{ 'cancel' + id }}"
+                                type="secondary"
+                                size="md"
+                                (click)="cancelEng(i)"
+                              >
+                                {{ 'VIOLATIONS.CANCEL' | translate }}
+                              </gosi-button-dc>
+                              <gosi-button-dc
+                                *ngIf="isContributorEdit"
+                                id="{{ 'cancel-edit' + id }}"
+                                type="secondary"
+                                size="md"
+                                (click)="cancelEngEdit(i)"
+                              >
+                                {{ 'VIOLATIONS.CANCEL' | translate }}
+                              </gosi-button-dc>
+                            </div>
+                          </div>
+                          <!-- benefits section -->
+
+                          <!--  -->
+                        </div>
+                      </accordion-group>
+                    </accordion>
+                  </div>
+                </ng-container>
+              </div>
+              <ng-template #ownwards>
+                {{ 'VIOLATIONS.ONWARDS' | translate }}
+              </ng-template>
+            </ng-container>
+          </div>
+          <!-- Benefit section -->
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <div
+              class="row mb-2 mb-2"
+              *ngIf="isWrongBenefits && isWrongBenefitEng === true && (isAnyActiveEng || isAnyTerminatedEng)"
+            >
+              <div class="col-sm-12 col-md-12 col-lg-12 mt-2 benefit-heading">
+                <span class="identity-heading">{{ 'VIOLATIONS.BENEFIT-DETAILS' | translate }}</span>
+              </div>
+              <div class="col-sm-12 col-md-12 col-lg-12">
+                <table class="table" *ngIf="(benefitButtonClicked || isContributorEdit) && !isEmptyBenefitForm">
+                  <thead class="thead multiple-header">
+                    <tr>
+                      <th id="benefit-type">
+                        {{ 'VIOLATIONS.BENEFIT-TYPE' | translate }}
+                      </th>
+                      <th id="benefit-amount">
+                        {{ 'VIOLATIONS.BENEFIT-AMOUNT' | translate }}
+                      </th>
+                      <th id="benefit-duration">
+                        {{ 'VIOLATIONS.FIRST-PAYMENT-DATE' | translate }}
+                      </th>
+                      <th id="last-benefit-date">
+                        {{ 'VIOLATIONS.LAST-BENEFIT-DATE' | translate }}
+                      </th>
+                      <th id="delete-benefit"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="tbody-benefit">
+                    <tr *ngFor="let benfit of addBenefitsForm.controls; let j = index">
+                      <td class="benefit-type-value">
+                        <div class="row ml-2 mr-2">
+                          <gosi-input-select-dc
+                            id="benefitType"
+                            name="benefitType"
+                            [list]="wrongBenefitsType"
+                            [control]="addBenefitsForm.controls[j].get('benefitType')"
+                            (selectLov)="
+                              setBenefitDurationMonth(
+                                j,
+                                addBenefitsForm.controls[j].get('benefitType').get('english').value
+                              )
+                            "
+                          >
+                          </gosi-input-select-dc>
+                        </div>
+                      </td>
+                      <td class="benefit-amount-value">
+                        <div class="row ml-2 mr-2">
+                          <gosi-input-number-dc
+                            id="benefitAmount"
+                            name="benefitAmount"
+                            [control]="addBenefitsForm.controls[j].get('benefitAmount')"
+                          >
+                          </gosi-input-number-dc>
+                        </div>
+                      </td>
+                      <td class="benefit-duration-value">
+                        <div class="row ml-2 mr-2">
+                          <!-- <gosi-input-number-dc
+                            id="benefitDuration"
+                            name="benefitDuration"
+                            [hideOptionalLabel]="true"
+                            [control]="addBenefitsForm.controls[j].get('benefitDuration')"
+                          >
+                          </gosi-input-number-dc> -->
+                          <gosi-input-date-dc
+                            #firstBenefitDate
+                            class="align"
+                            id="firstBenefitDate"
+                            name="firstBenefitDate"
+                            [maxDate]="firstBenefitMaxDate"
+                            [control]="addBenefitsForm.controls[j].get('firstBenefitDate').get('gregorian')"
+                            (changeEvent)="onFirstBenefitDateChange(j)"
+                          >
+                          </gosi-input-date-dc>
+                        </div>
+                      </td>
+                      <td class="benefit-date-value">
+                        <div class="row">
+                          <gosi-input-date-dc
+                            #lastBenefitDate
+                            class="align"
+                            id="lastBenefitDate"
+                            name="lastBenefitDate"
+                            [maxDate]="maxBenefitLastDate[j]"
+                            [control]="addBenefitsForm.controls[j].get('lastBenefitDate').get('gregorian')"
+                          >
+                          </gosi-input-date-dc>
+                        </div>
+                      </td>
+                      <td class="delete-icon-coloumn row ml-2 mr-2 pt-4">
+                        <span class="delete-btn">
+                          <div class="btn" (click)="deleteAddedBenefit(j)">
+                            <fa-icon icon="trash-alt" size="lg"></fa-icon>
+                          </div>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <!-- <ng-template #noBenefits>
+                  <div class="col-md-12 no-benefits">
+                    {{ 'VIOLATIONS.NO-BENEFITS' | translate }}
+                  </div>
+                </ng-template> -->
+              </div>
+
+              <!-- Add Benefits Button -->
+              <div class="add-benefit col-sm-12 col-md-12 col-lg-12">
+                <gosi-button-dc id="add-benefit" (click)="addNewBenfitsRow()" size="md" [outlineOnly]="true">
+                  <fa-icon class="pl-2 pr-2" icon="plus"></fa-icon>{{ 'VIOLATIONS.ADD-BENEFIT' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- cancel and add button -->
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <div class="float-right">
+              <gosi-button-dc
+                *ngIf="
+                  !isContributorEdit &&
+                  ((!isWrongBenefits && isAllBenefitsFalse) || (isWrongBenefits && isWrongBenefitEng)) &&
+                  ((isIncorrectReason && isAnyTerminatedEng) ||
+                    (!isIncorrectReason && !isCancelEng && (isAnyActiveEng || isAnyTerminatedEng)) ||
+                    isCancelEng)
+                "
+                id="{{ 'add-con-btn' + id }}"
+                type="primary"
+                size="md"
+                (click)="addContributor()"
+              >
+                {{ 'VIOLATIONS.ADD-CONTRIBUTOR' | translate }}</gosi-button-dc
+              >
+              <gosi-button-dc
+                *ngIf="isContributorEdit"
+                id="{{ 'add-con-btn-edit' + id }}"
+                type="primary"
+                size="md"
+                (click)="addContributor()"
+              >
+                {{ 'VIOLATIONS.UPDATE-CONTRIBUTOR' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="float-left">
+              <gosi-button-dc
+                *ngIf="!isContributorEdit"
+                id="{{ 'cancel-con-btn' + id }}"
+                type="secondary"
+                size="md"
+                (click)="cancelContributor()"
+              >
+                {{ 'VIOLATIONS.CANCEL' | translate }}
+              </gosi-button-dc>
+              <gosi-button-dc
+                *ngIf="isContributorEdit"
+                id="{{ 'cancel-con-btn-edit' + id }}"
+                type="secondary"
+                size="md"
+                (click)="cancelContributorForEdit()"
+              >
+                {{ 'VIOLATIONS.CANCEL' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </gosi-card-dc>
+  </div>
+</div>

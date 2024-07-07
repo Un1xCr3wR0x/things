@@ -1,0 +1,80 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="header-value">
+        <span *ngIf="!updateDefaultBank">{{ 'CUSTOMER-INFORMATION.ADD-NEW-BANK-ACCOUNT' | translate }}</span>
+        <span *ngIf="updateDefaultBank">{{ 'CUSTOMER-INFORMATION.UPDATE-DEFAULT-BANK-ACCOUNT' | translate }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <gosi-progress-wizard-dc
+        [wizardItems]="modifyWizardItems"
+        (clickWizard)="selectWizard($event)"
+        #progressWizardItems
+      >
+      </gosi-progress-wizard-dc>
+    </div>
+  </div>
+  <div *ngIf="activeTab === 0">
+    <cim-bank-form-dc
+      (changeBankTypeEvent)="clearAlerts()"
+      (emitForm)="bindToBankForm($event)"
+      (uploadedEvent)="goToTop()"
+      (ibanCodeEmit)="getBank($event)"
+      [bankDetails]="bankDetails"
+      [param]="param"
+      [documents]="personDocumentList"
+      [bankNameList]="bankNameList"
+      (newBankSave)="saveAndNext($event)"
+      (showAlert)="showMandatoryAlert($event)"
+      [countryList]="nationalityList$"
+    >
+    </cim-bank-form-dc>
+  </div>
+  <div *ngIf="activeTab === 1">
+    <!-- document details section -->
+    <!-- <cim-file-upload-dc [engagementId]="documentUploadEngagementId" [parentForm]="parentForm" [documentList]="documents"
+      [isCommentRequired]="false" [referenceNo]="referenceNo" [documentTransactionId]="documentTransactionId"
+      [isSubmit]="!isContractRequired" (refresh)="refreshDocumentItem($event)" (cancel)="cancelAddedIndividual()"
+      (previous)="navigateToPreviousTab()" (submit)="onSubmitDocuments()" [isApiTriggered]="isApiTriggered">
+    </cim-file-upload-dc> -->
+    <cim-documents-dc
+      [uuid]="uuid"
+      [documents]="documents"
+      [businessKey]="registrationNo"
+      [transactionId]="transactionId"
+      [showHeading]="false"
+      [referenceNo]="referenceNo"
+      [noPadding]="true"
+      [noMarginBottom]="true"
+      [negativeMobileMargin]="false"
+      [parentForm]="parentForm"
+      (refreshDocument)="refreshDocument($event)"
+      (onUploadDocument)="setUuid($event)"
+      (onDeleteDocument)="deleteUuid($event)"
+    >
+    </cim-documents-dc>
+    <cim-action-area-dc
+      [primaryButtonLabel]="'CONTRIBUTOR.SUBMIT'"
+      [showPreviousSection]="true"
+      [disablePrimary]="isApiTriggered"
+      idValue="2"
+      (submit)="submit()"
+      (previous)="navigateToPreviousTab()"
+      (cancel)="onCancel(applyCancelTemplate)"
+    >
+    </cim-action-area-dc>
+  </div>
+</div>
+
+<ng-template #applyCancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CUSTOMER-INFORMATION.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

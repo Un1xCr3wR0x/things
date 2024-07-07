@@ -1,0 +1,216 @@
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="heading mx-3">{{ 'BILLING.INSTALLMENT-SUMMARY' | translate }}</div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-lg-3">
+      <div class="row">
+        <div class="col-lg-2">
+          <div class="wizard-circle">
+            <img alt="installment" src="assets/images/installmenticons/receipt.svg" />
+          </div>
+        </div>
+        <div class="col-lg-9 ml-1">
+          <div class="row">
+            <div class="col-lg-12">{{ 'BILLING.INSTALLMENT-REF-NUMBER' | translate }}</div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">{{ installmentDetails?.referenceNumber }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <div class="row">
+        <div class="col-lg-2">
+          <div class="wizard-circle">
+            <img alt="installment" src="assets/images/installmenticons/clock.svg" />
+          </div>
+        </div>
+        <div class="col-lg-9 ml-1">
+          <div class="row">
+            <div class="col-lg-12">
+              {{ 'BILLING.INSTALLMENT-EFFECTIVE-PERIOD' | translate }}
+              <span>
+                <fa-icon
+                  class="arrow-custom"
+                  placement="top"
+                  [tooltip]="installmentEffectivePeriodTemplate"
+                  [icon]="['fas', 'info-circle']"
+                ></fa-icon>
+              </span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              {{ installmentDetails?.schedule[0]?.installmentMonth | bilingualText }}
+              <fa-icon class="arrow-custom" [icon]="['fas', lang === 'ar' ? 'arrow-left' : 'arrow-right']"></fa-icon>
+              {{
+                installmentDetails?.schedule[installmentDetails?.schedule?.length - 1]?.installmentMonth | bilingualText
+              }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <div class="row">
+        <div class="col-lg-2">
+          <div class="wizard-circle">
+            <img alt="installment" src="assets/images/installmenticons/hand.svg" />
+          </div>
+        </div>
+        <div class="col-lg-9 mr-2">
+          <div class="row">
+            <div class="col-lg-12">{{ 'BILLING.ELIGIBLE-PENALTY-WAIVER' | translate }}</div>
+          </div>
+          <div class="row" *ngIf="installmentDetails?.penaltyWaiverEligible; else noTemplate">
+            <div class="col-lg-12">{{ 'BILLING.YES' | translate }}</div>
+          </div>
+          <ng-template #noTemplate>{{ 'BILLING.NO' | translate }}</ng-template>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <div class="row">
+        <div class="col-lg-2">
+          <div class="wizard-circle">
+            <img alt="installment" src="assets/images/installmenticons/calendar.svg" />
+          </div>
+        </div>
+        <div class="col-lg-9 mr-2">
+          <div class="row">
+            <div class="col-lg-12">{{ 'BILLING.NEXT-INSTALLMENT-DATE' | translate }}</div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">{{ installmentDetails?.nextInstallmentDate?.gregorian | date: 'dd/MM/yyyy' }}</div>
+          </div>
+          <gosi-status-badge-dc [label]="'BILLING.DUE-DAYS' | translate: { daysLeft: daysLeft }" [type]="'warning'">
+          </gosi-status-badge-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row no-gutters banner">
+    <div class="col-lg-12 custom-heading">{{ 'BILLING.INSTALLMENT-AMOUNT-NUMBER-OF-INSTALLMENTS' | translate }}</div>
+    <div class="col-lg-12">
+      <div class="row">
+        <div class="col-lg-5">
+          <div class="row">
+            <div class="col-lg-3">
+              <canvas #canvas dir="auto" class="canvas">
+                {{ chartWindowList[0] }}
+              </canvas>
+            </div>
+            <div class="col-lg-8 p-0">
+              <div class="mt-5 custom-seperator">
+                <div class="mb-3">
+                  {{ 'BILLING.INSTALLMENT-AMOUNT' | translate }} -
+                  {{ installmentDetails?.totalInstallmentAmount | number: '1.2-2' }}
+                  {{ 'BILLING.SAR' | translate }}
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div>
+                      <span class="legend-circle" [ngStyle]="{ 'background-color': 'rgb(95, 198, 122)' }"></span>
+                      {{ 'BILLING.PAID-INSTALLMENT' | translate }}
+                    </div>
+                    <div>
+                      {{ installmentDetails?.installmentAmountPaid | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div>
+                      <span class="legend-circle" [ngStyle]="{ 'background-color': '#ccc' }"></span>
+                      {{ 'BILLING.REMAINING' | translate }}
+                    </div>
+                    <div>
+                      {{ installmentDetails?.installmentAmountRemaining | number: '1.2-2' }}
+                      {{ 'BILLING.SAR' | translate }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 p-0">
+          <div class="row">
+            <div class="col-lg-3">
+              <canvas #canvas dir="auto" class="canvas">
+                {{ chartWindowList[1] }}
+              </canvas>
+            </div>
+            <div class="col-lg-8">
+              <div class="mt-5 custom-seperator">
+                <div class="mb-3">
+                  {{ 'BILLING.NUMBER-OF-INSTALLMENT' | translate }} -
+                  {{ installmentDetails?.installmentPeriodInMonths }}
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div>
+                      <span class="legend-circle" [ngStyle]="{ 'background-color': 'rgb(14, 152, 171)' }"></span>
+                      {{ 'BILLING.PAID-INSTALLMENT' | translate }}
+                    </div>
+                    <div>{{ installmentDetails?.numberOfMonthsPaid }}</div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div>
+                      <span class="legend-circle" [ngStyle]="{ 'background-color': '#ccc' }"></span>
+                      {{ 'BILLING.REMAINING' | translate }}
+                    </div>
+                    <div>{{ installmentDetails?.numberOfMonthsRemaining }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 p-0">
+          <div class="mt-4">
+            <div>
+              <div>{{ 'BILLING.MONTHLY-INSTALLMENT-AMOUNT' | translate }}</div>
+              <div>
+                {{ installmentDetails?.monthlyInstallmentAmount | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+              </div>
+            </div>
+            <div class="mt-3">
+              <div>
+                {{ 'BILLING.LAST-INSTALLMENT-AMOUNT' | translate }}
+                <span>
+                  <fa-icon
+                    class="arrow-custom"
+                    placement="top"
+                    [tooltip]="lastInstallmentAmoutTemplate"
+                    [icon]="['fas', 'info-circle']"
+                  ></fa-icon>
+                </span>
+              </div>
+              <div>
+                {{ installmentDetails?.lastInstallmentAmount | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+<ng-template #installmentEffectivePeriodTemplate>
+  <div class="d-flex flex-column">
+    {{ 'BILLING.INSTALLMENT-EFFECTIVE-PERIOD-INFO' | translate }}
+    <div>
+      {{ installmentDetails?.schedule[0]?.installmentMonth | bilingualText }}
+      <fa-icon class="arrow-custom" [icon]="['fas', lang === 'ar' ? 'arrow-left' : 'arrow-right']"></fa-icon>
+      {{ installmentDetails?.schedule[installmentDetails?.schedule?.length - 1]?.installmentMonth | bilingualText }}
+    </div>
+  </div>
+</ng-template>
+<ng-template #lastInstallmentAmoutTemplate>
+  <div class="d-flex flex-column">
+    {{ 'BILLING.LAST-INSTALLMENT-AMOUNT-INFO' | translate }}
+    {{ installmentDetails?.schedule[installmentDetails?.schedule?.length - 1]?.monthlyInstallmentAmount }}
+    {{ 'BILLING.SAR' | translate }}
+  </div>
+</ng-template>

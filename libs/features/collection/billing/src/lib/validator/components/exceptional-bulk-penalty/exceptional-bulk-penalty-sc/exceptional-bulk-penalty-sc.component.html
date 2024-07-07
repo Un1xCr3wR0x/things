@@ -1,0 +1,68 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [documents]="documents" [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'BILLING.EXCEPTIONAL-LATE-FEE-WAIVER' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <blg-exceptional-bulk-penalty-details-dc [waiverDetails]="waiverDetails">
+      </blg-exceptional-bulk-penalty-details-dc>
+    </div>
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        (approveEvent)="approveBulkTransactions(approveTemplate)"
+        (rejectEvent)="rejectBulkTransactions(rejectTemplate)"
+        (returnEvent)="returnBulkTransactions(returnTemplate)"
+        (cancelEvent)="showModalsForBulk(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancelBtns()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="exceptionalBulkForm"
+      (cancelEvent)="hideModalsForBulk()"
+      (approveEvent)="confirmApproveForBulk()"
+    ></frm-approve-template-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="exceptionalBulkForm"
+      [heading]="rejectHeadingValue"
+      (cancelEvent)="hideModalsForBulk()"
+      [rejectReasonList$]="rejectReasonLists"
+      (rejectEvent)="confirmRejectForBulk()"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="exceptionalBulkForm"
+      [heading]="returnHeadingValue"
+      [returnReasonList$]="returnReasonLists"
+      (cancelEvent)="hideModalsForBulk()"
+      [warningMessage]="
+        fcReturnFlag ? 'BILLING.RETURN-TO-GDISO-TRANSACTION-INFO' : 'BILLING.RETURN-TO-GDIC-TRANSACTION-INFO'
+      "
+      (returnEvent)="confirmReturnForBulk()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

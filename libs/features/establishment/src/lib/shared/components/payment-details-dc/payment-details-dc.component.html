@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc *ngIf="showMOF" heading="{{ 'ESTABLISHMENT.CONTRIBUTION-PAYMENT' | translate }}" type="secondary">
+  <div class="row">
+    <div class="col-md-6 col-lg-6">
+      <div>
+        <label>{{ 'ESTABLISHMENT.IS-MOF-PAYING-EMPLOYER-CONTRIBUTOR' | translate }} </label>
+      </div>
+      <gosi-input-radio-dc
+        id="paymentType"
+        [ignoreLabel]="true"
+        name="isMOF"
+        [label]="''"
+        [control]="paymentDetailsForm.get('paymentType')"
+        [list]="yesOrNoList"
+        (select)="selectPaymentType($event)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+    <div class="col-md-6 col-lg-6">
+      <gosi-input-date-dc
+        [disabled]="true"
+        id="startDate"
+        label="ESTABLISHMENT.PAYMENT-START-DATE"
+        name="startDate"
+        [control]="paymentDetailsForm.get('startDate').get('gregorian')"
+      ></gosi-input-date-dc>
+    </div>
+    <div class="col-md-6">
+      <gosi-input-radio-dc
+        *ngIf="showLateFeeIndicator"
+        id="lateFeeIndicator"
+        name="lateFee"
+        label="ESTABLISHMENT.IS-LATE-FEE-APPLICABLE"
+        [control]="paymentDetailsForm.get('lateFeeIndicator')"
+        [list]="yesOrNoList"
+        [disabled]="disableLateFee"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<frm-bank-details-dc
+  #BankDetailsDcComponent
+  [bankAccount]="bankAccount"
+  [bankNameList$]="bankNameList$"
+  (IBAN)="getBranchList($event)"
+  [isGcc]="isGcc"
+  [isIbanMapped]="isIbanMapped"
+  [isProactive]="establishment.proactive"
+  [unn]="establishment.unifiedNationalNumber"
+  [estNameAr]="establishment.name.arabic"
+  [registrationNo]="establishment.registrationNo"
+  (samaResponseEmitter)="validateSamaResponse($event)"
+  (samaFailureEmitter)="checkSamaFailure($event)"
+  (enableNextButton)="updateNextButton($event)"
+></frm-bank-details-dc>
+
+<est-footer-buttons-dc
+  primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+  primaryId="paymentSaveAndNext"
+  (cancel)="popUp(draftTemplate)"
+  (previous)="previousSection()"
+  (submit)="savePaymentDetails()"
+  [showPrimary]="!establishment.proactive || isActive || enableNextButton"
+>
+</est-footer-buttons-dc>
+
+<ng-template #draftTemplate>
+  <est-draft-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="decline()"
+    (onCancel)="confirmCancel()"
+  ></est-draft-popup-dc>
+</ng-template>
+
+<ng-template #template>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'INFO-RESET'"
+    (onConfirm)="confirmReset()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,59 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<cim-transaction-template-dc
+  [transactionName]="'CUSTOMER-INFORMATION.ADD-IQAMA'"
+  [contributor]="contributor"
+  [showInfo]="currentTab === 0 ? true : false"
+  [showFeedback]="currentTab === 1 ? true : false"
+  [feedbackMessage]="feedBackMessage"
+  [showSubHeadings]="(editTransaction || manageService.isEdit) && currentTab === 0"
+  [subHeadings]="subHeadings"
+>
+  <div id="transactionContent" *ngIf="currentTab === 0">
+    <ng-container *ngIf="person">
+      <div class="card">
+        <cim-add-iqama-dc
+          *ngIf="documents$"
+          [uuid]="uuid"
+          [parentForm]="iqamaForm"
+          [personId]="person.personId"
+          [referenceNo]="iqamaReferenceNo"
+          [documents]="documents$ | async"
+          [comments]="comments$ | async"
+          [isCsr]="isAppPrivate"
+          (refresh)="refreshDocument(false, $event)"
+          [isComments]="editTransaction || manageService.isEdit"
+        >
+        </cim-add-iqama-dc>
+      </div>
+    </ng-container>
+  </div>
+  <div id="transactionAction" *ngIf="currentTab === 0">
+    <cim-footer-button-dc
+      primaryLabel="CUSTOMER-INFORMATION.SUBMIT"
+      [showPrevious]="false"
+      (submit)="saveIqama()"
+      (cancel)="showModal(cancelTemplate)"
+    >
+    </cim-footer-button-dc>
+  </div>
+  <div id="transactionAction" *ngIf="currentTab === 1">
+    <div class="d-flex flex-wrap justify-content-between">
+      <div id="goToButton">
+        <gosi-button-dc [id]="'cancel'" type="secondary" (submit)="navigateToPage()">
+          {{ 'CUSTOMER-INFORMATION.HOME' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      iconName="warning"
+      message="ESTABLISHMENT.INFO-CANCEL"
+      (onConfirm)="cancelModal()"
+      (onCancel)="decline()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</cim-transaction-template-dc>

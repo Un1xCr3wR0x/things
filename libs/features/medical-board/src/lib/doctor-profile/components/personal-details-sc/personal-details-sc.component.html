@@ -1,0 +1,390 @@
+<gosi-alert-dc *ngIf="doctorService.responseMessage" type="success" [bilingualMessage]="doctorService.responseMessage">
+</gosi-alert-dc>
+<ng-container *ngIf="person">
+  <ng-container *ngIf="latestArray.length > 0">
+    <gosi-card-dc type="secondary" class="card-style">
+      <div class="custom-header">
+        <h4 class="custom-heading">
+          {{ 'MEDICAL-BOARD.CONTRACT-DETAIL' | translate }} ( {{ latestArray[0]?.contractType | bilingualText }} )
+        </h4>
+        <div class="action-btn ml-auto" id="id" *gosiShow="isDoctorActionAccess">
+          <div class="d-flex flex-row-reverse">
+            <div class="btn-section" *ngIf="isAppPrivate">
+              <gosi-button-dc
+                *ngIf="
+                  latestArray[0]?.status.english === 'Active' &&
+                  !(latestArray[0].contractType?.english === PersonTypeEnum.Nurse && this.latestArray[0]?.endDate)
+                "
+                type="secondary"
+                size="sm"
+                id="actionsBtn"
+                [disabled]="isManagerLogin"
+                [popover]="isManagerLogin ? '' : optionsModal"
+                placement="top"
+                outsideClick="true"
+                (click)="getContractId(latestArray[0]?.contractId, indexOfLatest)"
+              >
+                {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+                <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <gosi-label-dc
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.CONTRACT-TYPE' | translate"
+          [value]="latestArray[0]?.contractType | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="latestArray[0]?.medicalBoardType"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.TYPE-OF-MEDICAL-BOARD' | translate"
+          [value]="latestArray[0]?.medicalBoardType | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.STATS' | translate"
+          [value]="latestArray[0]?.status | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="latestArray[0]?.fees"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.FEES-PER-SESSION' | translate"
+          [value]="latestArray[0]?.fees"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="latestArray[0]?.feesPerVisit"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.FEES-PER-VISIT' | translate"
+          [value]="latestArray[0]?.feesPerVisit | bilingualText"
+        >
+        </gosi-label-dc>
+        <div class="col-md-4 col-sm-12 form-label">
+          <label class="label-color">{{ 'MEDICAL-BOARD.CONTRACT-PERIOD' | translate }}</label>
+          <div class="data">
+            {{ latestArray[0]?.startDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}
+            <span>
+              <fa-icon [icon]="lang === 'ar' ? 'arrow-left' : 'arrow-right'"></fa-icon>
+            </span>
+            <span>{{ latestArray[0]?.endDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}</span>
+            <span *ngIf="!latestArray[0]?.endDate"> {{ 'MEDICAL-BOARD.ONWARDS' | translate }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col data-row">
+          <gosi-label-dc
+            [label]="'MEDICAL-BOARD.VIEW-HISTORY' | translate"
+            [value]="'MEDICAL-BOARD.VIEW-HISTORY' | translate"
+            (select)="contractHistory(latestArray[0]?.contractId)"
+            [ignoreLabel]="true"
+            [isLink]="true"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  <ng-container *ngIf="otherTypeArray.length > 0">
+    <gosi-card-dc type="secondary" class="card-style">
+      <div class="custom-header">
+        <h4 class="custom-heading">
+          {{ 'MEDICAL-BOARD.CONTRACT-DETAIL' | translate }} ( {{ otherTypeArray[0]?.contractType | bilingualText }} )
+        </h4>
+        <div class="action-btn ml-auto" id="id" *gosiShow="isDoctorActionAccess">
+          <div class="d-flex flex-row-reverse">
+            <div class="btn-section" *ngIf="isAppPrivate">
+              <gosi-button-dc
+                *ngIf="
+                  otherTypeArray[0]?.status.english === 'Active' &&
+                  !(otherTypeArray[0].contractType?.english === PersonTypeEnum.Nurse && this.otherTypeArray[0]?.endDate)
+                "
+                type="secondary"
+                size="sm"
+                id="actionsBtn"
+                [disabled]="isManagerLogin"
+                [popover]="isManagerLogin ? '' : optionsModal"
+                placement="top"
+                outsideClick="true"
+                (click)="getContractId(otherTypeArray[0]?.contractId, indexOfOther)"
+              >
+                {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+                <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <gosi-label-dc
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.CONTRACT-TYPE' | translate"
+          [value]="otherTypeArray[0]?.contractType | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="otherTypeArray[0]?.medicalBoardType"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.TYPE-OF-MEDICAL-BOARD' | translate"
+          [value]="otherTypeArray[0]?.medicalBoardType | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.STATS' | translate"
+          [value]="otherTypeArray[0]?.status | bilingualText"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="otherTypeArray[0]?.fees"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.FEES-PER-SESSION' | translate"
+          [value]="otherTypeArray[0]?.fees"
+        >
+        </gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="otherTypeArray[0]?.feesPerVisit"
+          class="col-md-4 col-sm-12"
+          [label]="'MEDICAL-BOARD.FEES-PER-VISIT' | translate"
+          [value]="otherTypeArray[0]?.feesPerVisit | bilingualText"
+        >
+        </gosi-label-dc>
+        <div class="col-md-4 col-sm-12 form-label">
+          <label class="label-color">{{ 'MEDICAL-BOARD.CONTRACT-PERIOD' | translate }}</label>
+          <div class="data">
+            {{ otherTypeArray[0]?.startDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}
+            <span>
+              <fa-icon [icon]="lang === 'ar' ? 'arrow-left' : 'arrow-right'"></fa-icon>
+            </span>
+            <span>{{ otherTypeArray[0]?.endDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}</span>
+            <span *ngIf="!otherTypeArray[0]?.endDate"> {{ 'MEDICAL-BOARD.ONWARDS' | translate }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col data-row">
+          <gosi-label-dc
+            [label]="'MEDICAL-BOARD.VIEW-HISTORY' | translate"
+            [value]="'MEDICAL-BOARD.VIEW-HISTORY' | translate"
+            (select)="contractHistory(otherTypeArray[0]?.contractId)"
+            [ignoreLabel]="true"
+            [isLink]="true"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+</ng-container>
+
+<!--Member details-->
+<ng-container *ngIf="isMBApp">
+  <mb-member-details-contract-dc
+    (memberdetailseditEvent)="oneditMemberDetails()"
+    [isMemberCanEdit]="isMemberEdit && isContractedActive && !isManagerLogin ? true : false"
+    [contractDetails]="contractDoctorDetails?.memberDetails"
+    [nurse]="nurse"
+  >
+  </mb-member-details-contract-dc>
+</ng-container>
+<ng-container *ngIf="isAppPrivate">
+  <mb-member-details-contract-dc
+    (memberdetailseditEvent)="oneditMemberDetails()"
+    [isMemberCanEdit]="isMemberEdit && isContractedActive && !isManagerLogin ? true : false"
+    [contractDetails]="person?.contracts[0]"
+    [nurse]="nurse"
+  >
+  </mb-member-details-contract-dc>
+</ng-container>
+
+<!--UNAVAILABLE PERIODS Details -->
+<ng-container *ngIf="showPeriod">
+  <gosi-card-dc type="secondary" class="card-style">
+    <div class="custom-header">
+      <h4 class="custom-heading">
+        {{ 'MEDICAL-BOARD.UNAVAILABLE-PERIODS' | translate }}
+      </h4>
+      <div class="action-btn ml-auto" id="id" *ngIf="!isInActive">
+        <div class="d-flex flex-row-reverse" *gosiShow="isDoctorActionAccess">
+          <div class="btn-section">
+            <gosi-button-dc
+              type="secondary"
+              size="xs"
+              id="addUnavailableData"
+              (click)="isManagerLogin ? '' : addUnavailableData()"
+              [disabled]="isManagerLogin ? true : false"
+            >
+              {{ 'MEDICAL-BOARD.ADD' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <div class="table-responsive">
+          <div class="table-worklist">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 30%">
+                    {{ 'MEDICAL-BOARD.PERIOD' | translate }}
+                  </th>
+                  <th scope="col">
+                    {{ 'MEDICAL-BOARD.REASON' | translate }}
+                  </th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="history-content" *ngFor="let item of unavailableList; let i = index">
+                  <td>
+                    {{ item?.startDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}
+                    <span>
+                      <fa-icon [icon]="lang === 'ar' ? 'arrow-left' : 'arrow-right'"></fa-icon>
+                    </span>
+                    <span> {{ item?.endDate?.gregorian | gosiDate: 'dd/mm/yyyy' }}</span>
+                  </td>
+                  <td>
+                    {{ item.reason | bilingualText }}
+                    <span *ngIf="item.comments">( {{ item.comments }} )</span>
+                  </td>
+                  <td>
+                    <fa-icon
+                      *ngIf="!isInActive"
+                      class="dropdown-icon data-row"
+                      [popover]="periodOptionsModal"
+                      (click)="setIndex(i)"
+                      outsideClick=" true"
+                      placement="top"
+                      icon="ellipsis-v"
+                    ></fa-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </gosi-card-dc>
+</ng-container>
+
+<!-- contact details dc -->
+<ng-container *ngIf="person.contactDetail">
+  <mb-contact-details-doctor-dc
+    (contactdetaitseditEvent)="onEditContactDetails()"
+    [isContactCanEdit]="isMemberEdit && isContractedActive && !isManagerLogin ? true : false"
+    [person]="person"
+  >
+  </mb-contact-details-doctor-dc>
+</ng-container>
+
+<!-- address details dc -->
+<ng-container *ngIf="person.contactDetail">
+  <mb-address-details-doctor-dc
+    (addressdetaitseditEvent)="oneditAddressDetail()"
+    [person]="person"
+    [isAddressCanEdit]="isMemberEdit && isContractedActive && !isManagerLogin ? true : false"
+  ></mb-address-details-doctor-dc>
+</ng-container>
+
+<!-- bank details dc component -->
+<mb-bank-details-doctor-dc
+  (bankdetaitseditEvent)="onBankDetaitsEdit()"
+  [person]="person"
+  [isBankCanEdit]="isMemberEdit && isContractedActive && !isManagerLogin ? true : false"
+  [bankStatus]="bankStatus | bilingualText"
+></mb-bank-details-doctor-dc>
+
+<!-- Document Details -->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documentsArray"></gosi-document-list-view-dc>
+  </div>
+</div>
+<!-- Contract Action Modal -->
+<ng-template #optionsModal>
+  <!-- If there is endDate, don't show TERMINATE -->
+  <!-- For MODIFY -> not for nurse & always for V.Dr(since there is no end date for visiting Dr)...
+     To do: For C.Dr, if endDate is future date, then show Modify (scenerio not yet confirmed) -->
+
+  <!--  *ngIf="!nurse && !(contractedDoctor && !isFutureDate(endDate))" -->
+
+  <button
+    type="button"
+    id="modify"
+    *ngIf="!nurse"
+    (click)="modifyContractDetails(warningTemplate)"
+    class="d-flex btn text-left action-pop-btn"
+  >
+    {{ 'MEDICAL-BOARD.MODIFY' | translate }}
+  </button>
+  <button
+    *ngIf="showTerminateOption"
+    type="button"
+    id="terminate"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="terminateContract(warningTemplate)"
+  >
+    {{ 'MEDICAL-BOARD.TERMINATE' | translate }}
+  </button>
+  <!--1044 *ngIf= "!visitingDoctor && !hasEndDate" //Defect-537079  -->
+</ng-template>
+
+<!-- Unavailable Period Button Options Modal -->
+
+<ng-template #periodOptionsModal>
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showRemoveModal(removeConfirm)"
+    outsideClick="true "
+  >
+    {{ 'MEDICAL-BOARD.REMOVE' | translate }}
+  </button>
+
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="modifyUnavailableData()"
+    outsideClick="true "
+  >
+    {{ 'MEDICAL-BOARD.MODIFY-PERIOD' | translate }}
+  </button>
+</ng-template>
+
+<!-- Remove Unavailable Period Modal-->
+
+<ng-template #removeConfirm>
+  <gosi-confirm-modal-dc
+    [message]="lang === 'en' ? removeMessage?.english : removeMessage?.arabic"
+    (onConfirm)="removePeriod()"
+    (onCancel)="cancelRemoving()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<!-- alert -->
+
+<ng-template #warningTemplate>
+  <gosi-modal-dc [modalHeader]="modalHeading | translate">
+    <div modalContent>
+      <gosi-alert-dc [message]="warningMessage | translate" type="warning" [dismissible]="dismissible"> </gosi-alert-dc>
+    </div>
+
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="closeModal()">
+        {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

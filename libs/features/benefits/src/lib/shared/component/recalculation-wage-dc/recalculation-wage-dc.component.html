@@ -1,0 +1,122 @@
+<div class="row pb-2">
+  <div class="col-lg-6">
+    <gosi-label-dc
+      id="modificationTransaction"
+      label="{{ 'BENEFITS.MODIFICATION-TRANSCTION' | translate }}"
+      [value]="benefitRecalculationDetails?.modificationRefNo"
+      [isLink]="true"
+      (click)="onTransactionView(benefitRecalculationDetails?.modificationRefNo)"
+    >
+    </gosi-label-dc>
+  </div>
+  <ng-container
+    *ngIf="
+      benefitRecalculationDetails?.recalculationType === recalculationConstants.MODIFY_OWNER ||
+      benefitRecalculationDetails?.recalculationType === recalculationConstants.ADD_ESTABLISHMENT
+    "
+  >
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="typeOfModification"
+        label="{{ 'BENEFITS.TYPE-OF-MODIFICATION' | translate }}"
+        [value]="benefitRecalculationDetails?.modifyOwnerDetails?.modificationType | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <label class="label-color">
+        {{ 'BENEFITS.OWNERSHIP-PERIOD' | translate }}
+      </label>
+      <div class="label-value">
+        {{ benefitRecalculationDetails?.modifyOwnerDetails?.startDate?.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+        <fa-icon class="lighter-label" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+        <span class="mr-1"></span>
+        <span *ngIf="benefitRecalculationDetails?.modifyOwnerDetails?.endDate; else Onwards">
+          {{ benefitRecalculationDetails?.modifyOwnerDetails?.endDate?.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+        </span>
+        <span *ngIf="benefitRecalculationDetails?.modifyOwnerDetails?.months != null">
+          ({{
+            'BENEFITS.SANED-MONTHS-COUNT'
+              | translate: { months: benefitRecalculationDetails?.modifyOwnerDetails?.months }
+          }})
+        </span>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<gosi-alert-dc
+  *ngIf="benefitRecalculationDetails?.hasOverlappingEngagements"
+  [message]="'BENEFITS.OVERLAPPING-ENGAGEMENT-WARN'"
+  type="info"
+  [dismissible]="false"
+>
+</gosi-alert-dc>
+<ng-container
+  *ngIf="
+    benefitRecalculationDetails?.recalculationType !== recalculationConstants.MODIFY_OWNER ||
+    benefitRecalculationDetails?.recalculationType !== recalculationConstants.ADD_ESTABLISHMENT
+  "
+>
+  <div class="row mb-3">
+    <div class="col-lg-6 engage-wage">{{ 'BENEFITS.ENGAGEMENT-WAGE-MODIFICATIONS' | translate }}</div>
+  </div>
+  <div class="row">
+    <div class="col-lg-11">
+      <div class="table-responsive">
+        <table class="table table-borderless">
+          <thead>
+            <tr>
+              <th>{{ 'BENEFITS.PERIOD' | translate }}</th>
+              <th>{{ 'BENEFITS.PREVIOUS-WAGE(SAR)' | translate }}</th>
+              <th>{{ 'BENEFITS.NEW-WAGE(SAR)' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let engagement of benefitRecalculationDetails?.engagementModifications">
+              <td>
+                {{ engagement?.startDate | dateType }}
+                <fa-icon class="" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+                <span *ngIf="engagement?.endDate; else Onwards">{{ engagement?.endDate | dateType }}</span>
+                <span
+                  *ngIf="
+                    engagement?.startDate &&
+                    engagement?.endDate &&
+                    ((engagement?.startDate?.entryFormat === 'GREGORIAN' &&
+                      engagement?.endDate?.entryFormat === 'GREGORIAN') ||
+                      (engagement?.startDate?.entryFormat === 'HIJIRA' &&
+                        engagement?.endDate?.entryFormat === 'HIJIRA'))
+                  "
+                >
+                  ({{ getMonths(engagement?.startDate?.gregorian, engagement?.endDate?.gregorian) }}
+                  {{ 'BENEFITS.MONTHS' | translate }})
+                </span>
+                <span
+                  class="border rounded px-2 py-1 text-white"
+                  ngClass="{{
+                    engagement?.status?.english === 'Cancel' || engagement?.status?.english === 'Cancelled'
+                      ? 'status-cancel'
+                      : 'status-green'
+                  }}"
+                  *ngIf="engagement?.status"
+                  >{{ engagement?.status | bilingualText }}</span
+                >
+              </td>
+              <td>
+                <span *ngIf="engagement?.previousWage; else hyphen">{{
+                  engagement?.previousWage | numToPositive | number: '1.0-2'
+                }}</span>
+              </td>
+              <td>
+                <span *ngIf="engagement?.newWage; else hyphen">{{
+                  engagement?.newWage | numToPositive | number: '1.0-2'
+                }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-template #hyphen><span class="mx-5">—</span></ng-template>
+<ng-template #Onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>

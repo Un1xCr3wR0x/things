@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="docs" [showDocumentBusinessKey]="true" [comments]="comment">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'ADJUSTMENT.ADD-MANAGE-ADJUSTMENT' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc
+          icon="user"
+          [canEdit]="canEdit"
+          heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+          (click)="navigateToMaintainTpaEdit()"
+        >
+        </frm-content-heading-dc>
+        <!--------------------------Contributor Details-------------------------------------->
+        <pmt-third-party-adjustment-contributor-dc
+          [adjustmentValues]="adjustments"
+          [lang]="lang"
+          (navigateOnLinkClick)="navigateOnLinkClick()"
+        >
+        </pmt-third-party-adjustment-contributor-dc>
+        <!--------------------------Adjustment Details-------------------------------------->
+        <pmt-third-party-adjustment-benefit-modified-dc
+          (navigateToAdjustmentDetail)="navigateToAdjustmentDetail($event)"
+          (navigateToBenefitViewPage)="navigateToBenefitViewPage($event)"
+          [thirdPartyAdjustmentList]="thirdPartyAdjustmentList"
+          (onPreviousThirdPartyAdjustmentsClicked)="viewMaintainAdjustment(adjustmentConstants.ADJUSTMENT_DETAIL)"
+        >
+        </pmt-third-party-adjustment-benefit-modified-dc>
+      </div>
+      <!----------- Validator action buttons ------------->
+
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReject]="canReject"
+          [canReturn]="canReturn"
+          (approveEvent)="showModals(approveModifyTpaTemplate)"
+          (rejectEvent)="showModals(rejectModifyTpaTemplate)"
+          (returnEvent)="showModals(returnModifyTpaTemplate)"
+          (cancelEvent)="showModals(cancelModifyTpaTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+  <!----Approve template---->
+  <ng-template #approveModifyTpaTemplate>
+    <frm-approve-template-dc
+      [heading]="validatorApproveHeading"
+      (cancelEvent)="hideModals()"
+      [parentForm]="modifyTpaValidatorForm"
+      (approveEvent)="modifyTpaApproval()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectModifyTpaTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      [heading]="validatorRejectHeading"
+      [parentForm]="modifyTpaValidatorForm"
+      (cancelEvent)="hideModals()"
+      warningMessage="ADJUSTMENT.TPA-VALIDATOR-ONE-REJECTION-NOTE"
+      (rejectEvent)="modifyTpaReject()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnModifyTpaTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      [heading]="validatorReturnHeading"
+      [parentForm]="modifyTpaValidatorForm"
+      (cancelEvent)="hideModals()"
+      warningMessage="ADJUSTMENT.RETURN-MSG"
+      (returnEvent)="modifyTpaReturn()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+
+  <!----Cancel template---->
+  <ng-template #cancelModifyTpaTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModals()" [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</div>

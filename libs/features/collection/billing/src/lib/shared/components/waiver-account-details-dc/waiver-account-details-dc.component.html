@@ -1,0 +1,176 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="heading-font">
+  {{ 'BILLING.ACCOUNT-DETAILS' | translate }}
+</div>
+<div class="info">
+  <div class="row top-style">
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="totalAmount"
+        [label]="'BILLING.TOTAL-DUE-AMOUNT'"
+        [currencyTo]="totalAmountDue"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="contributionDueAmount"
+        [label]="'BILLING.CONTRIBUTIONS-AMOUNT'"
+        [currencyTo]="contributionDue"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="penalityDueAmount"
+        [label]="'BILLING.LATE-FEES-AMOUNT'"
+        [currencyTo]="penaltyDue"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <ng-container *ngIf="wavierDetails?.dueAmount?.rejectedOh !== null && !isVic && !isPpa">
+      <div class="col-lg-3">
+        <gosi-currency-label-dc
+          id="rejectedohDueAmount"
+          [label]="'BILLING.REJECTED-OH-AMOUNT'"
+          [currencyTo]="wavierDetails?.dueAmount?.rejectedOh"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        ></gosi-currency-label-dc>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="isLateFeeViolation">
+      <div class="col-lg-3">
+        <gosi-currency-label-dc
+          id="violationAmountBeforeInitiative"
+          [label]="'BILLING.VIOLATION-AMOUNT-BEFORE-INITIATIVE'"
+          [currencyTo]="wavierDetails?.dueAmount?.violationAmountBeforeInitiative"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-3">
+        <gosi-currency-label-dc
+          id="violationAmountAfterInitiative"
+          [label]="'BILLING.VIOLATION-AMOUNT-AFTER-INITIATIVE'"
+          [currencyTo]="wavierDetails?.dueAmount?.violationAmountAfterInitiative"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-3">
+        <gosi-currency-label-dc
+          id="totalViolationAmount"
+          [label]="'BILLING.TOTAL-VIOLATION-AMOUNT'"
+          [currencyTo]="wavierDetails?.dueAmount?.violation"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+     <!-- <div class="col-lg-3">
+        <gosi-label-dc
+          id="mudadCompliance"
+          [label]="'BILLING.MUDAD-COMPLIANCE' | translate"
+          [control]="wavierDetails?.mudadCompliance"
+        >
+        </gosi-label-dc>
+      </div> 
+       <div class="col-lg-3">
+        <gosi-label-dc
+          id="qiwaCompliance"
+          [label]="'BILLING.QIWA-COMPLIANCE' | translate"
+          [control]="wavierDetails?.qiwaCompliance"
+        > 
+        </gosi-label-dc>
+      </div> -->
+    </ng-container>
+
+    <div class="col-lg-3" *ngIf="!isVic && !isLateFeeViolation && !isPpa">
+      <gosi-currency-label-dc
+        id="violationDueAmount"
+        [label]="'BILLING.VIOLATIONS-AMOUNT'"
+        [currencyTo]="wavierDetails?.dueAmount?.violation"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="!isVic && !isLateFeeViolation">
+      <gosi-currency-label-dc
+        id="otherDues"
+        [label]="'BILLING.OTHER-DUES'"
+        [currencyTo]="wavierDetails?.dueAmount?.generalRecoveryAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div
+      id="previousIndicator"
+      *ngIf="!isLateFeeViolation"
+      [ngClass]="wavierDetails?.previousInstallmentInd !== undefined ? 'col-lg-3 mainStyle' : 'col-auto'"
+    >
+      <div class="indicator">
+        {{ 'BILLING.PREVIOUS-LATE-FEES-WAVIER-INDICATOR' | translate }}
+      </div>
+      <div class="previous-Indicator">
+        <div *ngIf="lang === 'en'">{{ wavierDetails?.previouslyApprovedInd?.english }}</div>
+        <div *ngIf="lang === 'ar'">{{ wavierDetails?.previouslyApprovedInd?.arabic }}</div>
+        <ng-container *ngIf="!isPenaltyApproved">
+          <div id="prefixValue" [ngClass]="wavierDetails?.previousInstallmentInd ? 'show-details' : 'null'">
+            <a class="details-link" (click)="showDetails(previouslyApproved, 'md')"
+              >{{ 'BILLING.SHOW-DETAILS' | translate }}
+            </a>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div
+      *ngIf="wavierDetails?.previousInstallmentInd && !isLateFeeViolation"
+      [ngClass]="wavierDetails?.previousInstallmentInd !== undefined ? 'col-lg-3 mainStyle' : 'col-auto margin-style'"
+    >
+      <div class="indicator">
+        {{ 'BILLING.PREVIOUS-INSTALLMENTS-INDICATOR' | translate }}
+      </div>
+      <div class="previous-Indicator">
+        <div *ngIf="lang === 'en'">{{ wavierDetails?.previousInstallmentInd?.english }}</div>
+        <div *ngIf="lang === 'ar'">{{ wavierDetails?.previousInstallmentInd?.arabic }}</div>
+        <ng-container *ngIf="!isPreviousInstallment">
+          <div id="prefixValue" class="inst-show-details">
+            <a class="details-link" (click)="showDetails(previousInstallments, 'lg')">
+              {{ 'BILLING.SHOW-DETAILS' | translate }}</a
+            >
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modals -->
+<ng-template #previouslyApproved>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'BILLING.PREVIOUS-LATE-FEES-WAVIER-INDICATOR' | translate">
+      <blg-previously-approved-indicator-details-dc
+        modalContent
+        [wavierDetails]="wavierDetails"
+      ></blg-previously-approved-indicator-details-dc>
+      <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" (submit)="hideModal()">
+        {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+      >
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+<ng-template #previousInstallments>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'BILLING.PREVIOUS-INSTALLMENTS-INDICATOR' | translate">
+      <blg-previous-installment-details-dc
+        modalContent
+        [previousInstallment]="previousInstallment"
+      ></blg-previous-installment-details-dc>
+      <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" (submit)="hideModal()">
+        {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+      >
+    </gosi-modal-dc>
+  </div>
+</ng-template>

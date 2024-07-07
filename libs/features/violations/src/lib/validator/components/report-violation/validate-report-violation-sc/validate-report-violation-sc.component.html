@@ -1,0 +1,134 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [documents]="documentList" [comments]="transactionReferenceData" [canEdit]="false">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'VIOLATIONS.REPORT-VIOLATION' | translate"
+        [transactionRefNo]="transactionDetails?.referenceNo"
+      ></frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="transactionDetails?.establishmentInfo?.isReopenClosingInProgress"
+        [message]="'VIOLATIONS.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div id="contentArea">
+      <!-- establishment details -->
+      <vol-validator-establishment-details-dc
+        [transactionDetails]="transactionDetails"
+        (estProfile)="navigateToEstProfile($event)"
+        [isRaiseViolationFo]="isRaiseViolationFo"
+        [canEdit]="isValidator1 && !transactionDetails?.establishmentInfo?.isReopenClosingInProgress"
+        (onEdit)="onEditClick()"
+      ></vol-validator-establishment-details-dc>
+      <!--violaton details  -->
+      <vol-validator-violations-details-dc
+        [transactionDetails]="transactionDetails"
+        [assigneeIndex]=""
+        [assigneeId]=""
+        [isRaiseViolationFo]="isRaiseViolationFo"
+        [isViolatingProvision]="isViolatingProvision"
+      >
+      </vol-validator-violations-details-dc>
+      <!-- contributor details -->
+      <!-- <vol-contributor-details-dc
+         [isCancelEngagement]="true"
+         [transactionDetails]=""
+         [parentForm]=""
+         (navigate)="navigateToProfile($event)"
+         [assigneeIndex]=""
+
+         ></vol-contributor-details-dc> -->
+      <vol-inspection-details-dc
+        *ngIf="isViolatingProvision && transactionDetails?.discoveredAfterInspection?.english === isYes"
+        [transactionDetails]="transactionDetails"
+        [isViolatingProvision]="isViolatingProvision"
+        [isRaiseViolationFo]="isRaiseViolationFo"
+      ></vol-inspection-details-dc>
+      <vol-raise-contributor-details-dc
+        [transactionDetails]="transactionDetails"
+        [isCancelEngagement]="isCancelEngagement"
+        [isIncorrectWage]="isIncorrectWage"
+        [isAddNewEngagement]="isAddNewEngagement"
+        [isIncorrectReason]="isIncorrectReason"
+        [isWrongBenefits]="isWrongBenefits"
+        [isViolatingProvision]="isViolatingProvision"
+        [parentForm]=""
+        (navigate)="navigateToProfile($event)"
+        [assigneeIndex]=""
+      >
+      </vol-raise-contributor-details-dc>
+    </div>
+  </frm-main-content-dc>
+  <!-- action area -->
+  <div class="actionArea">
+    <frm-action-area-dc
+      (approveEvent)="showTemplate(approveTemplate)"
+      (rejectEvent)="showTemplate(rejectTemplate)"
+      (returnEvent)="showTemplate(returnTemplate)"
+      (cancelEvent)="showTemplate(cancelTemplate)"
+      [canApprove]="!billBatchInProgress"
+      [canReject]="true"
+      [canReturn]="isValidator2 && !transactionDetails?.establishmentInfo?.isReopenClosingInProgress"
+      [isReturn]="false"
+    ></frm-action-area-dc>
+  </div>
+
+  <!-- action area -->
+  <!-- <div class="actionArea">
+            <frm-action-area-dc
+            [canReject]="true"
+            [canApprove]="true"
+            [isReturn]="false"
+           
+            ></frm-action-area-dc>
+        </div> -->
+  <!-- Modals -->
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="validatorMemberForm"
+      (cancelEvent)="hideTemplate()"
+      (approveEvent)="saveWorkFlowDetails(0)"
+      [isCommentsMandatory]="isReturn"
+    ></frm-approve-template-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList$"
+      (rejectEvent)="saveWorkFlowDetails(1)"
+      (cancelEvent)="hideTemplate()"
+      [parentForm]="validatorMemberForm"
+      [warningMessage]="'VIOLATIONS.INFO-VALIDATOR-REJECTION' | translate: { transactionId: referenceNo }"
+    ></frm-reject-template-dc>
+  </ng-template>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      [message]="'VIOLATIONS.INFO-CANCEL'"
+      (onConfirm)="confirmCancel()"
+      (onCancel)="hideTemplate()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <!-- return reason list to be added -->
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      (returnEvent)="saveWorkFlowDetails(2)"
+      [parentForm]="validatorMemberForm"
+      (cancelEvent)="hideTemplate()"
+      [returnReasonList$]="returnReasonList$"
+      [warningMessage]="'VIOLATIONS.RETURN-TO-VALIDATOR-TRANSACTION-INFO'"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+  <!-- </div> -->
+</div>

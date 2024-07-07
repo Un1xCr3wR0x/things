@@ -1,0 +1,146 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div *ngIf="page == 'personal'" class="header-value">
+        {{ 'CUSTOMER-INFORMATION.MOD_PERSONAL_DTLS' | translate }}
+      </div>
+      <div *ngIf="page == 'national'" class="header-value">
+        {{ 'CUSTOMER-INFORMATION.MOD_PERSONAL_DTLS' | translate }}
+      </div>
+      <div *ngIf="addFamily" class="header-value">
+        {{ 'CUSTOMER-INFORMATION.ADD_FAMILY_ADDRESS' | translate }}
+      </div>
+      <div *ngIf="modifyFamily" class="header-value">
+        {{ 'CUSTOMER-INFORMATION.MODIFY_FAMILY_ADDRESS' | translate }}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <gosi-progress-wizard-dc
+        [wizardItems]="modifyWizardItems"
+        (clickWizard)="selectWizard($event)"
+        #progressWizardItems
+      >
+      </gosi-progress-wizard-dc>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 0" class="row">
+    <div class="col-md-12">
+      <ng-container *ngIf="page == 'personal' && personDtls">
+        <cim-modify-person-details-dc
+          [personDtls]="personDtls"
+          [isSaudiPerson]="isSaudiPerson"
+          [genderList]="genderList$"
+          [maritalStatusList]="maritalStatusList$"
+          [educationList]="educationList$"
+          [nationalityList]="nationalityList$"
+          [cityList]="cityList$"
+          [specializationList]="specializationList$"
+          (contributorSave)="saveAndNext($event)"
+          (showAlert)="showMandatoryAlert($event)"
+          (reset)="clearAlert()"
+        ></cim-modify-person-details-dc>
+      </ng-container>
+      <ng-container *ngIf="page == 'national' && personDtls">
+        <cim-modify-nationality-details-dc
+          [personDtls]="personDtls"
+          [nationalityList]="nationalityList$"
+          (contributorSave)="saveAndNext($event)"
+        ></cim-modify-nationality-details-dc>
+      </ng-container>
+      <ng-container *ngIf="page == 'addFamily' || (page == 'modifyFamily' && familyDetailsChecked)">
+        <cim-add-modify-family-address-dc
+          [familyDetails]="familyDetails"
+          [nationalityList]="nationalityList$"
+          [cityList]="cityList$"
+          (familyAddressSave)="saveAndNext($event)"
+          (showAlert)="showMandatoryAlert($event)"
+          (reset)="clearAlert()"
+        ></cim-add-modify-family-address-dc>
+      </ng-container>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 1" class="row">
+    <div class="col-md-12">
+      <!-- document details section -->
+      <!-- <cim-file-upload-dc
+        [engagementId]="documentUploadEngagementId"
+        [parentForm]="parentForm"
+        [documentList]="documents"
+        [isCommentRequired]="false"
+        [referenceNo]="referenceNo"
+        [documentTransactionId]="documentTransactionId"
+        [isSubmit]="!isContractRequired"
+        (refresh)="refreshDocumentItem($event)"
+        (cancel)="cancelAddedIndividual()"
+        (previous)="navigateToPreviousTab()"
+        (submit)="onSubmitDocuments()"
+        [isApiTriggered]="isApiTriggered"
+      ></cim-file-upload-dc> -->
+      <cim-documents-dc
+        [uuid]="uuid"
+        [documents]="documents"
+        [businessKey]="registrationNo"
+        [transactionId]="documentTransactionId"
+        [showHeading]="false"
+        [referenceNo]="referenceNo"
+        [noPadding]="true"
+        [noMarginBottom]="true"
+        [negativeMobileMargin]="false"
+        [parentForm]="parentForm"
+        (refreshDocument)="refreshDocument($event)"
+        (onUploadDocument)="setUuid($event)"
+        (onDeleteDocument)="deleteUuid($event)"
+      >
+      </cim-documents-dc>
+      <!-- <div class="row footer-buttons">
+        <div class="col-md-12">
+          <div class="float-right">
+            <gosi-button-dc type="primary" (click)="submit()">
+              {{ 'ESTABLISHMENT.SUBMIT' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="float-left">
+            <gosi-button-dc type="secondary" (click)="showCancelTemplate(confirmid)">
+              {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div> -->
+
+      <div class="row form-action">
+        <div class="col-lg-12">
+          <div class="btn-section float-right btn-margins">
+            <gosi-button-dc id="finalsave" type="primary" (submit)="submit()">
+              {{ 'ESTABLISHMENT.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-right btn-margins">
+            <gosi-button-dc id="previousback" type="secondary" (submit)="navigateToPreviousTab()">
+              {{ 'BILLING.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-left btn-margins">
+            <gosi-button-dc id="modifycancel" type="secondary" (submit)="showCancelTemplate(confirmid)">
+              {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal-->
+<ng-template #confirmid>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

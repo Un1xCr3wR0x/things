@@ -1,0 +1,602 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<frm-content-heading-dc icon="money-bill" [canEdit]="false" heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}">
+</frm-content-heading-dc>
+<ng-container *ngFor="let adj of thirdPartyAdjustmentList | keyvalue">
+  <accordion class="active-container">
+    <accordion-group class="accordion-group-class">
+      <div accordion-heading class="col-md-6 pl-3">
+        <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english !== actionTypeAdd" class="tpa-type">
+          {{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}
+        </div>
+        <div
+          *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english !== actionTypeAdd"
+          class="tpa-value view-link"
+          isLink="true"
+          (click)="navigateToAdjustmentDetailScreen(adj?.value?.modifiedAdjustment?.adjustmentId)"
+        >
+          {{ adj?.value?.modifiedAdjustment?.adjustmentId || '-' }}
+        </div>
+      </div>
+      <div class="header-wrapper-size ml-auto" accordion-heading>
+        <div class="row">
+          <span class="view-status">
+            <div
+              class="status"
+              [ngClass]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeModify ||
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeReactivate
+                  ? 'alert-info'
+                  : adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeStop
+                  ? 'alert-danger'
+                  : adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeHold
+                  ? 'alert-warning'
+                  : adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? 'alert-primary'
+                  : ''
+              "
+              style="width: 7rem"
+            >
+              <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeStop">
+                {{ 'ADJUSTMENT.STOPPED' | translate }}
+              </div>
+              <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeHold">
+                {{ 'ADJUSTMENT.HOLD' | translate }}
+              </div>
+              <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeModify">
+                {{ 'ADJUSTMENT.MODIFIED' | translate }}
+              </div>
+              <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeReactivate">
+                {{ 'ADJUSTMENT.REACTIVATED' | translate }}
+              </div>
+              <div *ngIf="adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd">
+                {{ 'ADJUSTMENT.NEW' | translate }}
+              </div>
+            </div>
+          </span>
+          <span class="arrow-up col-md-2">
+            <fa-icon icon="angle-up" size="2x"></fa-icon>
+          </span>
+          <span class="arrow-down ml-auto col-md-2" accordion-heading>
+            <fa-icon icon="angle-down" size="2x"></fa-icon>
+          </span>
+        </div>
+      </div>
+      <gosi-card-dc type="secondary">
+        <!------------------Benefit Details----------------------->
+        <div class="row">
+          <div class="col-lg-12 sub-heading">
+            {{ 'ADJUSTMENT.BENEFIT-DETAILS' | translate }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="benefitType"
+              label="{{ 'ADJUSTMENT.BENEFIT-TYPE' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.benefitType | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="benefitStatus"
+              label="{{ 'ADJUSTMENT.BENEFIT-STATUS' | translate }}"
+              [value]="adj?.value?.benefit?.benefitStatus | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-currency-label-dc
+              id="benAmount"
+              label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.benefitAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="benefitReqDate"
+              label="{{ 'ADJUSTMENT.BENEFIT-REQUEST-DATE' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy'"
+            >
+            </gosi-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.modifiedAdjustment?.benefitType.english === sanedPension" class="col-md-6">
+            <gosi-currency-label-dc
+              id="initialBenefitAmount"
+              label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT-FIRST-THREE-MONTHS' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.initialBenefitAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.modifiedAdjustment?.benefitType.english === sanedPension" class="col-md-6">
+            <gosi-currency-label-dc
+              id="subsequentBenefitAmount"
+              label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT-FOURTH-MONTHS-ONWARDS' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.subsequentBenefitAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-currency-label-dc
+              id="basicBenAmount"
+              label="{{ 'ADJUSTMENT.BASIC-BENEFIT-AMOUNT' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.basicBenefitAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.benefit?.helperComponentAmount" class="col-md-6">
+            <gosi-currency-label-dc
+              id="helperAmount"
+              label="{{ 'ADJUSTMENT.HELPER-ALLOWANCE' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.helperComponentAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.benefit?.dependentComponentAmount" class="col-md-6">
+            <gosi-currency-label-dc
+              id="dependentAmount"
+              label="{{ 'ADJUSTMENT.DEPENDENT-ALLOWANCE' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="adj?.value?.benefit?.dependentComponentAmount"
+            >
+            </gosi-currency-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col mb-3" id="subheading">
+            <div>
+              <a
+                class="view-link"
+                isLink="true"
+                (click)="navigateToBenefitView(adj?.value?.modifiedAdjustment?.benefitType)"
+                >{{ 'ADJUSTMENT.VIEW-BENEFIT-DETAILS' | translate }}</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!------------------Payee Details----------------------->
+        <div class="row">
+          <div class="col-lg-12 sub-heading pt-1">
+            {{ 'ADJUSTMENT.PARTY-DETAILS' | translate }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="payeeName"
+              label="{{ 'ADJUSTMENT.PARTY-NAME' | translate }}"
+              [value]="adj?.value?.payee?.payeeName?.english"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="payeeNameArb"
+              label="{{ 'ADJUSTMENT.PARTY-NAME-ARABIC' | translate }}"
+              [value]="adj?.value?.payee?.payeeName?.arabic"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="payeeCode"
+              label="{{ 'ADJUSTMENT.PARTY-CODE' | translate }}"
+              [value]="adj?.value?.payee?.payeeCode"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="payeeType"
+              label="{{ 'ADJUSTMENT.PARTY-TYPE' | translate }}"
+              [value]="adj?.value?.payee?.payeeType | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="paymentMethod"
+              label="{{ 'ADJUSTMENT.PAYMENT-METHOD' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.transferMode | bilingualText)
+                  : (adj?.value?.currentAdjustment?.transferMode | bilingualText)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.payee?.transferMode?.english === bankTransfer" class="col-md-6">
+            <gosi-label-dc
+              id="ibanNo"
+              label="{{ 'ADJUSTMENT.IBAN-NUMBER' | translate }}"
+              [value]="adj?.value?.payee?.ibanAccountNo"
+            >
+            </gosi-label-dc>
+          </div>
+          <div *ngIf="adj?.value?.payee?.transferMode?.english === bankTransfer" class="col-md-6">
+            <gosi-label-dc
+              id="bankName"
+              label="{{ 'ADJUSTMENT.BANK-NAME' | translate }}"
+              [value]="adj?.value?.bank | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+
+        <!------------------Adjustment Details----------------------->
+        <div class="row">
+          <div class="col-lg-12 sub-heading">
+            {{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="channel"
+              label="{{ 'ADJUSTMENT.CHANNEL' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.channel | bilingualText | titlecase)
+                  : (adj?.value?.currentAdjustment?.channel | bilingualText | titlecase)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="requestedBy"
+              label="{{ 'ADJUSTMENT.REQUESTED-BY' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.requestedBy | bilingualText)
+                  : (adj?.value?.currentAdjustment?.requestedBy | bilingualText)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            *ngIf="
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                ? adj?.value?.modifiedAdjustment?.caseNumber
+                : adj?.value?.currentAdjustment?.caseNumber
+            "
+            class="col-md-6"
+          >
+            <gosi-label-dc
+              id="adjustmentId"
+              label="{{ 'ADJUSTMENT.CASE-NUMBER' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.caseNumber
+                  : adj?.value?.currentAdjustment?.caseNumber
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            *ngIf="
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                ? adj?.value?.modifiedAdjustment?.caseDate
+                : adj?.value?.currentAdjustment?.caseDate
+            "
+            class="col-md-6"
+          >
+            <gosi-label-dc
+              id="caseDate"
+              label="{{ 'ADJUSTMENT.CASE-DATE' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.caseDate?.gregorian | date: 'dd/MM/yyyy')
+                  : (adj?.value?.currentAdjustment?.caseDate?.gregorian | date: 'dd/MM/yyyy')
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            *ngIf="
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                ? adj?.value?.modifiedAdjustment?.city
+                : adj?.value?.currentAdjustment?.city
+            "
+            class="col-md-6"
+          >
+            <gosi-label-dc
+              id="city"
+              label="{{ 'ADJUSTMENT.CITY' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.city | bilingualText)
+                  : (adj?.value?.currentAdjustment?.city | bilingualText)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="continousDeduction"
+              label="{{ 'ADJUSTMENT.CONTINOUS-DEDUCTION' | translate }}"
+              value="{{
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.continuousDeduction
+                    ? ('ADJUSTMENT.YES' | translate)
+                    : ('ADJUSTMENT.NO' | translate)
+                  : adj?.value?.currentAdjustment?.continuousDeduction
+                  ? ('ADJUSTMENT.YES' | translate)
+                  : ('ADJUSTMENT.NO' | translate)
+              }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6"
+            *ngIf="
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                ? adj?.value?.modifiedAdjustment?.adjustmentAmount
+                : adj?.value?.currentAdjustment?.adjustmentAmount
+            "
+          >
+            <gosi-currency-label-dc
+              id="adjustmentAmount"
+              label="{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.adjustmentAmount
+                  : adj?.value?.currentAdjustment?.adjustmentAmount
+              "
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-currency-label-dc
+              *ngIf="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.monthlyDeductionAmount
+                  : adj?.value?.currentAdjustment?.monthlyDeductionAmount
+              "
+              id="monthlyDeduction"
+              label="{{ 'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate }}"
+              [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+              [currencyTo]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.monthlyDeductionAmount
+                  : adj?.value?.currentAdjustment?.monthlyDeductionAmount
+              "
+            >
+            </gosi-currency-label-dc>
+            <gosi-label-dc
+              *ngIf="
+                !(adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.monthlyDeductionAmount
+                  : adj?.value?.currentAdjustment?.monthlyDeductionAmount)
+              "
+              id="monthlyDeduction"
+              label="{{ 'ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? adj?.value?.modifiedAdjustment?.adjustmentPercentage + '%'
+                  : adj?.value?.currentAdjustment?.adjustmentPercentage + '%'
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="adjustmentReason"
+              label="{{ 'ADJUSTMENT.ADJUSTMENT-REASONS' | translate }}"
+              [value]="
+                adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd
+                  ? (adj?.value?.modifiedAdjustment?.adjustmentReason | bilingualText)
+                  : (adj?.value?.currentAdjustment?.adjustmentReason | bilingualText)
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            *ngIf="
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeAdd ||
+              adj?.value?.modifiedAdjustment?.actionType?.english === actionTypeModify
+            "
+            class="col-md-6"
+          >
+            <gosi-label-dc
+              id="onHold"
+              label="{{ 'ADJUSTMENT.PUT-ADJUSTMENT' | translate }}"
+              value="{{
+                adj?.value?.modifiedAdjustment?.holdAdjustment
+                  ? ('ADJUSTMENT.YES' | translate)
+                  : ('ADJUSTMENT.NO' | translate)
+              }}"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+
+        <div
+          *ngIf="
+            adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification ||
+            adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification
+          "
+          class="row mt-1"
+        >
+          <div class="col">
+            <div class="row">
+              <div class="col" id="subheading">
+                <div class="sub-heading">{{ 'ADJUSTMENT.ADJUSTMENT-MODIFICATIONS' | translate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          *ngIf="
+            adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification ||
+            adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification
+          "
+          class="row mt-4"
+        >
+          <div class="col-md-12">
+            <table class="table table-bordered">
+              <tbody class="modify-adjustment-body">
+                <tr>
+                  <td class="space-width border-even"></td>
+                  <td class="before adjust-value border-even">
+                    {{ 'ADJUSTMENT.BEFORE-MODIFICATION' | translate }}
+                  </td>
+                  <td class="after adjust-value border-even">
+                    {{ 'ADJUSTMENT.AFTER-MODIFICATION' | translate }}
+                  </td>
+                </tr>
+                <tr
+                  *ngIf="
+                    adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification ||
+                    adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification
+                  "
+                >
+                  <td class="border-inner">
+                    <span class="tpa-value">{{
+                      adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification.monthlyDeductionAmount ||
+                      adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.monthlyDeductionAmount
+                        ? ('ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate)
+                        : ('ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE' | translate)
+                    }}</span>
+                    <div
+                      *ngIf="
+                        adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification
+                          .monthlyDeductionAmount ||
+                        adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.monthlyDeductionAmount
+                      "
+                    >
+                      <span class="d-block text-center custom-sar">({{ 'ADJUSTMENT.SAR' | translate }})</span>
+                    </div>
+                    <div
+                      *ngIf="
+                        !(
+                          adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification
+                            .monthlyDeductionAmount ||
+                          adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.monthlyDeductionAmount
+                        )
+                      "
+                    >
+                      <span class="d-block text-center custom-sar">( % )</span>
+                    </div>
+                  </td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{
+                      adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification.monthlyDeductionAmount
+                        ? (adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification
+                            .monthlyDeductionAmount
+                          | numToPositive
+                          | number: '1.2-2')
+                        : (adj?.value?.modifiedAdjustment?.modificationDetails?.beforeModification.adjustmentPercentage
+                          | numToPositive)
+                    }}
+                  </td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{
+                      adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.monthlyDeductionAmount
+                        ? (adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.monthlyDeductionAmount
+                          | numToPositive
+                          | number: '1.2-2')
+                        : (adj?.value?.modifiedAdjustment?.modificationDetails?.afterModification.adjustmentPercentage
+                          | numToPositive)
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!------------------Holding Details----------------------->
+        <div class="row">
+          <div class="col-lg-12 sub-heading pt-1">
+            <span *ngIf="adj?.value?.modifiedAdjustment?.holdAdjustmentReason">
+              {{ 'ADJUSTMENT.HOLDING-DETAILS' | translate }}</span
+            >
+            <span *ngIf="adj?.value?.modifiedAdjustment?.stopAdjustmentReason">
+              {{ 'ADJUSTMENT.STOPPING-DETAILS' | translate }}</span
+            >
+            <span *ngIf="adj?.value?.modifiedAdjustment?.reactivateAdjustmentReason">
+              {{ 'ADJUSTMENT.REACTIVATION-DETAILS' | translate }}</span
+            >
+          </div>
+          <div *ngIf="adj?.value?.modifiedAdjustment?.holdAdjustmentReason" class="col-md-6">
+            <gosi-label-dc
+              id="holding"
+              label="{{ 'ADJUSTMENT.REASON-FOR-HOLDING' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.holdAdjustmentReason | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+          <!------------------Stopping Details----------------------->
+
+          <div *ngIf="adj?.value?.modifiedAdjustment?.stopAdjustmentReason" class="col-md-6">
+            <gosi-label-dc
+              id="stopping"
+              label="{{ 'ADJUSTMENT.REASON-FOR-STOPPING' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.stopAdjustmentReason | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <!------------------Reactivate Details----------------------->
+
+          <div *ngIf="adj?.value?.modifiedAdjustment?.reactivateAdjustmentReason" class="col-md-6">
+            <gosi-label-dc
+              id="reactivation"
+              label="{{ 'ADJUSTMENT.REACTIVATION-DETAILS' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.reactivateAdjustmentReason | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6"
+            *ngIf="
+              otherReasons.includes(adj?.value?.modifiedAdjustment?.reactivateAdjustmentReason?.english) ||
+              otherReasons.includes(adj?.value?.modifiedAdjustment?.stopAdjustmentReason?.english) ||
+              otherReasons.includes(adj?.value?.modifiedAdjustment?.holdAdjustmentReason?.english)
+            "
+          >
+            <gosi-label-dc
+              id="otherReason"
+              label="{{ 'ADJUSTMENT.OTHER-REASON' | translate }}"
+              [value]="adj?.value?.modifiedAdjustment?.otherReason"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <div>{{ 'ADJUSTMENT.NOTES' | translate }}</div>
+            {{ adj?.value?.modifiedAdjustment?.notes | limitTo: limit }}
+            <div *ngIf="adj?.value?.modifiedAdjustment?.notes?.length > limitvalue">
+              <a (click)="readFullNote(adj?.value?.modifiedAdjustment?.notes)" class="read-more">
+                {{ showMoreText | translate }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </accordion-group>
+  </accordion>
+</ng-container>
+<div>
+  <a class="view-link" (click)="onPreviousThirdPartyAdjustmentsClicked.emit()">{{
+    'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate
+  }}</a>
+</div>

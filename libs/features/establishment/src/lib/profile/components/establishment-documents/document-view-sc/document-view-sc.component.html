@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content px-0 pb-0">
+  <!-- alert -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="document-action">
+    <div class="p-1" *ngIf="isRegistered && !isPpa">
+      <gosi-button-dc *gosiShow="docUploadAccess" type="primary" size="sm" (click)="uploadDocument()">
+        <fa-icon class="fa-icon" icon="plus"></fa-icon>
+        {{ 'ESTABLISHMENT.UPLOAD-DOC' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="search-filter">
+      <div class="p-1 search-box">
+        <gosi-search-dc
+          gosiCharacterMask
+          [searchInput]="true"
+          id="search-area"
+          (keyup)="onSearchEnable($event.target.value)"
+          (search)="searchDocument($event)"
+          [searchParam]="searchParam"
+          [allowOnlyNumbers]="false"
+          [placeholder]="'ESTABLISHMENT.DOC-SEARCH-PLACEHOLDER' | translate"
+          class="w-100"
+        >
+        </gosi-search-dc>
+      </div>
+      <div class="filter-btn">
+        <est-document-filter-dc
+          [addedByList]="addedByList"
+          [documentTypeList]="documentTypeList"
+          [hasFiltered]="hasFiltered"
+          [clearDocumentFilter]="clearDocumentFilter"
+          (documentFilters)="filterDocuments($event)"
+          (apply)="filterApplied($event)"
+        ></est-document-filter-dc>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex justify-content-start applied-filter" *ngIf="this.appliedFilter.length > 0">
+    <gosi-applied-filters-dc
+      [filters]="appliedFilter"
+      (clearFilter)="cancelledFilter($event)"
+    ></gosi-applied-filters-dc>
+  </div>
+  <div class="documents-section">
+    <ng-container *ngIf="documentList?.length > 0; else noDocuments">
+      <ng-container
+        *ngFor="
+          let document of documentList
+            | paginate
+              : {
+                  id: paginationId,
+                  itemsPerPage: itemsPerPage,
+                  currentPage: pageDetails.currentPage,
+                  totalItems: totalItems
+                }
+        "
+      >
+        <div class="document-item">
+          <gosi-document-detail-view-dc [document]="document">
+            <div class="row">
+              <span class="col-lg-6 col-md-6 col-sm-12">
+                <div class="doc-name">
+                  {{ document.name | bilingualText }}
+                </div>
+                <div>
+                  <span class="label-value">{{ 'ESTABLISHMENT.DOCUMENT-ID' | translate }}</span> :
+                  <span class="label-value">{{ document?.displayContentId }}</span>
+                </div>
+                <div class="label-value">
+                  {{
+                    'ESTABLISHMENT.ADDED-BY-DETAIL'
+                      | translate
+                        : {
+                            name: document?.docAddedByName,
+                            authoredDate: document?.uploadedDate?.gregorian | gosiDate
+                          }
+                  }}
+                </div>
+              </span>
+              <span class="col-lg-6 col-md-6 col-sm-12 doc-description">
+                <div class="label-color">
+                  <div>
+                    {{ 'ESTABLISHMENT.DESCRIPTION' | translate }}
+                  </div>
+                </div>
+                <div class="label-value" style="color: #333333">
+                  <div class="description-value">{{ document?.description }}</div>
+                </div>
+              </span>
+            </div>
+          </gosi-document-detail-view-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  <!-- Pagination starts -->
+  <div class="d-flex justify-content-center mt-3">
+    <div class="pagination">
+      <gosi-pagination-dc
+        #paginationComponent
+        *ngIf="totalItems > itemsPerPage"
+        [totalSize]="totalItems"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        [paginationId]="paginationId"
+        (pageChange)="paginateDocumentList($event)"
+      ></gosi-pagination-dc>
+      <!-- [itemType]="'VIOLATIONS.ESTABLISHMENT-VIOLATIONS' | translate" -->
+    </div>
+  </div>
+</div>
+<ng-template #noDocuments>
+  <div class="col text-center no-document">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+</ng-template>

@@ -1,0 +1,107 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.REOPEN-ESTABLISHMENT' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishment"
+          [estHeading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS'"
+          [isReopenEst]="true"
+        ></est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="redo"
+          heading="ESTABLISHMENT.REOPEN-DETAILS"
+          [canEdit]="!canReturn"
+          (onEdit)="navigateToEditReopeningDetails()"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              label="ESTABLISHMENT.REASON-FOR-REOPENING"
+              [control]="establishmentToValidate?.reopenEstablishment?.reopenReason"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              label="ESTABLISHMENT.REOPENING-PERIOD"
+              [control]="establishmentToValidate?.reopenEstablishment?.periodOfReopening"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+      <div class="content-item">
+        <est-re-open-establishment-dc
+          [establishmentToValidate]="establishmentToValidate"
+          [establishment]="establishment"
+        ></est-re-open-establishment-dc>
+      </div>
+    </div>
+    <div id="actionArea" class="close-button">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        (approveEvent)="approveTransaction(reopenDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(reopenDetailsValidatorForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(reopenDetailsValidatorForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="reopenDetailsValidatorForm"
+    heading="ESTABLISHMENT.REJECT.RE-OPEN-EST"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(reopenDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="reopenDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(reopenDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="reopenDetailsValidatorForm"
+    heading="ESTABLISHMENT.RETURN.RE-OPEN-EST"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(reopenDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>

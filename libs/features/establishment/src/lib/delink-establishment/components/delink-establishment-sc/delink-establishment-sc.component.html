@@ -1,0 +1,291 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content delink-content">
+  <div class="row no-gutters">
+    <est-heading-dc [shouldPrompt]="true" [canNavigate]="false" (backEvent)="navigateBack()" [backLink]="routeToView">
+      <ng-container *ngIf="isDelinkToNewGroup; else headingOther">
+        {{ 'ESTABLISHMENT.DELINK-NEW-GROUP' | translate }}
+      </ng-container>
+      <ng-template #headingOther>
+        {{ 'ESTABLISHMENT.DELINK-OTHER-GROUP' | translate }}
+      </ng-template>
+    </est-heading-dc>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <ng-container>
+    <gosi-alert-dc
+      *ngIf="showInfo && currentTab === 0"
+      class="info"
+      [alert]="infoDetails"
+      [dismissible]="false"
+      type="info"
+    >
+    </gosi-alert-dc>
+    <!-- edit view  -->
+    <div class="header" *ngIf="isValidator">
+      <!-- Comment Section -->
+      <div class="col-12">
+        <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      </div>
+    </div>
+    <gosi-progress-wizard-dc
+      *ngIf="delinkEstTabWizards"
+      (clickWizard)="selectedWizard($event)"
+      [wizardItems]="delinkEstTabWizards"
+    >
+    </gosi-progress-wizard-dc>
+    <tabset class="wrapper-tabset">
+      <!-- select branches tab -->
+      <tab [active]="currentTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary">
+              <div class="row">
+                <div class="col mb-3 mb-md-0 pt-2">
+                  <h5>{{ 'ESTABLISHMENT.SEC-DELINK' | translate }}{{ ' (' + totalBranchCount + ') ' }}</h5>
+                </div>
+                <div class="col-md-4 ml-auto">
+                  <gosi-search-dc
+                    [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+                    (search)="wizardOneSelectedPage(1, $event)"
+                    [isLoading]="isLoading"
+                  >
+                  </gosi-search-dc>
+                </div>
+              </div>
+              <est-branch-list-dc
+                class="pagination-wizard-one pagination"
+                [itemsPerPage]="pageSize"
+                [establishments]="branches"
+                [pageDetails]="wizardOnePageDetails"
+                [currentPage]="wizardOnePageDetails.currentPage"
+                [totalBranches]="totalSearchBranchCount"
+                (selectedEstablishment)="onSelectEstablishment($event)"
+                (pageIndexEvent)="wizardOneSelectedPage($event, wizardOneSearchParam)"
+                [selectedBranchesRegNo]="selectedBranchesRegNo"
+                [selectedBranches]="selectedBranches"
+                paginationId="pagination-wizard-one"
+                [selectedBranchesCount]="delinkedBranchesCount"
+                [isLoading]="isLoading"
+                [isResultEmpty]="isResultEmpty"
+                [searchParam]="wizardOneSearchParam"
+              >
+              </est-branch-list-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+        <est-footer-buttons-dc
+          [showPrevious]="false"
+          [primaryLabel]="'ESTABLISHMENT.SAVE-AND-NEXT' | translate"
+          (cancel)="showModal(cancelTemplate)"
+          (submit)="saveSelectedBranches()"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc *ngIf="isDelinkToNewGroup; else linkGroup" type="secondary">
+              <div class="row">
+                <div class="col mb-3 mb-md-0 pt-2">
+                  <h5>{{ 'ESTABLISHMENT.NEW-MAIN-EST-DETAILS' | translate }}</h5>
+                </div>
+                <div class="col-md-4 ml-auto" *ngIf="isDelinkToNewGroup">
+                  <gosi-search-dc
+                    [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+                    (search)="wizardTwoSelectedPage(1, false, $event)"
+                    [isLoading]="isLoading"
+                  ></gosi-search-dc>
+                </div>
+              </div>
+              <est-branch-list-dc
+                class="pagination-wizard-two pagination"
+                [itemsPerPage]="pageSize"
+                [establishments]="delinkedBranches"
+                [pageDetails]="wizardTwoPageDetails"
+                [currentPage]="wizardTwoPageDetails.currentPage"
+                [totalBranches]="delinkedBranchesCount"
+                (selectedEstablishment)="onSelectMainEstablishment($event)"
+                (pageIndexEvent)="wizardTwoSelectedPage($event, false, wizardTwoSearchParam)"
+                [selectedBranchesRegNo]="selectedBranchesRegNo"
+                paginationId="pagination-wizard-two"
+                [isLoading]="isLoading"
+                [isResultEmpty]="isResultEmpty"
+                [searchParam]="wizardTwoSearchParam"
+              >
+              </est-branch-list-dc>
+            </gosi-card-dc>
+            <ng-template #linkGroup>
+              <gosi-card-dc type="secondary">
+                <est-link-establishment-dc
+                  class="link-establishment"
+                  [establishments]="searchNewMainResult"
+                  [itemsPerPage]="pageSize"
+                  (search)="searchEstablishment($event)"
+                  (reset)="resetSearch()"
+                  [pageDetails]="wizardTwoPageDetails"
+                  [currentPage]="wizardTwoPageDetails.currentPage"
+                  [totalBranches]="newGroupBranchesCount"
+                  (pageIndexEvent)="wizardTwoSelectedPage($event, true, '')"
+                  [establishment]="establishment"
+                  [selectedBranchesRegNo]="selectedBranchesRegNo"
+                  [newMainEstablishmentRegNo]="newMainEstablishmentRegNo"
+                  paginationId="pagination-wizard-two"
+                >
+                </est-link-establishment-dc>
+              </gosi-card-dc>
+            </ng-template>
+          </div>
+        </div>
+        <est-footer-buttons-dc
+          *ngIf="!isPublicLink"
+          (cancel)="showModal(cancelTemplate)"
+          [primaryLabel]="'ESTABLISHMENT.SAVE-AND-NEXT' | translate"
+          (previous)="selectedWizard(0)"
+          (submit)="saveGroup(false)"
+        ></est-footer-buttons-dc>
+        <est-footer-buttons-dc
+          *ngIf="isPublicLink"
+          (cancel)="showModal(cancelTemplate)"
+          [primaryLabel]="'ESTABLISHMENT.SUBMIT' | translate"
+          (previous)="selectedWizard(0)"
+          (submit)="saveGroup(true)"
+        ></est-footer-buttons-dc>
+      </tab>
+      <!-- admin tab -->
+      <tab [active]="currentTab === 2 && isDelinkToNewGroup" class="admin">
+        <gosi-card-dc
+          type="secondary"
+          *ngIf="deLinkForm && parentGroupAdmin"
+          [heading]="'ESTABLISHMENT.SUPER-ADMIN-DETAILS' | translate"
+        >
+          <gosi-input-radio-dc
+            id="chooseAdmin"
+            name="chooseAdmin"
+            [ignoreLabel]="true"
+            (change)="changeAdminSelection()"
+            [control]="deLinkForm.get('chooseAdmin')"
+            [list]="chooseAdminLovList"
+          >
+          </gosi-input-radio-dc>
+          <ng-container *ngIf="deLinkForm?.get('chooseAdmin')?.get('english').value === currentAdminSelection">
+            <est-admin-card-dc [admin]="parentGroupAdmin" [adminIdentifier]="parentGroupAdminIdentifier">
+            </est-admin-card-dc>
+          </ng-container>
+        </gosi-card-dc>
+        <ng-container *ngIf="deLinkForm?.get('chooseAdmin')?.get('english').value === createAdminSelection">
+          <gosi-card-dc type="secondary" [heading]="'ESTABLISHMENT.NEW-SUPER-ADMIN-DETAILS' | translate">
+            <div class="row">
+              <div class="col-md-12" id="addAdminSearch">
+                <est-search-person-dc
+                  [person]="person"
+                  [viewOnly]="deLinkForm.get('isVerified').value === true"
+                  [parentForm]="deLinkForm"
+                  [nationalityList$]="nationalityList$"
+                >
+                </est-search-person-dc>
+              </div>
+            </div>
+            <div class="row pb-4" *ngIf="deLinkForm.get('isSaved').value === false">
+              <div class="col-md-2 ml-2 mr-auto">
+                <gosi-button-dc
+                  *ngIf="deLinkForm.get('isVerified').value === false; else reset"
+                  id="verify"
+                  (submit)="verifyAdmin()"
+                >
+                  {{ 'ESTABLISHMENT.VERIFY' | translate }}
+                </gosi-button-dc>
+                <ng-template #reset>
+                  <gosi-button-dc id="reset" (submit)="resetEventDetails(deLinkForm)">
+                    {{ 'ESTABLISHMENT.RESET' | translate }}
+                  </gosi-button-dc>
+                </ng-template>
+              </div>
+            </div>
+          </gosi-card-dc>
+          <!-- Person Details  -->
+          <ng-container *ngIf="deLinkForm.get('isVerified').value === true">
+            <gosi-card-dc type="secondary" id="addAdminDetails">
+              <est-person-details-dc
+                [parentForm]="deLinkForm"
+                [person]="personFormDetail"
+                [genderList]="genderList$ | async"
+                [readOnly]="deLinkForm.get('isSaved').value || deLinkForm.get('personExists').value"
+                [isSaved]="deLinkForm.get('isSaved').value"
+                [hasDateFields]="false"
+              >
+              </est-person-details-dc>
+            </gosi-card-dc>
+            <gosi-card-dc type="secondary" [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate">
+              <frm-contact-dc
+                [parentForm]="deLinkForm"
+                [emailMandatory]="true"
+                [isHeadingRequired]="false"
+                [contactDetails]="person.contactDetail"
+                [defaultOnly]="defaultToSaudi || deLinkForm.get('isSaved').value === true"
+              >
+              </frm-contact-dc>
+            </gosi-card-dc>
+          </ng-container>
+        </ng-container>
+        <est-footer-buttons-dc
+          *ngIf="isAppPrivate"
+          [primaryLabel]="'ESTABLISHMENT.SAVE-AND-NEXT' | translate"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(1)"
+          (submit)="saveGroup(false, true)"
+        >
+        </est-footer-buttons-dc>
+        <est-footer-buttons-dc
+          *ngIf="!isAppPrivate"
+          [primaryLabel]="'ESTABLISHMENT.SUBMIT' | translate"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(1)"
+          (submit)="saveGroup(true, true)"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+      <!-- documents tab -->
+      <tab [active]="currentTab === 3 || (currentTab === 2 && !isDelinkToNewGroup)">
+        <est-documents-dc
+          [documents]="documents"
+          [businessKey]="registrationNo"
+          [transactionId]="documentTransactionId"
+          (refreshDocument)="refreshDocumentContent($event, registrationNo, documentTransactionType)"
+          [referenceNo]="referenceNo"
+        >
+        </est-documents-dc>
+        <!-- Comments -->
+        <gosi-card-dc type="secondary" *ngIf="deLinkForm" [paddingBottom]="true">
+          <gosi-input-text-area-dc
+            [label]="'ESTABLISHMENT.COMMENTS' | translate"
+            id="comments"
+            name="comments"
+            [maxLength]="commentsMaxLength"
+            [control]="deLinkForm.get('comments')"
+          >
+          </gosi-input-text-area-dc>
+        </gosi-card-dc>
+        <est-footer-buttons-dc
+          [primaryLabel]="'ESTABLISHMENT.SUBMIT' | translate"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(currentTab - 1)"
+          [primaryBtnDisabled]="disableSubmitBtn"
+          (submit)="saveGroup(true)"
+        ></est-footer-buttons-dc>
+      </tab>
+    </tabset>
+  </ng-container>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

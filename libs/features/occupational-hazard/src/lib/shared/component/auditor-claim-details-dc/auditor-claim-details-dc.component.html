@@ -1,0 +1,307 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="claims-details">
+  <div class="row">
+    <div class="col-lg-12 form-action">
+      <div class="previous-claims">
+        <div class="btn-section float-left pl-2 pr-2 claim-heading">
+          {{ 'OCCUPATIONAL-HAZARD.AUDITOR.CLAIM-DETAILS' | translate }}
+        </div>
+        <div class="btn-section float-right pl-2 pr-2">
+          <gosi-button-dc
+            id="previousClaim"
+            type="secondary"
+            size="md"
+            [outlineOnly]="true"
+            (click)="showModal(previousClaimsTemplate)"
+          >
+            {{ 'OCCUPATIONAL-HAZARD.AUDITOR.PREVIOUS-CLAIMS' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" lessPadding="true">
+        <div class="row">
+          <div class="col-lg-4">
+            <gosi-label-dc
+              [id]="'claimId'"
+              [value]="claimSummaryDetails.claimNo"
+              [label]="'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.CLAIM-ID' | translate"
+            ></gosi-label-dc>
+          </div>
+          <div class="form-group form-label fc-margin col-lg-6">
+            <ng-container>
+              <label
+                class="label-color"
+                popover="{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-PERIOD' | translate }}"
+                placement="top"
+                triggers="mouseenter:mouseleave"
+              >
+                {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-PERIOD' | translate }}
+              </label>
+              <div class="label-value">
+                {{ claimSummaryDetails?.startDate?.gregorian | gosiDate }}
+                <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment"></fa-icon>
+                <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+                {{ claimSummaryDetails?.endDate?.gregorian | gosiDate }}
+                <span class="treatment">
+                  ({{
+                    getDateDifference(
+                      claimSummaryDetails?.startDate?.gregorian,
+                      claimSummaryDetails?.endDate?.gregorian
+                    )
+                  }}
+                  {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span
+                >
+              </div>
+            </ng-container>
+            <ng-template #notAvailable>
+              {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+            </ng-template>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4">
+            <gosi-label-dc
+              [id]="'contributorName'"
+              [value]="lang === 'en' ? personNameEnglish : personNameArabic"
+              [label]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME' | translate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc
+              [id]="'contributorNIN'"
+              [value]="primaryIdentity.id ? primaryIdentity.id : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)"
+              [label]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-ID' | translate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <ng-container *ngIf="claimSummaryDetails.ohType === 0">
+              <gosi-label-dc
+                id="injuryID"
+                [value]="claimSummaryDetails.ohId"
+                label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID"
+                isLink="true"
+                noMargin="true"
+                (select)="navigateTo(claimSummaryDetails)"
+              >
+              </gosi-label-dc>
+            </ng-container>
+            <ng-container *ngIf="claimSummaryDetails.ohType === 1">
+              <gosi-label-dc
+                id="injuryID"
+                [value]="claimSummaryDetails.ohId"
+                label="OCCUPATIONAL-HAZARD.DISEASE.DISEASE-ID"
+                isLink="true"
+                noMargin="true"
+                (select)="navigateTo(claimSummaryDetails)"
+              >
+              </gosi-label-dc>
+            </ng-container>
+            <ng-container *ngIf="claimSummaryDetails.ohType === 2">
+              <gosi-label-dc
+                id="injuryID"
+                [value]="claimSummaryDetails.ohId"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-ID"
+                isLink="true"
+                noMargin="true"
+                (select)="navigateTo(claimSummaryDetails)"
+              >
+              </gosi-label-dc>
+            </ng-container>
+          </div>
+        </div>
+      </gosi-card-dc>
+      <gosi-card-dc
+        [heading]="'OCCUPATIONAL-HAZARD.AUDITOR.CLAIM-SUMMARY' | translate"
+        type="secondary"
+        lessPadding="true"
+      >
+        <div class="table-responsive" id="claimsSummaryTable">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th id="type">
+                  {{ 'OCCUPATIONAL-HAZARD.TYPE' | translate }}
+                </th>
+                <th id="claimed">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMED' | translate }}
+                </th>
+                <th id="discount">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DISCOUNT' | translate }}
+                </th>
+                <th id="deduction">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.DEDUCTION' | translate }}
+                </th>
+                <th id="vat">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.VAT' | translate }}
+                </th>
+                <th id="paid">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.PAID' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-bottom" *ngIf="claimSummaryDetails?.medicine?.claimAmount">
+                <td>{{ 'OCCUPATIONAL-HAZARD.AUDITOR.MEDICATIONS' | translate }}</td>
+                <td>
+                  {{ claimSummaryDetails?.medicine?.claimAmount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.medicine?.discount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{
+                    claimSummaryDetails?.medicine?.policyDeduction + claimSummaryDetails?.medicine?.medicalDeduction
+                      | number
+                  }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.medicine?.vat | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.medicine?.amount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+              </tr>
+              <tr class="border-bottom" *ngIf="claimSummaryDetails?.service?.claimAmount">
+                <td>{{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICES' | translate }}</td>
+                <td>
+                  {{ claimSummaryDetails?.service?.claimAmount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.service?.discount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{
+                    claimSummaryDetails?.service?.policyDeduction + claimSummaryDetails?.service?.medicalDeduction
+                      | number
+                  }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.service?.vat | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td>
+                  {{ claimSummaryDetails?.service?.amount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+              </tr>
+              <tr>
+                <td class="border-top-total">{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}</td>
+                <td class="border-top-total">
+                  {{ claimSummaryDetails?.medicine?.claimAmount + claimSummaryDetails?.service?.claimAmount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td class="border-top-total">
+                  {{ claimSummaryDetails?.medicine?.discount + claimSummaryDetails?.service?.discount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td class="border-top-total">
+                  {{
+                    claimSummaryDetails?.medicine?.policyDeduction +
+                      claimSummaryDetails?.medicine?.medicalDeduction +
+                      claimSummaryDetails?.service?.policyDeduction +
+                      claimSummaryDetails?.service?.medicalDeduction | number
+                  }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td class="border-top-total">
+                  {{ claimSummaryDetails?.medicine?.vat + claimSummaryDetails?.service?.vat | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+                <td class="border-top">
+                  {{ claimSummaryDetails?.medicine?.amount + claimSummaryDetails?.service?.amount | number }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+</div>
+
+<!--- Previous Claims Template-->
+<ng-template #previousClaimsTemplate>
+  <ng-container *ngIf="previousClaims">
+    <div class="claims-details ml-3 mr-3 justify-content-center">
+      <div class="row main-heading ml-2 mr-2">
+        {{ 'OCCUPATIONAL-HAZARD.AUDITOR.PREVIOUS-CLAIMS-LIST' | translate }}
+      </div>
+      <ng-container *ngIf="!previousClaims?.message?.english; else showAlert">
+        <div class="table-responsive" id="previousClaimsTable">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th id="claim">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.CLAIM' | translate }}
+                </th>
+                <th id="batchMonth">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.BATCH-MONTH' | translate }}
+                </th>
+                <th id="amount">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.AMOUNT' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let claims of previousClaims?.previousClaims; let i = index">
+                <tr class="border-bottom">
+                  <td>
+                    <ng-container *ngIf="!hideAction; else showClaim">
+                      <a [routerLink]="[claims.routerLink]" target="_blank" class="select-link"
+                        >{{ 'OCCUPATIONAL-HAZARD.AUDITOR.CLAIM' | translate }} {{ claims.claimId }}</a
+                      >
+                    </ng-container>
+                    <ng-template #showClaim>
+                      {{ 'OCCUPATIONAL-HAZARD.AUDITOR.CLAIM' | translate }} {{ claims.claimId }}
+                    </ng-template>
+                  </td>
+                  <td>{{ getMonth(i) | translate: { year: getYear(i) } }}</td>
+                  <td>{{ claims.amount }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</td>
+                </tr>
+              </ng-container>
+              <tr>
+                <td>{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}</td>
+                <td></td>
+                <td>{{ totalAmount }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      <ng-template #showAlert>
+        <div class="col-lg-12">
+          <gosi-alert-dc
+            [bilingualMessage]="previousClaims?.message"
+            type="info"
+            [dismissible]="false"
+            class="infoMessage"
+            noPadding="true"
+          >
+          </gosi-alert-dc>
+        </div>
+      </ng-template>
+    </div>
+  </ng-container>
+  <div class="row close-button justify-content-center mb-4">
+    <gosi-button-dc type="secondary" size="md" (click)="hideModal()" class="button">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+    </gosi-button-dc>
+  </div>
+</ng-template>

@@ -1,0 +1,227 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container *ngIf="activeHeirDetails">
+  <div class="content">
+    <div class="row no-gutters">
+      <div class="col-auto pr-3 border-right align-self-center back-button">
+        <a (click)="routeBack()">
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'ar'"
+            [icon]="['far', 'arrow-alt-circle-right']"
+            size="2x"
+          ></fa-icon>
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'en'"
+            [icon]="['far', 'arrow-alt-circle-left']"
+            size="2x"
+          ></fa-icon>
+        </a>
+      </div>
+      <div class="col-auto mr-auto header">
+        {{ 'BENEFITS.HEIR_DETAILS' | translate }}
+      </div>
+      <div class="col-auto mr-0" *ngIf="!isIndividualApp">
+        <ng-container *gosiShow="isAppPrivate ? directPaymentHistory : accessForActionPublic">
+        <gosi-button-dc
+          [disabled]="false"
+          type="primary"
+          id="actionButton"
+          [popover]="optionsHeirModal"
+          placement="bottom right"
+          size="sm"
+        >
+          {{ 'BENEFITS.ACTIONS' | translate }}
+          <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+        </gosi-button-dc>
+      </ng-container>
+      </div>
+    </div>
+    <!-- heir details -->
+    <div class="row pt-4">
+      <div class="col-md-12">
+        <gosi-card-dc
+          type="secondary"
+          class="custom-card"
+          headingSize="md"
+          heading="{{ 'BENEFITS.HEIR_DETAILS' | translate }}"
+        >
+          <div class="row">
+            <div class="col-md-4">
+              <gosi-label-dc
+                id="heirName"
+                [value]="activeHeirData?.heirName | bilingualText"
+                label="{{ 'BENEFITS.HEIR_NAME_VALIDATOR' | translate }}"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-md-4">
+              <gosi-label-dc
+                id="nationalId"
+                [value]="activeHeirData?.heirIdentity?.id"
+                [isLink]="true"
+                label="{{ getIdentityLabel(activeHeirData?.heirIdentity) | translate }}"
+                [noMargin]="true"
+                (click)="viewHeirDetails(activeHeirData?.heirIdentity?.id)"
+              ></gosi-label-dc>
+            </div>
+          </div>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <!-- benefit details -->
+    <div class="row">
+      <div class="col-md-12">
+        <!-- [acitveBenefit]="activeBenefitObj" -->
+        <bnt-benefit-detail-dc
+          [benefitDetails]="activeBenefitObj"
+          [acitveBenefit]="activeBenefitObj"
+          [benefeciaryStatus]="benefeciaryStatus"
+          [isHeir]="true"
+          [benefitType]="benefitType"
+          [lang]="lang"
+          (showModalEvent)="showModal($event)"
+          (close)="hideModal()"
+        ></bnt-benefit-detail-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <!-- Adjustments -->
+        <bnt-adjustment-details-dc
+          [adjustmentsDetails]="adjustmentDetailsData"
+          [adjustmentEligibility]="adjustmentEligibility"
+          (navigateToAdd)="navigateToAddModify()"
+          (navigateToAddModify)="navigateToAddModify()"
+          (navigateToAdjustmentById)="navigateToAdjustment($event)"
+          (showEligibilityModal)="showEligibilityPopup()"
+        >
+        </bnt-adjustment-details-dc>
+      </div>
+    </div>
+    <tabset [justified]="false" type="tabs" class="pension-listing-tabset">
+      <!-- payment tab section -->
+      <tab
+        heading="{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}"
+        id="paymentTab"
+        (selectTab)="onPaymentHistoryTabSelected()"
+      >
+        <div class="row no-gutters my-4">
+          <div class="col-md-12">
+            <ng-container
+              *ngIf="benefitPaymentDetails && benefitPaymentDetails.message && benefitPaymentDetails.messageType"
+            >
+              <ng-container *ngIf="benefitPaymentDetails.messageType === 'info'">
+                <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="info" [dismissible]="false">
+                </gosi-alert-dc>
+              </ng-container>
+              <ng-container *ngIf="benefitPaymentDetails.messageType === 'success'">
+                <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="success" [dismissible]="false">
+                </gosi-alert-dc>
+              </ng-container>
+              <ng-container *ngIf="benefitPaymentDetails.messageType === 'warning'">
+                <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="warning" [dismissible]="false">
+                </gosi-alert-dc>
+              </ng-container>
+              <ng-container *ngIf="benefitPaymentDetails.messageType === 'error'">
+                <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="danger" [dismissible]="false">
+                </gosi-alert-dc>
+              </ng-container>
+            </ng-container>
+            <bnt-payment-tab-details-dc
+              [showPaymentEditOptions]="true"
+              [benefitPaymentDetails]="benefitPaymentDetails"
+              [benefitCalculation]="benefitCalculation"
+              [isAppPrivate]="isAppPrivate"
+              [isIndividualApp]="isIndividualApp"
+              [benefitType]="benefitType"
+              [paymentEventsList]="paymentEventsList$ | async"
+              [paymentStatusList]="paymentStatusList$ | async"
+              [simisPaymentHistory$]="simisPaymentHistory$"
+              [mainframePaymentHistory$]="mainframePaymentHistory$"
+              [simisSanedPaymentHistory$]="simisSanedPaymentHistory$"
+              [lang]="lang"
+              (edit)="navigateToModifyCommitment()"
+              (add)="showCommitment(addCommitment)"
+              (view)="showCommitment(viewCommitment)"
+              (remove)="removeCommitment()"
+              (paymentFilterEvent)="filterPaymentHistory($event)"
+              (navigateToAdjustmentDetails)="navigateToAdjustmentDetails()"
+              (showAdjustmentPopUp)="viewAdjustmentModal($event)"
+            ></bnt-payment-tab-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab
+        *ngIf="isAppPrivate"
+        heading="{{ 'BENEFITS.TRANSACTION-HISTORY' | translate }}"
+        id="transactionHistoryTab"
+        (selectTab)="onTransactionTabSelected()"
+      >
+        <bnt-transaction-history-dc
+          [transactionStatusList]="transactionStatusList$ | async"
+          [transactions]="transactions"
+          [ifTransactionHistory]="ifTransactionHistory"
+          (onSearchTransactionId)="onSearchTransactionId($event)"
+          (transactionFilterEvent)="transactionHistoryFilter($event)"
+          (goToTransaction)="goToTransaction($event)"
+        ></bnt-transaction-history-dc>
+      </tab>
+      <tab
+        *ngIf="isAppPrivate"
+        heading="{{ 'BENEFITS.DOCUMENTS_REGISTER' | translate }}"
+        id="documentsTab"
+        class="pt-4"
+        (selectTab)="onDocumentTabSelected()"
+      >
+        <bnt-documents-tab-dc
+          [scannedDocuments]="scannedDocuments"
+          (addDocumentEvent)="navigateToAddDocuments()"
+        ></bnt-documents-tab-dc>
+      </tab>
+    </tabset>
+  </div>
+</ng-container>
+<ng-template #addCommitment>
+  <bnt-add-bank-template-dc
+    (confirm)="confirmAddCommitemnt()"
+    (cancel)="hideModal()"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+  >
+  </bnt-add-bank-template-dc>
+</ng-template>
+<ng-template #viewCommitment>
+  <bnt-view-bank-template-dc
+    [documentList]="documentList"
+    (open)="openImage($event)"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+    [lang]="lang"
+    (close)="hideModal()"
+  ></bnt-view-bank-template-dc>
+</ng-template>
+<ng-template #optionsHeirModal>
+  <div>
+    <button
+      *gosiShow="accessForActionPrivate"
+      type="button"
+      id="payOnline"
+      (click)="navigateToPayOnline()"
+      class="d-flex btn text-left option-button"
+      [disabled]="adjustmentDetails?.netAmount <= 0 || activeHeirData?.status?.english === 'On Hold'"
+    >
+      {{ 'BENEFITS.DIRECT-PAYMENT' | translate }}
+    </button>
+  </div>
+  <div>
+    <button
+      type="button"
+      id="paymentHistory"
+      (click)="directPaymentNavigate()"
+      class="d-flex btn text-left option-button"
+      [disabled]="activeHeirData?.status?.english === 'On Hold'"
+    >
+      {{ 'BENEFITS.DIRECT-PAYMENT-HISTORY' | translate }}
+    </button>
+  </div>
+</ng-template>

@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="card-container">
+  <gosi-card-dc type="secondary" [heading]="'VIOLATIONS.VIOLATIONS-DETAILS' | translate" headingSize="md"
+                [noPadding]="false">
+    <form [formGroup]="formsContributor">
+      <ng-container formArrayName="contributors">
+        <accordion *ngFor="let form of contributorFormArray.controls; let i = index">
+          <accordion-group id="{{ i }}" class="accordion-group-class cz-accordion-group"
+                           [ngClass]="isSubmit ? (form.valid && documentsValid[i]) ? '' : 'accordion-error' : ''"
+                           (isOpenChange)="selectPanel($event, i + 1)"
+                           [isOpen]="accordionPanel === i + 1"
+                           [formGroupName]="i">
+            <div class="col-lg-12 row text-dark" (click)="onSelectedChangeShow(i)" accordion-heading>
+              <div class="col-4">
+                <p>{{ contributorList[i]?.contributorName.english === null || contributorList[i]?.contributorName.english.trim() === '' ? contributorList[i]?.contributorName.arabic : (contributorList[i]?.contributorName | bilingualText) }}</p>
+              </div>
+              <div class="col-4">
+                <p>
+                  {{ 'VIOLATIONS.NATIONAL-NUMBER' | translate | titlecase }}
+                  <span>{{contributorList[i]?.idNumber}}</span>
+                </p>
+              </div>
+              <div class="col-3">
+                <p>
+                  {{ 'VIOLATIONS.VIOLATION-AMOUNT' | translate | titlecase }}
+                  <span>{{contributorList[i]?.violationAmount}}</span>
+                </p>
+              </div>
+              <div class="col-1 arrow" accordion-heading>
+                <span class="arrow-up" accordion-heading>
+                  <fa-icon icon="angle-up" size="lg"></fa-icon>
+                </span>
+                <span class="arrow-down" accordion-heading>
+                  <fa-icon icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </div>
+            </div>
+            <div class="row-detail row card-container py-3 mx-5">
+              <div class="col-md-10">
+                <div>
+                  <gosi-input-text-area-dc
+                    [control]="form.get('appealReason')"
+                    id="appeal-reason"
+                    [label]="'VIOLATIONS.REASON-APPEAL' | translate"
+                    gosiSpecialCharacterMask
+                    [removeSpecialCharacters]="true"
+                    [enableValidation]="true"
+                    [maxLength]="500"
+                  ></gosi-input-text-area-dc>
+                </div>
+                <div class="mt-3">
+                  <gosi-label-dc [label]=" 'VIOLATIONS.DOCUMENTS' | translate | titlecase" [noMargin]="true"
+                                 [labelsuffix]="'CORE.ERROR.DOCUMENT-UPLOAD' | translate"></gosi-label-dc>
+                  <gosi-input-file-sc
+                    *ngFor="let document of contributorList[i]?.documents; let docIndex = index"
+                    [document]="document"
+                    [index]="docIndex"
+                    [uuid]="uuid"
+                    [isScan]="false"
+                    [businessKey]="contributorList[i].contributorId"
+                    (delete)="deleteDocument($event)"
+                    [transactionId]="transactionId"
+                  ></gosi-input-file-sc>
+                </div>
+              </div>
+            </div>
+          </accordion-group>
+        </accordion>
+      </ng-container>
+    </form>
+  </gosi-card-dc>
+</div>
+<div class="buttons d-flex align-items-center justify-content-between">
+  <button class="btn btn-secondary" type="button" (click)="previousStep()">
+    {{ 'VIOLATIONS.PREVIOUS' | translate | titlecase }}
+  </button>
+  <div class="d-flex align-items-center justify-content-between">
+    <button class="btn btn-secondary mx-1" type="button" (click)="onCancel()">
+      {{ 'CORE.CANCEL' | translate | titlecase }}
+    </button>
+    <button class="btn btn-primary mx-1" type="submit" (click)="onSubmit()">
+      {{ 'VIOLATIONS.SUBMIT-AOV' | translate | titlecase }}
+    </button>
+  </div>
+</div>

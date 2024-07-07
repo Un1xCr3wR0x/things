@@ -1,0 +1,467 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row tabset-wrapper" *ngIf="tabs.length > 1">
+  <div
+    class="col-md-3 class-tab"
+    *ngFor="let tab of tabs; let i = index"
+    [ngClass]="selectedId === tab.id ? 'selected' : ''"
+    (click)="selectTab(tab.id)"
+  >
+    <span>
+      <div [ngClass]="selectedId === tab.id ? 'selected-tab' : 'tab-value'">
+        {{ tab.label | translate }}
+      </div>
+    </span>
+  </div>
+</div>
+
+<gosi-alert-dc></gosi-alert-dc>
+<div class="pt-4" *ngIf="myTransaction">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="txn-history-screen">
+    <div class="d-lg-flex justify-content-end">
+      <div class="d-flex align-items-start custom_flex">
+        <div class="search-filter d-flex">
+          <gosi-search-dc
+            id="search-area"
+            gosiSpecialCharacters
+            (search)="searchTransactions($event)"
+            [placeholder]="'TRANSACTION-TRACING.TRANSACTION-ID-NAME' | translate"
+            class="w-100"
+            [searchParam]="transactionSearch.value"
+          >
+          </gosi-search-dc>
+          <trn-transaction-filter-dc
+            [transactionFilter]="transactionFilter"
+            (transactionDetailsFilter)="filterTransactions($event)"
+            [isIndividualProfile]="isIndividualProfile"
+          >
+          </trn-transaction-filter-dc>
+        </div>
+        <div class="sort-box d-flex justify-content-end align-items-center">
+          <div class="sort-label text-right">{{ 'TRANSACTION-TRACING.SORT-BY' | translate }}:</div>
+          <div class="sort-dropdown px-2">
+            <ng-select
+              [clearable]="false"
+              [searchable]="false"
+              id="sortBy"
+              [(ngModel)]="selectedOption"
+              (change)="sort()"
+            >
+              <ng-option value="createdDate">{{ 'TRANSACTION-TRACING.INITIATION-DATE' | translate }}</ng-option>
+              <ng-option value="lastModifiedDate">{{ 'TRANSACTION-TRACING.LAST-ACTION-DATE' | translate }}</ng-option>
+              <ng-option value="transactionTraceId">{{
+                'TRANSACTION-TRACING.TRANSACTION-NUMBER' | translate
+              }}</ng-option>
+              <ng-option value="status">{{ 'TRANSACTION-TRACING.STATUS' | translate }}</ng-option>
+              <ng-option value="name">{{ 'TRANSACTION-TRACING.TRANSACTION-NAME' | translate }}</ng-option>
+            </ng-select>
+          </div>
+          <div
+            class="sort-button d-flex justify-content-center align-items-center mx-3"
+            (click)="changeSortDirection()"
+          >
+            <fa-icon class="direction-icon" *ngIf="isDescending" icon="sort-amount-down"></fa-icon>
+            <fa-icon class="direction-icon" *ngIf="!isDescending" icon="sort-amount-up"></fa-icon>
+          </div>
+          <div *ngIf="fromIndividualProfile" class="align-items-center">
+            <ng-container *ngIf="currentTab === 1">
+              <img src="assets/icons/List Selected.svg" (click)="navigateToTimelineView()" alt="Table" class="m-btm" />
+              <span class="border-style"></span>
+              <img src="assets/icons/Table.svg" (click)="navigateToTableView()" alt="List" class="m-btm" />
+            </ng-container>
+            <ng-container *ngIf="currentTab === 0">
+              <img src="assets/icons/List.svg" (click)="navigateToTimelineView()" alt="List" class="m-btm" />
+              <span class="border-style"></span>
+              <img src="assets/icons/table Selected.svg" (click)="navigateToTableView()" alt="Table" class="m-btm" />
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-container *ngIf="currentTab == 0">
+      <div class="mobile-view-table">
+        <div
+          *ngFor="
+            let transaction of filteredTransactions
+              | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems };
+            let i = index
+          "
+        >
+          <trn-transaction-history-item-dc
+            [transaction]="transaction"
+            [index]="(currentPage - 1) * itemsPerPage + i"
+            [lang]="lang"
+            (click)="transactionNavigation(transaction)"
+            [ngClass]="[i % 2 !== 0 ? 'row-shade' : '']"
+          >
+          </trn-transaction-history-item-dc>
+        </div>
+      </div>
+      <div class="desktop-view-table">
+        <gosi-table-dc>
+          <ng-container modalContent>
+            <table class="table table-condensed" aria-describedby="title">
+              <thead>
+                <tr>
+                  <th id="transaction-id" style="width: 15%">
+                    {{ 'TRANSACTION-TRACING.TRANSACTION-NUMBER' | translate | uppercase }}
+                  </th>
+                  <th id="transaction-type" style="width: 35%">
+                    {{ 'TRANSACTION-TRACING.TRANSACTION-NAME' | translate | uppercase }}
+                  </th>
+                  <th id="initiation-date" style="width: 18%">
+                    {{ 'TRANSACTION-TRACING.INITIATION-DATE' | translate | uppercase }}
+                  </th>
+                  <th id="last-action-date" style="width: 18%">
+                    {{ 'TRANSACTION-TRACING.LAST-ACTION-DATE' | translate | uppercase }}
+                  </th>
+                  <th id="transaction-status" style="width: 14%">
+                    {{ 'TRANSACTION-TRACING.STATUS' | translate | uppercase }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  class="data-row"
+                  *ngFor="let transaction of filteredTransactions; let i = index"
+                >
+                  <td style="width: 15%"
+                  (click)="transactionNavigation(transaction)"
+                  >
+                    <div class="row">
+                      <div class="txn-id txn-number">{{ transaction.transactionRefNo }}</div>
+                    </div>
+                  </td>
+                  <td style="width: 35%"
+                  (click)="transactionNavigation(transaction)"
+                  >
+                    <div class="description-title">
+                      <span
+                        *ngIf="transaction.status?.english?.toUpperCase() === transactionStatus.DRAFT.toUpperCase()"
+                        class="draft-title"
+                        >[{{ transaction.status | bilingualText }}]
+                      </span>
+                      {{ getTitle(transaction.title) | bilingualText }}
+                      <gosi-status-badge-dc *ngIf="transaction.hasItsm"
+                        [label]=" 'TRANSACTION-TRACING.INC_TXN' | translate" 
+                        type="{{
+                          transaction.itsmStatus == 'Closed'
+                          ? 'success' : 'warning'
+                          }}"
+                        >
+                      </gosi-status-badge-dc>
+                    </div>
+                    <div class="description-content" dir="ltr" *ngIf="appToken !== 'INDIVIDUAL_APP'">
+                      {{ transaction.description | bilingualText }}
+                    </div>
+                  </td>
+                  <td style="width: 18%"
+                  (click)="transactionNavigation(transaction)"
+                  >
+                    <div *ngIf="transaction?.initiatedDate?.gregorian; else notShow">
+                      <div class="txn-number">
+                        {{ transaction?.initiatedDate?.gregorian | gosiDate }}
+                      </div>
+                      <div class="description-content" dir="ltr">
+                        {{ transaction?.initiatedDate?.gregorian | date: 'hh:mm a':'GMT' }}
+                      </div>
+                    </div>
+                    <ng-template #notShow>
+                      <div>--</div>
+                    </ng-template>
+                  </td>
+                  <td style="width: 18%"
+                  (click)="transactionNavigation(transaction)"
+                  >
+                    <div *ngIf="transaction?.lastActionedDate?.gregorian; else notShow">
+                      <div class="txn-number">
+                        {{ transaction?.lastActionedDate?.gregorian | gosiDate }}
+                      </div>
+                      <div class="description-content" dir="ltr">
+                        {{ transaction?.lastActionedDate?.gregorian | date: 'hh:mm a':'GMT' }}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="task-status" style="width: 14%; font-size: 0.75rem" 
+                  (click)="transactionNavigation(transaction)"
+                  >
+                    <gosi-status-badge-dc [label]="transaction.status" [type]="statusBadgeType(transaction)">
+                    </gosi-status-badge-dc>
+                  </td>
+                <td class="col-2 d-flex justify-content-end float-right">
+                  <gosi-dropdown-dc *ngIf="calculateDiff(transaction?.initiatedDate?.gregorian) && transaction.status?.english?.toUpperCase() === 'COMPLETED' && (transaction?.title?.english?.toString()?.trim() === 'Complaint' || transaction?.title?.english?.toString()?.trim() === 'Enquiry') && isReopenRole"
+                  [list]="transaction?.title?.english?.toString()?.trim() === 'Complaint' ? actionDList : actionEList"
+                    (selectedItem)="reopenTransaction(transaction , $event)"
+                    class=" float-right actionDropdown">
+                    <fa-icon class="more-options" icon="ellipsis-v"></fa-icon>
+                  </gosi-dropdown-dc>
+                  <gosi-dropdown-dc *ngIf="!calculateDiff(transaction?.initiatedDate?.gregorian) || !(transaction.status?.english?.toUpperCase() === 'COMPLETED' && (transaction?.title?.english?.toString()?.trim() === 'Complaint' || transaction?.title?.english?.toString()?.trim() === 'Enquiry') && isReopenRole)" 
+                  [list]="actionDropDown"
+                    (selectedItem)="raiseComplaint(transaction)"
+                    class=" float-right actionDropdown">
+                    <fa-icon class="more-options" icon="ellipsis-v"></fa-icon>
+                  </gosi-dropdown-dc>
+                </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+        </gosi-table-dc>
+      </div>
+      <div *ngIf="!totalItems">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <div class="pagination">
+          <gosi-pagination-dc
+            *ngIf="totalItems > itemsPerPage"
+            [totalSize]="totalItems"
+            [itemsPerPage]="itemsPerPage"
+            [itemType]="'TRANSACTION-TRACING.TRANSACTIONS' | translate"
+            [pageDetails]="pageDetails"
+            (pageChange)="paginateTransactions($event)"
+          >
+          </gosi-pagination-dc>
+        </div>
+      </div>
+    </ng-container>
+
+    <!--
+    ~ Copyright GOSI. All Rights Reserved.
+    ~  This software is the proprietary information of GOSI.
+    ~  Use is subject to license terms.
+    -->
+    <div *ngIf="fromIndividualProfile && currentTab == 1" class="row d-flex flex-row-reverse p-2 m-90">
+      <ng-container *ngFor="let transaction of filteredTransactions; let m = index">
+        <div class="col-md-12 col-lg-12 col-sm-12">
+          <ul class="timeline">
+            <li class="timeline-item">
+              <div
+                class="px-2 time-style"
+                *ngIf="transaction && transaction.initiatedDate && transaction.lastActionedDate"
+              >
+                <span>{{ transaction?.lastActionedDate?.gregorian | gosiDate }}</span>
+                <span class="view-details">{{ transaction?.initiatedDate?.gregorian | date: 'hh:mm a':'GMT' }}</span>
+              </div>
+              <div class="timeline-badge"></div>
+
+              <div class="row p-2" style="margin-top: -50px">
+                <div class="col-lg-9">
+                  <div class="title mb-1">{{ transaction.title | bilingualText }}</div>
+                  <div class="sml-txt">
+                    {{ 'TRANSACTION-TRACING.REQUESTED-BY' | translate }}: {{ transaction.channel | bilingualText }}
+                  </div>
+                  <div class="sml-txt">
+                    {{ 'TRANSACTION-TRACING.TRANSACTION-ID' | translate }}:
+                    <span class="text-decoration-underline" (click)="transactionNavigation(transaction)">{{
+                      transaction.transactionRefNo
+                    }}</span>
+                  </div>
+                </div>
+                <div class="col-lg-3">
+                  <div class="float-right">
+                    <gosi-status-badge-dc [label]="transaction.status" [type]="statusBadgeType(transaction)">
+                    </gosi-status-badge-dc>
+                    <gosi-status-badge-dc *ngIf="transaction.hasItsm"
+                      [label]=" 'TRANSACTION-TRACING.INC_TXN' | translate" 
+                      type="{{
+                        transaction.itsmStatus == 'Closed'
+                        ? 'success' : 'warning'
+                        }}"
+                      >
+                  </gosi-status-badge-dc>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </ng-container>
+    </div>
+
+    <ng-container *ngIf="fromIndividualProfile && currentTab == 1">
+      <div class="load-more">
+        <gosi-loadmore-dc
+          [currentPage]="currentPage - 1"
+          [totalCount]="totalItems"
+          [pageSize]="itemsPerPage"
+          (loadMore)="onLoadMore($event)"
+        ></gosi-loadmore-dc>
+      </div>
+      <div *ngIf="!totalItems">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<div class="pt-4 txn-history-screen" *ngIf="serviceRequest">
+  <div class="mobile-view-table">
+    <div *ngFor="let request of serviceRequestDetails; let i = index" [ngClass]="[i % 2 !== 0 ? 'row-shade' : '']">
+      <div
+        class="txn-item card p-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+        (click)="toggleFunction(i, request.icon)"
+      >
+        <div class="card-body align-items-center" [ngStyle]="{ 'text-align': lang === 'ar' ? 'right' : 'left' }">
+          <div class="first-row d-flex flex-row justify-content-between my-2">
+            <div class="first-cell">
+              <p class="title">
+                {{ request.complaintTitle | bilingualText }}
+              </p>
+            </div>
+            <div class="second-cell">
+              <gosi-status-badge-dc
+                [label]="request.status"
+                [type]="statusBadgeTypeService(request)"
+              ></gosi-status-badge-dc>
+            </div>
+          </div>
+          <div
+            class="second-row d-flex flex-column justify-content-between my-2"
+            *ngIf="
+              request?.creationTimestamp?.gregorian ||
+              request?.lastModifiedTimestamp?.gregorian ||
+              request?.transactionRefNo
+            "
+          >
+            <div class="third-cell" *ngIf="request?.id">
+              <span class="text-grayed date-title"> {{ 'TRANSACTION-TRACING.TRANSACTION' | translate }} #</span>
+              <span class="txn-date p-2">{{ request.id }}</span>
+            </div>
+            <div class="third-cell" *ngIf="request?.creationTimestamp?.gregorian">
+              <span class="text-grayed date-title">{{
+                'TRANSACTION-TRACING.INITIATION-DATE' | translate | uppercase
+              }}</span>
+              <span class="txn-date p-2">{{ request?.creationTimestamp?.gregorian | gosiDate }}</span>
+              <span class="text-grayed sub-title" dir="ltr">
+                {{ request?.creationTimestamp?.gregorian | date: 'hh:mm a':'GMT' }}
+              </span>
+            </div>
+            <div class="fourth-cell" *ngIf="request?.lastModifiedTimestamp?.gregorian">
+              <span class="text-grayed date-title">{{
+                'TRANSACTION-TRACING.LAST-ACTION-DATE' | translate | uppercase
+              }}</span>
+              <span class="txn-date p-2">{{ request?.lastModifiedTimestamp?.gregorian | gosiDate }}</span>
+              <span class="text-grayed sub-title" dir="ltr">
+                {{ request?.lastModifiedTimestamp?.gregorian | date: 'hh:mm a':'GMT' }}
+              </span>
+
+              <span class="txn-icon-padding">
+                <fa-icon style="cursor: pointer" icon="{{ request.icon }}" size="1x"></fa-icon>
+              </span>
+            </div>
+            <div class="pt-3" *ngIf="request.showBox">
+              <div class="details-card">
+                <div class="details-heading">{{ 'TRANSACTION-TRACING.TRANSACTION-DETAILS' | translate }}</div>
+                <div class="description-content">{{ request?.complaintDetails }}</div>
+                <div class="details-heading pt-3">{{ 'TRANSACTION-TRACING.COMMENTS' | translate }}</div>
+                <div class="description-content">{{ request?.gosiComments }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desktop-view-table">
+    <gosi-table-dc>
+      <ng-container modalContent>
+        <table class="table table-condensed" aria-describedby="title">
+          <thead>
+            <tr>
+              <th id="transaction-id" style="width: 15%">
+                {{ 'TRANSACTION-TRACING.TRANSACTION-NUMBER' | translate | uppercase }}
+              </th>
+              <th id="transaction-type" style="width: 35%">
+                {{ 'TRANSACTION-TRACING.TRANSACTION-NAME' | translate | uppercase }}
+              </th>
+              <th id="initiation-date" style="width: 18%">
+                {{ 'TRANSACTION-TRACING.INITIATION-DATE' | translate | uppercase }}
+              </th>
+              <th id="last-action-date" style="width: 18%">
+                {{ 'TRANSACTION-TRACING.LAST-ACTION-DATE' | translate | uppercase }}
+              </th>
+              <th id="transaction-status" style="width: 14%">
+                {{ 'TRANSACTION-TRACING.STATUS' | translate | uppercase }}
+              </th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let request of serviceRequestDetails; let i = index; let odd = odd; let even = even">
+            <tr class="data-row" [ngClass]="{ odd: odd, even: even }" (click)="toggleFunction(i, request.icon)">
+              <td style="width: 15%">
+                <div class="row">
+                  <div class="txn-id txn-number">{{ request.id }}</div>
+                </div>
+              </td>
+              <td style="width: 35%">
+                <!-- <div class="description-title">
+                      <span
+                        *ngIf="request.status?.english?.toUpperCase() === transactionStatus.DRAFT.toUpperCase()"
+                        class="draft-title"
+                        >[{{ transaction.status | bilingualText }}]
+                      </span>
+                      {{ getTitle(transaction.title) | bilingualText }}
+                    </div> -->
+                <div class="description-title" dir="ltr">
+                  {{ request.complaintTitle | bilingualText }}
+                </div>
+              </td>
+              <td style="width: 18%">
+                <div *ngIf="request?.creationTimestamp?.gregorian; else notShow">
+                  <div class="txn-number">
+                    {{ request?.creationTimestamp?.gregorian | gosiDate }}
+                  </div>
+                  <div class="description-content" dir="ltr">
+                    {{ request?.creationTimestamp?.gregorian | date: 'hh:mm a':'GMT' }}
+                  </div>
+                </div>
+                <ng-template #notShow>
+                  <div>--</div>
+                </ng-template>
+              </td>
+              <td style="width: 18%">
+                <div *ngIf="request?.lastModifiedTimestamp?.gregorian; else notShow">
+                  <div class="txn-number">
+                    {{ request?.lastModifiedTimestamp?.gregorian | gosiDate }}
+                  </div>
+                  <div class="description-content" dir="ltr">
+                    {{ request?.lastModifiedTimestamp?.gregorian | date: 'hh:mm a':'GMT' }}
+                  </div>
+                </div>
+              </td>
+
+              <td class="task-status" style="width: 14%; font-size: 0.75rem">
+                <gosi-status-badge-dc
+                  [label]="request?.status | bilingualText"
+                  [type]="statusBadgeTypeService(request)"
+                ></gosi-status-badge-dc>
+              </td>
+              <td>
+                <fa-icon style="cursor: pointer" icon="{{ request.icon }}" size="1x"></fa-icon>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="6" *ngIf="request.showBox" class="details-padding">
+                <div class="details-card">
+                  <div class="details-heading">{{ 'TRANSACTION-TRACING.TRANSACTION-DETAILS' | translate }}</div>
+                  <div class="description-content">{{ request?.complaintDetails }}</div>
+                  <div class="details-heading pt-3" *ngIf="request?.gosiComments">
+                    {{ 'TRANSACTION-TRACING.COMMENTS' | translate }}
+                  </div>
+                  <div class="description-content" *ngIf="request?.gosiComments">{{ request?.gosiComments }}</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </gosi-table-dc>
+  </div>
+</div>

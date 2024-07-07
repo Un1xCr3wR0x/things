@@ -1,0 +1,197 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="billing-breadcrumb">
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+</div>
+<!-------------------------------------------------------Header Section-------------------------------------------------------->
+<div class="row header-section" id="establishmentAllocation">
+  <div class="col-auto heading-main border-right">
+    {{ 'BILLING.ALLOCATION' | translate }}
+    <span *ngIf="routeFrom === 'mofAllocation'">({{ 'BILLING.EMPLOYER-SHARE' | translate }})</span>
+  </div>
+  <div
+    class="col-auto heading-main mr-auto establishmentName-margin"
+    id="establishmentName"
+    *ngIf="establishmentHeader.name.english !== undefined"
+  >
+    {{ establishmentHeader?.name?.english === null ? establishmentName?.arabic : establishmentName?.english }}
+    <div class="d-md-none regno" [ngClass]="routeFrom === 'mofAllocation' ? 'reg-margin' : ''">
+      <span> ({{ 'BILLING.REGISTRATION-NUMBER' | translate }} : {{ establishmentHeader.registrationNo }}) </span>
+    </div>
+  </div>
+  <div class="col-auto" id="EstAllocationIcons">
+    <div style="display: none">
+      <img
+        class="icon pr-3 img-size"
+        id="pdfDownloadEstAllocationBill"
+        alt="pdfDownloadAllocationBill"
+        title="{{ 'BILLING.DOWNLOAD-BILL-AS-PDF' | translate }}"
+        (click)="downloadAllocationBill()"
+        [src]="pdfImgSrc"
+        (mouseover)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-hover.svg'"
+        (mouseout)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-normal.svg'"
+      />
+    </div>
+    <div style="display: none">
+      <img
+        class="icon pr-3 img-size"
+        id="excelDownloadAllocationBill"
+        alt="excelDownloadAllocationBill"
+        (click)="downloadAllocationBill()"
+        title="{{ 'BILLING.DOWNLOAD-BILL-AS-EXCEL' | translate }}"
+        [src]="excelImgSrc"
+        (mouseover)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-hover.svg'"
+        (mouseout)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-normal.svg'"
+      />
+    </div>
+    <div style="display: none">
+      <img
+        class="icon pe-3 img-size"
+        id="printEstAllocationBill"
+        alt="printAllocationBill"
+        (click)="printAllocationBill()"
+        title="{{ 'BILLING.PRINT' | translate }}"
+        [src]="printImgSrc"
+        (mouseover)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-hover.svg'"
+        (mouseout)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-normal.svg'"
+      />
+    </div>
+  </div>
+</div>
+<div class="row regno d-none d-md-flex" [ngClass]="routeFrom === 'mofAllocation' ? 'reg-margin' : ''">
+  <span class="col-lg-12">
+    ({{ 'BILLING.REGISTRATION-NUMBER' | translate }} : {{ establishmentHeader.registrationNo }})
+  </span>
+</div>
+<!------------------------------------Header Section Ends--------------------------------------------->
+<!---------------------Content Head Section-------------------->
+<div class="content">
+  <div class="row top-align">
+    <div class="col-auto pr-3 border-right align-self-center">
+      <a (click)="navigateBacks()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          *ngIf="lang === 'ar'"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto allocation-header" id="mof-allocation-headers">
+      {{ 'BILLING.ALLOCATION-DUR-THE-MONTH' | translate }}
+    </div>
+    <div class="col-lg-auto col-sm-12" id="mof-Allocation-date-pickers">
+      <gosi-input-month-dc
+        id="billMonth"
+        class="billMonth"
+        (blur)="selectAllocationStartDate($event)"
+        [ignoreLabel]="true"
+        [disabled]="false"
+        [dateFormat]="dateFormat"
+        [minDate]="minDateCal"
+        [maxDate]="maxDateCal"
+        [control]="allocationForm.get('month').get('gregorian')"
+        [readOnly]="true"
+      >
+      </gosi-input-month-dc>
+    </div>
+    <div class="closed-label mr-auto">{{ 'BILLING.CLOSED-ON' | translate }} {{ closedMonth }}</div>
+
+    <div class="detailed-bill" *ngIf="isAppPrivate">
+      <gosi-button-dc
+        [outlineOnly]="true"
+        id="view"
+        type="secondary"
+        [size]="'md'"
+        (click)="navigateToContributorLevels()"
+        [disabled]="isdisabled"
+      >
+        {{ 'BILLING.ALLOCATION-CONTRIBUTOR-LEVEL' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+
+  <!----------------------------------Content Head Section Ends-------------------------------------------->
+  <!----------------------------------Allocation Summary Table--------------------------------------------->
+  <div class="summary-section">
+    <div class="alloc-subheading">
+      {{ 'BILLING.ALLOCATION-SUMMARY' | translate }}
+    </div>
+    <blg-allocation-summary-dc
+      [creditSummaryValue]="creditSummaryValue"
+      [allocationCreditTotal]="allocationCreditTotal"
+      [allocationDetails]="allocationDetails"
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+    >
+    </blg-allocation-summary-dc>
+  </div>
+  <!----------------------------------Allocation Summary Table Ends------------------------------------------>
+  <!----------------------------------Tabset------------------------------------------>
+  <div class="add-margin-top" id="allocation-tabset">
+    <blg-allocation-tabset-dc
+      [selectedTab]="selectedTab"
+      [selectedDate]="dateSelected"
+      [billIssueDate]="billIssueDate"
+      [tabList]="tabList"
+      [fromPage]="'contributorAllocation'"
+      (tabSelected)="goToNewTab($event)"
+    >
+    </blg-allocation-tabset-dc>
+  </div>
+  <!----------------------------------Tabset Ends------------------------------------------>
+  <!----------------------------------Credit--------------------------------------------->
+  <div class="billtables">
+    <div *ngIf="selectedTab === 'BILLING.CREDITS'">
+      <blg-allocation-credit-summary-dc
+        [allocationDetails]="allocationDetails"
+        [currentCurrency]="currentCurrency"
+        [exchangeRate]="exchangeRate"
+      ></blg-allocation-credit-summary-dc>
+    </div>
+    <!----------------------------------Allocation of Credits----------------------------------->
+    <div *ngIf="selectedTab === 'BILLING.ALLOCATION-OF-CREDITS'">
+      <blg-allocation-credit-details-dc
+        [currentCurrency]="currentCurrency"
+        [exchangeRate]="exchangeRate"
+        [allocationDetails]="allocationDetails"
+        [fromPage]="'allocationBill'"
+      ></blg-allocation-credit-details-dc>
+    </div>
+    <!----------------------------------Summary of contribution and late fee---------------------------->
+    <ng-container *ngIf="responsiblePayee === 'ESTABLISHMENT'; else isThirdParty">
+      <div *ngIf="selectedTab === 'BILLING.ALLOCATION-CONTRIBUTION-SUMMARY'">
+        <blg-allocation-contribution-summary-dc
+          [isGcc]="isGcc"
+          [isPPA]="isPPA"
+          [creditSummaryValue]="creditSummaryValue"
+          [mofEstablishment]="mofEstablishment"
+          [responsiblePayee]="responsiblePayee"
+          [currentCurrency]="currentCurrency"
+          [exchangeRate]="exchangeRate"
+        ></blg-allocation-contribution-summary-dc>
+      </div>
+    </ng-container>
+    <ng-template #isThirdParty>
+      <div *ngIf="selectedTab === 'BILLING.SUMMARY-CONTRIBUTION-LATEFEE'">
+        <blg-allocation-contribution-summary-dc
+          [creditSummaryValue]="creditSummaryValue"
+          [mofEstablishment]="mofEstablishment"
+          [responsiblePayee]="responsiblePayee"
+          [currentCurrency]="currentCurrency"
+          [exchangeRate]="exchangeRate"
+        ></blg-allocation-contribution-summary-dc>
+      </div>
+    </ng-template>
+  </div>
+</div>

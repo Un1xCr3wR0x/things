@@ -1,0 +1,106 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading">
+        {{ 'ADJUSTMENT.ADD-THIRDPARTY-ADJUSTMENT' | translate }}
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <gosi-alert-sc class="adjustment-alert"></gosi-alert-sc>
+        </div>
+      </div>
+      <gosi-progress-wizard-dc
+        [wizardItems]="thirdPartyWizardItem"
+        (clickWizard)="selectWizard($event)"
+        #thirdPartyWizard
+      >
+      </gosi-progress-wizard-dc>
+
+      <div>
+        <div class="hide-tab">
+          <tabset class="pills" #adjustmentTab>
+            <tab [active]="currentTab === 0">
+              <pmt-add-third-party-adjustment-dc
+                [paymentModeList]="paymentModeList$ | async"
+                [continousDeduction]="continousDeduction$ | async"
+                [adjustmentReasonList]="adjustmentReasonList"
+                [percentageList]="percentageList$ | async"
+                [requestByList]="requestByList$ | async"
+                [parentForm]="adjustmentMap.get(0)?.form"
+                [benefitTypeList]="benefitDetails"
+                [itemsPerPage]="itemsPerPage"
+                [payeeDetails]="adjustmentMap.get(0)?.addData?.payeeSearchResult"
+                [totalPayeesCount]="adjustmentMap.get(0)?.addData?.totalPayeesCount"
+                [showPayeesList]="adjustmentMap.get(0)?.addData?.showPayeesList"
+                [selectedpayee]="adjustmentMap.get(0)?.addData?.selectedpayee"
+                [showPayeeSummary]="adjustmentMap.get(0)?.addData?.showPayeeSummary"
+                [payeeListPageDetails]="adjustmentMap.get(0)?.addData?.payeeListPageDetails"
+                [payeeCurrentBank]="adjustmentMap.get(0)?.addData?.payeeCurrentBank"
+                [showBenefitDetails]="adjustmentMap.get(0)?.addData?.showBenefitDetails"
+                [isValidator]="isValidator"
+                [newBankName]="adjustmentMap.get(0)?.addData?.newBankName"
+                [cityList]="cityList$ | async"
+                [adjustmentValues]="adjustmentMap.get(0)?.addData?.csrAdjustmentValues"
+                [hasOtherAdjustments]="false"
+                [monthlyDeductionEligibility]="monthlyDeductionEligibility"
+                [netMonthlyDeductionAmount]="netMonthlyDeductionAmount"
+                (searchValue)="findPayee($event, firstPage)"
+                (onSelectPayee)="onSelectPayee($event, !isValidator)"
+                (pageIndexEvent)="findPayee(adjustmentMap.get(0)?.addData?.payeeSearchQuery, $event)"
+                (onChangePayee)="onChangePayee()"
+                (onIbanchange)="getBankName($event)"
+                (adjustmentReasonValue)="adjustmentReasonKeyValue($event)"
+                (onBenefitSelected)="findNetMonthlyDeduction($event)"
+              ></pmt-add-third-party-adjustment-dc>
+              <div class="row">
+                <div class="col-lg-12">
+                  <pmt-action-area-dc
+                    [idValue]="'tpaSaveAndNext'"
+                    [primaryButtonLabel]="'ADJUSTMENT.SAVE-NEXT'"
+                    [showPreviousSection]="false"
+                    (submit)="saveTpadjustment(false)"
+                    (onCancelAction)="showModal(cancelTemplateModal)"
+                  ></pmt-action-area-dc>
+                </div>
+              </div>
+            </tab>
+            <tab [active]="currentTab === 1">
+              <div class="row">
+                <div class="col-md-12">
+                  <!-- document details section -->
+                  <pmt-file-upload-dc
+                    [parentForm]="adjustmentMap.get(0)?.form"
+                    [isCommentRequired]="true"
+                    [businessKey]="adjustmentModificationId"
+                    [transactionId]="transactionId"
+                    [referanceNumber]="referenceNumber"
+                    [documentList]="documents"
+                    [isContract]="'contract-auth'"
+                    cancelMessage="ADJUSTMENT.INFO-CANCEL"
+                    (refresh)="refreshTpaDocuments($event, transactionName, transactionType, true)"
+                    (previous)="selectWizard(0)"
+                    (submit)="saveTpadjustment(true)"
+                    (cancelDoc)="cancelTpaAdjustment()"
+                  ></pmt-file-upload-dc>
+                </div>
+              </div>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplateModal>
+  <gosi-confirm-modal-dc
+    [message]="'ADJUSTMENT.INFO-CANCEL'"
+    (onConfirm)="cancelTpaPage()"
+    (onCancel)="modalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="false">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.TERMINATE-CONTRIBUTOR' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="terminationDetails?.formSubmissionDate?.gregorian"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item" *ngIf="contributor">
+        <!-- Personal Details Section -->
+        <cnt-contributor-personal-details-dc
+          [contributor]="contributor"
+          [age]="age"
+          [canEdit]="false"
+          [isBeneficiary]="isBeneficiary"
+        >
+        </cnt-contributor-personal-details-dc>
+      </div>
+
+      <!-- Terminate details. -->
+      <div class="content-item" *ngIf="terminationDetails">
+        <frm-content-heading-dc
+          [icon]="['far', 'times-circle']"
+          heading="CONTRIBUTOR.TERMINATE-DETAILS"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+
+        <cnt-view-terminate-details-dc
+          [establishment]="establishment"
+          [terminationDetails]="terminationDetails"
+        ></cnt-view-terminate-details-dc>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [showApprove]="true"
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+        [disableApprove]="isBillBatch"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.REJECT-TERMINATE-CONTRIBUTOR'"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    heading="CONTRIBUTOR.CANCEL-CON.RETURN-CANCEL-ENGAGEMENT"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+    [parentForm]="validatorForm"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

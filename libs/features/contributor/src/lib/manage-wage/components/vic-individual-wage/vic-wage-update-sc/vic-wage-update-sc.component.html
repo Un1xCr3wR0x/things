@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!--This html is used for updating wage for vic contributor-->
+<ng-container *ngIf="appToken === 'INDIVIDUAL_APP'">
+  <div class="pt-2 pb-4"><gosi-breadcrumb-dc #brdcmb></gosi-breadcrumb-dc></div>
+</ng-container>
+<div class="content">
+  <!-- VIC wage content-->
+  <ng-container *ngIf="appToken !== 'INDIVIDUAL_APP'">
+    <ng-container *ngIf="activeTab < totalTab">
+      <cnt-header-section-dc heading="CONTRIBUTOR.WAGE.UPDATE-VIC-WAGE" (goBack)="cancelVicWageUpdate(cancelTemplate)">
+      </cnt-header-section-dc>
+
+      <div class="row mt-4" *ngIf="contributor">
+        <div class="col-lg-12">
+          <cnt-contributor-banner-dc
+            [contributor]="contributor"
+            [requiredFields]="vicWageUpdateBanner"
+          ></cnt-contributor-banner-dc>
+        </div>
+      </div>
+
+      <gosi-alert-sc></gosi-alert-sc>
+
+      <gosi-progress-wizard-dc
+        *ngIf="activeTab < totalTab"
+        [wizardItems]="wizardItems"
+        (clickWizard)="selectFormWizard($event)"
+        #progressWizardItems
+      ></gosi-progress-wizard-dc>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="appToken === 'INDIVIDUAL_APP'">
+    <div class="row">
+      <div class="col-lg-12">
+        <div style="font-size: 25px; color: #666666">
+          {{ 'CONTRIBUTOR.MODIFY-VIC-WAGE' | translate }}
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <gosi-alert-sc></gosi-alert-sc>
+      </div>
+    </div>
+  </ng-container>
+  <div class="hide-tab">
+    <tabset class="pills">
+      <tab [active]="activeTab === 0">
+        <div class="row mt-4">
+          <div class="col-lg-12">
+            <cnt-vic-engagement-details-dc
+              [occupationList]="occupationList$ | async"
+              [purposeOfRegistrationList]="purposeOfRegistrationList"
+              [updateVicPREligible]="isEligible"
+              [wageCategories]="vicWageCategories"
+              [vicEngagement]="vicEngagementDetails"
+              [canEdit]="true"
+              [wageList]="vicWageList"
+              [parentForm]="parentForm"
+              [showPreviousSection]="false"
+              [disableOccupation]="disableOccupation"
+              [disableWage]="disableWage"
+              [isUpdateWage]="true"
+              [isEditMode]="isEditMode"
+              (saveEngagement)="onUpdateVicWage($event)"
+              (cancelTransaction)="cancelVicWageUpdate(cancelTemplate)"
+            >
+            </cnt-vic-engagement-details-dc>
+          </div>
+        </div>
+      </tab>
+      <ng-container *ngIf="appToken !== 'INDIVIDUAL_APP'">
+        <tab [active]="activeTab === 1">
+          <div class="row" *ngIf="documents.length > 0">
+            <div class="col-12">
+              <cnt-document-upload-dc
+                [documentList]="documents"
+                [businessKey]="engagementId"
+                [transactionId]="transactionId"
+                [parentForm]="parentForm"
+                [referenceNo]="referenceNo"
+                [showDocuments]="true"
+                (refresh)="refreshDoc($event)"
+                [showComments]="true"
+              ></cnt-document-upload-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <cnt-action-area-dc
+                primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+                showPreviousSection="true"
+                (previous)="setPreviousSection()"
+                (submit)="onSubmitVicWageUpdate()"
+                (cancel)="cancelVicWageUpdate(cancelTemplate)"
+              >
+              </cnt-action-area-dc>
+            </div>
+          </div>
+        </tab>
+      </ng-container>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

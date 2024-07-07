@@ -1,0 +1,430 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <div class="row mb-3 align-items-center">
+    <div class="col-auto">
+      <a
+        class="back-button"
+        (click)="
+          cancelTransaction(
+            isJoiningDateChanged || isLeavingDateChanged || isLeavingReasonChanged,
+            cancelEngagementTemplate
+          )
+        "
+      >
+        <fa-icon
+          class="fa-icon fa-2x custom-vertical-middle"
+          *ngIf="currentLang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+        ></fa-icon>
+        <fa-icon
+          class="fa-icon fa-2x custom-vertical-middle"
+          *ngIf="currentLang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          rotate="180"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="heading-prop">
+      <span *ngIf="!isWageUpdate">
+        {{ violationDetails?.violationType | bilingualText }}
+      </span>
+      <span *ngIf="isWageUpdate">
+        {{ violationDetails?.violationType | bilingualText }}
+      </span>
+    </div>
+    <span class="mx-2"></span>
+    <div>
+      <span class="cancel-value d-inline-block">
+        {{ 'CONTRIBUTOR.COMPLIANCE.E-INSPECTION' | translate | uppercase }}
+      </span>
+    </div>
+  </div>
+  <div class="mb-3">
+    <cnt-contributor-banner-dc *ngIf="personDetails" [contributor]="personDetails"></cnt-contributor-banner-dc>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- Progress Wizard -->
+  <ng-container>
+    <gosi-progress-wizard-dc [wizardItems]="formWizardItems" #progressWizardItems> </gosi-progress-wizard-dc>
+  </ng-container>
+  <gosi-card-dc type="secondary">
+    <div *ngIf="!isWageUpdate">
+      <form [formGroup]="violationRequestForm" *ngIf="violationRequestForm">
+        <div class="row">
+          <div class="col-lg-6 col-md-6 col-12" *ngIf="registrationNumber">
+            <gosi-input-number-dc
+              id="estRegNum"
+              [control]="violationRequestForm.get('registrationNumber')"
+              [label]="'CONTRIBUTOR.ESTABLISHMENT-REG-NO' | translate"
+              [placeholder]="'CONTRIBUTOR.ESTABLISHMENT-REG-NO' | translate"
+            >
+            </gosi-input-number-dc>
+          </div>
+          <div class="col-lg-6 col-md-6 col-12" *ngIf="establishmentDetails?.name?.english">
+            <gosi-input-text-dc
+              id="estNameEn"
+              gosiCharacters
+              [control]="violationRequestForm.get('nameEn')"
+              [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-EN' | translate"
+              [maxLength]="30"
+              [placeholder]="'CONTRIBUTOR.ESTABLISHMENT-NAME-EN' | translate"
+            >
+            </gosi-input-text-dc>
+          </div>
+          <div class="col-lg-6 col-md-6 col-12" *ngIf="establishmentDetails?.name?.arabic">
+            <gosi-input-text-dc
+              id="estNameAr"
+              gosiArabicMask
+              [control]="violationRequestForm.get('nameAr')"
+              [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-AR' | translate"
+              [maxLength]="30"
+              [placeholder]="'CONTRIBUTOR.ESTABLISHMENT-NAME-AR' | translate"
+            >
+            </gosi-input-text-dc>
+          </div>
+          <div
+            class="col-lg-6 col-md-6 col-12"
+            [adaptivePosition]="false"
+            [tooltip]="isJoiningDateTooltip ? modifyTemplate : ''"
+            placement="top"
+          >
+            <gosi-input-date-dc
+              id="joiningDate"
+              [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+              [control]="violationRequestForm.get('joiningDate').get('gregorian')"
+              [disabled]="
+                (violationDetails?.violationType?.english === 'Modify Engagement' &&
+                  violationDetails?.violationSubType?.english === 'Modify Leaving Date') ||
+                violationDetails?.violationType?.english === 'Terminate Engagement'
+              "
+              [maxDate]="systemActualLeavingDate"
+              [minDate]="systemActualJoiningDate"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div
+            *ngIf="
+              engagementDetails?.leavingDate || violationDetails?.violationType?.english === 'Terminate Engagement'
+            "
+            class="col-lg-6 col-md-6 col-12"
+            [adaptivePosition]="false"
+            [tooltip]="isLeavingDateTooltip ? modifyTemplate : ''"
+            placement="top"
+          >
+            <gosi-input-date-dc
+              id="leavingDate"
+              [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+              [control]="violationRequestForm.get('leavingDate').get('gregorian')"
+              [disabled]="
+                violationDetails?.violationType?.english === 'Modify Engagement' &&
+                violationDetails?.violationSubType?.english === 'Modify Joining Date'
+              "
+              [minDate]="systemJoiningDate"
+              [maxDate]="systemLeavingDate"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div
+            class="col-lg-6 col-md-6 col-12"
+            *ngIf="
+              engagementDetails?.leavingDate || violationDetails?.violationType?.english === 'Terminate Engagement'
+            "
+          >
+            <gosi-input-select-dc
+              *ngIf="personDetails && personDetails?.person && leavingReasonList"
+              id="leavingReason"
+              [control]="violationRequestForm.get('leavingReason')"
+              [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+              [placeholder]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+              [list]="leavingReasonList"
+              (select)="leavingReasonSelect()"
+              [adaptivePosition]="false"
+              [tooltip]="isLeavingReasonTooltip ? reasonTemplate : ''"
+              placement="top"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div *ngIf="isWageUpdate">
+      <form [formGroup]="wageUpdateForm" *ngIf="wageUpdateForm">
+        <div
+          *ngIf="
+            violationDetails?.violationType?.english === 'Modify Engagement' &&
+            violationDetails?.violationSubType?.english === 'Modify Wage And Occupation'
+          "
+        >
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-12">
+              <gosi-input-date-dc
+                id="applicalbleFrom"
+                [label]="'CONTRIBUTOR.WAGE.APPLICABLE-FROM' | translate"
+                [control]="wageUpdateForm.get('applicableFrom').get('gregorian')"
+                [disabled]="true"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6 col-md-6 col-12">
+              <gosi-input-select-dc
+                id="occupation"
+                [control]="wageUpdateForm.get('occupation')"
+                [label]="'CONTRIBUTOR.WAGE.OCCUPATION' | translate"
+                [placeholder]="'CONTRIBUTOR.WAGE.OCCUPATION' | translate"
+                [list]="occupationList$ | async"
+                (select)="leavingReasonSelect()"
+                [adaptivePosition]="false"
+                [tooltip]="isModifyWageTooltip ? modifyOccupationTemplate : ''"
+                placement="top"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+          <div class="row pl-lg-3">
+            <div class="col-12">
+              <div class="wage-section">
+                <div>
+                  <gosi-input-currency-dc
+                    id="basicWage"
+                    (blur)="onBlur(wageUpdateForm)"
+                    (totalWageCalc)="calculateTotalWage(wageUpdateForm)"
+                    [label]="'CONTRIBUTOR.BASIC-WAGE' | translate"
+                    [control]="wageUpdateForm.get('wage.basicWage')"
+                    [adaptivePosition]="false"
+                    [tooltip]="isModifyWageTooltip ? modifyBasicWageTemplate : ''"
+                    placement="top"
+                    [separatorLimit]="wageSeparatorLimit"
+                  >
+                  </gosi-input-currency-dc>
+                </div>
+                <span class="align-self-center faw-icons">
+                  <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                </span>
+                <div>
+                  <gosi-input-currency-dc
+                    id="hra"
+                    (blur)="onBlur(wageUpdateForm)"
+                    (totalWageCalc)="calculateTotalWage(wageUpdateForm)"
+                    [label]="'CONTRIBUTOR.HOUSING' | translate"
+                    [placeholder]="'CONTRIBUTOR.HOUSING' | translate"
+                    [control]="wageUpdateForm.get('wage.housingBenefit')"
+                    [adaptivePosition]="false"
+                    [tooltip]="isModifyWageTooltip ? modifyHousingWageTemplate : ''"
+                    placement="top"
+                    [hideOptionalLabel]="true"
+                    [separatorLimit]="wageSeparatorLimit"
+                  >
+                  </gosi-input-currency-dc>
+                </div>
+                <span class="align-self-center faw-icons">
+                  <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                </span>
+                <div>
+                  <gosi-input-currency-dc
+                    id="commission"
+                    (blur)="onBlur(wageUpdateForm)"
+                    (totalWageCalc)="calculateTotalWage(wageUpdateForm)"
+                    [label]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                    [placeholder]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                    [control]="wageUpdateForm.get('wage.commission')"
+                    [hideOptionalLabel]="true"
+                    [separatorLimit]="wageSeparatorLimit"
+                    [adaptivePosition]="false"
+                    [tooltip]="isModifyWageTooltip ? modifyCommissionTemplate : ''"
+                    placement="top"
+                  >
+                  </gosi-input-currency-dc>
+                </div>
+                <span class="align-self-center faw-icons">
+                  <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                </span>
+                <div>
+                  <gosi-input-currency-dc
+                    id="otherAllowance"
+                    (blur)="onBlur(wageUpdateForm)"
+                    (totalWageCalc)="calculateTotalWage(wageUpdateForm)"
+                    [label]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                    [placeholder]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                    [control]="wageUpdateForm.get('wage.otherAllowance')"
+                    [hideOptionalLabel]="true"
+                    [separatorLimit]="wageSeparatorLimit"
+                    [adaptivePosition]="false"
+                    [tooltip]="isModifyWageTooltip ? modifyOtherAllowanceTemplate : ''"
+                    placement="top"
+                  >
+                  </gosi-input-currency-dc>
+                </div>
+                <span class="align-self-center faw-icons">
+                  <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+                </span>
+                <div>
+                  <gosi-input-currency-dc
+                    id="totalWage"
+                    [control]="wageUpdateForm.get('wage.totalWage')"
+                    [label]="'CONTRIBUTOR.TOTAL-WAGE' | translate"
+                    [disabled]="true"
+                    (blur)="onBlur(wageUpdateForm)"
+                  >
+                  </gosi-input-currency-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </gosi-card-dc>
+  <div class="row">
+    <div class="col-lg-12">
+      <cnt-action-area-dc
+        primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+        (submit)="confirmEngagement(violationDetails, routerDataToken)"
+        (cancel)="
+          cancelTransaction(
+            isJoiningDateChanged || isLeavingDateChanged || isLeavingReasonChanged,
+            cancelEngagementTemplate
+          )
+        "
+      >
+      </cnt-action-area-dc>
+    </div>
+  </div>
+  <ng-template #cancelEngagementTemplate>
+    <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #modifyTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div
+          *ngIf="
+            (violationDetails?.violationSubType?.english === 'Modify Joining Date' && engagementDetails?.joiningDate) ||
+            engagementDetails?.leavingDate
+          "
+        >
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span *ngIf="violationDetails?.violationSubType?.english === 'Modify Joining Date'; else systemLeavingDate">
+            {{ engagementDetails?.joiningDate?.gregorian | date: 'dd/MM/yyyy' }}
+          </span>
+          <ng-template #systemLeavingDate>{{
+            engagementDetails?.leavingDate?.gregorian | date: 'dd/MM/yyyy'
+          }}</ng-template>
+        </div>
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+          <span
+            *ngIf="violationDetails?.violationSubType?.english === 'Modify Joining Date'; else contributorLeavingDate"
+          >
+            {{ violationDetails?.joiningDate?.gregorian | date: 'dd/MM/yyyy' }}
+          </span>
+          <ng-template #contributorLeavingDate>{{
+            violationDetails?.leavingDate?.gregorian | date: 'dd/MM/yyyy'
+          }}</ng-template>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #reasonTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+        {{ violationDetails?.leavingReason | bilingualText }}
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #modifyOccupationTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span>
+            {{ violationDetails.wage.currentWage.occupation | bilingualText }}
+          </span>
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+            <span>
+              {{ violationDetails.wage.requestedWage.occupation | bilingualText }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #modifyBasicWageTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span>
+            {{ violationDetails.wage.currentWage.basicWage }}
+          </span>
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+            <span>
+              {{ violationDetails.wage.requestedWage.basicWage }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #modifyHousingWageTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span>
+            {{ violationDetails.wage.currentWage.housingBenefit }}
+          </span>
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+            <span>
+              {{ violationDetails.wage.requestedWage.housingBenefit }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #modifyCommissionTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span>
+            {{ violationDetails.wage.currentWage.commission }}
+          </span>
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+            <span>
+              {{ violationDetails.wage.requestedWage.commission }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #modifyOtherAllowanceTemplate>
+    <ng-container>
+      <div class="d-flex flex-column align-items-start px-3">
+        <div>
+          {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+          <span>
+            {{ violationDetails.wage.currentWage.otherAllowance }}
+          </span>
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }} :
+            <span>
+              {{ violationDetails.wage.requestedWage.otherAllowance }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+</div>

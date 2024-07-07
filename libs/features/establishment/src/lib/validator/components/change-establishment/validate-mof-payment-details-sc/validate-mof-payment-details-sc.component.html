@@ -1,0 +1,111 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.MODIFY-MOF-PAYMENT-DETAILS' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc name="mofPaymentDetails" [establishment]="establishment">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          [heading]="'ESTABLISHMENT.MOF-PAYMENT-DETAILS' | translate"
+          (onEdit)="changeEstablishmentService.navigateToChangeMofPaymentDetails()"
+        ></frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-12 col-sm-12">
+            <gosi-label-dc
+              [control]="establishmentToValidate?.establishmentAccount?.paymentType"
+              label="ESTABLISHMENT.MOF-CONTRIBUTION"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-12 col-sm-12 info">
+            <gosi-alert-dc
+              class="info-msg"
+              [message]="'ESTABLISHMENT.INFO.MOF_EFFECTIVE_DATE'"
+              [dismissible]="false"
+              type="info"
+            ></gosi-alert-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(mofPaymentDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(mofPaymentDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(mofPaymentDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="mofPaymentDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHANGE-PAYMENT'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(mofPaymentDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="mofPaymentDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHANGE-PAYMENT'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(mofPaymentDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="mofPaymentDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(mofPaymentDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

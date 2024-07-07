@@ -1,0 +1,81 @@
+<ng-container>
+  <div class="row">
+    <div class="col-md-12">
+      <form [formGroup]="formContributors">
+        <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.APPEAL-ON-VIOLATION' | translate }}">
+          <div class="row bg-light border rounded py-3 mx-2">
+            <div class="col-12">
+              <div class="row">
+                <div class="col-4">
+                  <p>{{'VIOLATIONS.CONTRIBUTOR-DETAILS' | translate | titlecase}}</p>
+                </div>
+                <div class="col-4">
+                  <p>{{'VIOLATIONS.NIN-IQAMA' | translate | titlecase}}</p>
+                </div>
+                <div class="col-3">
+                  <p>{{'VIOLATIONS.PENALTY-AMOUNT' | translate | titlecase}}</p>
+                </div>
+                <div class="col-1"></div>
+              </div>
+              <ng-container formArrayName="contributors">
+                <accordion
+                  *ngFor="let form of contributorFormArray.controls; let i = index">
+                  <accordion-group id="{{ i }}" class="accordion-group-class cz-accordion-group"
+                                   (isOpenChange)="selectPanel($event, i + 1)" [isOpen]="accordionPanel === i + 1">
+                    <div class="col-lg-12 row text-dark px-1" accordion-heading>
+                      <div class="col-4">
+                        <p>{{ contributorList[i]?.contributorName.english == null
+                        || contributorList[i]?.contributorName.english.trim() == ''
+                          ? contributorList[i]?.contributorName.arabic
+                          : (contributorList[i]?.contributorName | bilingualText) }}
+                        </p>
+                      </div>
+                      <div class="col-4">
+                        <div *ngIf="contributorList[i]?.idType !== null;  else na">
+                          <span>{{ contributorList[i]?.idNumber }}</span>
+                        </div>
+                      </div>
+                      <div class="col-3">
+                        <p>{{contributorList[i]?.violationAmount}}</p>
+                      </div>
+                      <div class="col-1">
+                          <span class="angle-up" accordion-heading>
+                          <fa-icon icon="angle-up" size="lg"></fa-icon>
+                          </span>
+                        <span class="angle-down" accordion-heading>
+                            <fa-icon icon="angle-down" size="lg"></fa-icon>
+                          </span>
+                      </div>
+                    </div>
+                    <div class="row-detail row card-container py-3 mx-5">
+                      <div class="col-md-10">
+                        <div class="my-3">
+                          <gosi-input-text-area-dc
+                            [label]="'VIOLATIONS.APPEAL-OPINION' | translate" [mandatory]="true"
+                            [control]="form.get('comment')"
+                            id="appeal-description"
+                            [removeSpecialCharacters]="true" [disabled]="!canEdit"></gosi-input-text-area-dc>
+                        </div>
+                        <div class="mt-3">
+                          <gosi-input-file-sc *ngFor="let document of contributorList[i]?.documents; let j = index"
+                                              [index]="(document.sequenceNumber+1)*(i+1)"
+                                              [document]="document"
+                                              [transactionId]="transactionId"
+                                              [businessKey]="contributorList[i]?.contributorId"
+                                              [canUpdateDocument]="canEdit"
+                          ></gosi-input-file-sc>
+                        </div>
+                      </div>
+                    </div>
+                  </accordion-group>
+                </accordion>
+              </ng-container>
+            </div>
+          </div>
+        </vol-transactions-accordion-dc>
+      </form>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #na>{{'VIOLATIONS.NA' | translate}}</ng-template>

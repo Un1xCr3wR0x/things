@@ -1,0 +1,207 @@
+<ng-container *ngIf="transaction?.transactionId === proactiveTransaction">
+  <!-- establishmnet Details -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}">
+        <est-proactive-estdetail-dc
+          [establishment]="establishment"
+          [isBranch]="isBranch"
+          [isGCC]="isGCC"
+          [showCrn]="isEstablishmentFromMci"
+        >
+        </est-proactive-estdetail-dc>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- payment Details -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.SEC-PAYMENT-DETAILS' | translate }}">
+        <est-paymenttype-detail-dc
+          [establishment]="establishment"
+          [hasLateFeeIndicator]="hasLateFeeIndicator"
+          [showMofPayment]="showMofPayment"
+          [isPaymentModified]="isPaymentModified"
+          [isLateFeeModified]="isLateFeeModified"
+          [isBankNameModified]="isBankNameModified"
+          [isIbanNumberModified]="isIbanNumberModified"
+          [isGov]="isGov"
+          [estToValidate]="estToValidate"
+        >
+        </est-paymenttype-detail-dc>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- Manage Owner change details -->
+
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.OWNERS' | translate }}">
+        <!-- Added Owners -->
+        <ng-container *ngIf="!isTransactionCompleted">
+          <div class="row">
+            <div class="col-md-12 pt-2" *ngIf="newOwners.length > 0">
+              <accordion class="owner-accordion">
+                <ng-container *ngFor="let owner of newOwners; let i = index">
+                  <accordion-group class="accordion-group-class wrapper-accordion-group" [isOpen]="false">
+                    <div accordion-heading class="float-left font-weight-bold pl-2 pr-2">
+                      <est-owner-name-dc [owner]="owner" [ownerIndex]="i"> </est-owner-name-dc>
+                    </div>
+                    <div class="header-wrapper ml-auto" (click)="isUpperArrow()" accordion-heading>
+                      <span
+                        class="inner-arrow-up"
+                        [ngClass]="[isUpperArrowOpen ? 'display-block' : 'display-none']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-up" size="2x"></fa-icon>
+                      </span>
+                      <span
+                        class="inner-arrow-down"
+                        [ngClass]="[isUpperArrowOpen ? 'display-none' : 'display-block']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                    </div>
+                    <div class="accordion-content">
+                      <est-transaction-owner-details-dc
+                        [showDate]="true"
+                        [person]="owner.person"
+                        [startDate]="owner.startDate"
+                        [endDate]="owner.endDate"
+                        [showHeading]="false"
+                        [isGcc]="isGCC"
+                      >
+                      </est-transaction-owner-details-dc>
+                    </div>
+                  </accordion-group>
+                </ng-container>
+              </accordion>
+            </div>
+          </div>
+        </ng-container>
+        <!-- establishment's active owner    -->
+        <div class="row pb-4">
+          <div class="col-md-12" *ngIf="estOwnerDetails?.persons?.length > 0">
+            <accordion class="owner-accordion">
+              <ng-container *ngFor="let owner of estOwnerDetails?.persons; let i = index">
+                <ng-container *ngIf="owner">
+                  <accordion-group class="wrapper-accordion-group">
+                    <div accordion-heading class="float-left font-weight-bold owner-name pl-3 pr-3">
+                      <ng-container *ngIf="getOwnerName(owner) !== null; else defaultHeading">
+                        {{ getOwnerName(owner) }}
+                      </ng-container>
+                      <ng-template #defaultHeading>
+                        {{ 'ESTABLISHMENT.OWNER-INDEX' | translate: { index: i + 1 } }}
+                      </ng-template>
+                    </div>
+                    <div class="header-wrapper ml-auto" (click)="isUpperArrow()" accordion-heading>
+                      <span
+                        class="inner-arrow-up"
+                        [ngClass]="[isUpperArrowOpen ? 'display-block' : 'display-none']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-up" size="2x"></fa-icon>
+                      </span>
+                      <span
+                        class="inner-arrow-down"
+                        [ngClass]="[isUpperArrowOpen ? 'display-none' : 'display-block']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                    </div>
+                    <est-owner-person-details-dc [index]="i" [owner]="owner"> </est-owner-person-details-dc>
+                  </accordion-group>
+                </ng-container>
+              </ng-container>
+
+              <!-- establishment as owner    -->
+
+              <ng-container *ngFor="let ownerest of establishmentOwners?.owners; let i = index">
+                <ng-container *ngIf="ownerest.person == null">
+                  <accordion-group class="wrapper-accordion-group">
+                    <div accordion-heading class="float-left font-weight-bold owner-name pl-3 pr-3">
+                      <ng-container *ngIf="ownerest?.estOwner?.name !== null; else defaultHeading">
+                        {{ ownerest?.estOwner?.name }}
+                      </ng-container>
+                      <ng-template #defaultHeading>
+                        {{ 'ESTABLISHMENT.OWNER-INDEX' | translate: { index: i + 1 } }}
+                      </ng-template>
+                    </div>
+                    <div class="header-wrapper ml-auto" (click)="isUpperArrow()" accordion-heading>
+                      <span
+                        class="inner-arrow-up"
+                        [ngClass]="[isUpperArrowOpen ? 'display-block' : 'display-none']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-up" size="2x"></fa-icon>
+                      </span>
+                      <span
+                        class="inner-arrow-down"
+                        [ngClass]="[isUpperArrowOpen ? 'display-none' : 'display-block']"
+                        accordion-heading
+                      >
+                        <fa-icon class="icon-wrapper-angle" icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                    </div>
+
+                    <div class="accordian-wrapper">
+                      <div class="row">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                          <gosi-label-dc
+                            id="name"
+                            [control]="ownerest?.estOwner?.name"
+                            label="ESTABLISHMENT.ESTABLISHMENT-OWNER-NAME"
+                          >
+                          </gosi-label-dc>
+                        </div>
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                          <gosi-label-dc
+                            id="partyId"
+                            [control]="ownerest?.estOwner?.partyId"
+                            label="ESTABLISHMENT.PARTY-ID"
+                          >
+                          </gosi-label-dc>
+                        </div>
+                      </div>
+                      <h3 class="est-owner">
+                        {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+                      </h3>
+                      <div class="row">
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                          <gosi-label-dc
+                            id="mobileNo"
+                            [control]="ownerest?.estOwner?.mobileNo"
+                            label="ESTABLISHMENT.MOBILE-NUMBER"
+                          >
+                          </gosi-label-dc>
+                        </div>
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                          <gosi-label-dc
+                            id="email"
+                            [control]="ownerest?.estOwner?.emailId"
+                            label="ESTABLISHMENT.EMAIL-ID"
+                          >
+                          </gosi-label-dc>
+                        </div>
+                      </div>
+                    </div>
+                  </accordion-group>
+                </ng-container>
+              </ng-container>
+            </accordion>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- Documents section -->
+  <div class="row" *ngIf="documentList?.length > 0">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

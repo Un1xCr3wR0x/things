@@ -1,0 +1,60 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row info no-gutters">
+  <div class="col-lg-12 sub-heading" [ngClass]="{ 'heading-bg': headingBackgroundRequired }">
+    {{
+      showOutsideEstablishment
+        ? ('BILLING.RECEIPT-ALLOCATION-FOR-OUTSIDE-EST' | translate)
+        : ('BILLING.RECEIPT-ALLOCATION-FOR-BRANCHES' | translate)
+    }}
+  </div>
+  <div class="col-lg-12 receipt-table branch-table-resp">
+    <table class="table">
+      <thead class="thead-light">
+        <tr>
+          <th>{{ 'BILLING.REGISTRATION-NO' | translate }}</th>
+          <th>{{ 'BILLING.ESTABLISHMENT-NAME' | translate }}</th>
+          <th>{{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}</th>
+          <th>{{ 'BILLING.STATUS' | translate }}</th>
+          <ng-container *ngIf="!gccFlag || showOutsideEstablishment">
+            <th>
+              {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+              <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+            </th>
+          </ng-container>
+          <ng-container *ngIf="!showOutsideEstablishment">
+            <th *ngIf="gccFlag">
+              {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+              <span class="currencyValue">({{ currentCurrency | translate }}) </span>
+            </th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let paymentBranch of receipt.branchAmount">
+          <ng-container
+            *ngIf="
+              (showOutsideEstablishment && paymentBranch.outsideGroup) ||
+              (!showOutsideEstablishment && !paymentBranch.outsideGroup)
+            "
+          >
+            <tr class="border-bottom">
+              <td>{{ paymentBranch.registrationNo }}</td>
+              <td>
+                {{ paymentBranch.name | bilingualText: true }}
+              </td>
+              <td>{{ paymentBranch.fieldOffice | bilingualText | titlecase }}</td>
+              <td>{{ paymentBranch.status | bilingualText | titlecase }}</td>
+              <td>
+                {{ paymentBranch.allocatedAmount.amount | number: (!ThreeDecimalLabel ? '1.2-2' : '1.3-3') }}
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

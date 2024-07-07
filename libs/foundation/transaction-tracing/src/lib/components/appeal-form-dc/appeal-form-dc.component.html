@@ -1,0 +1,111 @@
+<div class="row">
+  <div class="section-head">
+    {{ transaction?.canRequestReview ? ('TRANSACTION-TRACING.REVIEW-REQUEST' | translate)
+    : ('TRANSACTION-TRACING.APPEAL' | translate) }}
+  </div>
+</div>
+
+<gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+
+<gosi-card-dc type="primary" [lessPadding]="true">
+  <div class="details row">
+    <div class="col-md-4">
+      <gosi-label-dc id="title" [control]="transaction?.title | bilingualText"
+        [label]="'TRANSACTION-TRACING.APPEAL-AGAINST' | translate">
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc id="transactionId" [control]="transaction?.transactionRefNo"
+        [label]="'TRANSACTION-TRACING.TRANSACTION-ID' | translate">
+      </gosi-label-dc>
+    </div>
+
+    <div class="col-md-4">
+      <gosi-label-dc id="channel" [control]="transaction?.lastActionedDate?.gregorian | gosiDate"
+        [label]="'TRANSACTION-TRACING.TRANSACTION-DATE' | translate">
+      </gosi-label-dc>
+    </div>
+
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary" [lessPadding]="true" [heading]="'TRANSACTION-TRACING.APPEAL-DETAILS' | translate">
+  <div class="col-12">
+    <gosi-input-text-area-dc [maxLength]="498" gosiSpecialCharacterMask
+      [label]="'TRANSACTION-TRACING.APPEAL-REASON' | translate" [control]="appealForm.get('reason')"
+      id="appeal-description" [removeExtraSpecialCharacters]="true" [removeSpecialCharacters]="true">
+    </gosi-input-text-area-dc>
+  </div>
+  <div class="col-12">
+    <div class="document-container" *ngIf="uploadDocuments && uploadDocuments.length > 0">
+      <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info" [dismissible]="false"
+        [noPadding]="true"></gosi-alert-dc>
+
+      <gosi-input-file-sc *ngFor="let document of uploadDocuments; let i = index" [document]="document" [index]="i"
+        [isSequenceNo]="true" [uuid]="uuid" [transactionId]="transactionId" [byPassDeleteAPI]="true"
+        (delete)="deleteDocument(document)" (uploadedEvent)="uploadEvent($event)" [referenceNo]="referenceNo"
+        [noFilesError]="noFilesError"></gosi-input-file-sc>
+      <div class="d-flex justify-content-center" *ngIf="uploadDocuments && uploadDocuments.length < 5">
+        <gosi-button-dc id="addDoc" type="secondary" [outlineOnly]="true" [size]="'md'" (submit)="addAnotherDocument()"
+          [disabled]="diabledUpload">
+          <fa-icon class="px-1" [icon]="['fas', 'plus']"></fa-icon>
+          {{ 'TRANSACTION-TRACING.ADD-DOCUMENT' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<div class="row">
+  <div class="col-md-12 form-action">
+    <div class="complaint-value">
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelTemplate)">
+          {{ 'TRANSACTION-TRACING.CANCEL' | translate }}</gosi-button-dc>
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc id="submit" type="primary" (submit)="submitAppeal()">
+          {{ 'TRANSACTION-TRACING.SUBMIT' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #escalateTemplate>
+ 
+  <div class="confirm-modal">
+    <div class="modal-header">
+      <h3>{{ 'TRANSACTION-TRACING.APPEAL-ESCALATION-TITLE'  | translate }}</h3>
+      <span class="times-icon" (click)="hideEscalationModal()"> <fa-icon icon="times"></fa-icon></span>
+    </div>
+    <div class="modal-body">
+      <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+        <div class="container modal-body-style">
+          {{ 'TRANSACTION-TRACING.APPEAL-ESCALATION-MSG' | translate }}
+        </div>
+      </div>
+    </div>
+    <div>
+      <gosi-button-dc modalAction id="modify-appeal"
+      type="secondary"  
+      [size]="'sm'"
+      (submit)="esclateAppeal(true)"
+      class="btn-section float-left">
+      {{ 'TRANSACTION-TRACING.MODIFY-APPEAL' | translate }}
+      </gosi-button-dc>
+      <gosi-button-dc modalAction id="escalate-appeal" 
+        type="primary" 
+        [size]="'sm'"
+        (submit)="esclateAppeal(false)"
+        class="btn-section float-right">
+        {{ 'TRANSACTION-TRACING.ESCALATE-WITHOUT-MODIFICATION' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+
+
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="TRANSACTION-TRACING.INFO-CANCEL" (onConfirm)="confirmGeneralCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template> 

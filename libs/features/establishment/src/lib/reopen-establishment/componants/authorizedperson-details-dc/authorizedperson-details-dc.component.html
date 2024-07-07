@@ -1,0 +1,63 @@
+<ng-container>
+  <gosi-card-dc type="secondary" [heading]="'ESTABLISHMENT.AUTHORIZED-PERSON-DETAILS' | translate">
+    <div class="row">
+      <div class="col-md-12" id="personSearch">
+        <est-search-person-dc
+          [person]="!personResponse && isVerified ? newlyEnteredPerson : personResponse"
+          [viewOnly]="authorizationForm.get('isVerified').value === true"
+          [parentForm]="authorizationForm"
+          [nationalityList$]="nationalityList$"
+        >
+        </est-search-person-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="authorizationForm.get('isSaved').value === false">
+      <div class="col-md-6 col-sm-12 verify-person">
+        <ng-container *ngIf="authorizationForm.get('isVerified').value === false; else reset">
+          <est-footer-buttons-dc
+            [noMarginTop]="true"
+            [showCancel]="false"
+            [showPrevious]="false"
+            [hasOnlyPrimary]="true"
+            primaryLabel="ESTABLISHMENT.VERIFY"
+            (submit)="verifyPerson()"
+          ></est-footer-buttons-dc>
+        </ng-container>
+        <ng-template #reset>
+          <est-footer-buttons-dc
+            [noMarginTop]="true"
+            [showCancel]="false"
+            [showPrevious]="false"
+            [hasOnlyPrimary]="true"
+            primaryLabel="ESTABLISHMENT.RESET"
+            (submit)="resetEventDetails(authorizationForm)"
+          ></est-footer-buttons-dc>
+        </ng-template>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <!-- Person Details  -->
+  <ng-container *ngIf="authorizationForm.get('isVerified').value === true">
+    <gosi-card-dc type="secondary" id="personDetails">
+      <est-person-details-dc
+        [parentForm]="authorizationForm"
+        [person]="personFormDetails"
+        [genderList]="genderList$ | async"
+        [readOnly]="authorizationForm.get('personExists').value === true"
+        [isSaved]="authorizationForm.get('isSaved').value"
+        [hasDateFields]="false"
+      >
+      </est-person-details-dc>
+    </gosi-card-dc>
+    <gosi-card-dc type="secondary" [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate">
+      <frm-contact-dc
+        [parentForm]="authorizationForm"
+        [emailMandatory]="true"
+        [isHeadingRequired]="false"
+        [contactDetails]="personResponse?.contactDetail"
+        [defaultOnly]="authorizationForm.get('isSaved').value === true"
+      >
+      </frm-contact-dc>
+    </gosi-card-dc>
+  </ng-container>
+</ng-container>

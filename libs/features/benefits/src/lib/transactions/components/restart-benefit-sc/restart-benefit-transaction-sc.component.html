@@ -1,0 +1,172 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- contributor details -->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="user"
+            [canEdit]="false"
+            heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <bnt-contributor-common-dc
+            [contributorDetails]="contributorDetails"
+            [identity]="identity"
+            [identityLabel]="identityLabel"
+            [iscolsix]="true"
+            [lang]="lang"
+            (onContributorIdClicked)="viewContributorDetails()"
+          ></bnt-contributor-common-dc>
+        </div>
+
+        <!-- Benefit details -->
+
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="Benefits"
+            isSvg="true"
+            [canEdit]="false"
+            heading="{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <bnt-validator-benefit-details-restart-dc
+            [restartDetails]="restartDetails"
+            (showModalEvent)="showModal($event)"
+            (close)="hideModal()"
+            [benefitCalculation]="benefitCalculation"
+            (onViewBenefitDetails)="onViewBenefitDetails()"
+          >
+          </bnt-validator-benefit-details-restart-dc>
+        </div>
+
+        <!----------------------- Benefit Restart Details ---------------------------------->
+
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="RestartBenefit"
+            isSvg="true"
+            [canEdit]="false"
+            heading="{{ 'BENEFITS.BENEFIT-RESTART-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="requestdate"
+                label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+                value="{{ restartDetails?.requestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6"></div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="holdDate"
+                label="{{ 'BENEFITS.BENEFIT-HOLD-DATE' | translate }}"
+                value="{{ restartDetails?.holdDetails?.eventDate?.gregorian | date: 'dd/MM/yyyy' }}"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="reasonForStop"
+                label="{{ 'BENEFITS.REASON-FOR-HOLD' | translate }}"
+                [value]="restartDetails?.holdDetails?.reason | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="restartDate"
+                label="{{ 'BENEFITS.BENEFIT-RESTART-DATE' | translate }}"
+                value="{{ restartDetails?.benefitStartDate?.gregorian | date: 'dd/MM/yyyy' }}"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="deathDate"
+                label="{{ 'BENEFITS.REASON-FOR-RESTART' | translate }}"
+                [value]="restartDetails?.reason | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="restartDetails?.notes">
+              <div>{{ 'BENEFITS.NOTES' | translate }}</div>
+              {{ restartDetails?.notes | limitTo: limit }}
+              <div *ngIf="restartDetails?.notes?.length > limitvalue">
+                <a (click)="readFullNote(restartDetails?.notes)" class="read-more">
+                  {{ showMoreText | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+          <!------------------------Dependent Amount Section------------------------->
+          <ng-container
+            *ngIf="restartCalculations?.dependentAmounts && restartCalculations?.dependentAmounts?.length > 0"
+          >
+            <div class="col-md-12 heading">
+              {{ 'BENEFITS.DEPENDENT-AMOUNTS' | translate }}
+            </div>
+            <div class="col-md-12 pt-2 pl-0">
+              <div class="table-scroll table-responsive dependent-table">
+                <table class="table table-borderless rounded">
+                  <thead class="table-header">
+                    <tr>
+                      <th>
+                        {{ 'BENEFITS.PERIOD' | translate }}
+                      </th>
+                      <th>
+                        {{ 'BENEFITS.NO-OF-DEPENDENT' | translate }}
+                      </th>
+                      <th>
+                        {{ 'BENEFITS.DEPENDENT-AMOUNT' | translate }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let eachDependent of restartCalculations?.dependentAmounts"
+                      class="data-row border-bottom"
+                    >
+                      <td>
+                        {{ eachDependent?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+                        <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                        <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                        {{ eachDependent?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+                      </td>
+                      <td>{{ (eachDependent?.noOfDependents | number) || '-' }}</td>
+                      <td>{{ (eachDependent?.amount | number) || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </ng-container>
+          <bnt-adjustment-validator-details-dc
+            [adjustmentDetails]="restartCalculations"
+            [checkBenefitType]="checkBenefitType"
+            [directDisabled]="directDisabled"
+            (onPreviousAdjustmentsClicked)="navigateToPrevAdjustment()"
+          >
+          </bnt-adjustment-validator-details-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+
+<!--Documents Details-->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+  </div>
+</div>
+
+<ng-template #calculationDetails> </ng-template>

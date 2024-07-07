@@ -1,0 +1,139 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row details-heading">
+  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ADDITIONAL-DETAILS' | translate }}
+</div>
+<ng-container *ngFor="let item of rejectionDetails; let i = index">
+  <div class="row mt-2">
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <gosi-label-dc
+        id="transactionId"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.TRANSACTION-ID"
+        [value]="item.transactionId"
+        noMargin="true"
+      >
+        <!-- allowances.transactionId ? allowances.transactionId : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate) -->
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <label
+        for="rejectedPeriod"
+        popover="{{ 'OCCUPATIONAL-HAZARD.AUDITOR.REJECTED-PERIOD' | translate }}"
+        placement="top"
+        triggers="mouseenter:mouseleave"
+        >{{ 'OCCUPATIONAL-HAZARD.AUDITOR.REJECTED-PERIOD' | translate }}
+        <div>
+          {{ item.rejectedPeriod.startDate.gregorian | gosiDate }}
+          <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="rejected-period"></fa-icon>
+          <fa-icon *ngIf="lang === 'ar'" class="rejected-period" [icon]="['fas', 'arrow-left']"></fa-icon>
+          {{ item.rejectedPeriod.endDate.gregorian | gosiDate }}
+        </div>
+      </label>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <gosi-label-dc
+        id="rejectionReason"
+        label="OCCUPATIONAL-HAZARD.AUDITOR.REJECTION-REASON"
+        [value]="item.rejectionReason | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <gosi-label-dc id="comments" label="OCCUPATIONAL-HAZARD.COMMENTS" [value]="item.comments" noMargin="true">
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <gosi-label-dc
+        id="comments"
+        label="OCCUPATIONAL-HAZARD.RECOVER-OH.RECOVERY-FROM"
+        [value]="item.recoveryAppliedOn | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <ng-container>
+    <div class="table-responsive mt-5" id="rejectedAllowanceTable">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th id="allowanceType">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-TYPE' | translate }}
+            </th>
+            <th id="daysorvisits">
+              {{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.NO-DAYS-VISITS' | translate }}
+            </th>
+            <th id="description">
+              {{ 'OCCUPATIONAL-HAZARD.RETURNED' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let items of item.rejectionDetails">
+            <tr class="border-bottom">
+              <td>
+                {{ getType(items.treatmentType, items.allowanceType) | bilingualText }}
+
+                <span class="pl-1 pr-1" *ngIf="getSubType(items.treatmentType) === 'inpatient'">
+                  ({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})
+                </span>
+                <span class="pl-1 pr-1" *ngIf="getSubType(items.treatmentType) === 'outpatient'">
+                  ({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})
+                </span>
+              </td>
+              <ng-container
+                *ngIf="
+                  items.allowanceType.english !== 'Conveyance Allowance' &&
+                    items.allowanceType.english !== 'Companion Conveyance Allowance';
+                  else showKM
+                "
+              >
+                <td>
+                  {{ getDays(item.rejectedPeriod.startDate.gregorian, item.rejectedPeriod.endDate.gregorian) }}
+
+                  <ng-container
+                    *ngIf="
+                      getDays(item.rejectedPeriod.startDate.gregorian, item.rejectedPeriod.endDate.gregorian) === 1
+                    "
+                  >
+                    {{ 'OCCUPATIONAL-HAZARD.DAY' | translate }}
+                  </ng-container>
+                  <ng-container
+                    *ngIf="getDays(item.rejectedPeriod.startDate.gregorian, item.rejectedPeriod.endDate.gregorian) > 1"
+                  >
+                    {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }}
+                  </ng-container>
+                </td>
+              </ng-container>
+              <ng-template #showKM>
+                <ng-container *ngIf="items.allowanceType.english === 'Companion Conveyance Allowance'">
+                  <td>{{ items.distance }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.KM' | translate }}</td>
+                </ng-container>
+                <ng-container *ngIf="items.allowanceType.english === 'Conveyance Allowance'">
+                  <td>
+                    {{ items.visits }}
+                    <ng-container *ngIf="items.visits === 1">
+                      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.VISITS' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="items.visits > 1">
+                      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.VISIT' | translate }}
+                    </ng-container>
+                  </td>
+                </ng-container>
+              </ng-template>
+              <td>{{ items.amount }}</td>
+            </tr>
+          </ng-container>
+          <tr>
+            <td>{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.TOTAL-RETURNED-AMOUNT' | translate }}</td>
+            <td></td>
+            <td>{{ getTotal(item) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+  <div class="row border-style pl-2 pr-2"></div>
+</ng-container>

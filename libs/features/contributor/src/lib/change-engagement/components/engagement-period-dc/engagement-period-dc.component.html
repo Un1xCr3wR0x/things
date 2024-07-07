@@ -1,0 +1,362 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div *ngIf="establishment && engagement">
+  <div class="row">
+    <div class="col-12">
+      <div class="row period-header">
+        <div class="col-md-3 reg-border-right">
+          <div class="header-name">
+            {{ establishment.name | bilingualText: true | titlecase }}
+          </div>
+          <small class="sub-text"
+            >({{ 'CONTRIBUTOR.REGISTRATION-NO' | translate }}: {{ establishment.registrationNo }})</small
+          >
+        </div>
+        <div class="col-md-3" *ngIf="isModifyCoverage">
+          <div class="header-name">{{ engagement.engagementDuration.noOfMonths }} months</div>
+          <small class="sub-text">({{ 'CONTRIBUTOR.START-DATE' | translate }})</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Engagement summary details -->
+    <div class="col-12">
+      <div class="engagement-summary">
+        <div class="row">
+          <div class="col-lg-2" *ngIf="checkPrivate && !isModifyCoverage">
+            <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+            <cnt-calender-radio-dc
+              id="calenderTypeRadio"
+              *ngIf="dateForm.get('dateFormat.english').value"
+              (onSelected)="switchCalendarType($event)"
+              [calendarType]="dateForm.get('dateFormat.english').value"
+              [disabled]="disableJoiningDate || editMode"
+            ></cnt-calender-radio-dc>
+          </div>
+          <span
+            class="col-lg-3 pr-0"
+            [tooltip]="(showAllToolTip || showJoiningDateToolTip) && disableJoiningDate ? setTooltipContext(1) : null"
+          >
+            <gosi-input-date-dc
+              *ngIf="dateForm.get('dateFormat.english').value === typeGregorian"
+              id="joiningDate"
+              label="CONTRIBUTOR.JOINING-DATE"
+              [control]="engagementDetailsForm.get('joiningDate.gregorian')"
+              [disabled]="disableJoiningDate || isModifyCoverage ? true : currentRoles"
+              [maxDate]="maxJoiningDate"
+              [minDate]="minJGregorianDate"
+              (changeEvent)="
+                isPeriodSplitted && !editMode
+                  ? checkChangeInJoiningDate(selectedEngagement.joiningDate.gregorian)
+                    ? showModal(confirmSplitModal, true)
+                    : null
+                  : adjustWagePeriodsOnJoiningDateChange()
+              "
+              (blur)="
+                isPeriodSplitted && !editMode
+                  ? checkChangeInJoiningDate(selectedEngagement.joiningDate.gregorian)
+                    ? showModal(confirmSplitModal, true)
+                    : null
+                  : adjustWagePeriodsOnJoiningDateChange()
+              "
+            ></gosi-input-date-dc>
+            <!---------- hijiri calendar ---------->
+            <gosi-input-hijiri-dc
+              [ngClass]="{ disabledIcon: disableJoiningDate || isModifyCoverage ? true : currentRoles }"
+              *ngIf="dateForm.get('dateFormat.english').value === typeHijira"
+              id="startDateHijiri"
+              [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+              [control]="engagementDetailsForm.get('joiningDate.hijiri')"
+              [disabled]="disableJoiningDate || isModifyCoverage ? true : currentRoles"
+              [minDate]="minHijiriDate"
+              [maxDate]="maxHijiriJoiningDate"
+              [hideOptionalLabel]="true"
+              (changeEvent)="
+                modalService.getModalsCount() > 0
+                  ? null
+                  : isPeriodSplitted && !editMode
+                  ? checkChangeInJoiningDate(selectedEngagement.joiningDate.gregorian)
+                    ? showModal(confirmSplitModal, true)
+                    : null
+                  : adjustWagePeriodsOnJoiningDateChange()
+              "
+            ></gosi-input-hijiri-dc>
+          </span>
+          <span class="px-2 arrow">
+            <fa-icon *ngIf="currentLang === 'en'" [icon]="['fas', 'arrow-right']"></fa-icon>
+            <fa-icon *ngIf="currentLang === 'ar'" [icon]="['fas', 'arrow-left']"></fa-icon>
+          </span>
+          <div class="col-lg-2" *ngIf="checkPrivate && !isEngagementActive && !isModifyCoverage">
+            <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+            <cnt-calender-radio-dc
+              id="calenderTypeRadio"
+              *ngIf="dateForm1.get('dateFormat.english').value"
+              (onSelected)="switchCalendarType1($event)"
+              [calendarType]="dateForm1.get('dateFormat.english').value"
+              [disabled]="disableLeavingDate || editMode"
+            ></cnt-calender-radio-dc>
+          </div>
+          <span
+            class="col-lg-3 pl-0"
+            *ngIf="!isEngagementActive; else onwards"
+            [tooltip]="showAllToolTip && disableLeavingDate ? setTooltipContext(2) : null"
+          >
+            <gosi-input-date-dc
+              *ngIf="dateForm1.get('dateFormat.english').value === typeGregorian"
+              id="leavingDate"
+              label="CONTRIBUTOR.LEAVING-DATE"
+              [control]="engagementDetailsForm.get('leavingDate.gregorian')"
+              [disabled]="disableLeavingDate || isModifyCoverage ? true : currentRoles"
+              [maxDate]="leavingDate"
+              [minDate]="minLeavingDate"
+              (changeEvent)="
+                isPeriodSplitted && !editMode
+                  ? checkChangeInLeavingDate(selectedEngagement.leavingDate.gregorian)
+                    ? showModal(confirmSplitModal, disableLeavingDate ? null : false)
+                    : null
+                  : adjustWagePeriodsOnLeavingDateChange()
+              "
+              (blur)="
+                isPeriodSplitted && !editMode
+                  ? checkChangeInLeavingDate(selectedEngagement.leavingDate.gregorian)
+                    ? showModal(confirmSplitModal, false)
+                    : null
+                  : adjustWagePeriodsOnLeavingDateChange()
+              "
+            ></gosi-input-date-dc>
+            <gosi-input-hijiri-dc
+              [ngClass]="{ disabledIcon: disableLeavingDate || isModifyCoverage ? true : currentRoles }"
+              *ngIf="dateForm1.get('dateFormat.english').value === typeHijira"
+              id="startDateHijiri1"
+              [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+              [control]="engagementDetailsForm.get('leavingDate.hijiri')"
+              [minDate]="minLeavingDateHijiri"
+              [maxDate]="maxLeavingDateHijiri"
+              [hideOptionalLabel]="true"
+              [disabled]="disableLeavingDate || isModifyCoverage ? true : currentRoles"
+              (changeEvent)="
+                modalService.getModalsCount() > 0
+                  ? null
+                  : isPeriodSplitted && !editMode
+                  ? checkChangeInLeavingDate(selectedEngagement.leavingDate.gregorian)
+                    ? showModal(confirmSplitModal, disableLeavingDate ? null : false)
+                    : null
+                  : adjustWagePeriodsOnLeavingDateChange()
+              "
+            >
+            </gosi-input-hijiri-dc>
+          </span>
+          <ng-template #onwards
+            ><span class="align-self-center">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span></ng-template
+          >
+          <span
+            class="ml-auto col-lg-4"
+            *ngIf="!isEngagementActive && !checkPrivate"
+            [tooltip]="
+              showAllToolTip && disableLeavingReason && disableLeavingDate && disableJoiningDate
+                ? setTooltipContext(3)
+                : null
+            "
+          >
+            <gosi-input-select-dc
+              id="leavingReason"
+              label="CONTRIBUTOR.LEAVING-REASON"
+              [control]="engagementDetailsForm.get('leavingReason')"
+              [list]="leavingReasonUpdatedList"
+              [disabled]="disableLeavingReason || isModifyCoverage ? true : currentRoles"
+              (select)="checkLeavingReason()"
+            ></gosi-input-select-dc>
+          </span>
+        </div>
+        <div class="row" *ngIf="checkPrivate && !isEngagementActive">
+          <span
+            class="col-lg-4"
+            *ngIf="!isEngagementActive"
+            [tooltip]="
+              showAllToolTip && disableLeavingReason && disableLeavingDate && disableJoiningDate
+                ? setTooltipContext(3)
+                : null
+            "
+          >
+            <gosi-input-select-dc
+              id="leavingReason"
+              label="CONTRIBUTOR.LEAVING-REASON"
+              [control]="engagementDetailsForm.get('leavingReason')"
+              [list]="leavingReasonUpdatedList"
+              [disabled]="disableLeavingReason || isModifyCoverage ? true : currentRoles"
+              (select)="checkLeavingReason()"
+            ></gosi-input-select-dc>
+          </span>
+        </div>
+        <div class="row justify-content-between">
+          <span class="col-lg-7">
+            <ng-container *ngIf="!isModifyCoverage">
+              <gosi-input-radio-dc
+                *ngIf="isSaudiPerson"
+                id="workType"
+                name="workType"
+                [disabled]="disableWorkType || isModifyCoverage ? true : currentRoles"
+                [control]="engagementDetailsForm.get('workType')"
+                [list]="workTypeList"
+                [label]="'CONTRIBUTOR.WORK-TYPE' | translate"
+              ></gosi-input-radio-dc>
+            </ng-container>
+            <!-- For non saudi show work type as a label. -->
+            <gosi-label-dc
+              *ngIf="!isSaudiPerson || isModifyCoverage"
+              id="workType"
+              label="CONTRIBUTOR.WORK-TYPE"
+              [value]="engagementDetailsForm.get('workType').value | bilingualText"
+            ></gosi-label-dc>
+          </span>
+          <span class="col-lg-4" *ngIf="!isModifyCoverage">
+            <gosi-input-text-dc
+              id="employeeId"
+              [control]="engagementDetailsForm.get('companyWorkerNumber')"
+              [disabled]="disableEmployeeId ? true : currentRoles"
+              [label]="'CONTRIBUTOR.EMPLOYEE-ID' | translate"
+              [maxLength]="employeeIdMaxlength"
+            ></gosi-input-text-dc>
+          </span>
+        </div>
+        <div *ngIf="!this.ppaEstablishment">
+          <ng-container *ngIf="!isModifyCoverage">
+            <div class="row" *ngIf="!isEngagementActive">
+              <div class="col-lg-12">
+                <gosi-input-checkbox-dc
+                  id="penaltyDisclaimer"
+                  [noSpacing]="true"
+                  label="CONTRIBUTOR.LEAVING-REASON-INFO"
+                  [control]="engagementDetailsForm.get('penaltyDisclaimer')"
+                ></gosi-input-checkbox-dc>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Period wise details (calendar view and nav bar) -->
+    <!-- Temporarily hiding calendar widget, nav bar and wage period section in GOL. *ngIf="isAppPrivate" -->
+    <div class="col-12">
+      <div class="period-details">
+        <cnt-period-details-dc
+          [engagementPeriods]="selectedEngagement.engagementPeriod"
+          [ppaIndicator]="selectedEngagement.ppaIndicator"
+          [wageDetails]="selectedEngagement"
+          [occupationList]="occupationList"
+          [yesOrNoList]="yesOrNoList"
+          [isWageVerified]="isWageVerified"
+          [parentForm]="parentForm"
+          [systemParameter]="systemParameter"
+          [editMode]="editMode"
+          [disableCalendar]="periodEditInProgress"
+          [changesInPeriod]="changesInPeriod"
+          [isSaudiPerson]="isSaudiPerson"
+          [isProactive]="isProactive"
+          [isGccEstblishment]="isGccEstblishment"
+          (verifyWage)="verifyWageChange($event)"
+          (deletePeriod)="deleteSplittedPeriod($event)"
+          (periodEdit)="handlePeriodEdit($event)"
+          (modifyCoverageValue)="modifyCoverage($event)"
+          (modifyCoverageDateValue)="modifyCoverageDate($event)"
+          [newCoverages]="newCoverages"
+          [reasonForChange]="reasonForChange"
+          [joiningDate]="joiningDate"
+          [coveragePeriod]="coveragePeriod"
+          [modifyCoverage]="isModifyCoverage"
+          (saveModifyCoverage)="modifyCoverageEdit($event)"
+          [tempModifyCoveragePeriod]="tempModifyCoveragePeriod"
+          [isPrevious]="isPrevious"
+          [isHijiri]="isHijiri"
+          [formSubmissionDate]="formSubmissionDate"
+          [isAppPublic]="isAppPublic"
+          [checkPrivate]="checkPrivate"
+          [isAppPublic]="isAppPublic"
+          [establishment]="establishment"
+        ></cnt-period-details-dc>
+      </div>
+    </div>
+
+    <div class="col-12 pt-5" *ngIf="!selectedEngagement.ppaIndicator && editMode && isAppPrivate && !isModifyCoverage">
+      <gosi-input-radio-dc
+        id="applyLateFees"
+        label="CONTRIBUTOR.APPLY-LATE-FEES"
+        [control]="engagementDetailsForm.get('penalty')"
+        [list]="yesOrNoList"
+      ></gosi-input-radio-dc>
+    </div>
+  </div>
+
+  <!-- Action area -->
+  <div class="row">
+    <div class="col-lg-12">
+      <cnt-action-area-dc
+        [primaryButtonLabel]="
+          isJoiningDateChanged ||
+          isLeavingDateChanged ||
+          isLeavingReasonChanged ||
+          isPeriodSplitted ||
+          (isWageVerified && !isWageDetailsUpdate) ||
+          isModifyCoverage ||
+          isAppPrivate ||
+          inAct ||
+          isPrevious ||
+          saveB ||
+          backWage
+            ? 'CONTRIBUTOR.SAVE-AND-NEXT'
+            : 'CONTRIBUTOR.SUBMIT'
+        "
+        (submit)="
+          !periodEditInProgress ? checkChangeInEngagementPeriod() : showAlertError.emit('CONTRIBUTOR.ERR_PREVIOUS_EDIT')
+        "
+        (cancel)="cancelTransaction()"
+        [isUnclaimed]="isUnclaimed"
+      ></cnt-action-area-dc>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<ng-template #tooltipTemplate>
+  <div d-flex flex-column>
+    <span *ngIf="isAppPrivate">
+      {{ tooltipLabel | translate: { count: minDate | date: 'dd/MM/yyyy' } }}
+    </span>
+    <span *ngIf="!isAppPrivate">
+      {{ tooltipLabel | translate: { count: systemParameter.CHNG_ENG_MAX_BACKDATED_PERIOD_IN_MONTHS_GOL } }}
+    </span>
+  </div>
+</ng-template>
+
+<!---Alert Modal For Split Period On Date Changes-->
+<ng-template #confirmSplitModal>
+  <gosi-modal-dc>
+    <div class="confirmModal" modalContent>
+      <div class="heading text-center">
+        {{ messageToDisplay | translate }}
+      </div>
+      <div class="text-center mt-3">
+        {{ 'CONTRIBUTOR.DO-YOU-WISH-CONTINUE' | translate }}
+      </div>
+    </div>
+    <div class="row" modalAction>
+      <div class="col-md-12 form-action">
+        <div class="float-left btn-section">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="hideModal()">
+            {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="float-right btn-section">
+          <gosi-button-dc id="continue" type="primary" (submit)="adjustWagePeriods()">
+            {{ 'CONTRIBUTOR.CONTINUE' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

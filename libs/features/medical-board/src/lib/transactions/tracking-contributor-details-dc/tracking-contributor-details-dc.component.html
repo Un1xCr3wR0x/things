@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-label-dc
+          id="contributorNIN"
+          [value]="primaryIdentity.id"
+          [label]="primaryIdentityType | translate"
+          isLink="true"
+          (click)="navigateToInjuryDetails()"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorName"
+          [value]="personNameEnglish"
+          label="MEDICAL-BOARD.CONTRIBUTOR-NAME"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorName"
+          [value]="personNameArabic"
+          label="MEDICAL-BOARD.CONTRIBUTOR-NAME-AR"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorDob"
+          value="{{ contributor?.person?.birthDate?.gregorian | date: getDateFormat(lang) }} ({{
+            'MEDICAL-BOARD.AGE-TITLE' | translate
+          }}:{{ contributor?.person?.ageInHijiri }})"
+          label="MEDICAL-BOARD.DATE-OF-BIRTH"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heirDisabilityAssessment && activeBenefitDetails?.deathDate">
+        <gosi-label-dc
+          id="disabiltydetails"
+          value="{{ activeBenefitDetails?.deathDate?.gregorian | date: getDateFormat(lang) }} ({{
+            'MEDICAL-BOARD.AGE-TITLE' | translate
+          }}:{{ activeBenefitDetails?.deathDate?.hijiri }})"
+          label="MEDICAL-BOARD.DATE-OF-DEATH"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorOccupation"
+          [value]="
+            injury.occupation === null
+              ? null
+              : injury?.occupation?.english
+              ? injury?.occupation?.english
+              : injury?.occupation?.arabic
+          "
+          label="MEDICAL-BOARD.OCCUPATION"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorMobileNumber"
+          [value]="contributor?.person?.contactDetail?.mobileNo?.primary"
+          label="MEDICAL-BOARD.MOBILE-NO"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorLocation"
+          [value]="contributor?.person?.contactDetail?.addresses[0]?.city === null ? null : cityLocation"
+          label="MEDICAL-BOARD.LOCATION"
+        ></gosi-label-dc>
+      </div>
+      <div [ngClass]="collapseView ? 'col-sm-6 col-md-6 col-lg-6' : ''" *ngIf="!heirDisabilityAssessment">
+        <gosi-button-dc
+          id="contributor"
+          type="secondary"
+          [outlineOnly]="true"
+          size="md"
+          (click)="previousAssessment(previousAssessmentModal)"
+        >
+          <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+          {{ 'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-button-dc id="contributor" type="secondary" [outlineOnly]="true" size="md" (submit)="onOHClicked.emit()">
+          <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+          {{ 'MEDICAL-BOARD.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #previousAssessmentModal>
+  <gosi-modal-dc
+  [modalHeader]="'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate"
+  [needCloseButton]="true"
+  (closeModal)="hideModal()"
+>
+  <div modalContent>
+    <ng-container>
+      <div class="table-view">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.DATE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.ASSESSMENT-ID' | translate }}
+              </th>
+
+              <!-- <th class="headings">
+                {{ 'MEDICAL-BOARD.REASON' | translate }}
+              </th> -->
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.ASSESSMENT-RESULT' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.DISABILTY-PERCENTAGE' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-bottom" *ngFor="let disabilityDetail of previousDisabilityDetails?.data">
+              <td>{{ disabilityDetail?.assessmentDate | gosiDate }}</td>
+              <td>
+                <a class="link" (click)="onAssessmentIdClick(disabilityDetail)">{{
+                  disabilityDetail?.assessmentId
+                }}</a>
+              </td>
+              <td>{{ disabilityDetail?.assessmentType | bilingualText }}</td>
+              <!-- <td></td> -->
+              <td>{{ disabilityDetail?.assessmentResult | bilingualText }}</td>
+              <td>{{ disabilityDetail?.disabilityPercentage || 0 }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modalHeight"></div>
+    </ng-container>
+  </div>
+</gosi-modal-dc>
+
+</ng-template>

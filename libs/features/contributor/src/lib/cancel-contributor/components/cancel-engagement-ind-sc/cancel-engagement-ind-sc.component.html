@@ -1,0 +1,201 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <div class="row mx-3 heading-row">
+    <div class="heading-prop">
+      {{ 'CONTRIBUTOR.CANCEL-CON.CANCEL-ENGAGEMENT' | translate }}
+    </div>
+    <span class="mx-2"></span>
+    <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+      <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+    </div>
+    <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+    <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+      {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+      <span class="ml-3" style="margin-top: -0.4rem">
+        <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+      </span>
+    </div>
+    <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+      <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+    </div>
+  </div>
+  <gosi-alert-sc class="alertspace"></gosi-alert-sc>
+  <gosi-alert-dc [alert]="penaltyInfo"></gosi-alert-dc>
+
+  <cnt-contributor-banner-dc *ngIf="contributor" [contributor]="contributor"></cnt-contributor-banner-dc>
+  <div class="row mt-4" *ngIf="transactionRefData">
+    <div class="col-12">
+      <gosi-comments-dc *ngIf="transactionRefData.length > 0" [comments]="transactionRefData"> </gosi-comments-dc>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-body">
+      <div class="row m-0">
+        <div class="card-heading custom-heading-padding">
+          <div>
+            {{ 'CONTRIBUTOR.COMPLIANCE.CANCEL-ENGAGEMENT' | translate }}
+          </div>
+        </div>
+      </div>
+      <cnt-establishment-details-dc
+        *ngIf="establishmentDetails && registrationNumber"
+        [establishmentDetails]="establishmentDetails"
+        [registrationNumber]="registrationNumber"
+        [isModifyCoverage]="false"
+      ></cnt-establishment-details-dc>
+      <!-- engagement details section -->
+      <div class="row">
+        <!-- start date -->
+        <div class="col-lg-4">
+          <gosi-label-dc
+            id="'joiningDate'"
+            [control]="cancelEngData?.joiningDate | dateType"
+            [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+          ></gosi-label-dc>
+        </div>
+        <!-- Leaving Date -->
+        <div class="col-lg-4" *ngIf="cancelEngData?.leavingDate?.gregorian || cancelEngData?.leavingDate?.hijiri">
+          <gosi-label-dc
+            id="leavingDate"
+            [control]="cancelEngData?.leavingDate | dateType"
+            [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+          ></gosi-label-dc>
+        </div>
+        <!-- Leaving Reason -->
+        <div
+          class="col-lg-4"
+          *ngIf="
+            (cancelEngData?.leavingDate?.gregorian || cancelEngData?.leavingDate?.hijiri) &&
+            cancelEngData?.leavingReason
+          "
+        >
+          <gosi-label-dc
+            id="leavingReason"
+            [control]="cancelEngData?.leavingReason"
+            [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <!-- cancellation Reason -->
+        <div class="col-lg-4" *ngIf="cancelEngData?.cancellationReason">
+          <gosi-label-dc
+            id="cancelReason"
+            [control]="cancelEngData?.cancellationReason"
+            [label]="'CONTRIBUTOR.CANCEL-CON.CANCELLATION-REASON' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <gosi-alert-dc
+        *ngIf="docUploaded"
+        type="info"
+        [message]="'CONTRIBUTOR.USER-ACTION-DISABLE-MSG' | translate"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+      <div class="card-body">
+        <div class="row m-0">
+          <div class="custom-ar-label">
+            <gosi-input-radio-dc
+              id="cancelEngagementRadio"
+              name="cancelEngagement"
+              [label]="
+                isPPA
+                  ? 'CONTRIBUTOR.COMPLIANCE.INSPECTION-RADIO-LBL-PPA'
+                  : 'CONTRIBUTOR.COMPLIANCE.INSPECTION-RADIO-LBL'
+              "
+              [control]="cancelEngForm.get('choice')"
+              [list]="cancelEngList"
+              (select)="listenForCancelEng($event)"
+              [disabled]="isBillBatch || checkForDocumentUpload() || isUnclaimed"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" *ngIf="isPPA && contributorDocs?.length > 0">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="contributorDocs"></gosi-document-list-view-dc>
+    </div>
+  </div>
+  <div *ngIf="isDocumentUpload && !isUnclaimed">
+    <!-- document upload section -->
+    <cnt-document-upload-dc
+      [documentList]="documents"
+      [businessKey]="engagementId"
+      [transactionId]="transactionId"
+      [parentForm]="cancelEngForm"
+      [referenceNo]="referenceNo"
+      [showDocuments]="isDocumentUpload"
+      [showComments]="isDocumentUpload"
+      (refresh)="refreshDocument($event)"
+      [uuid]="uuid"
+    >
+    </cnt-document-upload-dc>
+    <!-- <cnt-contract-file-upload-dc
+      [parentForm]="cancelEngForm"
+      [engagementId]="violationDetails?.engagementId"
+      [documentList]="documents"
+      [contractId]="payload?.requestId"
+      [referenceNumber]="referanceNumber"
+      [transactionNumber]="cancelEngBusinessKey"
+      [infoMessage]="'CONTRIBUTOR.COMPLIANCE.ATLEAST-ONE_DOC'"
+      [uuid]="uuid"
+      (refresh)="refreshDocument($event)"
+    ></cnt-contract-file-upload-dc> -->
+
+    <!-- <div class="card mt-4">
+      <div class="card-body">
+        <div class="row m-0">
+          <div class="col-sm-12 col-md-12 p-0">
+            <gosi-input-text-area-dc
+              [label]="'CONTRIBUTOR.COMMENTS' | translate"
+              id="comments"
+              name="comments"
+              [maxLength]="commentMaxLength"
+              [control]="cancelEngForm.get('comments')"
+            ></gosi-input-text-area-dc>
+          </div>
+        </div>
+      </div>
+    </div> -->
+  </div>
+  <div class="row m-0" *ngIf="!isUnclaimed && !isPPA">
+    <gosi-input-checkbox-dc
+      id="cancelEngAcknowledge"
+      name="engAcknowledge"
+      [control]="cancelEngForm.get('acknowledge')"
+      [label]="
+        'CONTRIBUTOR.COMPLIANCE.INSPECTION-CHECKBOX-LBL'
+          | translate
+            : {
+                est_Name:
+                  currentLang === 'en'
+                    ? establishmentDetails?.name.english || establishmentDetails?.name.arabic
+                    : establishmentDetails?.name.arabic
+              }
+      "
+    >
+    </gosi-input-checkbox-dc>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <cnt-action-area-dc
+        primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+        (submit)="confirmEngagement()"
+        (cancel)="cancelTransaction()"
+        [disablePrimary]="isBillBatch"
+        [isUnclaimed]="isUnclaimed"
+      >
+      </cnt-action-area-dc>
+    </div>
+  </div>
+</div>

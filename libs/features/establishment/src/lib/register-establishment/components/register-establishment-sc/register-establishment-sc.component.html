@@ -1,0 +1,210 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content" *ngIf="hasInitialised">
+  <input type="hidden" id="establishmentRegNumber" value="{{ establishment.registrationNo }}" />
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="main-heading">
+        {{ 'ESTABLISHMENT.ADD-ESTABLISHMENT' | translate }}
+      </h4>
+    </div>
+  </div>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <gosi-comments-dc
+    *ngIf="editEstablishment === true && currentTab !== totalTabs - 1"
+    [comments]="comments$ | async"
+  ></gosi-comments-dc>
+  <est-establishment-info-dc *ngIf="verifyEstStatus" [establishment]="establishment"></est-establishment-info-dc>
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab != totalTabs - 1"
+    [wizardItems]="addEstWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #addEstWizard
+  ></gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #addEstablishmentTabs>
+      <!-- Add Establishment Details -->
+      <tab [active]="currentTab === 0">
+        <est-establishment-details-form-dc
+          #establishmentDetailsComp
+          [gosiStartDates]="gosiStartDates"
+          *ngIf="establishment.organizationCategory"
+          (submit)="saveEstablishment($event)"
+          (cancel)="cancelForm()"
+          [addressTypeList]="addressTypeList$ | async"
+          [nationalityList]="nationalityList$ | async"
+          [lawTypeList]="lawTypeList$ | async"
+          [cityList]="cityList$ | async"
+          [legalEntityList]="legalEntityList$ | async"
+          [legalEntityLovList]="legalEntityLovList$ | async"
+          [gccCountryList]="filteredCountryList$ | async"
+          [activityTypeList]="activityTypeList$ | async"
+          [establishment]="establishment"
+          [countryReadOnly]="countryReadOnly"
+          [isSaved]="isSaved"
+          [isValidator]="estRouterData.assignedRole === roleEnum.VALIDATOR_1"
+          (progress)="restrictProgressBar()"
+          (selectOrganizationType)="filterLegalEntityByLawType($event)"
+        >
+        </est-establishment-details-form-dc>
+      </tab>
+
+      <tab [active]="currentTab === 1">
+        <!-- Payment Details -->
+        <est-payment-details-dc
+          #paymentDetailsComp
+          [establishment]="establishment"
+          [isInternational]="gccEstablishment ? true : isInternational"
+          [bankNameList$]="!gccEstablishment ? bankNameList$ : gccBankNameList$"
+          [yesOrNoList]="yesOrNoList$ | async"
+          (next)="savePaymentDetails($event)"
+          (IBAN)="getBank($event)"
+          (cancel)="cancelForm()"
+          (keepDraft)="onKeepDraft()"
+          (previous)="previousForm()"
+          [isAccountSaved]="isAccountSaved"
+          (progress)="restrictProgressBar()"
+          [showLateFeeIndicator]="gccEstablishment ? false : showLateFeeIndicator"
+          [isGcc]="gccEstablishment"
+          [isIbanMapped]="isIbanMapped"
+        >
+        </est-payment-details-dc>
+      </tab>
+      <tab [active]="currentTab === 2 && !hasAdmin && !gccEstablishment">
+        <ng-container *ngIf="!hasAdmin && !gccEstablishment">
+          <ng-container [ngTemplateOutlet]="adminTemplate"></ng-container>
+        </ng-container>
+      </tab>
+      <tab [active]="currentTab === 2 && !hasAdmin && gccEstablishment">
+        <!-- Establishment Admin Details -->
+        <ng-container *ngIf="gccEstablishment">
+          <ng-container *ngIf="isOrgGcc || isCivilLaw; then adminTemplate; else ownerTemplate"></ng-container>
+        </ng-container>
+      </tab>
+      <!-- Document Scan Section -->
+      <tab [active]="currentTab === totalTabs - 2">
+        <est-scan-documents-dc
+          #scanDocsComp
+          [registrationNumber]="establishment.registrationNo"
+          [referenceNo]="estRouterData.referenceNo || establishment.transactionTracingId"
+          [documentList]="documentList$ | async"
+          [isScan]="true"
+          (submit)="submitDocument($event)"
+          (cancelBtn)="cancelForm()"
+          (keepDraft)="onKeepDraft()"
+          [comments]="comments"
+          (previous)="previousForm()"
+          (refresh)="refreshDocument($event)"
+          [establishment]="establishment"
+        ></est-scan-documents-dc>
+      </tab>
+      <tab [active]="currentTab === 3 && !hasAdmin && gccEstablishment && !isOrgGcc  && !isCivilLaw">
+        <ng-container *ngIf="gccEstablishment && !isOrgGcc && !hasAdmin">
+          <ng-container *ngIf="!isOrgGcc; then adminTemplate"></ng-container>
+        </ng-container>
+      </tab>
+      <!-- Feedback Section to be removed-->
+      <tab [active]="currentTab === totalTabs - 1">
+        <est-feedback-dc
+          [transactionMessage]="establishment.transactionMessage"
+          [editEstablishment]="editEstablishment"
+        ></est-feedback-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #adminTemplate>
+  <div class="row">
+    <div class="col-md-12">
+      <est-search-employee-dc
+        #searchAdminComponent
+        [hasPerson]="ownerIsAdmin"
+        [idValue]="'admin'"
+        [person]="establishmentAdmin.person"
+        [label]="'ESTABLISHMENT.VERIFY-ADMIN'"
+        (submit)="verifyAdmin($event)"
+        (formChanged)="resetAdminForm()"
+        [nationalityList]="nationalityList$ | async"
+        (progress)="adminSaved ? restrictProgressBar() : undefined"
+        (cancel)="cancelForm()"
+        (keepDraft)="onKeepDraft()"
+        (previous)="previousForm()"
+        (verifyError)="showVerifyError()"
+        (formInvalid)="triggerFormValidation()"
+      >
+      </est-search-employee-dc>
+      <est-employee-details-dc
+        #establishmentAdminComp
+        [enable]="!ownerIsAdmin"
+        [canSave]="true"
+        [gccEstablishment]="gccEstablishment"
+        [cityList]="cityList$ | async"
+        [idValue]="'admin'"
+        [gccCountryList]="gccCountryList$ | async"
+        [genderList]="genderList$ | async"
+        (submit)="saveEstablishmentAdminDetails($event)"
+        [editPersonDetails]="editAdminDetails"
+        [verifyPersonStatus]="verifyAdminStatus"
+        (cancel)="cancelForm()"
+        (keepDraft)="onKeepDraft()"
+        (previous)="previousForm()"
+        [person]="establishmentAdmin.person"
+        (progress)="adminSaved ? restrictProgressBar() : undefined"
+        [enableEmail]="ownerIsAdmin"
+        [emailMandatory]="true"
+      >
+      </est-employee-details-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #ownerTemplate>
+  <est-establishment-owners-dc
+    #ownerComponent
+    [gccEstablishment]="gccEstablishment"
+    [ownerCurrentTab]="ownerCurrentTab"
+    [ownerDeleted$]="ownerDeleted$"
+    [noOfOwners]="noOfOwners + 1"
+    [cityList$]="cityList$"
+    [gccCountryList$]="gccCountryList$"
+    [isIndividual]="isIndividual"
+    [persons]="establishmentOwner.persons"
+    [ownerSavedAsAdmin]="ownerSavedAsAdmin"
+    (ownerIsAdmin)="makeOwnerAsAdmin()"
+    [nationalityList$]="nationalityList$"
+    [genderList$]="genderList$"
+    [isOwnerSaved]="isOwnerSaved"
+    [editPersonDetails]="editPersonDetails"
+    [verifyPersonStatus]="verifyPersonStatus"
+    (verify)="verifyOwner($event)"
+    (formInvalid)="triggerFormValidation()"
+    (ownerNotSaved)="triggerOwnerValidation()"
+    (ownerNotVerified)="showOwnerVerifyError()"
+    (submit)="saveOwner($event)"
+    (addOwner)="addOwner()"
+    (cancel)="cancelForm()"
+    (keepDraft)="onKeepDraft()"
+    (deleteOwner)="deleteOwner($event)"
+    (ownerNotAdmin)="removeOwnerAsAdmin()"
+    (previous)="previousForm()"
+    (next)="nextForm()"
+    (progress)="restrictProgressBar()"
+  >
+  </est-establishment-owners-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelForm()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

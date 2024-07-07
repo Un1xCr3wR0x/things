@@ -1,0 +1,519 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- heading="{{ getHeading(activeBenefits) | bilingualText | translate }}" -->
+
+<carousel
+  [noWrap]="noWrapSlides"
+  [showIndicators]="showIndicator"
+  *ngIf="activeBenefitsList.length; else noActiveBenefit"
+>
+  <slide *ngFor="let activeBenefits of activeBenefitsList; let index = index">
+    <!-- card items start here -->
+    <ng-container *ngIf="activeBenefits.assessmentDetails === null">
+      <gosi-card-dc type="secondary" class="custom-card" headingSize="md">
+        <div class="row">
+          <div class="col-12">
+            <div class="benefit-heading-section">
+              <span class="benefit-type col-auto">{{ getHeading(activeBenefits) | bilingualText | translate }}</span>
+              <div
+                *ngIf="
+                  activeBenefits.status?.english != benefitStatus.DRAFT &&
+                  activeBenefits.status?.english != benefitStatus.INPROGRESS
+                "
+                action-items
+                class="col-auto action-item-btn"
+              >
+                <span
+                  *gosiShow="viewCreate"
+                  (click)="navigateTomodify(activeBenefits, activeBenefits.status?.english)"
+                  >{{ 'BENEFITS.VIEW-DETAILS' | translate }}</span
+                >
+              </div>
+              <!-- benefit draft -->
+              <div
+                *ngIf="activeBenefits.status?.english === benefitStatus.DRAFT"
+                action-items
+                class="col-auto action-item-btn"
+              >
+                <!--              <span *gosiShow="benefitsGosiShowRolesConstants.RESTORE_LUMPSUM_ROLES"-->
+                <span (click)="navigateTomodify(activeBenefits, activeBenefits.status?.english)">
+                  <fa-icon class="pl-2 pr-0" [icon]="['fas', 'pencil-alt']" size="md"></fa-icon>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <!--          *ngIf="-->
+          <!--          activeBenefits.benefitType?.english !== 'Heir Pension Dead Contributor Benefit' &&-->
+          <!--          activeBenefits.benefitType?.english !== 'Heir Pension Missing Contributor Benefit'-->
+          <!--          "-->
+          <div class="col-md-4" *ngIf="isIndividualApp ? activeBenefits.referenceNo : true">
+            <gosi-label-dc
+              id="TranscationID"
+              [value]="activeBenefits.referenceNo"
+              [isLink]="true"
+              label="{{ 'BENEFITS.TRANSACTION-ID' | translate }}"
+              (click)="onTransactionIdClicked.emit(activeBenefits)"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4" *ngIf="!isIndividualApp">
+            <gosi-label-dc
+              id="requestDate"
+              [value]="activeBenefits?.requestDate | dateType"
+              label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="pensionStatus"
+              value="{{
+                activeBenefits.beneficiaryBenefitStatus &&
+                (activeBenefits.beneficiaryBenefitStatus?.english === heirStatusType.WAIVED_TOWARDS_GOSI ||
+                  activeBenefits.beneficiaryBenefitStatus?.english === heirStatusType.WAIVED ||
+                  activeBenefits.beneficiaryBenefitStatus?.english === heirStatusType.WAIVED_TOWARDS_HEIR)
+                  ? ('BENEFITS.WAIVED' | translate)
+                  : (activeBenefits.status | bilingualText)
+              }}"
+              label="{{ 'BENEFITS.STATUS' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div
+          class="row"
+          *ngIf="
+            activeBenefits.benefitType?.english !== benefitTypes.nonOcc &&
+            activeBenefits.benefitType?.english !== benefitTypes.ui &&
+            activeBenefits.benefitType?.english !== benefitTypes.nonOccPensionType
+          "
+        >
+          <div class="col-md-12 pl-2 benefitdetails">
+            <span class="carousel-sub-heading">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <!-- disply pension benefit amt if the benefit type is a pension  -->
+            <gosi-label-dc
+              *ngIf="
+                activeBenefits.benefitType?.english === 'Retirement Pension Benefit' ||
+                activeBenefits.benefitType?.english === 'Early Retirement Pension Benefit' ||
+                activeBenefits.benefitType?.english === 'Non-Occupational Disability Pension Benefit' ||
+                activeBenefits.benefitType?.english === 'Jailed Contributor Pension Benefit' ||
+                activeBenefits.benefitType?.english === 'Heir Pension Dead Contributor Benefit' ||
+                activeBenefits.benefitType?.english === 'Heir Pension Missing Contributor Benefit' ||
+                activeBenefits.benefitType?.english === 'Retirement Pension Benefit (Hazardous Occupation)' ||
+                activeBenefits.benefitType?.english === 'Occupational Disability Pension Benefit' ||
+                activeBenefits.benefitType?.english === 'Old Age-Woman Retirement Pension'
+              "
+              id="benefit-pension-amt"
+              [noMargin]="true"
+              [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefits.amount | number: '1.0-2' }"
+              label="{{ 'BENEFITS.PENSION-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+
+            <!-- disply Lumpsum benefit amt if the benefit type is a pension  -->
+            <gosi-label-dc
+              *ngIf="
+                activeBenefits.benefitType?.english === 'Retirement Lumpsum Benefit' ||
+                activeBenefits.benefitType?.english === 'Woman Lumpsum Benefit' ||
+                activeBenefits.benefitType?.english === 'Non-Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.benefitType?.english === 'Jailed Contributor Lumpsum Benefit' ||
+                activeBenefits.benefitType?.english === 'Heir Lumpsum Dead Contributor Benefit' ||
+                activeBenefits.benefitType?.english === 'Heir Lumpsum Missing Contributor Benefit' ||
+                activeBenefits.benefitType?.english === 'Retirement Lumpsum Benefit (Hazardous Occupation)' ||
+                activeBenefits.benefitType?.english === 'Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.benefitType?.english === 'Old Age-Woman Retirement Lumpsum' ||
+                activeBenefits.benefitType?.english === 'Funeral grant' ||
+                activeBenefits.benefitType?.english === 'Moved to Public Pension Lumpsum (RPA) Benefit' ||
+                activeBenefits.benefitType?.english === 'Non-Saudi Lumpsum'
+              "
+              id="benefit-lumpsum-amt"
+              [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: activeBenefits.amount | number }"
+              label="{{ 'BENEFITS.LUMPSUM-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+            <gosi-label-dc
+              *ngIf="activeBenefits.benefitType?.english === 'Unemployment Insurance'"
+              id="amount"
+              [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefits?.amount || 0 | number }"
+              label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <!-- <div
+            class="col-md-3"
+            *ngIf="
+              activeBenefits.benefitType?.english === 'Heir Pension Dead Contributor Benefit' ||
+              activeBenefits.benefitType?.english === 'Heir Pension Missing Contributor Benefit'
+            "
+          >
+            <gosi-label-dc
+              id="status"
+              [value]="activeBenefits.status | bilingualText"
+              label="{{ 'BENEFITS.STATUS' | translate }}"
+            ></gosi-label-dc>
+          </div> -->
+        </div>
+        <div
+          class="row"
+          *ngIf="
+            activeBenefits.benefitType?.english === 'Heir Pension Dead Contributor Benefit' ||
+            activeBenefits.benefitType?.english === 'Heir Pension Missing Contributor Benefit'
+          "
+        >
+          <div class="col-md-3">
+            <gosi-label-dc
+              id="startDate"
+              [value]="activeBenefits.startDate | dateType"
+              label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-3" *ngIf="activeBenefits?.lastBenefitAmount">
+            <gosi-label-dc
+              id="amount"
+              [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: activeBenefits?.lastBenefitAmount | number }"
+              label="{{ 'BENEFITS.LAST-BENEFIT-AMOUNT' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-3">
+            <gosi-label-dc
+              id="reason"
+              [value]="activeBenefits.benefitReason | bilingualText"
+              label="{{ 'BENEFITS.REASON_BENEFIT' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-3" *ngIf="activeBenefits?.missingDate">
+            <gosi-label-dc
+              id="missingReportDate"
+              [value]="activeBenefits.missingDate | dateType"
+              label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-3" *ngIf="activeBenefits?.deathDate">
+            <gosi-label-dc
+              id="deathDate"
+              [value]="activeBenefits.deathDate | dateType"
+              label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </ng-container>
+    <ng-container *ngIf="activeBenefits.assessmentDetails?.assessmentDetails">
+      <gosi-card-dc type="secondary" class="custom-card" lessPadding="true">
+        <div
+          class="heading"
+          *ngIf="
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isDependent &&
+            (activeBenefits.benefitType?.english === benefitTypes.occBenefit ||
+              activeBenefits.benefitType?.english === benefitTypes.occPension ||
+              activeBenefits.benefitType?.english === benefitTypes.occLumpsum)
+          "
+        >
+          {{ 'BENEFITS.OCC-DISABILITY-REASSESSMENT' | translate }}
+        </div>
+        <div
+          class="heading"
+          *ngIf="
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isDependent &&
+            isNonoccBenefit(activeBenefits?.benefitType?.english)
+          "
+        >
+          {{ 'BENEFITS.NON-OCC-DISABILITY-REASSESSMENT' | translate }}
+        </div>
+        <div
+          class="heading"
+          *ngIf="
+            activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isDependent &&
+            (activeBenefits.benefitType?.english === benefitTypes.occBenefit ||
+              activeBenefits.benefitType?.english === benefitTypes.occPension ||
+              activeBenefits.benefitType?.english === benefitTypes.occLumpsum)
+          "
+        >
+          {{ 'BENEFITS.OCC-DISABILITY-ASSESSMENT' | translate }}
+        </div>
+        <div
+          class="heading"
+          *ngIf="
+            activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isDependent &&
+            isNonoccBenefit(activeBenefits?.benefitType?.english)
+          "
+        >
+          {{ 'BENEFITS.NON-OCC-DISABILITY-ASSESSMENT' | translate }}
+        </div>
+        <div
+          class="heading"
+          *ngIf="
+            activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            ((!isOccBenefit(activeBenefits?.benefitType?.english) &&
+              !isNonoccBenefit(activeBenefits?.benefitType?.english)) ||
+              ((isOccBenefit(activeBenefits?.benefitType?.english) ||
+                isNonoccBenefit(activeBenefits?.benefitType?.english)) &&
+                activeBenefits.assessmentDetails?.assessmentDetails?.isDependent))
+          "
+        >
+          {{ 'BENEFITS.DISABILITY-ASSESSMENT' | translate }}
+        </div>
+        <div
+          class="heading"
+          *ngIf="
+            !activeBenefits.assessmentDetails?.assessmentDetails?.isAssessment &&
+            ((!isOccBenefit(activeBenefits?.benefitType?.english) &&
+              !isNonoccBenefit(activeBenefits?.benefitType?.english)) ||
+              ((isOccBenefit(activeBenefits?.benefitType?.english) ||
+                isNonoccBenefit(activeBenefits?.benefitType?.english)) &&
+                activeBenefits.assessmentDetails?.assessmentDetails?.isDependent))
+          "
+        >
+          {{ 'BENEFITS.DISABILITY-REASSESSMENT' | translate }}
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="assessmentId"
+              [isLink]="true"
+              [value]="activeBenefits.assessmentDetails?.assessmentDetails?.assessmentId"
+              label="{{ 'BENEFITS.ASSESSMENT-ID' | translate }}"
+              (click)="navigateToDisabilityAssessment(activeBenefits)"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="assessmentResult"
+              [value]="activeBenefits.assessmentDetails?.assessmentDetails?.result | bilingualText"
+              label="{{ 'BENEFITS.ASSESSMENT-RESULT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="helperNeeded"
+              [value]="activeBenefits.assessmentDetails?.assessmentDetails?.helperNeeded | bilingualText"
+              label="{{ 'BENEFITS.HELPER-REQUIRED' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4" *ngIf="activeBenefits.assessmentDetails?.pension">
+            <gosi-currency-label-dc
+              *ngIf="
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Early Retirement Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Non-Occupational Disability Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Jailed Contributor Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Pension Dead Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Pension Missing Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Pension Benefit (Hazardous Occupation)' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Occupational Disability Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Old Age-Woman Retirement Pension'
+              "
+              id="benefitAmountPension"
+              [label]="'BENEFITS.BENEFIT-AMOUNT' | translate"
+              [currencyTo]="activeBenefits.assessmentDetails?.pension?.benefitAmount"
+              [countryCodeFrom]="'BENEFITS.AMOUNT' | translate"
+            >
+            </gosi-currency-label-dc>
+            <gosi-currency-label-dc
+              *ngIf="
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english === 'Woman Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Non-Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Jailed Contributor Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Lumpsum Dead Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Lumpsum Missing Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Lumpsum Benefit (Hazardous Occupation)' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Old Age-Woman Retirement Lumpsum' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english === 'Funeral grant'
+              "
+              id="benefitAmountLumpsum"
+              [label]="'BENEFITS.BENEFIT-AMOUNT' | translate"
+              [currencyTo]="activeBenefits.assessmentDetails?.pension?.benefitAmount"
+              [countryCodeFrom]="'BENEFITS.SR' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div
+            class="col-md-4"
+            *ngIf="
+              !isHeirBenefit(activeBenefits?.benefitType?.english) &&
+              activeBenefits.assessmentDetails?.pension?.dependantAmount
+            "
+          >
+            <gosi-currency-label-dc
+              id="dependentAmount"
+              [label]="'BENEFITS.DEPENDENT-AMOUNT' | translate"
+              [currencyTo]="activeBenefits.assessmentDetails?.pension?.dependantAmount"
+              [countryCodeFrom]="'BENEFITS.AMOUNT' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div class="col-md-4" *ngIf="activeBenefits.assessmentDetails?.pension">
+            <gosi-currency-label-dc
+              *ngIf="
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Early Retirement Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Non-Occupational Disability Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Jailed Contributor Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Pension Dead Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Pension Missing Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Pension Benefit (Hazardous Occupation)' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Occupational Disability Pension Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Old Age-Woman Retirement Pension'
+              "
+              id="totalBenefitAmountPension"
+              [label]="'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate"
+              [currencyTo]="activeBenefits.assessmentDetails?.pension?.totalBenefitAmount"
+              [countryCodeFrom]="'BENEFITS.AMOUNT' | translate"
+            >
+            </gosi-currency-label-dc>
+            <gosi-currency-label-dc
+              *ngIf="
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english === 'Woman Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Non-Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Jailed Contributor Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Lumpsum Dead Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Heir Lumpsum Missing Contributor Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Retirement Lumpsum Benefit (Hazardous Occupation)' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Occupational Disability Lumpsum Benefit' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english ===
+                  'Old Age-Woman Retirement Lumpsum' ||
+                activeBenefits.assessmentDetails?.pension.annuityBenefitType?.english === 'Funeral grant'
+              "
+              id="totalBenefitAmountLumpsum"
+              [label]="'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate"
+              [currencyTo]="activeBenefits.assessmentDetails?.pension?.totalBenefitAmount"
+              [countryCodeFrom]="'BENEFITS.SR' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4" *ngIf="activeBenefits?.assessmentDetails?.assessmentDetails?.disabledIdentifier">
+            <gosi-label-dc
+              id="disabledNin"
+              label="{{ 'BENEFITS.ID-NUMBER' | translate }}"
+              [isLink]="!isStandalone"
+              [value]="getIdentifier(activeBenefits?.assessmentDetails?.assessmentDetails?.disabledIdentifier)"
+              (click)="
+                onDisabledNinClick(
+                  getIdentifier(activeBenefits?.assessmentDetails?.assessmentDetails?.disabledIdentifier)
+                )
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-4" *ngIf="activeBenefits?.assessmentDetails?.assessmentDetails?.disabledName">
+            <gosi-label-dc
+              id="contributorName"
+              label="{{ 'BENEFITS.NAME' | translate }}"
+              value="{{
+                activeBenefits?.assessmentDetails?.assessmentDetails?.disabledName?.english
+                  ? (activeBenefits?.assessmentDetails?.assessmentDetails?.disabledName | bilingualText)
+                  : activeBenefits?.assessmentDetails?.assessmentDetails?.disabledName?.arabic
+              }}"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="!isIndividualApp">
+          <gosi-alert-dc
+            *ngIf="
+              activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'Processed' ||
+              activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'New'
+            "
+            class="col-md-12"
+            [dismissible]="false"
+            [bilingualMessage]="assessmentWarningMessage"
+            type="info"
+          >
+          </gosi-alert-dc>
+          <div class="col-lg-12">
+            <div class="row mt-3">
+              <div class="p-2">
+                <gosi-button-dc
+                  *ngIf="
+                    activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'Processed' ||
+                    activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'New'
+                  "
+                  id="accept"
+                  type="primary"
+                  (submit)="routeToPension(activeBenefits)"
+                  [size]="'md'"
+                >
+                  {{ 'BENEFITS.CONTINUE-WITH-ENTITLEMNET' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="p-2">
+                <gosi-button-dc
+                  id="appeal"
+                  type="primary"
+                  *ngIf="
+                    activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'Processed' ||
+                    activeBenefits.assessmentDetails?.assessmentDetails?.recordStatus === 'New' ||
+                    activeBenefits.assessmentDetails?.assessmentDetails?.canAppeal
+                  "
+                  outlineOnly="true"
+                  [size]="'md'"
+                  (submit)="appealAssessment(activeBenefits)"
+                >
+                  {{ 'BENEFITS.APPEAL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </ng-container>
+    <!-- card items start here -->
+  </slide>
+</carousel>
+<ng-template #noActiveBenefit>
+  <div class="noactiveBenefitImg">
+    <img class="product-icon" src="assets/icons/svg/No_ActiveBenefits.svg" alt="no-active-benefits" />
+    <span class="no-active-benefit-txt p-5"> {{ 'BENEFITS.NO-ACTIVE-BENEFITS' | translate }} </span>
+  </div>
+</ng-template>

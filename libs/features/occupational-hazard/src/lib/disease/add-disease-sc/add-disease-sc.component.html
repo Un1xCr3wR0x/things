@@ -1,0 +1,160 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="report-oh-frame content">
+  <input type="hidden" id="diseaseId" value="{{ diseaseNumber }}" />
+  <div class="row">
+    <div class="col-md-12">
+      <div
+        class="main-heading"
+        *ngIf="processType !== 'reopen' && processType !== 'modify' && resourceType !== 'Transfer Injury'"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.REPORT-OCCUPATIONAL-DISEASE' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 'reopen'">
+        {{ 'OCCUPATIONAL-HAZARD.REOPEN-DISEASE-TRANSACTION' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 'modify'">
+        {{ 'OCCUPATIONAL-HAZARD.MODIFY-DISEASE-TRANSACTION' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="resourceType === 'Transfer Injury'">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.TRANSFER-INJURY' | translate }}
+      </div>
+    </div>
+  </div>
+  <!-- Contributor details view  -->
+  <oh-contributor-info-dc
+    *ngIf="currentTab < totalTabs - 1 && processType !== 'reopen'"
+    #personDetails
+    [personDetails]="person"
+  >
+  </oh-contributor-info-dc>
+  <gosi-comments-dc
+    *ngIf="
+      (isWorkflow && currentTab !== 3 && processType != 'modify' && !isAppPrivate && processType != 'reopen') ||
+      (routerData?.taskId && !isAppPrivate && processType === 'reopen')
+    "
+    [comments]="comment ? comment : []"
+  ></gosi-comments-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-progress-wizard-dc [wizardItems]="addDiseaseWizard" (clickWizard)="selectWizard($event)" #reportDiseaseWizard>
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #reportDiseaseTabs>
+      <tab [active]="currentTab === 0" *ngIf="processType != 'reopen'">
+        <div class="row">
+          <div class="col-md-12">
+            <oh-select-occupation-dc
+              [isOccupation]="true"
+              [occupationDetailsForm]="occupationDetailsForm"
+              [parentForm]="diseaseDetailsForm"
+              [establishmentName]="establishmentName$"
+              [processType]="processType"
+              [disableEst]="disableEst"
+              [engagementOccupationDetails]="engagementOccupationDetails"
+              [occupationsList]="newOccupationList"
+              [isOccupationsLoaded]="isOccupationsLoaded"
+              [registeredOccupatonsList]="registeredOccupatonsList"
+              [occupationsCausedDisease]="occupationsCausedDisease"
+              [minDate]="minDate"
+              (getOccupationDetails)="setOccupationDetails($event)"
+              (getEngagementDetails)="getEngagementDetails($event)"
+              (onDelete)="onDeleteOccupationDetails($event)"
+              (edited)="editedOcc($event)"
+            ></oh-select-occupation-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <oh-disease-details-dc
+              [diseaseDetails]="diseaseDetails"
+              [processType]="processType"
+              [diseaseDetailsForm]="diseaseDetailsForm"
+              [diseaseCauseList]="diseaseCauseList$ | async"
+              [disableEst]="disableEst"
+              [diseaseDiagnosisList]="diseaseDiagnosisList$ | async"
+              [routerData]="routerData"
+              [isAppPrivate]="isAppPrivate"
+              (submit)="saveDiseaseDetails()"
+              (template)="showCancelTemplate()"
+            ></oh-disease-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1" *ngIf="processType != 'reopen'">
+        <div class="row">
+          <div class="col-md-12">
+            <oh-personal-details-dc
+              #personDetails
+              [isAddressOptional]="isAddressOptional"
+              [isdControl]="isdControl"
+              [cityList]="cityList$ | async"
+              [countryList]="countryList$ | async"
+              [isValidator1]="isValidator1"
+              [prohibitUpdate]="prohibitInspection"
+              (submit)="saveDisease($event)"
+              (previous)="previousForm()"
+              [person]="person"
+              [workFlowType]="workFlowType"
+              [disabled]="disabled"
+              [processType]="processType"
+              [payeeT]="payeeType"
+              [isAddressPresent]="isAddressPresent"
+              [isPoMandatory]="isPoMandatory"
+              [emergencyContact]="emergencyContactNo"
+              (template)="showCancelTemplate()"
+              (contactNumberDetails)="showFormValidation()"
+            >
+            </oh-personal-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 2">
+        <div class="row">
+          <div class="col-md-12 upload-documents">
+            <oh-document-dc
+              #documentDetailsForm
+              [registrationNumber]="registrationNo"
+              [referenceNo]="referenceNo"
+              [transactionId]="diseaseTransactionId"
+              [businessKey]="diseaseId"
+              [requiredList]="documentsList"
+              [isDiseaseReturn]="isReturned"
+              [isValidator1]="isValidator1"
+              [isValidator2]="isValidator2"
+              [showAddDoc]="showAddDoc"
+              [documentList]="documentItem"
+              [documents]="reqdocumentList"
+              (submit)="submitDocument($event)"
+              (uploadFailed)="showMandatoryDocErrorMessage($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+              [isWorkflow]="isWorkflow"
+              [taskId]="taskid"
+              (delete)="deleteDocument($event)"
+              [parentForm]="documentForm"
+              (template)="showCancelTemplate()"
+              [processType]="processType"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+            >
+            </oh-document-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <ng-template #cancelDisease>
+              <gosi-confirm-modal-dc
+                [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                (onConfirm)="confirmCancel()"
+                (onCancel)="decline()"
+              >
+              </gosi-confirm-modal-dc>
+            </ng-template>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>

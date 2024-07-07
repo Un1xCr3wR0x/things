@@ -1,0 +1,213 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<accordion class="validator-allowance-accordion">
+  <accordion-group class="wrapper-accordion-group allowance-fut" [isDisabled]="allowances?.isDisabled">
+    <div class="allowance-name float-left" accordion-heading>
+      <ng-container
+        *ngIf="
+          allowances &&
+            !claims &&
+            allowances.type &&
+            (allowances.type.english === 'InPatient Daily Allowance' ||
+              allowances.type.english === 'InPatient Daily Allowance Adjustment' ||
+              allowances.type.english === 'OutPatient Daily Allowance' ||
+              allowances.type.english === 'OutPatient Allowance' ||
+              allowances.type.english === 'OutPatient Daily Allowance Adjustment' ||
+              allowances.type.english === 'Companion Daily Allowance');
+          else allowanceType
+        "
+      >
+        <span
+          class="allowance-type"
+          *ngIf="
+            allowances &&
+            (allowances.type.english === 'OutPatient Daily Allowance' ||
+              allowances.type.english === 'InPatient Daily Allowance' ||
+              allowances.type.english === 'OutPatient Allowance')
+          "
+        >
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE' | translate }}
+          <span
+            *ngIf="
+              allowances &&
+              (allowances.type.english === 'OutPatient Daily Allowance' ||
+                allowances.type.english === 'OutPatient Allowance')
+            "
+            >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span
+          >
+          <span *ngIf="allowances && allowances.type.english === 'InPatient Daily Allowance'"
+            >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})</span
+          >
+        </span>
+        <span
+          class="allowance-type"
+          *ngIf="
+            allowances &&
+            (allowances.type.english === 'OutPatient Daily Allowance Adjustment' ||
+              allowances.type.english === 'InPatient Daily Allowance Adjustment')
+          "
+        >
+          {{ allowances.type | bilingualText }}</span
+        >
+        <span class="allowance-type" *ngIf="allowances.type.english === 'Companion Daily Allowance'">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-ALLOWANCE' | translate }}</span
+        >
+      </ng-container>
+      <ng-template #allowanceType>
+        <div *ngIf="!claims && allowances">
+          <span class="allowance-type && allowances.type"> {{ allowances.type | bilingualText }}</span>
+        </div>
+        <div *ngIf="claims">
+          <span
+            *ngIf="
+              claims.claimType?.english !== 'Companion Daily Allowance' &&
+              claims.claimType?.english !== 'Companion Conveyance Allowance'
+            "
+            class="allowance-type && allowances.type"
+          >
+            {{ claims.claimType | bilingualText }}</span
+          >
+          <span
+            *ngIf="
+              claims.claimType?.english === 'Companion Daily Allowance' ||
+              claims.claimType?.english === 'Companion Conveyance Allowance'
+            "
+            class="allowance-type && allowances.type"
+          >
+            {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-DISABILITY-CLAIM' | translate }}
+            {{ claims.claimType | bilingualText }}</span
+          >
+        </div>
+      </ng-template>
+    </div>
+    <div class="header-wrapper ml-auto" accordion-heading>
+      <div *ngIf="allowances; &quot;float-right&quot;">
+        <div class="currency" *ngIf="!claims">
+          {{ allowances.totalAmount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+        </div>
+        <div
+          *ngIf="
+            claims &&
+            (claims.claimType.english === 'Companion Daily Allowance' ||
+              claims.claimType.english === 'Companion Conveyance Allowance')
+          "
+          class="currency"
+        >
+          {{ allowances.totalAmount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+        </div>
+        <div
+          *ngIf="
+            claims &&
+            (claims.claimType.english === 'Total Disability Repatriation Expenses' ||
+              claims.claimType.english === 'Dead Body Repatriation Expenses')
+          "
+          class="currency"
+        >
+          {{ totalExpense | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+        </div>
+      </div>
+      <ng-container
+        *ngIf="
+          allowances &&
+            allowances.type &&
+            (allowances.type.english === 'Conveyance Allowance Adjustment' ||
+              allowances.type.english === 'OH Allowance Miscellaneous' ||
+              allowances.type.english === 'Companion Daily Allowance(Doctor)' ||
+              allowances.type.english === 'Companion Daily Allowance(Nurse)' ||
+              allowances.type.english === 'Aid Appliance Allowance');
+          else allowanceDetail
+        "
+      >
+        <span></span>
+      </ng-container>
+      <ng-template #allowanceDetail>
+        <span class="arrow-up">
+          <fa-icon icon="chevron-up" size="2x"></fa-icon>
+        </span>
+        <span class="arrow-down" [ngClass]="allowances?.isDisabled ? 'color' : ''">
+          <fa-icon icon="chevron-down" size="2x"></fa-icon>
+        </span>
+      </ng-template>
+    </div>
+    <div class="accordion-details">
+      <ng-container *ngIf="claims; else allowanceDetails">
+        <ng-container
+          *ngIf="
+            claims.claimType.english !== 'Companion Daily Allowance' &&
+            claims.claimType.english !== 'Companion Conveyance Allowance'
+          "
+        >
+          <oh-expenses-calculation-dc
+            [claims]="claims"
+            [validatorView]="true"
+            (navigateToCtbtr)="navigateToContributor()"
+            (navigateToEst)="navigateToEstProfile()"
+          >
+          </oh-expenses-calculation-dc>
+          <table class="table-scroll table-responsive">
+            <th [ngClass]="lang === 'en' ? 'custom-modal-en' : 'custom-modal-ar'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.EXPENSE-DETAILS' | translate }}
+            </th>
+            <tr *ngFor="let expense of claims.claimItem">
+              <div class="row claims total-border">
+                <div class="col-lg-8 claimsContent">
+                  {{ expense.type | bilingualText }}
+                </div>
+                <div class="col valueContent">
+                  {{ expense.totalAmount }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </div>
+              </div>
+            </tr>
+            <tr>
+              <div class="row total-border">
+                <div class="col-lg-8">
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}
+                </div>
+                <div class="col total">
+                  {{ totalExpense | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </div>
+              </div>
+            </tr>
+          </table>
+        </ng-container>
+        <ng-container
+          *ngIf="
+            claims.claimType.english === 'Companion Conveyance Allowance' ||
+            claims.claimType.english === 'Companion Daily Allowance'
+          "
+        >
+          <oh-allowance-calculation-dc
+            [allowances]="allowances"
+            [companionDetails]="allowances.companionDetails"
+            [calculationWrapper]="allowances.calculationWrapper"
+            [allowancePayee]="claims.payableTo"
+            [paymentDetails]="claims"
+            [contributorWage]="claims.contributorWage"
+            [validatorView]="true"
+            [day]="allowances.day"
+          >
+          </oh-allowance-calculation-dc>
+        </ng-container>
+      </ng-container>
+      <ng-template #allowanceDetails>
+        <div *ngIf="allowances">
+          <oh-allowance-calculation-dc
+            [allowances]="allowances"
+            [allowancePayee]="allowances.payableTo"
+            [validatorView]="true"
+            [tabView]="true"
+            [companionDetails]="allowances.companionDetails"
+            [calculationWrapper]="allowances.calculationWrapper"
+            [contributorWage]="claimDetails.contributorWage"
+            [paymentDetails]="claimDetails"
+            [day]="allowances.day"
+            [workDisabilityDate]="workDisabilityDate"
+            [status]="claimDetails.actualPaymentStatus.english"
+          >
+          </oh-allowance-calculation-dc>
+        </div>
+      </ng-template>
+    </div>
+  </accordion-group>
+</accordion>

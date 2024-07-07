@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <!-- Heading -->
+  <div class="row mx-3 heading-row">
+    <cnt-header-section-dc
+    heading="CONTRIBUTOR.TERMINATE-CONTRIBUTOR"
+    (goBack)="checkForChanges(cancelTemplate)"
+  ></cnt-header-section-dc>
+  <span *ngIf="isGOL" class="d-flex">
+    <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+      <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+    </div>
+    <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+    <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+      {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+      <span class="ml-3" style="margin-top: -0.4rem">
+        <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+      </span>
+    </div>
+    <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+      <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+    </div>
+  </span>
+  </div>
+  <div *ngIf="isEditMode && !isAppPrivate">
+    <div class="row mt-4">
+      <div class="col-lg-12">
+        <gosi-comments-dc [comments]="transactionRefData"> </gosi-comments-dc>
+      </div>
+    </div>
+  </div>
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="contributor">
+    <div class="col-lg-12">
+      <cnt-contributor-banner-dc [contributor]="contributor"></cnt-contributor-banner-dc>
+    </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-alert-dc
+    *ngIf="engagement?.secondment"
+    [message]="'CONTRIBUTOR.TERMINATE-SECONDMENT-INFO' | translate"
+    type="info"
+    [dismissible]="false"
+  ></gosi-alert-dc>
+  <gosi-alert-dc
+    *ngIf="engagement?.studyLeave"
+    [message]="'CONTRIBUTOR.TERMINATE-STUDYLEAVE-INFO' | translate"
+    type="info"
+    [dismissible]="false"
+  ></gosi-alert-dc>
+  <div class="row mt-4" *ngIf="engagement || terminationDetails">
+    <div class="col-lg-12">
+      <cnt-terminate-engagement-details-dc
+        [isEditMode]="isEditMode"
+        [engagement]="engagement"
+        [terminationDetails]="terminationDetails"
+        [leavingReasonList]="leavingReasonList$ | async"
+        [parentForm]="terminateForm"
+        [systemParameter]="systemParameter"
+        [contributor]="contributor"
+        [documentList]="documents"
+        [engagementId]="engagementId"
+        [certificationTypeAbroad]="certificationTypeAbroad$ | async"
+        [certificationTypeNoAbroad]="certificationTypeNoAbroad$ | async"
+        [SecondmentEstType]="SecondmentEstType$ | async"
+        [secondmentEstablishments]="secondmentEstablishments$ | async"
+        [hijiriDateConst]="hijiriDateConst"
+        [sysDate]="sysDate"
+        [referenceNo]="referenceNo"
+        [(isDocumentsRequired)]="isDocumentsRequired"
+        (refreshDoc)="refreshDocument($event)"
+        (leavingReasonSelected)="leavingReasonSelected($event)"
+        [uuid]="uuid"
+        (nicCall)="checkIndividualDetails($event.nicVar, $event.queryParams, $event.leavingDeathReason)"
+        [nicDetails]="nicDetails"
+        [backdatedEngValidatorRequired]="backdatedEngValidatorRequired"
+        [isAdminReEdit]="isAdminReEdit"
+        [ppaCalenderShiftDate]="ppaCalenderShiftDate"
+        [ppaEstablishment]="isPpa || engagement?.ppaIndicator"
+        [bankNameList$]="bankNameList$"
+        [bankDetails]="bankAccount"
+        [isBankDetailsPending]="isBankDetailsPending"
+        (IBANChange)="getBankDetails($event)"
+        (clearError)="clearErrorAlerts()"
+      ></cnt-terminate-engagement-details-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <cnt-action-area-dc
+        primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+        (submit)="submitTransaction()"
+        [disablePrimary]="apiTriggered"
+        (cancel)="checkForChanges(cancelTemplate)"
+        [isUnclaimed]="isUnclaimed"
+      ></cnt-action-area-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="checkRevertRequired()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

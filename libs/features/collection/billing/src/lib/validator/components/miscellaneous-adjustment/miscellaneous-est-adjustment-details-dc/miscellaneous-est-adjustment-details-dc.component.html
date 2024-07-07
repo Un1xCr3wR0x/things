@@ -1,0 +1,153 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content-item">
+  <!--------------est details---------->
+  <ng-container *ngIf="establishmentDetails">
+    <div class="row">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="building"
+          [heading]="'BILLING.ESTABLISHMENT-DETAILS'"
+          [canEdit]="editFlag && !isReopenClosingInProgress"
+          (onEdit)="navigateToEdit()"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentName"
+          [control]="
+            establishmentDetails.name.english === null
+              ? establishmentDetails.name.arabic
+              : (establishmentDetails.name | bilingualText)
+          "
+          label="BILLING.ESTABLISHMENT-NAME"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="registrationNo"
+          [control]="establishmentDetails.registrationNo"
+          label="BILLING.REGISTRATION-NUMBER"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentType"
+          [control]="
+            establishmentDetails.establishmentType.english === null
+              ? establishmentDetails.establishmentType.arabic
+              : (establishmentDetails.establishmentType | bilingualText)
+          "
+          label="BILLING.ESTABLISHMENT-TYPE"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" [control]="establishmentDetails.status" label="BILLING.ESTABLISHMENT-STATUS">
+        </gosi-label-dc>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<!-----------end of est details---------->
+<!--------------------adjustment details------->
+<div class="content-item">
+  <div class="row">
+    <div class="col-lg-12">
+      <frm-content-heading-dc icon="money-bill" heading="BILLING.ADJUSTMENT-DETAILS" [canEdit]="false">
+      </frm-content-heading-dc>
+    </div>
+  </div>
+  <div *ngIf="adjustmentReason !== 'Others'" class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          [control]="
+            miscellanousDetails?.adjustmentReason?.english === null
+              ? miscellanousDetails?.adjustmentReason?.arabic
+              : (miscellanousDetails?.adjustmentReason | bilingualText)
+          "
+          label="BILLING.ADJUSTMENT-REASON"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc [control]="totalBalance" label="BILLING.TOTAL-BALANCE"> </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="adjustmentReason === 'Others'" class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc [control]="AdjReason | translate" label="BILLING.ADJUSTMENT-REASON"> </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc [control]="miscellanousDetails?.reason" label="BILLING.ENTER-REASON"> </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="adjustmentfor === 'ESTABLISHMENT_LEVEL'">
+        <gosi-label-dc [control]="'BILLING.ESTABLISHMENT-LEVEL' | translate" label="BILLING.ADJUSTMENT-FOR">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="adjustmentfor !== 'ESTABLISHMENT_LEVEL'">
+        <gosi-label-dc [control]="'BILLING.CONTRIBUTOR-LEVEL' | translate" label="BILLING.ADJUSTMENT-FOR">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="miscellanousDetails?.adjustmentType !== 'MISC_CREDIT'">
+        <gosi-label-dc [control]="'BILLING.DEBIT' | translate" label="BILLING.ADJUSTMENT-TYPE"> </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="miscellanousDetails?.adjustmentType === 'MISC_CREDIT'">
+        <gosi-label-dc [control]="'BILLING.CREDIT' | translate" label="BILLING.ADJUSTMENT-TYPE"> </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="value-clrs">
+          {{ 'BILLING.PERIOD' | translate }}
+        </div>
+        <div
+          class="previous-Indicator"
+          *ngIf="miscellanousDetails?.periodStartDate === null && miscellanousDetails?.periodEndDate === null"
+        >
+          -
+        </div>
+        <div
+          class="previous-Indicator"
+          *ngIf="miscellanousDetails?.periodStartDate !== null && miscellanousDetails?.periodEndDate !== null"
+        >
+          {{ miscellanousDetails?.periodStartDate.gregorian | date: 'dd/MM/yyyy' }}
+          <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+          <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+          {{ miscellanousDetails?.periodEndDate.gregorian | date: 'dd/MM/yyyy' }}
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc [control]="miscellanousDetails?.description" label="BILLING.DESCRIPTION"> </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+  <!-------- adjustment details group ------------>
+  <ng-container *ngIf="adjustmentReason !== undefined">
+    <blg-adjustment-group-details-dc
+      [isContributorLevel]="isContributorLevel"
+      [isEdit]="isEdit"
+      [selectedReason]="adjustmentReason"
+      [totalAdjustmentAmount]="miscellanousDetails.totalAdjustment"
+      [miscellanousSubmittedDetails]="miscellanousDetails.adjustmentDetails"
+      [isPPAEst]="isPPAEst"
+    >
+    </blg-adjustment-group-details-dc>
+  </ng-container>
+</div>

@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="item-container d-flex flex-column" (click)="navigateToTransaction(transaction)">
+  <div
+    class="d-flex justify-content-between description-status align-items-center pt-1"
+    [ngClass]="
+      transaction.priority === 0
+        ? 'high'
+        : transaction.priority === 3
+        ? 'medium'
+        : transaction.priority === 5
+        ? 'low'
+        : ''
+    "
+  >
+    <div class="d-flex description">
+      <div
+        tooltip="{{ disabled ? ('TEAM-MANAGEMENT.DISABLED-TOOLTIP' | translate) : null }}"
+        placement="bottom"
+        containerClass="tooltip-mobile-wrapper"
+        container="body"
+      >
+        <gosi-input-checkbox-dc
+          [noSpacing]="true"
+          [noMargin]="true"
+          [control]="control"
+          (select)="selectTransactions(control.value, transaction)"
+          [disabled]="disabled"
+          [showToolTipOnDisabled]="disabled"
+          (click)="onCheckboxClick()"
+        ></gosi-input-checkbox-dc>
+      </div>
+      <div class="txn-title">
+        {{ lang === 'en' ? transaction.titleEnglish : transaction.titleArabic }}
+      </div>
+    </div>
+
+    <div class="text-nowrap">
+      <gosi-status-badge-dc
+        [label]="getState(transaction.state) | translate"
+        [type]="statusBadgeType(transaction)"
+      ></gosi-status-badge-dc>
+    </div>
+  </div>
+  <div class="sub-item">
+    <span class="label txn-desc">
+      {{ lang === 'en' ? transaction.descriptionEnglish : transaction.descriptionArabic }}</span
+    >
+  </div>
+  <div class="sub-item priority">
+    <span class="label">{{ 'TEAM-MANAGEMENT.PRIORITY' | translate | uppercase }}</span>
+    <span class="value">{{ 'TEAM-MANAGEMENT.' + transaction.priority | translate | uppercase }}</span>
+  </div>
+  <div class="sub-item transaction-id">
+    <span class="label">{{ 'TEAM-MANAGEMENT.TRANSACTION' | translate | uppercase }} #</span>
+    <span class="value">{{ transaction.transactionId }}</span>
+  </div>
+  <div class="sub-item date">
+    <span class="label">{{ 'TEAM-MANAGEMENT.DATE' | translate | uppercase }}</span>
+    <span class="value">{{ (isOnHoldMenu ? transaction.updatedDate : transaction.assignedDate) | gosiDate }}</span>
+    <span class="sub-value">{{
+      (isOnHoldMenu ? transaction.updatedDate : transaction.assignedDate) | date: 'hh:mm a':'UTC+3'
+    }}</span>
+  </div>
+  <div class="sub-item assignee">
+    <span class="label">{{ 'TEAM-MANAGEMENT.ASSIGNEE' | translate | uppercase }}</span>
+    <span class="value">{{ transaction.assigneeId | bilingualText }}</span>
+  </div>
+  <div class="sub-item d-flex ola align-items-center">
+    <span class="label">{{ 'TEAM-MANAGEMENT.OLA' | translate | uppercase }}</span>
+    <span class="progress-time value">
+      <gosi-ola-task-dc
+        [assignedDate]="transaction.assignedDate"
+        [olaAvailable]="transaction.olaAvailable"
+        [dueDate]="transaction.olaDueDate"
+        [transactionCreationDate]="transaction?.transactionCreationDate" [transactionDueDate]="transaction?.slaDueDate" [slaAvailable]="transaction?.slaAvailable"
+      ></gosi-ola-task-dc>
+    </span>
+  </div>
+</div>

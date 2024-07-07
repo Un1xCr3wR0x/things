@@ -1,0 +1,95 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--   Repen complication Main Heading  -->
+<div class="report-oh-frame content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading">
+        {{ 'OCCUPATIONAL-HAZARD.REIMBURSE-DEAD-BODY-REPATRIATION' | translate }}
+      </div>
+    </div>
+  </div>
+
+  <gosi-comments-dc *ngIf="routerData?.taskId" [comments]="comment ? comment : []"></gosi-comments-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <gosi-progress-wizard-dc
+    [wizardItems]="repatriationWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #progressWizardItems
+  >
+  </gosi-progress-wizard-dc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="currentTab === 0">
+            <div class="row">
+                <div class="col-md-12" *ngIf="!pageEmpty">
+                    <oh-deadbody-repatriation-dc 
+                    (submit)="expensesSubmit($event)"
+                    (cancel)="cancelTransaction($event)"
+                    [modifiedRepatriation]="modifiedRepatriation">
+                    </oh-deadbody-repatriation-dc>
+                </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 1">
+            <div class="row">
+              <div class="col-md-12 upload-document-section">
+                <oh-document-dc
+                #documentDetailsForm
+                [transactionId]="repatriationTransactionId"
+                [businessKey]="complicationIndicator ? complicationId : injuryId"
+                [requiredList]="documentsList"
+                [documentList]="documentItem"
+                [documents]="reqdocumentList"
+                (submit)="submitDocument($event)"
+                (uploadFailed)="showMandatoryDocErrorMessage($event)"
+                (documentFormDetails)="showFormValidation()"
+                (previous)="navigateToPreviousTab()"
+                (refresh)="refreshDocument($event)"
+                (delete)="deleteDocument($event)"
+                [parentForm]="documentForm"
+                (template)="showCancelTemplate()"
+                [isSelectedReasonOthers]="isSelectedReasonOthers"
+                [isReassessment]="false"
+                [processType]="processType"
+                [repatriationReturn]="repatriationReturn"
+                [repatriation]="repatriation"
+                >
+                </oh-document-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <ng-template #cancelInjury>
+                  <gosi-confirm-modal-dc
+                    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                    (onConfirm)="confirmCancel()"
+                    (onCancel)="decline()"
+                  >
+                  </gosi-confirm-modal-dc>
+                </ng-template>
+              </div>
+            </div>
+            <!-- <div class="row">
+              <div class="col-md-12">
+                <ng-template #cancelEngagementTemplate>
+                  <gosi-confirm-modal-dc
+                    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                    (onConfirm)="confirmCancel()"
+                    (onCancel)="decline()"
+                  >
+                  </gosi-confirm-modal-dc>
+                </ng-template>
+              </div>
+            </div> -->
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>

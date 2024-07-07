@@ -1,0 +1,256 @@
+<div class="custom-modal mb-5">
+  <gosi-modal-dc
+    [modalHeader]="'VIOLATIONS.PREVIOUS-VIOLATIONS-AGAINST-THE-CONTRIBUTOR' | translate"
+    [needCloseButton]="true"
+    (closeModal)="hideModal()"
+  >
+    <div modalContent>
+      <div class="confirmation-popup">
+        <div class="confirm-content pb-2">
+          <div class="row d-flex align-items-center">
+            <div class="col-md-12">
+              <div class="table-responsive excluded-contributor pb-5 mb-5">
+                <!-- mobile view -->
+                <div class="mobile-view">
+                  <div class="row mb-3 mt-4">
+                    <div class="col-sm-4 col-md-4 col-lg-4">
+                      <div class="row">
+                        <div class="col-sm-12 col-md-12">
+                          <gosi-label-dc
+                            [label]="'VIOLATIONS.CONTRIBUTOR-NAME' | translate"
+                            [value]="
+                              transactionDetails?.contributors[index]?.contributorName?.english === null
+                                ? transactionDetails?.contributors[index]?.contributorName?.arabic
+                                : (transactionDetails?.contributors[index]?.contributorName | bilingualText)
+                            "
+                          ></gosi-label-dc>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-4 col-md-4 col-lg-4">
+                      <div class="row">
+                        <div class="col-sm-12 col-md-12">
+                          <div *ngFor="let identifier of transactionDetails?.contributors[index]?.identity">
+                            <div *ngIf="identifier?.idType === 'NIN'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.NATIONAL-ID-NUMBER' | translate"
+                                [value]="identifier?.newNin"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                            <div *ngIf="identifier?.idType === 'IQAMA'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.IQAMA-NUMBER' | translate"
+                                [value]="identifier?.iqamaNo"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                            <div *ngIf="identifier?.idType === 'GCCID'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.GCCID' | translate"
+                                [value]="identifier?.id"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    *ngFor="
+                      let eachViolation of filteredHistory
+                        | paginate
+                          : {
+                              id: 'paginationId',
+                              itemsPerPage: itemsPerPage,
+                              totalItems: totalViolations,
+                              currentPage: currentPage
+                            };
+                      let i = index
+                    "
+                  >
+                    <div
+                      class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                    >
+                      <div class="card-body align-items-center">
+                        <div class="first-row d-flex flex-row justify-content-between my-2">
+                          <div class="first-cell">
+                            <p class="title">
+                              <!-- heading -->
+                            </p>
+                            <p class="sub-title">
+                              <span class="title-two">{{ eachViolation?.violationLetterDate | dateType | formatDate }}</span>
+                            </p>
+                            <p class="sub-title">
+                              {{ 'VIOLATIONS.VIOLATION-NUMBER' | translate }} :
+                              <span
+                                class="title-two violation-column"
+                                (click)="navigateToViolationDetails(eachViolation?.violationId)"
+                              >
+                                {{ eachViolation?.violationId }}
+                              </span>
+                            </p>
+                            <p class="sub-title">
+                              {{ 'VIOLATIONS.VIOLATION-TYPE' | translate }} :
+                              <span class="title-two"> {{ eachViolation?.violationType | bilingualText }} </span>
+                            </p>
+                            <p class="sub-title">
+                              {{ 'VIOLATIONS.PENALTY-AMOUNT' | translate }} :
+                              <span class="title-two">
+                                {{
+                                  eachViolation?.penaltyAmount
+                                    ? (eachViolation?.penaltyAmount | number: '1.2-2')
+                                    : eachViolation?.penaltyAmount === 0
+                                    ? '0.00'
+                                    : '-'
+                                }}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- mobile view end -->
+                <div class="desktop-view">
+                  <!-- <table class="table table-borderless"> -->
+                  <div class="row mb-3 mt-4">
+                    <div class="col-sm-4 col-md-4 col-lg-4">
+                      <div class="row">
+                        <div class="col-sm-12 col-md-12">
+                          <gosi-label-dc
+                            [label]="'VIOLATIONS.CONTRIBUTOR-NAME' | translate"
+                            [value]="
+                              transactionDetails?.contributors[index]?.contributorName?.english === null
+                                ? transactionDetails?.contributors[index]?.contributorName?.arabic
+                                : (transactionDetails?.contributors[index]?.contributorName | bilingualText)
+                            "
+                          >
+                          </gosi-label-dc>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-4 col-md-4 col-lg-4">
+                      <div class="row">
+                        <div class="col-sm-12 col-md-12">
+                          <div *ngFor="let identifier of transactionDetails?.contributors[index]?.identity">
+                            <div *ngIf="identifier?.idType === 'NIN'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.NATIONAL-ID-NUMBER' | translate"
+                                [value]="identifier?.newNin"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                            <div *ngIf="identifier?.idType === 'IQAMA'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.IQAMA-NUMBER' | translate"
+                                [value]="identifier?.iqamaNo"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                            <div *ngIf="identifier?.idType === 'GCCID'">
+                              <gosi-label-dc
+                                [label]="'VIOLATIONS.GCCID' | translate"
+                                [value]="identifier?.id"
+                                [isLink]="true"
+                                (select)="navigateToContributorProfile($event)"
+                              >
+                              </gosi-label-dc>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- for displaying violation details -->
+                  <table class="table table-borderless">
+                    <thead class="thead-light">
+                      <tr>
+                        <th id="date">
+                          {{ 'VIOLATIONS.HISTORY-LETTER-DATE' | translate }}
+                        </th>
+                        <th id="violation-number">
+                          {{ 'VIOLATIONS.VIOLATION-NUMBER' | translate }}
+                        </th>
+                        <th id="violation-type">
+                          {{ 'VIOLATIONS.VIOLATION-TYPE' | translate }}
+                        </th>
+                        <th id="violation-class">
+                          {{ 'VIOLATIONS.PENALTY-AMOUNT' | translate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        class="border-bottom"
+                        *ngFor="
+                          let eachViolation of filteredHistory
+                            | paginate
+                              : {
+                                  id: 'paginationId',
+                                  itemsPerPage: itemsPerPage,
+                                  totalItems: totalViolations,
+                                  currentPage: currentPage
+                                };
+                          let i = index
+                        "
+                      >
+                        <td>
+                          <div class="row ml-2 mr-2">{{ eachViolation?.violationLetterDate | dateType | formatDate }}</div>
+                        </td>
+                        <td class="violation-column" (click)="navigateToViolationDetails(eachViolation?.violationId)">
+                          <div class="row ml-2 mr-2">{{ eachViolation?.violationId }}</div>
+                        </td>
+                        <td>
+                          <div class="row ml-2 mr-2">
+                            {{ eachViolation?.violationType | bilingualText }}
+                          </div>
+                        </td>
+                        <td>
+                          <div class="row ml-2 mr-2">
+                            {{
+                              eachViolation?.penaltyAmount
+                                ? (eachViolation?.penaltyAmount | number: '1.2-2')
+                                : eachViolation?.penaltyAmount === 0
+                                ? '0.00'
+                                : '-'
+                            }}
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <p>previous-contributor-violation-entity-sc works!</p> -->
+  </gosi-modal-dc>
+</div>
+<ng-container>
+  <gosi-pagination-dc
+    *ngIf="totalViolations > itemsPerPage"
+    [totalSize]="totalViolations"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    paginationId="paginationId"
+  ></gosi-pagination-dc>
+</ng-container>

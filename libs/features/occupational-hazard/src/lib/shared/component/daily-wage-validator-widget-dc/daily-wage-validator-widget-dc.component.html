@@ -1,0 +1,171 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container *ngIf="calculationWrapper && calculationWrapper.allowanceBreakup && day">
+  <ng-container
+    *ngIf="
+      calculationWrapper.allowanceBreakup.allowanceType.english !== 'Balance Settlement Adjustment Reversal' &&
+        calculationWrapper.allowanceBreakup.allowanceType.english !== 'Balance Settlement Reversal';
+      else reverseBalanceSettlement
+    "
+  >
+    <div class="row daily-wage">
+      <ng-container
+        *ngIf="
+          calculationWrapper.allowanceBreakup.allowanceType.english !== 'InPatient Daily Allowance Adjustment' &&
+            calculationWrapper?.allowanceBreakup?.allowanceType?.english !== 'OutPatient Daily Allowance Adjustment' &&
+            calculationWrapper?.allowanceBreakup?.allowanceType?.english !== 'Balance Settlement Adjustment Allowance';
+          else adjustmentCalculation
+        "
+      >
+        <div class="col-lg-7 col-md-7 col-sm-7 wage-content">
+          <span class="allowance-header"> {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-WAGE' | translate }} </span>
+          <div class="row calculation-equation">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.MONTHLY-WAGE' | translate }} /
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NUMBER-OF-DAYS-IN-MONTH' | translate }}
+          </div>
+
+          <div class="row calculation">
+            <ng-container *ngFor="let breakup of dailyWage; let j = index">
+              <div class="col-lg-9 col-md-9 col-sm-9 calculation-contents">
+                <ng-container>
+                  {{ contributorWage }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }} / {{ day[j]?.totalDays }}
+                  <span class="calculation-lighter-content"
+                    >( {{ getMonth(day[j]?.month) | translate }} {{ day[j]?.year }})</span
+                  >
+                </ng-container>
+              </div>
+              <div class="col-lg-3 col-md-3 col-sm-3 total-content">
+                <div class="col">= {{ breakup.value }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #adjustmentCalculation>
+        <div class="col-lg-7 col-md-7 col-sm-7 wage-content">
+          <span class="allowance-header">{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DIFF-IN-DAILY-WAGE' | translate }}</span>
+          <div class="row calculation-equation adjustment">
+            ({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NEW-MONTHLY-WAGE' | translate }} -
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.OLD-MONTHLY-WAGE' | translate }}) /
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NO-OF-DAYS' | translate }}
+          </div>
+
+          <div class="row calculation">
+            <ng-container *ngFor="let breakup of dailyWage; let l = index">
+              <div class="col-lg-9 col-md-9 col-sm-9 calculation-contents">
+                <ng-container>
+                  ( {{ calculationWrapper.allowanceBreakup.newContributorWage }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }} -
+                  {{ calculationWrapper.allowanceBreakup.oldContributorWage }}
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }} ) / {{ day[l]?.totalDays }}
+                  <span class="calculation-lighter-content"
+                    >( {{ getMonth(day[l]?.month) | translate }} {{ day[l]?.year }})</span
+                  >
+                </ng-container>
+              </div>
+              <div class="col-lg-3 col-md-3 col-sm-3 total-content">
+                <div class="col">= {{ breakup.value }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-template>
+      <div class="col-lg-5 col-md-5 col-sm-5 daily-allowance">
+        <ng-container
+          *ngIf="
+            calculationWrapper?.allowanceBreakup?.allowanceType?.english !== 'InPatient Daily Allowance Adjustment' &&
+              calculationWrapper?.allowanceBreakup?.allowanceType?.english !==
+                'OutPatient Daily Allowance Adjustment' &&
+              calculationWrapper?.allowanceBreakup?.allowanceType?.english !==
+                'Balance Settlement Adjustment Allowance';
+            else adjustment
+          "
+        >
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL-ALLOWANCE' | translate }}</ng-container
+        >
+        <ng-template #adjustment>
+          <span class="allowance-header">{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE' | translate }} </span>
+        </ng-template>
+        <div class="row formula-direction calculation-equation">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-WAGE' | translate }} x
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NUMBER-OF-DAYS' | translate }} x
+          {{ getAllowancePercentage(calculationWrapper.allowanceBreakup) }}%
+        </div>
+        <div class="row calculation total">
+          <ng-container *ngFor="let breakup of dailyWage; let i = index">
+            <div class="col-lg-9 col-md-9 col-sm-9 calculation-contents">
+              <ng-container
+                *ngIf="
+                  calculationWrapper.allowanceBreakup.allowanceType.english === 'Balance Settlement Allowance' ||
+                  calculationWrapper?.allowanceBreakup?.allowanceType?.english ===
+                    'Balance Settlement Adjustment Allowance'
+                "
+              >
+                <div class="direction">
+                  <span class="direction-arabic-left">
+                    {{ breakup.value }}
+                  </span>
+                  <span class="direction-left-value">
+                    {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                  </span>
+                  <span class="direction-right">
+                    X 1 X
+                    {{ getAllowancePercentage(calculationWrapper.allowanceBreakup) }}%</span
+                  >
+                </div>
+              </ng-container>
+              <ng-container
+                *ngIf="
+                  calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Allowance' ||
+                  calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance' ||
+                  calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance' ||
+                  calculationWrapper.allowanceBreakup.allowanceType.english ===
+                    'InPatient Daily Allowance Adjustment' ||
+                  calculationWrapper?.allowanceBreakup?.allowanceType?.english ===
+                    'OutPatient Daily Allowance Adjustment'
+                "
+              >
+                <div class="direction">
+                  <span class="direction-arabic-left">
+                    {{ breakup?.value }}
+                  </span>
+                  <span class="direction-left-value">
+                    {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                  </span>
+                  <span> X {{ day[i]?.day }} X {{ getAllowancePercentage(calculationWrapper.allowanceBreakup) }}%</span>
+                </div>
+              </ng-container>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 total-content">
+              <div class="col">
+                = {{ dailyAllowance[i]?.value }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 total-border"></div>
+        </div>
+        <div class="row calculation">
+          <div class="col-lg-9 col-md-9 col-sm-9 calculation-contents-label">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}
+          </div>
+          <div class="col-lg-3 col-md-3 col-sm-3 total-content">
+            <div class="col label-weight">
+              = {{ calculationWrapper.allowanceBreakup.totalAllowance }}
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #reverseBalanceSettlement>
+    <div class="row balance-settlement justify content-center">
+      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL-AMOUNT' | translate }}
+      = {{ calculationWrapper.allowanceBreakup.totalAllowance }}
+      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+    </div>
+  </ng-template>
+</ng-container>

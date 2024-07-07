@@ -1,0 +1,64 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="zakat-certificate content pb-1">
+  <est-heading-dc [shouldPrompt]="false" [canNavigate]="false" (backEvent)="cancelTransaction(cancelTemplate)">
+    {{ heading | translate }}
+  </est-heading-dc>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <div class="row pb-md-4 mb-md-3">
+    <gosi-card-dc class="col-md-12" type="secondary" [isHeading]="false" *ngIf="form">
+      <div class="row">
+        <gosi-input-month-dc
+          class="col-md-6"
+          id="fromDate"
+          name="fromDate"
+          label="ESTABLISHMENT.FROM-DATE"
+          [control]="form.get('fromDate').get('gregorian')"
+          [minDate]="minFromDate"
+          [maxDate]="maxToDate"
+          (blur)="setToDate()"
+        ></gosi-input-month-dc>
+        <gosi-input-month-dc
+          class="col-md-6"
+          id="toDate"
+          name="toDate"
+          label="ESTABLISHMENT.TO-DATE"
+          [control]="form.get('toDate').get('gregorian')"
+          [minDate]="minToDate"
+          [maxDate]="maxToDate"
+          [gosiDateOverlap]="form.get('fromDate').get('gregorian')"
+          [canBeSame]="true"
+        ></gosi-input-month-dc>
+      </div>
+    </gosi-card-dc>
+    <div class="col-md-12" id="zakatDocuments" *ngIf="isPrivateChannel">
+      <est-documents-dc
+        [uuid]="uuid"
+        [documents]="documents"
+        [businessKey]="registrationNo"
+        [transactionId]="transactionId"
+        (refreshDocument)="bindDocContent($event)"
+      ></est-documents-dc>
+    </div>
+    <div class="col-md-12" id="zakatAction">
+      <est-footer-buttons-dc
+        [halfMargin]="true"
+        primaryLabel="ESTABLISHMENT.GENERATE"
+        [showPrevious]="false"
+        (submit)="generateDocument()"
+        (cancel)="showModal(cancelTemplate)"
+      >
+      </est-footer-buttons-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

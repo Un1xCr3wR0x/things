@@ -1,0 +1,285 @@
+<gosi-card-dc type="secondary" lessPadding="true">
+    <!-- Contributor  Details -->
+    <div class="row">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="user"
+          [canEdit]="validatorCanEdit"
+          (onEdit)="navigateToEdit()"
+          heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="nationalId"
+              label="{{ getIdentityLabel(identity) | translate }}"
+              [isLink]="true"
+              [value]="identity?.id"
+              (click)="viewContributorDetails()"
+            >
+            </gosi-label-dc>
+            </div> 
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="dateOfBirth"
+              [label]="'BENEFITS.DATE-OF-BIRTH' | translate"
+              value="{{ heirDetails?.contributorDetails?.birthDate | dateType }} ({{
+                'BENEFITS.AGE-TITLE' | translate
+              }}:{{ heirDetails?.contributorDetails?.age }})"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="contributorName"
+              label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+              [value]="heirDetails?.contributorDetails?.nameBilingual?.english"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="contributorNameArabic"
+              label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+              [value]="heirDetails?.contributorDetails?.nameBilingual?.arabic"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- heir  Details -->
+    <div class="row">
+      <div class="col-md-12">
+        <frm-content-heading-dc
+          icon="user"
+          [canEdit]="false"
+          heading="{{ 'BENEFITS.HEIR-BENEFIT-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="requestdate"
+              label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+              value="{{ heirDetails?.contributorDetails?.firstBenefitStartDate | dateType }}"
+            >
+            </gosi-label-dc>
+          </div>
+
+            <div class="col-sm-4 col-md-4 col-lg-4">
+              <gosi-label-dc
+                [value]="heirDetails?.contributorDetails?.totalBenefitAmount"
+                label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+              ></gosi-label-dc>
+            </div>
+
+          </div>
+      </div>
+    </div>
+    <!-- Accordion Section -->
+    <div class="row">
+      <div class="col-md-12 header annuity-type">{{ 'BENEFITS.HEIR-PAYMENT-DETAILS' | translate }}</div>
+      <ng-container *ngFor="let heir of heirDetails?.heirs; let i = index">
+        <div *ngIf="heir" class="col-12">
+          <gosi-accordion-dc [isPrimaryColor]="false">
+            <div header>
+              <div class="heading-wrapper">
+                <div class="row align-items-center d-flex justify-content-between">
+                  <div class="accordion-heading-type col-auto">
+                    <!-- To display name in arabic in case english name null -->
+                    <span class="heir-type">{{ heir?.person?.name | nameToString: true }}</span>
+                    <span class="relation"> ({{ heir?.relationship | bilingualText }})</span>
+
+                    <!-- {{ (eachHeir?.name | bilingualText) || '-' }} ({{ eachHeir?.relationship | bilingualText }}) -->
+                  </div>
+                  <div class="status ml-auto d-flex">
+                    {{ 'BENEFITS.PAYABLE-AMOUNT' | translate }} :
+                    <span [ngClass]="heir?.netAmount > 0 ? 'text-green' : 'text-red'">{{
+                      heir?.netAmount | numToPositive | number: '1.2-2'
+                    }}</span>
+                  </div>
+                  <div class="col-auto d-flex justify-content-end mr-0">
+                    <span class="arrow-up">
+                      <fa-icon icon="angle-up" size="lg"></fa-icon>
+                    </span>
+                    <span class="arrow-down">
+                      <fa-icon icon="angle-down" size="lg"></fa-icon>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div body>
+              <div class="row">
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    [value]="heir.identity?.id"
+                    [label]="'BENEFITS.NIN' | translate"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    value="{{ heir.person?.birthDate | dateType }} ({{ 'BENEFITS.AGE-TITLE' | translate }}:{{
+                      heir.person?.age
+                    }})"
+                    [label]="'BENEFITS.DATE-OF-BIRTH' | translate"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc id="nin" [value]="heir.person?.nameBilingual?.english" [label]="'BENEFITS.HEIR_NAME_VALIDATOR' | translate ">
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    [value]="heir.person?.nameBilingual?.arabic"
+                    [label]="'BENEFITS.HEIR_NAME_ARABIC' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div> 
+                <div class="row" *ngIf="heir?.benefitList?.length > 0 && heir?.benefitList[0]?.adjustmentList?.length">
+                <div class="col-12 annuity-type pb-2 pl-2">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</div>
+                 <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    [value]="heir?.benefitStartDate | dateType"
+                    [label]="'BENEFITS.BENEFIT-START-DATE' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    [value]="heir?.benefitStatus | bilingualText"
+                    [label]="'BENEFITS.BENEFIT-STATUS' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="nin"
+                    [value]="heir?.benefitList[0]?.stopDate | dateType"
+                    [label]="'BENEFITS.BENEFIT-STOP-DATE' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+               </div> 
+            <!-- </div> -->
+              <div class="row">
+                <div  *ngIf="heir?.benefitList?.length > 0 && heir?.benefitList[0]?.adjustmentList?.length">
+                <div class="col-12 annuity-type pb-2 pl-2">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</div>
+                <div class="table-view px-5">
+                  <table
+                    class="table table-borderless w-100"
+                    [ngClass]="!isSmallScreen ? 'overflow-auto w-100' : 'table-responsive'"
+                  >
+                    <thead>
+                      <tr>
+                        <th>{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}</th>
+                        <th>{{ 'BENEFITS.DEBIT-PERCENTAGE' | translate }}</th>
+                        <th>{{ 'BENEFITS.AMOUNT_ONLY' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container
+                        *ngFor="let adjustment of heir?.benefitList[0]?.adjustmentList; let i = index"
+                      >
+                        <tr class="data-row">
+                          <td>{{ adjustment?.adjustmentReason | bilingualText }}</td>
+                          <td>{{ adjustment?.percentage }}</td>
+                          <td [ngClass]="adjustment?.adjustmentAmount > 0 ? 'text-green' : 'text-red'">
+                            {{ adjustment?.adjustmentAmount | numToPositive | number: '1.2-2' }}
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+               <div class="col-10 d-flex justify-content-end pr-3">
+                  {{ 'BENEFITS.DIRECT-NET-PAYABLE-AMOUNT' | translate }} :
+                  <span [ngClass]="heir?.netAmount > 0 ? 'text-green' : 'text-red'">{{
+                    heir?.netAmount | numToPositive | number: '1.2-2'
+                  }}</span>
+                </div>
+              </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 pb-4" *ngIf="heir?.benefitList?.length > 0 && heir?.benefitList[0]?.adjustmentList?.length">
+                  <a actOnAlert id="view-ineligible" (click)="viewAdjustmentDetails(heir)"><u>{{ 'BENEFITS.VIEW-ADJUSTMENT-DETAILS' | translate }}</u></a>
+                 </div>
+                <div class="col-12 annuity-type pb-2 pl-2">{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}</div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="payeeType"
+                    [value]="heir?.agentType | bilingualText"
+                    [label]="'BENEFITS.PAYEE' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc id="paymentMethod" [value]="bankTransferValue | bilingualText" [label]="'BENEFITS.PAYMENT-METHOD' | translate ">
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc  *ngIf="heir?.bankAccountList?.isNonSaudiIBAN"
+                    id="swiftCode"
+                    [value]="
+                    heir?.bankAccountList?.length > 0
+                    ? heir?.bankAccountList[0]?.swiftCode : '-'
+                    "
+                    [label]="'BENEFITS.BANK-SWIFT-CODE' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="bankAccountNumber"
+                    [value]="
+                      heir?.bankAccountList?.length > 0 ? heir?.bankAccountList[0]?.ibanBankAccountNo : '-'
+                    "
+                    [label]="'BENEFITS.BANK-ACCOUNT-NUMBER' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4"
+                >
+                  <gosi-label-dc
+                    id="bankName"
+                    [value]="
+                      heir?.bankAccountList[0] ? 
+                        heir?.bankAccountList[0].isNonSaudiIBAN ? 
+                        heir?.bankAccountList[0].bankName.english : 
+                        (heir?.bankAccountList[0]?.bankName | bilingualText: true)
+                        : '-'
+                    "
+                    [label]="'BENEFITS.BANK-NAME' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-4">
+                  <gosi-label-dc
+                    id="bankStatus"
+                    [value]="
+                      heir?.bankAccountList?.length > 0
+                        ? (heir?.bankAccountList[0]?.status | bilingualText)
+                        : '-'
+                    "
+                    [label]="'BENEFITS.STATUS' | translate "
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+            </div>
+          </gosi-accordion-dc>
+        </div>
+      </ng-container>
+    </div>
+  </gosi-card-dc>

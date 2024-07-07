@@ -1,0 +1,228 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- Uploaded Document section-->
+<div class="row" [formGroup]="uploadDocumentForm" *ngIf="(canUpload && !isValidator2) || processType === 'add'">
+  <div class="col-md-12 document-upload">
+    <div class="card">
+      <div class="card-body">
+        <div class="row" *ngIf="showHeaders">
+          <div class="col-md-12 upload pb-4">
+            <h4 class="card-heading">
+              {{ 'OCCUPATIONAL-HAZARD.UPLOAD-DOCUMENT' | translate }}
+            </h4>
+            <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info" noPadding="true"> </gosi-alert-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <ng-container *ngIf="documentList && documentList.length > 0">
+              <ng-container *ngFor="let item of documentList; let i = index">
+                <gosi-input-file-sc
+                  [index]="i"
+                  [document]="item"
+                  [businessKey]="businessKey"
+                  (refresh)="refreshDocument($event)"
+                  (uploadedEvent)="uploadedEventDetails(item)"
+                  [isScan]="isAppPrivate"
+                  (delete)="deleteDocument(item)"
+                  [transactionId]="transactionId"
+                ></gosi-input-file-sc>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+        <!-- <div class="row justify-content-center">
+          <gosi-button-dc
+            id="addDocument"
+            (click)="addDocument(i, item)"
+            type="secondary"
+            size="md"
+            [outlineOnly]="true"
+            [disabled]="addButtonDisable"
+          >
+            <fa-icon class="plus-icon" [icon]="['fas', 'plus']"></fa-icon>
+            {{ 'OCCUPATIONAL-HAZARD.ANOTHER-DOCUMENT' | translate }}
+          </gosi-button-dc>
+        </div> -->
+        <div class="row justify-content-center mb-4" *ngIf="showAddDoc">
+          <gosi-button-dc
+            id="addDocument"
+            (click)="addDocument()"
+            type="secondary"
+            size="md"
+            [outlineOnly]="true"
+            [disabled]="otherDocumentList.length === 3"
+          >
+            <fa-icon class="plus-icon" [icon]="['fas', 'plus']"></fa-icon>
+            {{ 'OCCUPATIONAL-HAZARD.ANOTHER-DOCUMENT' | translate }}
+          </gosi-button-dc>
+        </div>
+        <ng-container *ngIf="showAddDoc">
+          <div *ngFor="let otherDoc of otherDocumentList; let oj = index">
+            <gosi-input-file-sc
+              [isScan]="false"             
+              [index]="oj"
+              [businessKey]="businessKey"
+              [transactionId]="transactionId"
+              [referenceNo]="referenceNo"
+              [document]="otherDoc"
+              (refresh)="refreshDocument($event)"
+            ></gosi-input-file-sc>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Uploaded Document section-->
+<div class="row" [formGroup]="uploadDocumentForm" *ngIf="(isValidator2 && processType !== 'add') || (allowanceFlag && allowanceFlagReturn) || repatriationReturn">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="card-heading">
+              {{ 'OCCUPATIONAL-HAZARD.VALIDATOR REQUESTED DOCUMENTS' | translate }}
+            </h4>
+            <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info"> </gosi-alert-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <ng-container *ngIf="documents.length > 0; else noDocuments">
+              <ng-container *ngFor="let item of documents; let i = index">
+                <gosi-input-file-sc
+                  [index]="i"
+                  id="documents"
+                  [document]="item[0]"
+                  [businessKey]="businessKey"
+                  (refresh)="refreshDocument($event)"
+                  [isScan]="isAppPrivate"
+                  [transactionId]="transactionId"
+                  [referenceNo]="item[0]?.referenceNo"
+                ></gosi-input-file-sc>
+              </ng-container>
+            </ng-container>
+            <ng-template #noDocuments>
+              <div class="d-flex justify-content-center">
+                {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submitted Document section-->
+<div class="row" [formGroup]="uploadDocumentForm" *ngIf="(isValidator2 && processType !== 'add') || (allowanceFlag && allowanceFlagReturn) || repatriationReturn">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="card-heading">
+              {{ 'OCCUPATIONAL-HAZARD.SUBMITED-DOCUMENTS' | translate }}
+            </h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <ng-container *ngIf="documentList.length > 0; else noDocuments">
+              <ng-container *ngFor="let item of documentList; let i = index">
+                <gosi-input-file-sc
+                  [index]="i"
+                  [document]="item"
+                  [businessKey]="businessKey"
+                  (refresh)="refreshDocument($event)"
+                  [isScan]="isAppPrivate"
+                  [transactionId]="transactionId"
+                ></gosi-input-file-sc>
+              </ng-container>
+            </ng-container>
+            <ng-template #noDocuments>
+              <div class="d-flex justify-content-center">
+                {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Declaration section-->
+<div class="row" *ngIf="!isAppPrivate && showHeaders && !isReassessment && !repatriation">
+  <div class="form-group fc-margin col-lg-12">
+    <label for="declarationMessage">{{ 'OCCUPATIONAL-HAZARD.DECLARATION' | translate }}</label>
+
+    <textarea
+      rows="5"
+      class="form-control declaration-box"
+      id="declarationMessage"
+      readOnly="true"
+      (focus)="uploadDocumentForm.patchValue({ checkBoxFlag: true })"
+    >
+      {{ 'OCCUPATIONAL-HAZARD.DOCUMENT_DECLARATION' | translate }}
+    </textarea>
+  </div>
+</div>
+<div class="row" *ngIf="!isAppPrivate && showHeaders && !isReassessment && !repatriation">
+  <div class="col-lg-12 m-3">
+    <gosi-input-checkbox-dc
+      id="declaration"
+      [name]="'declaration'"
+      [control]="uploadDocumentForm.get('checkBoxFlag')"
+      label="OCCUPATIONAL-HAZARD.ACCEPT-DECLARATION"
+    >
+    </gosi-input-checkbox-dc>
+  </div>
+</div>
+<!--Comments section -->
+<span>
+  <div
+    class="row"
+    *ngIf="
+      (isAppPrivate || isWorkflow || isReopen || processType === 'modify' || processType === 're-open' || forContributorReassessments === true 
+      || processType === 'repatriation')
+       && showHeaders
+    "
+  >
+    <div class="col-lg-12" *ngIf="!isReassessment">
+      <gosi-input-text-area-dc
+        id="comments"
+        label="OCCUPATIONAL-HAZARD.COMMENTS"
+        [control]="uploadDocumentForm.get('comments')"
+        [maxLength]="maxLengthComments"
+      >
+      </gosi-input-text-area-dc>
+    </div></div
+></span>
+
+<div class="row m-2" *ngIf="showHeaders">
+  <div class="col-lg-12 form-action">
+    <div class="document-details">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="submit" (submit)="saveDocuments()" [type]="'primary'">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc (submit)="previousSection()" id="previousContributor" [type]="'secondary'">
+          {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" [type]="'secondary'">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>

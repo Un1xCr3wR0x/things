@@ -1,0 +1,111 @@
+<div class="row">
+  <div class="col-lg-6">
+    <gosi-input-select-dc
+      id="adjustmentType"
+      [control]="adjustmentAddForm.get('adjustmentType')"
+      [label]="'ADJUSTMENT.ADJUSTMENT-TYPE-LABEL' | translate"
+      [placeholder]="'ADJUSTMENT.ADJUSTMENT-TYPE-NAME' | translate"
+      [list]="adjustmentTypeList"
+      (select)="onAdjustmentTypeSelect($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-lg-6">
+    <gosi-input-select-dc
+      id="debitPercentage"
+      *ngIf="adjustmentAddForm.get('adjustmentPercentage')"
+      [control]="adjustmentAddForm.get('adjustmentPercentage')"
+      [label]="'ADJUSTMENT.DEBIT-PERCENTAGE-LBL' | translate"
+      [placeholder]="'ADJUSTMENT.DEBIT-PERCENTAGE-NAME' | translate"
+      [list]="debitPercentageList"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-lg-6">
+    <gosi-input-select-dc
+      id="adjustmentReason"
+      [control]="adjustmentAddForm.get('adjustmentReason')"
+      [label]="'ADJUSTMENT.ADJUSTMENT-REASON' | translate"
+      [placeholder]="'ADJUSTMENT.ADJUSTMENT-REASON-NAME' | translate"
+      [list]="adjustmentReasonList$"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-lg-6">
+    <gosi-input-currency-dc
+      [id]="'adjustmentAmountPerHeir'"
+      [control]="adjustmentAddForm.get('adjustmentAmount')"
+      [placeholder]="'ADJUSTMENT.ADJUSTMENT-AMOUNT-HEIR' | translate"
+      [label]="'ADJUSTMENT.ADJUSTMENT-AMOUNT-HEIR' | translate"
+      [hideOptionalLabel]="true"
+      [separatorLimit]="separatorLimit"
+    >
+    </gosi-input-currency-dc>
+  </div>
+  <div class="col-lg-12">
+    <gosi-input-text-area-dc
+      [id]="'notes'"
+      [label]="'ADJUSTMENT.NOTES' | translate"
+      [control]="adjustmentAddForm.get('notes')"
+      [name]="'notes'"
+      [maxLength]="500"
+      [pmtMaxCharacters]="500"
+    >
+    </gosi-input-text-area-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">{{ 'ADJUSTMENT.HEIR-ADJUSTMENT-DETAILS' | translate }}</div>
+  <div class="px-3 mt-3">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{{ 'ADJUSTMENT.HEIR' | translate }}</th>
+          <th>{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate }}</th>
+          <th>{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let heir of heirAdjustments?.heirList; let i = index">
+          <td>
+            <span>
+              <gosi-input-checkbox-dc
+                id="heir{{ i }}"
+                name="heir"
+                [control]="adjustmentAddForm?.get('heirPersonIdList')?.controls[i]?.get('isChecked')"
+                (select)="onCheckHeir()"
+              >
+              </gosi-input-checkbox-dc>
+            </span>
+          </td>
+          <td>
+            <div>{{ heir?.name | nameToString: true }}</div>
+            <div>{{ 'ADJUSTMENT.NATIONAL-ID' | translate }}: {{ heir?.identity[0]?.newNin }}</div>
+          </td>
+          <td>
+            <span
+              *ngIf="
+                adjustmentAddForm?.get('adjustmentType')?.get('english')?.value &&
+                  adjustmentAddForm?.get('heirPersonIdList')?.controls[i]?.get('isChecked')?.value;
+                else noValue
+              "
+              >{{ adjustmentAddForm?.get('adjustmentType')?.value | bilingualText }}</span
+            >
+          </td>
+          <td>
+            <span
+              *ngIf="
+                adjustmentAddForm?.get('adjustmentAmount')?.value &&
+                  adjustmentAddForm?.get('heirPersonIdList')?.controls[i]?.get('isChecked')?.value;
+                else noValue
+              "
+              >{{ adjustmentAddForm?.get('adjustmentAmount')?.value }}</span
+            >
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<ng-template #noValue>—</ng-template>

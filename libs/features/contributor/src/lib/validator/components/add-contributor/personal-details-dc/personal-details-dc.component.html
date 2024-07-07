@@ -1,0 +1,262 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="building"
+      [heading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate"
+      [canEdit]="false"
+      (onEdit)="onEditPersonalDetails()"
+    >
+    </frm-content-heading-dc>
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-label-dc
+          id="establishmentRegNo"
+          [control]="registrationNumber ? registrationNumber : ' '"
+          [label]="'CONTRIBUTOR.ESTABLISHMENT-REG-NO' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="establishmentNameEng"
+          [control]="establishmentDetails ? establishmentDetails.name.english : ' '"
+          [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-EN' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="establishmentNameArb"
+          [control]="establishmentDetails ? establishmentDetails.name.arabic : ' '"
+          [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-AR' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="establishmentDetails">
+        <ng-container *ngIf="!checkNull(establishmentDetails.startDate.gregorian)">
+          <gosi-label-dc
+            id="establishmentStartDate"
+            [control]="establishmentDetails.startDate.gregorian | date: 'dd/MM/yyyy'"
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-START-DATE' | translate"
+          ></gosi-label-dc>
+        </ng-container>
+      </div>
+    </div>
+    <frm-content-heading-dc
+      icon="user"
+      heading="CONTRIBUTOR.PERSONAL-DETAILS"
+      [canEdit]="canEdit"
+      [badge]="isBeneficiary ? ('CONTRIBUTOR.BENEFICIARY' | translate) : ''"
+      (onEdit)="onEditPersonalDetails()"
+    >
+    </frm-content-heading-dc>
+    <div class="row">
+      <div id="contributorArabicName" class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          *ngIf="arabicName"
+          id="contributorNameArabic"
+          [value]="arabicName"
+          [label]="'CONTRIBUTOR.CONTRIBUTOR-NAME-AR' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="nationality"
+          [control]="contributor.person.nationality"
+          [label]="'CONTRIBUTOR.NATIONALITY' | translate"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="birthDate"
+          [date]="true"
+          [control]="contributor.person.birthDate.gregorian"
+          [label]="'CONTRIBUTOR.DATE-OF-BIRTH' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="contributor.person.name.english">
+        <gosi-label-dc
+          id="contributorNameEnglish"
+          [control]="contributor.person.name.english.name"
+          [label]="'CONTRIBUTOR.CONTRIBUTOR-NAME-EN' | translate"
+        ></gosi-label-dc>
+      </div>
+      <ng-container *ngIf="!checkNull(contributor.person.identity)">
+        <ng-container *ngFor="let item of contributor.person.identity">
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="item.newNin">
+            <gosi-label-dc id="nin" [control]="item.newNin" [label]="'CONTRIBUTOR.NATIONAL-ID' | translate">
+            </gosi-label-dc>
+          </div>
+        </ng-container>
+      </ng-container>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc id="gender" [control]="contributor.person.sex" [label]="'CONTRIBUTOR.GENDER' | translate">
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="maritalStatus"
+          [control]="contributor.person.maritalStatus"
+          [label]="'CONTRIBUTOR.MARITAL-STATUS' | translate"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="education"
+          [control]="contributor.person.education"
+          [label]="'CONTRIBUTOR.EDUCATION' | translate"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="specialization"
+          [control]="contributor.person.specialization"
+          [label]="'CONTRIBUTOR.SPECIALIZATION' | translate"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6" *ngIf="conType && conType === contributorTypeEnum.SAUDI">
+        <gosi-label-dc
+          id="student"
+          [label]="'CONTRIBUTOR.STUDENT' | translate"
+          [control]="contributor.person.student ? ('CONTRIBUTOR.YES' | translate) : ('CONTRIBUTOR.NO' | translate)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6" *ngIf="conType && conType === contributorTypeEnum.SAUDI">
+        <gosi-label-dc
+          id="exPrisoner"
+          [label]="'CONTRIBUTOR.EX-PRISONER' | translate"
+          [control]="contributor.person.prisoner ? ('CONTRIBUTOR.YES' | translate) : ('CONTRIBUTOR.NO' | translate)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="conType && conType !== contributorTypeEnum.SAUDI">
+        <ng-container *ngFor="let item of contributor.person.identity">
+          <div class="row">
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'GCCID'">
+              <gosi-label-dc id="gccId" [label]="'CONTRIBUTOR.GCC-ID' | translate" [control]="item.id"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'IQAMA'">
+              <gosi-label-dc id="iqamaNo" [label]="'CONTRIBUTOR.IQAMA-NUMBER' | translate" [control]="item.iqamaNo">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'IQAMA'">
+              <gosi-label-dc
+                id="iqamaExpiryDate"
+                [date]="true"
+                [label]="'CONTRIBUTOR.IQAMA-EXPIRY-DATE' | translate"
+                [control]="item.expiryDate ? item.expiryDate.gregorian : null"
+                [date]="true"
+              >
+              </gosi-label-dc>
+            </div>
+            <div
+              class="col-sm-6 col-md-6"
+              *ngIf="item.idType === 'BORDERNO' && conType === contributorTypeEnum.NON_SAUDI"
+            >
+              <gosi-label-dc id="borderNo" [label]="'CONTRIBUTOR.BORDER-NUMBER' | translate" [control]="item.id">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'PASSPORT'">
+              <gosi-label-dc
+                id="passportNo"
+                [label]="'CONTRIBUTOR.PASSPORT-NO' | translate"
+                [control]="item.passportNo"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'PASSPORT'">
+              <gosi-label-dc
+                id="passportIssueDate"
+                [date]="true"
+                [label]="'CONTRIBUTOR.PASSPORT-ISSUEDATE' | translate"
+                [control]="item.issueDate ? item.issueDate.gregorian : null"
+                [date]="true"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="item.idType === 'PASSPORT'">
+              <gosi-label-dc
+                id="passportExpiryDate"
+                [label]="'CONTRIBUTOR.PASSPORT-EXPIRYDATE' | translate"
+                [control]="item.expiryDate ? item.expiryDate.gregorian : null"
+                [date]="true"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <ng-container
+          *ngIf="
+            contributor.person.contactDetail &&
+            contributor.person.contactDetail.addresses &&
+            contributor.person.contactDetail.addresses.length > 0
+          "
+        >
+          <frm-address-dc
+            [isViewOnly]="true"
+            [showEdit]="false"
+            [hasAddressDetailsLabel]="true"
+            [addressDetails]="contributor.person.contactDetail.addresses"
+            [hasNationalAddress]="true"
+            [hasPOAddress]="true"
+            [hasOverseasAddress]="contributor.type === contributorTypeEnum.SAUDI ? false : true"
+            [currentMailingAddress]="contributor.person.contactDetail.currentMailingAddress"
+          >
+          </frm-address-dc>
+        </ng-container>
+      </div>
+    </div>
+    <div class="row">
+      <ng-container *ngIf="contributor.person.contactDetail">
+        <div class="col-sm-12 col-md-12">
+          <h4 class="sub-heading">
+            {{ 'CONTRIBUTOR.WAGE.CONTACT-DETAILS' | translate }}
+          </h4>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="contributorMobileNo"
+            [control]="contributor.person.contactDetail.mobileNo.primary"
+            [label]="'CONTRIBUTOR.WAGE.MOBILE-NUMBER'"
+            ><span id="prefixValue">{{ getISDCodePrefix() }}</span></gosi-label-dc
+          >
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="contributorTelephoneNumber"
+            [control]="contributor.person.contactDetail.telephoneNo.primary"
+            [label]="'CONTRIBUTOR.WAGE.TELEPHONE-NUMBER'"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="contributorExtension"
+            [control]="contributor.person.contactDetail.telephoneNo.extensionPrimary"
+            [label]="'CONTRIBUTOR.WAGE.EXTENSION'"
+          >
+          </gosi-label-dc>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="contributorEmailId"
+            [control]="contributor.person.contactDetail.emailId?.primary"
+            [label]="'CONTRIBUTOR.WAGE.EMAIL-ID'"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

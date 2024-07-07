@@ -1,0 +1,107 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc
+    [comments]="comments"
+    [csvDocument]="csvDetails"
+    [canEdit]="false"
+    (onDownload)="downloadUpdatedCsvFile()"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.WAGE.FILE-UPDATE' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="bulkWageWorkflowDetails?.formSubmissionDate?.gregorian"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item">
+        <frm-content-heading-dc
+          [icon]="['fas', 'building']"
+          heading="CONTRIBUTOR.BULK-WAGE.ESTABLISHMENT-DETAILS"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToEdit()"
+        >
+        </frm-content-heading-dc>
+        <div class="row" *ngIf="establishment">
+          <div class="col-lg-12">
+            <gosi-label-dc
+              id="registrationNumber"
+              label="CONTRIBUTOR.ESTABLISHMENT-REG-NO"
+              [value]="establishment.registrationNo"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="establishmentNameEnglish"
+              label="CONTRIBUTOR.ESTABLISHMENT-NAME-EN"
+              [value]="establishment.name.english"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="establishmentNameArabic"
+              label="CONTRIBUTOR.ESTABLISHMENT-NAME-AR"
+              [value]="establishment.name.arabic"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+        [disableApprove]="isBillBatch"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (approveEvent)="handleBulkWageWorkflow(0)"
+    (cancelEvent)="hideModal()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    heading="CONTRIBUTOR.BULK-WAGE.REJECT-BULK-WAGE-UPDATE"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [parentForm]="validatorForm"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleBulkWageWorkflow(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    heading="CONTRIBUTOR.BULK-WAGE.RETURN-BULK-WAGE-UPDATE"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleBulkWageWorkflow(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

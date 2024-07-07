@@ -1,0 +1,103 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row d-flex flex-row-reverse" *ngIf="allowanceDetails.allowances && detailsClubbed && allowanceList">
+  <ng-container *ngFor="let task of this.detailsClubbed; let m = index">
+    <div class="col-md-12 col-lg-12 col-sm-12">
+      <ul class="timeline">
+        <li class="timeline-item">
+          <div class="timeline-badge"></div>
+          <div *ngIf="task && task.startDate && task.endDate">
+            {{ task.startDate.gregorian | gosiDate }}
+            <fa-icon *ngIf="lang === 'en'" class="treatment" [icon]="['fas', 'arrow-right']"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+            {{ task.endDate.gregorian | gosiDate }}
+            <span class="view-details">
+              ({{ getTreatmentDaysDifference(task.startDate, task.endDate) }}
+              {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span
+            >
+          </div>
+          <div *ngIf="task && task.startDate && task.endDate === null">
+            {{ task.startDate.gregorian | gosiDate }}
+          </div>
+          <ng-container *ngFor="let item of treatmentTypeClubbed">
+            <div
+              class="col-lg-6 col-sm-12 col-md-6"
+              class="allowance-details"
+              *ngIf="
+                item?.startDate?.hijiri === task?.startDate?.hijiri &&
+                item?.endDate?.hijiri === task?.endDate?.hijiri &&
+                !item.isRejected
+              "
+            >
+              <gosi-card-dc type="secondary" class="type-pic" *ngIf="item.treatmentType">
+                <ng-container
+                  *ngIf="
+                    item.treatmentType.english === 'OutPatient' || item.treatmentType.english === 'Sick Leave';
+                    else inPatient
+                  "
+                >
+                  <ng-container *ngIf="item.treatmentType.english === 'Sick Leave'">
+                    <fa-icon [icon]="['fas', 'hospital-user']" class="allowance"></fa-icon>
+                    {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE-PERIOD' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="item.treatmentType.english === 'OutPatient'">
+                    <fa-icon [icon]="['fas', 'hospital-user']" class="allowance"></fa-icon>
+                    {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.OUT-PATIENT-TREATMENT' | translate }}
+                  </ng-container>
+                </ng-container>
+                <ng-template #inPatient>
+                  <img src="assets/icons/In Patient.svg" alt="inPatient" />
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT-TREATMENT' | translate }}
+                </ng-template>
+              </gosi-card-dc>
+            </div>
+            <ng-container *ngFor="let id of allowanceList">
+              <ng-container
+                *ngIf="
+                  item?.startDate?.hijiri === task?.startDate?.hijiri &&
+                  item?.endDate?.hijiri === task?.endDate?.hijiri &&
+                  id?.startDate?.hijiri === task?.startDate?.hijiri &&
+                  id?.endDate?.hijiri === task?.endDate?.hijiri &&
+                  !id.isRejected &&
+                  id?.treatmentType?.english === item?.treatmentType?.english
+                "
+              >
+                <div class="d-flex flex-column adjustment-accordion">
+                  <oh-accordion-view-details-dc
+                    [allowances]="id"
+                    [injuryId]="injuryId"
+                    [allowanceTab]="true"
+                    [workDisabilityDate]="workDisabilityDate"
+                  >
+                  </oh-accordion-view-details-dc>
+                </div>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="task.isRejected">
+            <oh-rejected-accordion-view-dc [detailsClubbed]="task" [rejectedList]="rejectedList">
+            </oh-rejected-accordion-view-dc>
+          </ng-container>
+        </li>
+      </ul>
+    </div>
+  </ng-container>
+</div>
+<ng-container>
+  <div class="load-more">
+    <gosi-loadmore-dc
+      [currentPage]="currentPage"
+      [totalCount]="pageTotal"
+      [pageSize]="pageLimit"
+      (loadMore)="onLoadMore($event)"
+    ></gosi-loadmore-dc>
+  </div>
+</ng-container>
+<div class="row mt-2" *ngIf="documents?.length > 0">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+  </div>
+</div>

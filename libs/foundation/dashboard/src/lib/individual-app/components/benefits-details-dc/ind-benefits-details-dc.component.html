@@ -1,0 +1,233 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<span class="row badge mx-0">
+  <img src="assets/images/Benefits-green.svg" alt="benefit-logo" class="icon" />
+  <span class="head-value">{{ 'DASHBOARD.BENEFITS' | translate | uppercase }} </span>
+</span>
+
+<ng-container
+  *ngIf="(!hasActiveBenefit && !hasDraftBenefit && !hasOnHoldBenefit && annuitybenefits?.length < 1)"
+>
+  <div class="row header pt-2">
+    <div class="col-lg-12">
+      {{ 'DASHBOARD.NO-BENEFITS' | translate }}
+    </div>
+  </div>
+  <!-- BENEFIT-ESTIMATOR should navigate to pension calculator - Feature 437369; dev not completed -->
+  <!-- <div class="row pt-4" *ngIf="!isAppProfile">
+    <gosi-button-dc [outlineOnly]="true" [isTransparent]="true" type="primary" size="md" class="btn-class">
+      {{ 'DASHBOARD.BENEFIT-ESTIMATOR' | translate }}</gosi-button-dc
+    >
+  </div> -->
+</ng-container>
+
+<ng-container *ngIf="hasActiveBenefit || hasDraftBenefit || hasOnHoldBenefit || annuitybenefits?.length > 0">
+  <dsb-card-carousel-dc
+    [lang]="lang"
+    (onLeftClick)="onLeftClick()"
+    (onRightClick)="onRightClick()"
+    [showCarouselLeft]="showLeft"
+    [showCarouselRight]="showRight"
+  >
+    <!-- [showCarouselLeft]="showLeft"
+    [showCarouselRight]="showRight" -->
+    <ng-container>
+      <!-- BE confirmed in cases where status is not given will be deleted cases...
+          No need to show the card in such cases
+          Only active benefit cards are required here. It should be clickable.  -->
+      <div class="carousel-tray">
+        <div *ngFor="let item of activeBenefitsList; let i = index">
+          <ng-container
+            *ngIf="
+              (item.status?.english === benefitStatus.ACTIVE ||
+                item.status?.english === benefitStatus.ONHOLD ||
+                item.status?.english === 'On Hold')
+            "
+          >
+            <ng-container
+              *ngIf="
+                (!mobileView) ||
+                (mobileView && i === currentIndex)
+              "
+            >
+              <gosi-card-dc
+                type="primary"
+                [noBorder]="!isAppProfile && activeBenefitsList?.length === 1 && annuitybenefits?.length < 1"
+                [ngClass]="[
+                  activeBenefitsList?.length > 1 || annuitybenefits?.length > 0 ? 'card-sizing' : 'slide-value'
+                ]"
+                [noPadding]="!isAppProfile && activeBenefitsList?.length === 1 && annuitybenefits?.length < 1"
+                (click)="navigateTomodify(item, item.status?.english)"
+                [isShow]="showLeft"
+                [negativeMobileMargin]="'false'"
+              >
+                <div
+                  class="row"
+                  [ngClass]="[
+                    activeBenefitsList?.length > 1 || annuitybenefits?.length > 0 ? 'height-card' : 'one-card-width'
+                  ]"
+                >
+                  <div class="oh-response pt-0">
+                    <div class="flex flex-column col-auto">
+                      <div class="response-header">{{ item?.benefitType | bilingualText }}</div>
+                      <div class="text-value">
+                        <span *ngIf="isOccNonOcc(item?.benefitType.english) && item?.nextAssessmentDate?.gregorian">
+                          {{ 'DASHBOARD.NEXT-ASSESSMENT' | translate }}:
+                          {{ item?.nextAssessmentDate?.gregorian | gosiDate }}
+                        </span>
+                        <span>
+                          <div *ngIf="item?.expiryDate" class="text-value">
+                            {{
+                              isPastDate(item?.expiryDate)
+                                ? ('DASHBOARD.AUTHORISATION-EXPIRED' | translate)
+                                : ('DASHBOARD.AUTHORISATION-EXPIRY' | translate)
+                            }}:
+                            {{ item?.expiryDate?.gregorian | gosiDate }}
+                          </div>
+                        </span>
+                        <ng-container
+                          *ngIf="item.status?.english === benefitStatus.ONHOLD || item.status?.english === 'On Hold'"
+                        >
+                          |
+                          <span class="hold-reason-text">
+                            <fa-icon class="px-1" [icon]="'exclamation-triangle'" size="sm"></fa-icon>
+                            <!-- {{ item?.holdStopDetails?.reason | bilingualText }} {{ 'DASHBOARD.ON' | translate }}
+                        {{ item?.holdStopDetails?.eventDate | dateType }} -->
+                            {{
+                              'DASHBOARD.REASON-ON-DATE'
+                                | translate
+                                  : {
+                                      reason: item?.holdStopDetails?.reason | bilingualText,
+                                      date: item?.holdStopDetails?.eventDate | dateType
+                                    }
+                            }}
+                          </span>
+                        </ng-container>
+                        <!--Defect 554431 : BE to give value in API -->
+                        <span>
+                          <div *ngIf="isSaned && item?.paidMonths !== null" class="text-value">
+                            {{ 'DASHBOARD.PAID-MONTHS' | translate }}:
+                            {{ item?.paidMonths }}
+                          </div>
+                        </span>
+                      </div>
+                      <ng-container *gosiShow="isAppProfile ? viewRoles : true">
+                        <div *ngIf="showdependents(item)" class="dependent-value" (click)="showModal(dependentsDtl)">
+                          <fa-icon icon="users" class="mx-1"></fa-icon>
+                          <span>
+                            {{ item.dependentDetails?.length || 0 }} {{ 'BENEFITS.DEPENDENTS' | translate }}
+                          </span>
+                          <fa-icon
+                            *ngIf="hasDisabled(item?.dependentDetails)"
+                            class="warning-icon mx-3"
+                            icon="exclamation-triangle"
+                          ></fa-icon>
+                        </div>
+                      </ng-container>
+                      <div class="row">
+                        <div class="col-lg-12 d-flex flex-column py-3">
+                          <div class="text-grayed">{{ 'DASHBOARD.TOTAL-RECIEVED-PER-MONTH' | translate }}</div>
+                          <div class="wage-value">{{ item.amount }} {{ 'DASHBOARD.SAR' | translate }}</div>
+                        </div>
+                      </div>
+                      <div
+                        class="row"
+                        *ngIf="
+                          item.status?.english !== benefitStatus.ONHOLD &&
+                          item.status?.english !== 'On Hold' &&
+                          !(isSaned && item?.paidMonths === 12)
+                        "
+                      >
+                        <div class="col-lg-12 d-flex flex-column">
+                          <div class="text-value">
+                            {{ 'DASHBOARD.NEXT-PAYMENT' | translate }}:
+                            {{ item?.nextPaymentDate?.gregorian | gosiDate }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </ng-container>
+          </ng-container>
+
+          <div
+            *ngIf="item.status?.english === benefitStatus.DRAFT"
+            [ngClass]="isOnlyDraftCard ? 'single-card' : 'mr-4'"
+          >
+            <ng-container
+              *ngIf="
+                (!mobileView) ||
+                (mobileView && i === currentIndex)
+              "
+            >
+              <gosi-card-dc type="primary" [lessPadding]="true" [noBorder]="isOnlyDraftCard ? true : false">
+                <div [ngClass]="isOnlyDraftCard ? 'single-custom-card' : 'custom-card'">
+                  <div class="custom-heading">{{ item?.benefitType | bilingualText }}</div>
+                  <!-- <div *ngIf="benefit?.applyBefore" class="text-value pb-5">
+                {{ 'DASHBOARD.APPLY-BEFORE' | translate }} {{ benefit?.applyBefore | dateType }}
+              </div> -->
+                  <div [ngClass]="isOnlyDraftCard ? 'single-card-alignment' : ''">
+                    <gosi-button-dc
+                      *gosiShow="isAppProfile ? csrModify : true"
+                      [size]="isOnlyDraftCard ? 'lg' : 'sm'"
+                      (submit)="navigateToDraftRequest(item)"
+                      >{{ 'DASHBOARD.APPLY-NOW' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </ng-container>
+          </div>
+
+          <ng-template #dependentsDtl>
+            <dsb-dependent-details-dc [benefitDetail]="item" (close)="hideModal()"></dsb-dependent-details-dc>
+          </ng-template>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="annuitybenefits?.length > 0">
+      <div *ngFor="let benefit of annuitybenefits; let i = index" [ngClass]="isOnlyOneCard ? 'single-card' : 'mr-4'">
+        <ng-container
+          *ngIf="
+            (!mobileView &&
+              (activeBenefitsList?.length + i === currentIndex ||
+                activeBenefitsList?.length + i === currentIndex + 1 ||
+                activeBenefitsList?.length + i === currentIndex + 2)) ||
+            (mobileView && activeBenefitsList?.length + i === currentIndex)
+          "
+        >
+          <gosi-card-dc type="primary" [lessPadding]="true" [noBorder]="isOnlyOneCard ? true : false">
+            <div [ngClass]="isOnlyOneCard ? 'single-custom-card' : 'custom-card'">
+              <div>
+                <div class="custom-heading">{{ benefit?.benefitType | bilingualText }}</div>
+                <div *ngIf="benefit?.applyBefore" class="text-value pb-5">
+                  {{ 'DASHBOARD.APPLY-BEFORE' | translate }} {{ benefit?.applyBefore | dateType }}
+                </div>
+              </div>
+              <div [ngClass]="isOnlyOneCard ? 'single-card-alignment' : ''">
+                <gosi-label-dc
+                  *ngIf="benefit?.amount"
+                  class="pt-3 d-none"
+                  [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: benefit?.amount || 0 | number }"
+                  [label]="'BENEFITS.ELIGIBLE-AMOUNT-MONTH' | translate"
+                ></gosi-label-dc>
+                <gosi-button-dc
+                  *gosiShow="isAppProfile ? csrModify : true"
+                  [size]="isOnlyOneCard ? 'lg' : 'sm'"
+                  (submit)="navigateToApplyScreen(benefit)"
+                  [disabled]="!benefit?.eligible || benefit?.appeal"
+                  >{{ 'DASHBOARD.APPLY-NOW' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </gosi-card-dc>
+        </ng-container>
+      </div>
+    </ng-container>
+  </dsb-card-carousel-dc>
+</ng-container>

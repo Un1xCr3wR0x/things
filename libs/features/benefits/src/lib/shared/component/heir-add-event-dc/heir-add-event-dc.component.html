@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!--info message-->
+<div class="row">
+  <div class="col-md-12 mb-3">
+    <gosi-alert-dc
+      *ngIf="questionObject?.showInfoMsg && questionObject.showAddeventButton"
+      message="{{ infoMessage | translate }}"
+      type="{{ questionObject?.infoMessageWarningType }}"
+      [dismissible]="false"
+      class="documents-alert"
+    >
+    </gosi-alert-dc>
+  </div>
+</div>
+<!--end info message-->
+
+<div class="row custom-style-padding">
+  <div class="col-auto mr-auto sub-header">
+    {{ heading | translate }}
+  </div>
+  <div *ngIf="questionObject?.showAddeventButton" class="col-auto mr-0">
+    <gosi-button-dc id="addEventbtn" type="primary" size="sm" (click)="addEventPopup()">
+      {{ 'BENEFITS.ADD-EVENT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>
+
+<!--warning-->
+<ng-container
+  *ngIf="
+    !hideErrorMessage &&
+    questionObject?.eventValidationErrorResponse &&
+    questionObject?.eventValidationErrorResponse?.length
+  "
+>
+  <div class="row" *ngFor="let validatedEvent of questionObject?.eventValidationErrorResponse">
+    <div class="col-md-12" *ngIf="!validatedEvent.valid">
+      <!--TODO: array of messages to be implemented [details]-->
+      <gosi-alert-dc [bilingualMessage]="validatedEvent.message" type="warning" [dismissible]="true"></gosi-alert-dc>
+    </div>
+  </div>
+</ng-container>
+
+<!--end warning-->
+
+<div
+  class="row d-flex align-items-center"
+  *ngIf="
+    isModify ? getModifiedEventControls()?.length > 0 : eventControls && eventControls?.controls?.length;
+    else noEvents
+  "
+>
+  <div class="col-lg-12 overflow-auto">
+    <table class="table table-borderless w-100">
+      <thead>
+        <tr>
+          <th>{{ 'BENEFITS.EVENT-TYPE' | translate }}</th>
+          <th>{{ 'BENEFITS.EVENT-DATE' | translate }}</th>
+          <th *ngIf="showWage">
+            {{ 'BENEFITS.WAGE-SAR' | translate }}
+          </th>
+          <th></th>
+        </tr>
+      </thead>
+      <!--Loop through the events-->
+      <tbody *ngFor="let event of eventControls.controls; index as j">
+        <tr
+          class="data-row"
+          *ngIf="
+            isModify
+              ? eventControls.at(j).value.actionType !== 'REMOVE' && eventControls.at(j).value?.eventType
+              : eventControls.at(j).value.actionType !== 'REMOVE'
+          "
+        >
+          <td>
+            <fa-icon
+              *ngIf="eventControls.at(j).value.odmRemovedEvent"
+              (click)="showPopOver(eventControls.at(j))"
+              class="warning-icon"
+              size="md"
+              icon="exclamation-triangle"
+            >
+            </fa-icon>
+            <fa-icon
+              *ngIf="eventControls.at(j).value.startDateModified"
+              (click)="showPopOver(eventControls.at(j))"
+              id="pop-over"
+              class="blue-circle"
+              icon="info-circle"
+              size="md"
+            >
+              <!--              *ngIf="eventControls.at(j).value.startDateModified"-->
+              <!--              [tooltip]="toolTemplateInfoEnable"-->
+              <!--              [placement]="lang === 'en' ? 'right' : 'left'"-->
+              <!--              triggers="click"-->
+            </fa-icon>
+            <bnt-pop-over-dc *ngIf="eventControls.at(j).value.showPopOver">
+              {{ eventControls.at(j).value.message | bilingualText }}
+              <a id="eligibleRules" (click)="openEligibilityRules()">{{ 'BENEFITS.LEARN-MORE' | translate }}</a>
+            </bnt-pop-over-dc>
+            <!--            <ng-template #toolTemplateInfoEnable>-->
+            <!--                {{eventControls.at(j).value.message | bilingualText}}-->
+            <!--              <button id="eligibleRules" (click)="openEligibilityRules()" >{{ 'BENEFITS.LEARN-MORE' | translate }}</button>-->
+            <!--              <div [innerHtml]="getLink()"></div>-->
+            <!--&lt;!&ndash;                <ng-template #link>&ndash;&gt;-->
+            <!--&lt;!&ndash;                  <a id="eligibleRules" (click)="openEligibilityRules()" class="view-link">{{ 'BENEFITS.LEARN-MORE' | translate }}</a>&ndash;&gt;-->
+            <!--&lt;!&ndash;                </ng-template>&ndash;&gt;-->
+            <!--            </ng-template>-->
+            {{ eventControls.at(j).value?.eventType | bilingualText }}
+          </td>
+          <td>{{ eventControls.at(j).value?.eventStartDate | dateType }}</td>
+          <td *ngIf="showWage">
+            {{ eventControls.at(j).value?.wage | number: '1.2-2' }}
+          </td>
+          <td>
+            <fa-icon
+              *ngIf="
+                isModify
+                  ? eventControls.at(j).value?.eventSource?.english === eventSource.MANUAL
+                  : eventControls.at(j).value?.eventSource?.english === eventSource.MANUAL &&
+                    event.value?.eventCanBeDeleted
+              "
+              (click)="delete(j)"
+              size="lg"
+              class="delete-icon pointer-event"
+              [icon]="['far', 'trash-alt']"
+            >
+            </fa-icon>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<ng-template #noEvents>
+  <div class="card">
+    {{ 'BENEFITS.NO-EVENTS' | translate }}
+  </div>
+</ng-template>

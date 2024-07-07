@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content mr-large">
+  <div class="container-fluid">
+    <cnt-header-section-dc
+      [heading]="violationDetails?.violationSubType | bilingualText"
+      (goBack)="cancelTransaction()"
+    ></cnt-header-section-dc>
+    <gosi-alert-sc></gosi-alert-sc>
+    <ng-container>
+      <!-- Progress Wizard -->
+      <div class="wizard">
+        <gosi-progress-wizard-dc
+          [wizardItems]="engagementWizardItems"
+          (clickWizard)="selectWizard($event)"
+          [isMargin]="true"
+          #engagementWizard
+        >
+        </gosi-progress-wizard-dc>
+      </div>
+      <div *ngIf="currentTab === 0 || !isNexttab">
+        <cnt-engagement-details-dc
+          *ngIf="engagementDetails"
+          [systemParameter]="systemParameter"
+          [engagementType]="EngagementType"
+          [leavingReason]="leavingReasonlist$ | async"
+          [yesOrNoList]="yesOrNoList$ | async"
+          [occupationList]="occupationList$ | async"
+          [lang]="lang"
+          [occupationLovList]="occupationLovList"
+          [currentEngagmentDetails]="currentEngagmentDetails"
+          [isSaudiPerson]="isSaudiPerson"
+          [updatedEngagement]="updatedEngagement"
+          [newEngagementDate]="newEngagementDate"
+          [engagementLeavingReason]="modifyEngagement.leavingReason"
+          [isWageVerified]="isEngagementVerified"
+          [editMode]="editMode"
+          (joiningDateChange)="joiningDateChangeCheck($event)"
+          (editInProgress)="togglePeriodEditFlag($event)"
+          [engagementDetails]="engagementDetails"
+          [isWageSave]="isWageSave"
+          [savedWageDetialsForm]="wageDetailsForm"
+          [parentForm]="engagementForm"
+          (showError)="showMandatoryAlert()"
+          (cancel)="cancelTransaction()"
+          (verify)="verifyEngagementWage($event)"
+          (saveWage)="saveWage($event)"
+        ></cnt-engagement-details-dc>
+      </div>
+
+      <div *ngIf="currentTab === 1 && isNexttab">
+        <cnt-contract-file-upload-dc
+          [parentForm]="parentForm"
+          [engagementId]="violationDetails?.engagementId"
+          [documentList]="documents"
+          [contractId]="payload?.requestId"
+          [referenceNumber]="referanceNumber"
+          [transactionNumber]="cancelEngBusinessKey"
+          [infoMessage]="'CORE.ERROR.UPLOAD-MANDATORY-DOCUMENTS'"
+          [uuid]="uuid"
+          (refresh)="refreshDocument($event, violationType, violationDetails?.engagementId)"
+        ></cnt-contract-file-upload-dc>
+        <div class="row">
+          <div class="col-lg-12">
+            <cnt-action-area-dc
+              primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+              (submit)="confirmEngagement(routerDataToken)"
+              (cancel)="cancelTransaction()"
+            >
+
+            </cnt-action-area-dc>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

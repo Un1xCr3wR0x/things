@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- <frm-main-heading-dc heading="{{ 'Medical Board Session - ' }}{{ sessionId }}"></frm-main-heading-dc> -->
+  <div class="row no-gutters">
+    <div class="col-auto pr-3 border-right align-self-center">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <span class="mr-2"></span>
+    <div class="col-auto mr-auto">
+      <h3>{{ 'MEDICAL-BOARD.MB-SESSIONS' | translate }} {{ '-' }} {{ sessionId }}</h3>
+    </div>
+  </div>
+  <mb-medical-board-session-details-dc
+    *ngIf="sessionData"
+    [sessionData]="sessionData"
+    [lang]="lang"
+  ></mb-medical-board-session-details-dc>
+  <mb-medical-board-member-table-dc
+    [isPmbo]="isPmbo"
+    [sessionData]="sessionData"
+    [unAvailableMemberList]="unAvailableMemberList"
+    [isCompleted]="isCompleted"
+    (addMember)="onAddContractedDoctor(addMemberTemplate, false)"
+    (addDoctor)="onAddContractedDoctor(addDoctorTemplate, true)"
+    (removeMember)="removeMember($event)"
+  >
+  </mb-medical-board-member-table-dc>
+  <ng-container *ngIf="visitingDoctorList && visitingDoctorList?.length > 0">
+    <gosi-card-dc heading="{{ 'MEDICAL-BOARD.VISITING-DOCTOR-DETAILS' | translate }}" type="secondary">
+      <mb-session-doctor-list-dc
+        *ngIf="visitingDoctorList; else noData"
+        [visitingDoctorList]="visitingDoctorList"
+        [lang]="lang"
+      ></mb-session-doctor-list-dc>
+    </gosi-card-dc>
+  </ng-container>
+  <mb-session-participant-list-dc
+    *ngIf="!isCompleted"
+    [participantDetails]="participantDetails"
+    [participantList]="sessionData?.participantList"
+    [isCompleted]="isCompleted"
+    (onNinClicked)="onParticipantNinClicked($event)"
+  ></mb-session-participant-list-dc>
+  <mb-view-medical-board-decision-dc
+    *ngIf="isCompleted"
+    [sessionAssessments]="sessionAssessments"
+    (onDisabilityAssessmentIdClicked)="viewDisabilityAssessment($event)"
+  ></mb-view-medical-board-decision-dc>
+  <ng-template #addDoctorTemplate>
+    <mb-add-gosi-doctors-dc
+      #addDoctorList
+      (update)="onAddContractedMembers($event)"
+      (navigate)="navigateToProfile($event)"
+      (cancel)="declineValue()"
+      (select)="onLimit($event)"
+      [limitItem]="sessionRequest?.limit"
+      [gosiDoctors]="contractedMembers"
+      [totalRecords]="totalResponse"
+      [addDoctors]="false"
+      [fieldOfficeLists]="locationList$ | async"
+    >
+    </mb-add-gosi-doctors-dc>
+  </ng-template>
+  <ng-template #addMemberTemplate>
+    <mb-add-contracted-members-dc
+      #addMembersList
+      [contractedMembers]="contractedMembers"
+      (paginate)="onLimit($event)"
+      [limit]="sessionRequest?.limit"
+      (navigate)="navigateToProfile($event)"
+      [totalResponse]="totalResponse"
+      [isAmb]="isAmb"
+      (cancel)="declineValue()"
+      (update)="onAddContractedMembers($event)"
+      [specialityLists]="specialityList$ | async"
+      [fieldOfficeLists]="region$ | async"
+      (filter)="onFilterApply($event)"
+      (search)="onSearchMember($event)"
+      [addMembers]="false"
+      (checkAvailability)="onCheckAvailability($event)"
+      [showErrors]="showErrors"
+      [availableMsg]="availableMsg"
+    ></mb-add-contracted-members-dc>
+  </ng-template>
+</div>
+<ng-template #noData>
+  <gosi-alert-dc [message]="'MEDICAL-BOARD.NO-RECORDS' | translate" type="info" [dismissible]="true"> </gosi-alert-dc>
+</ng-template>

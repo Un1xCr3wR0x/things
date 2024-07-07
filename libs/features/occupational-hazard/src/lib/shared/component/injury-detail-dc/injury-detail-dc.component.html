@@ -1,0 +1,240 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container *ngIf="injuryDetails">
+  <div class="row word-break">
+    <div class="col-lg-3" *ngIf="injuryDetails.injuryDate">
+      <gosi-label-dc
+        id="injuryDate"
+        label="OCCUPATIONAL-HAZARD.INJURY.INJURY-DATE"
+        [value]="injuryDetails?.injuryDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc id="injuryTime" label="OCCUPATIONAL-HAZARD.INJURY.INJURY-TIME" [value]="injuryDetails.injuryTime">
+      </gosi-label-dc>
+    </div>
+    <!--Rejection reason and date-->
+    <ng-container
+      *ngIf="
+        injuryDetails.rejectionReason &&
+        !this.showReopenReason &&
+        injuryDetails.injuryStatus.english === 'Rejected' &&
+        !injuryDetails.hasRejectionInProgress
+      "
+    >
+      <div class="col-lg-3">
+        <gosi-label-dc
+          id="reasonForRejection"
+          label="OCCUPATIONAL-HAZARD.INJ-REJECT-REASON"
+          [value]="injuryDetails.rejectionReason | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="injuryDetails.rejectInitiatedDate">
+        <gosi-label-dc
+          id="rejectionDate"
+          label="OCCUPATIONAL-HAZARD.REJECTION-DATE"
+          [value]="injuryDetails?.rejectInitiatedDate?.gregorian | gosiDate"
+        >
+        </gosi-label-dc>
+      </div>
+    </ng-container>
+    <!--Closing Date and Status-->
+    <ng-container
+      class="col-lg-3"
+      *ngIf="
+        injuryDetails.closingDate &&
+        !this.showReopenReason &&
+        (injuryDetails.injuryStatus.english === 'Cured With Disability' ||
+          injuryDetails.injuryStatus.english === 'Cured Without Disability' ||
+          injuryDetails.injuryStatus.english === 'Closed without continuing treatment' ||
+          injuryDetails.injuryStatus.english === 'Resulted in Death') &&
+        !injuryDetails.hasPendingChangeRequest
+      "
+    >
+      <div class="col-lg-3">
+        <gosi-label-dc
+          id="status"
+          label="OCCUPATIONAL-HAZARD.CLOSING-STATUS"
+          [value]="injuryDetails.injuryStatus | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-3">
+        <gosi-label-dc
+          id="closingDate"
+          label="OCCUPATIONAL-HAZARD.CLOSING-DATE"
+          [value]="injuryDetails?.closingDate?.gregorian | gosiDate"
+        >
+        </gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+        id="workDisabilityDate"
+        [value]="injuryDetails?.workDisabilityDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+        id="employeeInformedDate"
+        [value]="injuryDetails?.employeeInformedDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+        id="employerInformedOn"
+        [value]="injuryDetails?.employerInformedDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="injuryDetails?.reasonForDelay && (injuryDetails?.initiatedBy !== 2005)">
+      <gosi-label-dc
+        id="reasonForDelay"
+        [label]="labelForReason"
+        [value]="injuryDetails?.reasonForDelay | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="injuryDetails?.reasonForDelay && (injuryDetails?.initiatedBy === 2005)">
+      <gosi-label-dc
+        id="reasonForDelay"
+        [label]="labelForReason"
+        [value]="injuryDetails?.reasonForDelay | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="(injuryDetails?.initiatedBy === 2005) && injuryDetails?.delayByEmployer">
+      <gosi-label-dc
+        id="reasonForDelay"
+        [label]="labelForReasonEmployer"
+        [value]="injuryDetails?.delayByEmployer | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.INJURY.INJURY-LEADS-TO-DEATH"
+        id="injuryToDeathIndicator"
+        [value]="injuryDetails?.injuryLeadsToDeathIndicator | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+
+    <div class="col-lg-3" *ngIf="injuryDetails?.injuryLeadsToDeathIndicator.english === 'Yes'">
+      <gosi-label-dc
+        id="deathDate"
+        label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+        [value]="injuryDetails?.deathDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="emergencyContactNumber"
+        [control]="injuryDetails?.emergencyContactNo?.primary"
+        label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+        ><span id="prefixValue">{{ idCode }}</span>
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.INJURY.PLACE-WHERE-INJURY-OCCURED"
+        id="placeInjuryOccured"
+        [value]="injuryDetails.place | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.INJURY.PLACE-DETAILS-WHERE-INJURY-OCCURED"
+        id="placeWhereTheInjuryOccurred"
+        [value]="injuryDetails.detailedPlace | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        [label]="'OCCUPATIONAL-HAZARD.EMPLOYEE-ACTIVITY'"
+        id="contributorsOccupationWhenInjuryOccured"
+        [value]="injuryDetails.occupation | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        [label]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-TYPE' | translate"
+        id="injuryType"
+        [value]="injuryDetails.accidentType | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.INJURY.INJURY-REASON"
+        id="injuryReason"
+        [value]="injuryDetails.injuryReason | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="howInjuryOccurred"
+        [control]="injuryDetails?.detailsDescription"
+        label="OCCUPATIONAL-HAZARD.INJURY.HOW-INJURY-OCCURED"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="showCity">
+      <gosi-label-dc label="OCCUPATIONAL-HAZARD.CITY" id="city" [value]="injuryDetails.city | bilingualText">
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="showCity">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.CITY-DISTRICT"
+        id="districtInWhichInjuryOccured"
+        [value]="injuryDetails.cityDistrict | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="!showCity">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.COUNTRY"
+        id="countryInWhichInjuryOccured"
+        [value]="injuryDetails.country | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc id="allowancePayee" [control]="getPayee()" label="OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE">
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="governmentSector"
+        [value]="injuryDetails.governmentSector | bilingualText"
+        label="OCCUPATIONAL-HAZARD.GOVERNMENT-SECTOR"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="injuryDetails">
+    <div class="col-lg-12">
+      <gosi-google-map-dc
+        [showCity]="false"
+        [showMap]="showCity"
+        [latitude]="latitude"
+        [longitude]="longitiude"
+        [mapViewMode]="true"
+      >
+      </gosi-google-map-dc>
+    </div>
+  </div>
+</ng-container>

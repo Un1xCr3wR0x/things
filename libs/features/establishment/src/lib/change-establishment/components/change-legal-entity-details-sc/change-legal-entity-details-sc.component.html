@@ -1,0 +1,370 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <ng-container *ngIf="establishment">
+    <!-- header part -->
+    <div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-6">
+    <est-heading-dc
+      [shouldPrompt]="true"
+      [backLink]="goBackRouter"
+      [canNavigate]="false"
+      (backEvent)="cancelTransaction()"
+    >
+      {{ 'ESTABLISHMENT.CHANGE-LEGAL-ENTITY' | translate }}
+    </est-heading-dc>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isGOL && isValidator">
+      <est-claim-assign-release-dc
+      [payload]="payload"
+      [isUnclaimed]="isUnclaimed"
+      [taskId]="taskId"
+      (assign)="assignClicked()"
+      (release)="releaseClicked()"
+      >
+      </est-claim-assign-release-dc>
+    </div>  
+    </div>
+    <gosi-alert-sc></gosi-alert-sc>
+    <div class="row" *ngIf="isValidator">
+      <!-- Comment Section -->
+      <div class="col-md-12 col-sm-12">
+        <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+        <est-establishment-heading-dc [establishment]="estBeforeEdit" heading="ESTABLISHMENT.ESTABLISHMENT-DETAILS">
+        </est-establishment-heading-dc>
+      </div>
+    </div>
+    <gosi-progress-wizard-dc
+      *ngIf="legalEntityTabWizards"
+      (clickWizard)="selectedWizard($event)"
+      [wizardItems]="legalEntityTabWizards"
+    ></gosi-progress-wizard-dc>
+    <tabset class="wrapper-tabset">
+      <!-- legal entity tab -->
+      <tab [active]="currentTab === 0">
+        <gosi-card-dc type="secondary" [heading]="'ESTABLISHMENT.LEGAL-ENTITY' | translate">
+          <div class="label-card" *ngIf="isCrnFetchedFromMci">
+            <fa-icon class="icon-wrapper-check-circle" icon="check-circle" size="lg"></fa-icon>
+
+            <span> {{ 'ESTABLISHMENT.LEGAL-ENTITY-MCI-SUCCESS' | translate }}</span>
+          </div>
+          <div class="label-card" *ngIf="isCrnFetchedFromMci === false">
+            <fa-icon class="icon-wrapper-exclamation-triangle" icon="exclamation-triangle" size="lg"></fa-icon>
+            <span> {{ 'ESTABLISHMENT.LEGAL-ENTITY-MCI-ERROR' | translate }}</span>
+          </div>
+          <div class="row">
+            <div class="col-md-6 col-sm-12">
+              <gosi-input-select-dc
+                id="legalEntity"
+                name="legalEntity"
+                [label]="'ESTABLISHMENT.SELECT-LEGAL-ENTITY' | translate"
+                [placeholder]="'ESTABLISHMENT.LEGAL-ENTITY' | translate"
+                (select)="
+                  changeLegalEntity(
+                    currentLegalEntity,
+                    $event,
+                    establishment.nationalityCode.english,
+                    initialPaymentType,
+                    establishment?.startDate?.gregorian,
+                    initialLateFee
+                  )
+                "
+                [control]="legalEntityForm.get('legalEntity')"
+                [list]="legalEntityDropDown$ | async"
+                [disabled]="isCrnFetchedFromMci"
+              >
+              </gosi-input-select-dc>
+            </div>
+            <div class="col-md-12 col-sm-12" *ngIf="canChoseOwnerSection && this.currentOwners?.length">
+              <gosi-input-radio-dc
+                id="ownerSection"
+                [label]="'ESTABLISHMENT.EST-OWNERS' | translate"
+                name="ownerSection"
+                [control]="ownerSelectionForm"
+                (select)="chooseOwnerSection($event)"
+                [list]="ownerSectionList"
+              >
+              </gosi-input-radio-dc>
+            </div>
+          </div>
+        </gosi-card-dc>
+
+        <ng-container *ngIf="isLegalEntityChanged">
+          <gosi-alert-dc *ngIf="showInfo" [message]="infoKey" [dismissible]="false" type="info"> </gosi-alert-dc>
+          <gosi-card-dc *ngIf="showNationality" type="secondary" [heading]="'ESTABLISHMENT.NATIONALITY' | translate">
+            <div class="row">
+              <div class="col-md-6 col-sm-12">
+                <gosi-input-select-dc
+                  id="nationality"
+                  name="nationality"
+                  [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+                  [disabled]="disabledNationality"
+                  [control]="legalEntityForm.get('nationalityCode')"
+                  [list]="nationalityList$ | async"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+          </gosi-card-dc>
+          <gosi-card-dc
+            *ngIf="showContribution"
+            type="secondary"
+            [heading]="'ESTABLISHMENT.CONTRIBUTION-PAYMENT' | translate"
+          >
+            <div class="row">
+              <div class="col-md-12 col-sm-12">
+                <gosi-input-radio-dc
+                  id="yesOrNo"
+                  name="yesOrNo"
+                  label="ESTABLISHMENT.IS-MOF-PAYING-EMPLOYER-CONTRIBUTOR"
+                  [control]="legalEntityForm.get('paymentType')"
+                  [list]="yesOrNoList$ | async"
+                  [disabled]="isPaymentDisabled"
+                >
+                </gosi-input-radio-dc>
+              </div>
+              <div class="col-md-6 col-sm-12">
+                <gosi-input-radio-dc
+                  *ngIf="showLateFeeIndicator && isFO"
+                  id="lateFeeIndicator"
+                  name="lateFee"
+                  label="ESTABLISHMENT.IS-LATE-FEE-APPLICABLE"
+                  [control]="legalEntityForm.get('lateFeeIndicator')"
+                  [list]="yesOrNoList$ | async"
+                >
+                </gosi-input-radio-dc>
+              </div>
+            </div>
+          </gosi-card-dc>
+
+          <ng-container *ngIf="showOwnerSection">
+            <ng-container
+              *ngIf="canChoseOwnerSection ? ownerSelectionForm.get('english').value === currentOwnerSelection : true"
+            >
+              <gosi-card-dc
+                [heading]="'ESTABLISHMENT.CURRENT-ACTIVE-OWNERS' | translate"
+                type="secondary"
+                *ngIf="currentOwners && currentOwners.length > 0"
+              >
+                <div class="ml-auto adjust-width" action-items>
+                  <gosi-search-dc
+                    [placeholder]="'ESTABLISHMENT.OWNER-NAME-ID' | translate"
+                    (search)="searchOwners($event)"
+                    gosiSpecialCharacters
+                  >
+                  </gosi-search-dc>
+                </div>
+                <div class="col-md-12 col-sm-12 search-result pb-2" *ngIf="filteredOwners?.length != 0 && searchValue">
+                  <est-search-result-dc [count]="filteredOwners.length" [value]="searchValue"> </est-search-result-dc>
+                </div>
+                <div class="col-md-12 col-sm-12" *ngIf="filteredOwners?.length == 0">
+                  <div class="search-result pb-2">
+                    <est-search-result-dc [count]="0" [value]="searchValue"> </est-search-result-dc>
+                  </div>
+                  <est-no-result-dc></est-no-result-dc>
+                </div>
+                <ng-container
+                  *ngFor="
+                    let owner of filteredOwners
+                      | paginate: { id: 'EditownerList', itemsPerPage: itemsPerPage, currentPage: currentPage };
+                    let i = index
+                  "
+                >
+                  <est-modify-owner-dc
+                    [owner]="owner"
+                    [index]="i"
+                    (selectedForDelete)="enableAddOwner()"
+                    [canDelete]="!canChoseOwnerSection"
+                    [canChoose]="canChoseOwnerSection"
+                    (selectedOwner)="removeOtherOwners($event)"
+                    [showRemovedInfo]="true"
+                  >
+                  </est-modify-owner-dc>
+                </ng-container>
+                <div class="row justify-content-center">
+                  <gosi-pagination-dc
+                    *ngIf="filteredOwners?.length > itemsPerPage"
+                    [totalSize]="filteredOwners.length"
+                    [itemsPerPage]="itemsPerPage"
+                    [pageDetails]="pageDetails"
+                    (pageChange)="selectPage($event)"
+                    paginationId="EditownerList"
+                  ></gosi-pagination-dc>
+                </div>
+              </gosi-card-dc>
+
+              <gosi-alert-dc
+                *ngIf="
+                  (splitOwners[0].length > 0 || splitOwners[1].length > 0) &&
+                  ownerSelectionForm.get('english')?.value === currentOwnerSelection &&
+                  legalEntityForm.get('legalEntity')?.get('english')?.value === individual
+                "
+                [message]="deleteInactiveOwnerKey | translate"
+                [dismissible]="false"
+                type="info"
+              >
+              </gosi-alert-dc>
+            </ng-container>
+
+            <ng-container
+              *ngIf="canChoseOwnerSection ? ownerSelectionForm.get('english').value === createOwnerSelection : true"
+            >
+              <div class="row" *ngIf="owners.length !== 0">
+                <div class="col-md-12 col-sm-12 owner-heading">
+                  {{ 'ESTABLISHMENT.NEW-OWNERS' | translate }}
+                </div>
+              </div>
+
+              <gosi-alert-dc
+                *ngIf="owners.length > 0"
+                message="ESTABLISHMENT.OWNER-INFO"
+                [dismissible]="false"
+                type="info"
+              >
+              </gosi-alert-dc>
+
+              <accordion class="owner-accordion pb-4">
+                <ng-container *ngFor="let owner of owners; let i = index">
+                  <accordion-group
+                    class="wrapper-accordion-group"
+                    id="{{ i }}"
+                    (isOpenChange)="selectPanel($event, i + 1)"
+                    [isOpen]="accordionPanel === i + 1"
+                  >
+                    <div accordion-heading class="owner-name float-left">
+                      <est-owner-name-dc [owner]="owner" [ownerIndex]="i"></est-owner-name-dc>
+                    </div>
+                    <div id="legalEntitOwner" class="header-wrapper ml-auto" accordion-heading>
+                      <span class="arrow-up">
+                        <fa-icon icon="angle-up" size="2x"></fa-icon>
+                      </span>
+                      <span class="arrow-down" accordion-heading>
+                        <fa-icon icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                      <span *ngIf="ownerFormArray[i]" class="trash">
+                        <a id="deleteBtn" (click)="showModal(deleteOwnerTemplate)">
+                          <fa-icon
+                            class="icon-wrapper-last-icon"
+                            [icon]="['far', 'trash-alt']"
+                            size="xs"
+                            id="legalEntityOwnerDelete"
+                          ></fa-icon>
+                        </a>
+
+                        <ng-template #deleteOwnerTemplate>
+                          <gosi-confirm-modal-dc
+                            [message]="'ESTABLISHMENT.CONFIRM-DELETE-OWNER' | translate"
+                            (onConfirm)="deleteOwner(i)"
+                            (onCancel)="hideModal()"
+                            iconName="warning"
+                          ></gosi-confirm-modal-dc>
+                        </ng-template>
+                      </span>
+                    </div>
+                    <est-owner-dc
+                      [ownerForm]="ownerFormArray[i]"
+                      [owner]="owner"
+                      [cityList$]="cityList$"
+                      [nationalityList$]="nationalityList$"
+                      [countryList$]="gccCountryList$"
+                      [genderList$]="genderList$"
+                      (resetEvent)="resetOwner(i)"
+                      [isGCC]="isEstGcc"
+                      (verifyEvent)="verifyOwner(i)"
+                      (saveEvent)="saveOwner(i)"
+                      (deleteEvent)="deleteOwner(i)"
+                      [showDelete]="false"
+                      [hasDateFields]="showStartDate"
+                      [minStartDate]="estStartDate"
+                      (updateEvent)="updateOwner(i)"
+                      [isEndDateMandatory]="showEndDate"
+                      (formInvalid)="alertService.showMandatoryErrorMessage()"
+                      [index]="i"
+                    >
+                    </est-owner-dc>
+                  </accordion-group>
+                </ng-container>
+              </accordion>
+              <div class="row justify-content-center mb-4" *ngIf="canAddOwner && hasAllOwnerSaved(ownerFormArray)">
+                <div class="col-auto">
+                  <gosi-button-dc id="addOwnerButton" (submit)="addOwner()" size="lg" [outlineOnly]="true">
+                    <fa-icon class="pl-2 pr-2" icon="plus"></fa-icon>{{ 'ESTABLISHMENT.ADD-OWNER' | translate }}
+                  </gosi-button-dc>
+                </div>
+              </div>
+
+              <hr class="section-end" />
+            </ng-container>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="showSaveButton">
+        <div *ngIf="isDocsRequired(selectedLegalEntity); else directChange">
+          <est-footer-buttons-dc
+            primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+            [showPrevious]="false"
+            (submit)="saveLegalEntity(establishment.registrationNo)"
+            (cancel)="showModal(cancelTemplate)"
+          >
+          </est-footer-buttons-dc>
+        </div>
+       </ng-container>
+        <ng-template #directChange>
+          <est-footer-buttons-dc
+            primaryLabel="ESTABLISHMENT.SUBMIT"
+            [showPrevious]="false"
+            (submit)="submitTransactionWithoutDocs(establishment.registrationNo)"
+            (cancel)="showModal(cancelTemplate)"
+          >
+          </est-footer-buttons-dc>
+        </ng-template>
+      </tab>
+      <!-- documents tab -->
+      <tab [active]="currentTab === 1">
+        <est-documents-dc
+          [documents]="legalEntityDocuments"
+          [businessKey]="establishment.registrationNo"
+          [transactionId]="transactionId"
+          (refreshDocument)="
+            refreshDocumentContent($event, establishment.registrationNo, documentType, estToken?.referenceNo)
+          "
+          [referenceNo]="referenceNo || estToken?.referenceNo"
+        >
+        </est-documents-dc>
+        <!-- Comments -->
+        <gosi-card-dc type="secondary" *ngIf="legalEntityForm" [paddingBottom]="true">
+          <gosi-input-text-area-dc
+            [label]="'ESTABLISHMENT.COMMENTS' | translate"
+            id="comments"
+            name="comments"
+            [maxLength]="commentsMaxLength"
+            [control]="legalEntityForm.get('comments')"
+          >
+          </gosi-input-text-area-dc>
+        </gosi-card-dc>
+        <est-footer-buttons-dc
+          primaryLabel="ESTABLISHMENT.SUBMIT"
+          [showPrevious]="true"
+          (submit)="submitTransaction(establishment.registrationNo)"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(0)"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+    </tabset>
+  </ng-container>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

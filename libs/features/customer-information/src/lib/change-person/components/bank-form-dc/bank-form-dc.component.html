@@ -1,0 +1,98 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row bank-form-wrapper" [formGroup]="bankDetailsForm">
+  <div class="col">
+    <div class="row align-items-center mb-3">
+      <div class="col-md-4 non-saudi-info">
+        {{ 'CUSTOMER-INFORMATION.NON-SAUDI-BANK-INFO' | translate }}
+      </div>
+      <div class="col-md-2">
+        <gosi-input-toggle-dc
+          id="yesNoBtn"
+          name="yesNoBtn"
+          [ignoreLabel]="true"
+          [control]="bankDetailsForm.get('isNonSaudiIBAN')"
+          (changeEvent)="changeBankType($event)"
+        >
+        </gosi-input-toggle-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-input-text-dc
+          id="iBanAccountNumber"
+          name="ibanNumber"
+          [label]="'CUSTOMER-INFORMATION.IBANACCOUNT-NUMBER' | translate"
+          [control]="bankDetailsForm.get('ibanBankAccountNo')"
+          (blur)="getBank()"
+          [maxLength]="minMaxLengthAccountNo"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <ng-container *ngIf="bankDetailsForm.get('isNonSaudiIBAN').value === false; else textField">
+          <gosi-input-select-dc
+            id="bankName"
+            name="bankName"
+            [label]="'CUSTOMER-INFORMATION.BANK-NAME' | translate"
+            [control]="bankDetailsForm.get('bankName')"
+            [list]="list"
+            [disabled]="true"
+          ></gosi-input-select-dc>
+        </ng-container>
+        <!-- Non Saudi Bank Name -->
+        <ng-template #textField>
+          <gosi-input-text-dc
+            id="bankName"
+            name="bankTextName"
+            [disabled]="false"
+            [label]="'CUSTOMER-INFORMATION.BANK-NAME' | translate"
+            [control]="bankDetailsForm.get('bankName').get('english')"
+          >
+          </gosi-input-text-dc>
+        </ng-template>
+      </div>
+
+      <!-- Non Saudi Only Fields -->
+      <ng-container *ngIf="bankDetailsForm.get('isNonSaudiIBAN').value === true">
+        <div class="col-sm-6 col-md-6">
+          <gosi-input-text-area-dc
+            id="bankAddress"
+            name="bankAddress"
+            label="CUSTOMER-INFORMATION.BANK-ADDRESS"
+            [control]="bankDetailsForm.get('bankAddress')"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+        <div class="col-sm-6 col-md-6">
+          <gosi-input-text-dc
+            id="swiftCode"
+            name="swiftCode"
+            [label]="'CUSTOMER-INFORMATION.SWIFT-CODE' | translate"
+            [control]="bankDetailsForm.get('swiftCode')"
+          ></gosi-input-text-dc>
+        </div>
+        <div class="col-sm-12 col-md-12 mb-3">
+          <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD' | translate" type="info" [dismissible]="false">
+          </gosi-alert-dc>
+        </div>
+        <input type="hidden" id="personId" value="{{ personId }}" />
+        <div class="col-sm-12 col-md-12">
+          <ng-container *ngFor="let item of documents; let i = index">
+            <gosi-input-file-sc
+              class="wrapper-gosi-input-file-sc"
+              *ngIf="personId"
+              (uploadedEvent)="fileUploaded()"
+              [isScan]="false"
+              [document]="item"
+              [index]="i"
+              [businessKey]="personId"
+              [transactionId]="300300"
+            ></gosi-input-file-sc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

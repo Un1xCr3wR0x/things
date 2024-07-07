@@ -1,0 +1,233 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Education Details -->
+<cim-education-card-dc [person]="person" (editEvent)="showEducationModal(eduModalRef)" [isCsr]="isCsr">
+</cim-education-card-dc>
+<!-- Education Modal Form -->
+<ng-template #eduModalRef>
+  <gosi-modal-dc [modalHeader]="'CUSTOMER-INFORMATION.EDIT-EDUCATIONAL-DETAILS' | translate">
+    <div class="row" modalContent>
+      <div class="col-md-12">
+        <cim-education-form-dc
+          [educationForm]="educationForm"
+          [educationList]="educationList | async"
+          [specializationList]="specializationList | async"
+        >
+        </cim-education-form-dc>
+      </div>
+    </div>
+    <cim-modal-action-dc modalAction [id]="'Education'" (cancel)="hideModal()" (submit)="saveEducation()">
+    </cim-modal-action-dc>
+  </gosi-modal-dc>
+</ng-template>
+<ng-container *ngIf="person.contactDetail">
+  <!-- Contact Details -->
+  <cim-contact-card-dc
+    (editEvent)="showContactModal(contactModalRef)"
+    [contactDetails]="person.contactDetail"
+    [isCsr]="isCsr"
+  >
+  </cim-contact-card-dc>
+
+  <!-- Contact Modal Form -->
+  <ng-template #contactModalRef>
+    <gosi-modal-dc [modalHeader]="'CUSTOMER-INFORMATION.EDIT-CONTACT-DETAILS' | translate">
+      <div class="row contact-modal mt-4" modalContent>
+        <div class="col-md-12 pl-4 pr-4">
+          <ng-container *ngIf="showOtpError === true">
+            <gosi-alert-dc [message]="otpErrorMessageKey | translate" (hasClosed)="clearAlert()"> </gosi-alert-dc>
+          </ng-container>
+        </div>
+        <!-- Edit Contact Section -->
+        <div
+          class="col-md-12 pt-4"
+          [ngClass]="{
+            'd-none': showOtp ? true : mobileVerifiedPage
+          }"
+        >
+          <frm-contact-dc
+            (emitForm)="bindToContactForm($event)"
+            [isVerifyRequired]="true"
+            [isHeadingRequired]="false"
+            [contactDetails]="person.contactDetail"
+            (mobileNoChanged)="absherVerified = false"
+            (verifyEvent)="showOtpScreen()"
+          >
+          </frm-contact-dc>
+        </div>
+
+        <!-- Verify Otp Section -->
+        <div class="col-md-12" *ngIf="showOtp">
+          <div class="row">
+            <div class="col-md-12 pl-4 pr-4">
+              <gosi-alert-dc
+                *ngIf="isIdentity === true"
+                [message]="absherInfoMessageKey | translate"
+                type="info"
+                [dismissible]="false"
+              >
+              </gosi-alert-dc>
+            </div>
+          </div>
+          <div class="text-center m-4 otp-info">
+            {{ 'CUSTOMER-INFORMATION.OTP-INFO' | translate }}
+          </div>
+          <div class="text-center m-3">
+            <gosi-input-otp-dc
+              [componentId]="'absherOtp'"
+              (timerStopped)="hasRetriesExceeded()"
+              [isValid]="isOtpValid"
+              [control]="otpControl"
+            >
+            </gosi-input-otp-dc>
+          </div>
+          <div class="d-flex justify-content-center mt-4 mb-5">
+            <gosi-timer-dc *ngIf="isResend === false; else showResend" (timerStopped)="isResend = true">
+            </gosi-timer-dc>
+            <ng-template #showResend>
+              <a id="resendOtp" *ngIf="noOfIncorrectOtp !== noOfResend" class="resend-otp" (click)="reSendOtp()">{{
+                'CUSTOMER-INFORMATION.RESEND-OTP' | translate
+              }}</a>
+            </ng-template>
+          </div>
+        </div>
+        <!-- Mobile verified Section -->
+        <div
+          class="col-md-12 pt-4 mobile-verfied"
+          [ngClass]="{
+            'd-none': showOtp ? true : !mobileVerifiedPage
+          }"
+        >
+          <div class="row">
+            <div class="col-lg-12 text-center">
+              <fa-icon class="icon-wrapper-check-circle" icon="check-circle" size="4x"></fa-icon>
+            </div>
+            <div class="col-lg-12 text-center">
+              <div class="verified-text">
+                {{ 'CUSTOMER-INFORMATION.MOBILE-VERIFIED-SUCCESS' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <cim-modal-action-dc
+        *ngIf="!showOtp && !mobileVerifiedPage"
+        modalAction
+        [id]="'Contact'"
+        (cancel)="hideContactModal()"
+        (submit)="saveContact()"
+      >
+      </cim-modal-action-dc>
+      <cim-modal-action-dc
+        *ngIf="showOtp && !mobileVerifiedPage"
+        [submitText]="'CUSTOMER-INFORMATION.VERIFY'"
+        modalAction
+        [id]="'Otp'"
+        (cancel)="back()"
+        (submit)="verifyOtp()"
+      >
+      </cim-modal-action-dc>
+      <cim-modal-action-dc
+        *ngIf="!showOtp && mobileVerifiedPage"
+        [isSecondaryButtonRequired]="false"
+        [submitText]="'CUSTOMER-INFORMATION.CONTINUE'"
+        modalAction
+        [id]="'Otp'"
+        (submit)="showEditScreen()"
+      >
+      </cim-modal-action-dc>
+    </gosi-modal-dc>
+  </ng-template>
+  <gosi-card-dc
+    heading="{{ 'FORM-FRAGMENTS.ADDRESS-DETAILS' | translate }}"
+    (edit)="navigateToAddress()"
+    type="secondary"
+  >
+    <frm-address-dc
+      [hasAddressDetailsLabel]="false"
+      [isViewOnly]="true"
+      [showEdit]="true"
+      (editEvent)="navigateToAddress()"
+      [addressDetails]="person.contactDetail.addresses"
+      [currentMailingAddress]="person.contactDetail.currentMailingAddress"
+      [hasNationalAddress]="true"
+      [hasPOAddress]="true"
+      [hasOverseasAddress]="true"
+      [isPaddingRequired]="false"
+      [mandatoryOverseasAddress]="true"
+    >
+    </frm-address-dc>
+  </gosi-card-dc>
+
+  <!-- Address Modal Form -->
+  <ng-template #addressModalRef>
+    <gosi-modal-dc [modalHeader]="'CUSTOMER-INFORMATION.EDIT-ADDRESS-DETAILS' | translate">
+      <div class="row address-modal mt-4" modalContent>
+        <div class="col-md-12">
+          <frm-address-dc
+            #addressDetails
+            [cityList]="cityList | async"
+            [addressDetails]="person.contactDetail.addresses"
+            [countryList]="gccCountryList | async"
+            [hasNationalAddress]="true"
+            [hasPOAddress]="true"
+            [hasOverseasAddress]="true"
+            [mandatoryOverseasAddress]="true"
+            [parentForm]="addressForms"
+            [currentMailingAddress]="person.contactDetail.currentMailingAddress"
+          ></frm-address-dc>
+        </div>
+      </div>
+      <cim-modal-action-dc modalAction [id]="'Address'" (cancel)="hideModal()" (submit)="saveAddress()">
+      </cim-modal-action-dc>
+    </gosi-modal-dc>
+  </ng-template>
+</ng-container>
+<!-- Bank Details -->
+<cim-bank-details-card-dc
+  [isIbanVerified]="isIbanVerified"
+  [bankDetails]="bankDetails"
+  (editEvent)="showBankDetailsModal(bankDetailsModalRef)"
+  [isCsr]="isCsr"
+>
+</cim-bank-details-card-dc>
+<ng-template #bankDetailsModalRef>
+  <gosi-modal-dc [modalHeader]="'CUSTOMER-INFORMATION.EDIT-BANK-DETAILS' | translate">
+    <div class="row mt-4" modalContent>
+      <div class="col-md-12 pl-4 pr-4">
+        <gosi-alert-sc></gosi-alert-sc>
+        <ng-container *ngIf="showOtpError === true">
+          <gosi-alert-dc [message]="otpErrorMessageKey | translate" (hasClosed)="clearAlert()"> </gosi-alert-dc>
+        </ng-container>
+      </div>
+      <div class="col-md-12">
+        <cim-bank-form-dc
+          (changeBankTypeEvent)="clearAlerts()"
+          (emitForm)="bindToBankForm($event)"
+          (uploadedEvent)="goToTop()"
+          (ibanCodeEmit)="getBank($event)"
+          [bankDetails]="bankDetails"
+          [personId]="person.personId"
+          [documents]="personDocumentList"
+          [bankNameList]="bankNameList"
+        >
+        </cim-bank-form-dc>
+      </div>
+      <ng-container
+        *ngIf="bankParentForm.get('bankForm') && bankParentForm.get('bankForm').get('isNonSaudiIBAN').value === true"
+      >
+        <div class="col-md-12">
+          <gosi-input-text-area-dc
+            id="userComments"
+            name="userComments"
+            label="CUSTOMER-INFORMATION.COMMENTS"
+            [control]="comments"
+          ></gosi-input-text-area-dc>
+        </div>
+      </ng-container>
+    </div>
+    <cim-modal-action-dc modalAction [id]="'bankDetailsId'" (cancel)="hideBankModal()" (submit)="saveBankDetails()">
+    </cim-modal-action-dc>
+  </gosi-modal-dc>
+</ng-template>

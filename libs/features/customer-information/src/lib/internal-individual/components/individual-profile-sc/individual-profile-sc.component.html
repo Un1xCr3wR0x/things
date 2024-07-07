@@ -1,0 +1,130 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="est-details">
+  <fa-icon class="navigate-back-button"
+    [icon]="lang === 'ar' ? ['far', 'arrow-alt-circle-right'] : ['far', 'arrow-alt-circle-left']" id="backButton"
+    (click)="navigateBack()">
+  </fa-icon>
+  <div class="separator"></div>
+  <div class="est-name">{{ 'CUSTOMER-INFORMATION.INDIVIDUAL-PROFILE' | translate }}</div>
+</div>
+<ng-container>
+  <div class="col-lg-12">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="col-lg-12">
+          <gosi-card-dc [noPadding]="true">
+            <cim-profile-details-dc [contributor]="contributor" [personDetails]="personDetails" [roles]="userRoles"
+              [sin]="sin" [personIdentifier]="personIdentifier"></cim-profile-details-dc>
+            <div>
+              <ul>
+                <ng-container *ngFor="let item of profileAction; let i = index">
+                  <li *gosiShow="item?.label === 'BENEFITS' ? accessRolesBenefits : true"
+                    [routerLinkActive]="['active']" #rla="routerLinkActive"
+                    class="pb-3 pt-3 px-2 border-top border-bottom item hover" (mouseover)="mouseOver(item.isImage, i)"
+                    (mouseout)="mouseOut(item.isImage)">
+                    <a [routerLink]="[item.url]">
+                      <span>
+                        <fa-icon *ngIf="!item.isImage" class="icon-value" icon="{{ item.icon }}" size="1x"></fa-icon>
+                      </span>
+                      <span *ngIf="item.isImage" class="icon-value" (mouseover)="mouseOver(item.isImage, i)"
+                        (mouseout)="mouseOut(item.isImage)">
+                        <img src="{{ rla.isActive || (isMouseHoverIndex == i) ? item.activeIcon : item.icon }}" class="icon-image"
+                          alt="logo" />
+                      </span>
+                      <span (mouseover)="mouseOver(item.isImage, i)" (mouseout)="mouseOut(item.isImage)"
+                        (click)="navigateToRoute(item.url, i)">{{ 'CUSTOMER-INFORMATION.' + item.label | translate
+                        }}</span>
+                    </a>
+                  </li>
+                </ng-container>
+              </ul>
+            </div>
+          </gosi-card-dc>
+        </div>
+        <div *gosiShow="isShowSendOtpBtn || isShowSmsBtn" class="col-lg-12">
+          <gosi-card-dc [noPadding]="true">
+            <div class="p-3 active bg-white">{{ 'CUSTOMER-INFORMATION.QUICK-LINKS' | translate }}</div>
+            <div>
+              <ul>
+                <!-- Send OTP -->
+                <li *gosiShow="isShowSendOtpBtn" class="pb-3 pt-3 px-2 border-top border-bottom item hover"
+                  (click)="showPopupVerivication(this.personId, ninVerificationTemplate)">
+                  <a>
+                    <span>
+                      <fa-icon icon="key" size="1x" class="icon-value"></fa-icon>
+                    </span>
+                    <span class="menu-title">{{ 'CUSTOMER-INFORMATION.SEND-OTP' | translate }}</span>
+                  </a>
+                </li>
+                <!-- Send SMS -->
+                <li *gosiShow="isShowSmsBtn" class="pb-3 pt-3 px-2 border-top border-bottom item hover"
+                  (click)="showPopupSendMessage(curMobileNumber, sendMessageTemplate)">
+                  <a>
+                    <span>
+                      <fa-icon icon="sms" size="1x" class="icon-value"></fa-icon>
+                    </span>
+                    <span class="menu-title">{{ 'CUSTOMER-INFORMATION.SEND-MESSAGE' | translate }}</span>
+                  </a>
+                </li>
+                <!-- Send ATTORNEY *gosiShow="isShowSendAttorneyBtn"-->
+                <li class="pb-3 pt-3 px-2 border-top border-bottom item hover"
+                  (click)="showPopupSendAttorney(this.personId, sendAttorneyTemplate)">
+                  <a>
+                    <span>
+                      <fa-icon icon="balance-scale" size="1x" class="icon-value"></fa-icon>
+                    </span>
+                    <span class="menu-title">{{ 'CUSTOMER-INFORMATION.ATTORNEY-INQUIRY-SERVICE' | translate }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </gosi-card-dc>
+        </div>
+        <div class="col-lg-12" *ngIf="showRaiseQuicklink">
+          <gosi-card-dc [noPadding]="true">
+            <div class="p-3 active bg-white">{{ 'CUSTOMER-INFORMATION.QUICK-LINKS' | translate }}</div>
+            <div class="raise-style" (click)="navigateToRaiseComplaint()">{{ 'CUSTOMER-INFORMATION.REGISTER-COMPLAINT-SUGGESTION-ENQUIRY' | translate }}</div>
+          </gosi-card-dc>
+        </div>
+      </div>
+      <div class="col-lg-9">
+        <div class="content padding no-margin">
+          <gosi-alert-sc *ngIf="showError"></gosi-alert-sc>
+          <router-outlet></router-outlet>
+          <!-- <div class="col-lg-12">
+            <dsb-individual-dashboard-sc></dsb-individual-dashboard-sc>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #ninVerificationTemplate>
+  <fea-verify-ninumber-dc #verifyNinumberDcComp [isVerified]="isVerified" [ninumber]="curNinumber" [isSend]="isSend"
+    (send)="sendVerification($event)" (verify)="verifyOTP($event, uuid)" (close)="closeVerification()">
+  </fea-verify-ninumber-dc>
+</ng-template>
+
+<ng-template #sendMessageTemplate>
+  <gosi-fea-send-message-dc #sendMessageDcComp [mobileNumber]="curMobileNumber" [isSend]="isSendMessage"
+    (send)="sendMessage($event)" (sourceSystem)="getSourceSystem($event)" (close)="closeSMS()"
+    [responseTypes]="responseTypes" [details]="details" [token]="token">
+  </gosi-fea-send-message-dc>
+</ng-template>
+
+<ng-template #sendAttorneyTemplate>
+  <gosi-fea-send-attorney-dc #sendAttorneyDcComp [isAttorneyVerified]="isAttorneyVerified" [ninumber]="curNinumber"
+    [isAttorneySend]="isAttorneySend" [attorneyStatus]="attorneyStatus" [agentFullName]="agentFullName"
+    [agentId]="agentId" [agentIsValid]="agentIsValid" [authorizerListFullName]="authorizerListFullName"
+    [authorizerListId]="authorizerListId" [authorizerListIsValid]="authorizerListIsValid" [attorneyText]="attorneyText"
+    [authList]="authList" [lang]="lang" (send)="sendAttorney($event)" (close)="closeSendAttorney()">
+  </gosi-fea-send-attorney-dc>
+  <gosi-alert-dc *ngIf="attorneyError" [bilingualMessage]="error" type="danger"></gosi-alert-dc>
+</ng-template>

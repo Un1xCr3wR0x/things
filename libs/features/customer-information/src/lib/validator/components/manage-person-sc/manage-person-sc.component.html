@@ -1,0 +1,143 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!------- Person details view  --------->
+<div class="content">
+  <ng-container *ngIf="person && person.personId !== 0">
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="isIqama || isBorder || isAddNin || isEditNin || isPassport? contributorDocuments : personDocumentList ? personDocumentList : []"
+      [comments]="comments"
+      [showComments]="isAddNin || isEditNin"
+    >
+      <!-- Heading Section -->
+      <div id="mainHeading">
+        <frm-main-heading-dc
+          [heading]="heading | translate"
+          [subLabel]="isIqama || isBorder  || isPassport ? ('CUSTOMER-INFORMATION.SOCIAL-INSURANCE-NO' | translate) : null"
+          [subValue]="socialInsuranceNo"
+        >
+        </frm-main-heading-dc>
+      </div>
+
+      <!-- Left Side -->
+
+      <div id="contentArea">
+        <div *ngIf="!isPassport && !isAddNin && !isEditNin">
+        <!-- Establishment Details -->
+        <div class="content-item" *ngIf="isIqama || isBorder || isPassport">
+          <cim-establishment-details-dc [establishmentDetails]="establishmentDetails"> </cim-establishment-details-dc>
+        </div>
+
+        <!--  Person Details -->
+
+        <div class="content-item" *ngIf="person">
+          <cim-personal-info-dc [person]="person" [canEdit]="!canReturn" [isPassport]="isPassport" (onEdit)="navigateToProfile()">
+          </cim-personal-info-dc>
+        </div>
+      </div>
+      <div *ngIf="isPassport">
+        <!--  Person Details -->
+
+        <div class="content-item" *ngIf="person">
+          <cim-personal-info-dc [person]="person" [canEdit]="!canReturn" [personDetails]="personDetails" [isPassport]="isPassport" (onEdit)="navigateToProfile()">
+          </cim-personal-info-dc>
+        </div>
+        <!-- Establishment Details -->
+        <div class="content-item" *ngIf="isIqama || isBorder || isPassport">
+          <cim-establishment-details-dc [establishmentDetails]="establishmentDetails"> </cim-establishment-details-dc>
+        </div>
+
+        
+      </div>
+        <div class="content-item" *ngIf="!isIqama && !isBorder && !isPassport && !isAddNin && !isEditNin">
+          <cim-person-bank-details-dc [bankDetails]="bankDetails"></cim-person-bank-details-dc>
+        </div>
+        <div class="content-item" *ngIf="isPassport && isShowPassport">
+          <cim-add-passport-deails-dc [passportDetails]="passportDetails" [person]="person"></cim-add-passport-deails-dc>
+        </div>
+        <div class="content-item" *ngIf="isAddNin || isEditNin">
+        <cim-add-nin-details-dc></cim-add-nin-details-dc>
+        </div>
+        
+      </div> 
+      <!-- Validator Actions -->
+      <div id="actionArea" *ngIf="!isAddNin && !isEditNin">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          (approveEvent)="approveTransaction(personValidatorForm, approveTemplate)"
+          (rejectEvent)="rejectTransaction(personValidatorForm, rejectTemplate)"
+          (returnEvent)="returnTransaction(personValidatorForm, returnTemplate)"
+          (cancelEvent)="showModal(cancelTemplate, 'md')"
+        >
+        </frm-action-area-dc>
+      </div>
+      <div id="actionArea" *ngIf="isAddNin || isEditNin">
+        <frm-action-area-dc
+          (approveEvent)="approveTransaction(personValidatorForm, approveTemplate)"
+          (rejectEvent)="rejectTransaction(personValidatorForm, rejectingTemplate)"
+          (cancelEvent)="showModal(cancelTemplate, 'md')"
+          [disableApprove]="isInprogressTransaction"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <!----------------------------------------- Modals ------------------------------->
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="ESTABLISHMENT.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="personValidatorForm"
+      [heading]="rejectHeading"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList$"
+      (rejectEvent)="confirmReject(personValidatorForm)"
+      [transactionNumber]="transactionNumber"
+      [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #rejectingTemplate >
+    <frm-reject-template-dc
+    *ngIf="isAddNin || isEditNin"
+      [parentForm]="personValidatorForm"
+      [heading]="rejectHeading"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList$"
+      (rejectEvent)="confirmReject(personValidatorForm)"
+      [transactionNumber]="transactionNumber"
+      [warningMessage]="'CORE.INFO.REJECT-ADDEDIT-INFO' | translate: { transactionNo: transactionNumber }"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="personValidatorForm"
+      [heading]="returnHeading"
+      (cancelEvent)="hideModal()"
+      [returnReasonList$]="returnReasonList$"
+      (returnEvent)="confirmReturn(personValidatorForm)"
+      [warningMessage]="
+        isReturnToAdmin
+          ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO'
+          : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+      "
+    >
+    </frm-return-template-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="personValidatorForm"
+      [isCommentsMandatory]="isReturn"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="confirmApprove(personValidatorForm)"
+    ></frm-approve-template-dc>
+  </ng-template>
+</div>

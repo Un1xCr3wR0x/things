@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="individualApp">
+  <gosi-breadcrumb-dc #brdcmb></gosi-breadcrumb-dc>
+</ng-container>
+<div class="content">
+  <div class="row row-bottom-padding">
+    <div class="col-sm-6">
+      <div class="row no-gutters header">
+        <div class="col-auto">
+          <a class="back-button fa-2x" (click)="navigateBack()">
+            <fa-icon
+              class="header-icon custom-pointer"
+              [ngClass]="!individualApp ? 'gray-500' : 'ind-gray-500'"
+              [icon]="['far', selectedLang === 'en' ? 'arrow-alt-circle-left' : 'arrow-alt-circle-right']"
+            ></fa-icon>
+          </a>
+        </div>
+        <div *ngIf="!individualApp" class="col-auto heading">
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-PREVIEW' | translate }}
+        </div>
+        <div *ngIf="individualApp" class="col-auto ind-heading">
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-PREVIEW' | translate }}
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!individualApp" class="col-sm-6">
+      <div class="justify-info d-flex justify-content-end">
+        <span class="btn-margin" *ngIf="contract?.status === 'CONTRACT_PENDING_CON'">
+          <gosi-button-dc
+            [outlineOnly]="true"
+            id="view"
+            type="danger"
+            [size]="'md'"
+            (submit)="isAppPrivate ? showModal(CSRCancel) : showModal(ESTADMINCancel)"
+          >
+            {{ 'CONTRIBUTOR.CONTRACT-AUTH.CANCEL-CONTRACT' | translate }}</gosi-button-dc
+          >
+        </span>
+        <gosi-button-dc type="outline-secondary" [size]="'md'" id="printContract" (click)="printPreview()">
+          <fa-icon [icon]="['fas', 'print']"></fa-icon>
+          <span class="mr-2"></span>
+          {{ 'CONTRIBUTOR.PREVIEW-DETAILS.PRINT-CONTRACT-DETAILS' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div *ngIf="individualApp" class="col-sm-6">
+      <div class="justify-info d-flex justify-content-end">
+        <gosi-button-dc type="primary" [size]="'md'" id="downloadCertificates" (click)="downloadCertificates()">
+          <fa-icon [icon]="['fas', 'download']"></fa-icon>
+          <span class="mr-2"></span>
+          {{ 'CONTRIBUTOR.DOWNLOAD-CERTIFICATE' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contract summary  section -->
+  <ng-container *ngIf="individualApp">
+    <cnt-individual-contract-summary *ngIf="contract" [contract]="contract"></cnt-individual-contract-summary>
+  </ng-container>
+
+  <ng-container *ngIf="!individualApp">
+    <cnt-contract-summary *ngIf="contract" [contract]="contract"></cnt-contract-summary>
+  </ng-container>
+  <!-- View contracts list Preview section -->
+  <cnt-preview-dc
+    *ngIf="contract && clauses"
+    [establishment]="establishment"
+    [personDetails]="contributor"
+    [activeEngagement]="activeEngagement"
+    [contractAtDraft]="contract"
+    [contractClausesList]="clauses"
+    [transportationAllowance]="transportationAllowance"
+    [bankInfo]="bankDetails"
+    [isPreviewEdit]="false"
+    [individualApp]="individualApp"
+  >
+  </cnt-preview-dc>
+
+  <ng-template #ESTADMINCancel>
+    <div class="custom-modal">
+      <gosi-modal-dc>
+        <div modalContent>
+          <div class="content">
+            <div class="">
+              <div class="failure-section">
+                <div class="row text-center">
+                  <div class="col-lg-12 image text-center">
+                    <img src="assets/images/info orange icon.svg" alt="Failed" />
+                  </div>
+                  <div class="col-lg-12 message text-center">
+                    <b> {{ 'CONTRIBUTOR.CONTRACT-AUTH.CANCEL-CONTRACT-MESSAGE' | translate }} </b>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-around mt-5" modalAction>
+          <div class="btn-section">
+            <gosi-button-dc id="noBtn" type="secondary" (submit)="hideModal()">
+              {{ 'CONTRIBUTOR.NO' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="btn-section">
+            <gosi-button-dc id="yesBtn" type="secondary" (submit)="confirmCancelContract()">
+              {{ 'CONTRIBUTOR.YES' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </gosi-modal-dc>
+    </div>
+  </ng-template>
+
+  <ng-template #CSRCancel>
+    <div class="custom-modal">
+      <gosi-modal-dc [modalHeader]="'CONTRIBUTOR.CONTRACT-AUTH.CANCEL-CONTRACT' | translate">
+        <div modalContent>
+          <div class="row">
+            <div class="col">
+              <gosi-alert-dc
+                [message]="isAppPrivate ? 'CONTRIBUTOR.CONTRACT-AUTH.CANCEL_WARN' : 'CORE.ERROR.DOCUMENT-UPLOAD'"
+                type="warning"
+                dismissable="false"
+              >
+              </gosi-alert-dc>
+            </div>
+          </div>
+          <gosi-alert-sc></gosi-alert-sc>
+          <!-- Document upload section -->
+          <ng-container *ngFor="let item of documents; let i = index">
+            <gosi-input-file-sc
+              [isScan]="isAppPrivate"
+              [businessKey]="contractId"
+              [transactionId]="cancelContractTransactionId"
+              [document]="item"
+              [index]="i"
+              (refresh)="refreshDocument(item)"
+            ></gosi-input-file-sc>
+          </ng-container>
+          <!-- Document upload section -->
+        </div>
+
+        <div modalAction>
+          <div class="row">
+            <div class="col-md-12 form-action">
+              <div class="float-right btn-section">
+                <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="submitCancelContract()">
+                  {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                  {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </gosi-modal-dc>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,855 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row" *ngIf="engagementDetails?.length > 0 || persistFilters">
+  <div class="col-md-4 font-style contribution-margin mr-auto ipad-margin" *ngIf="!engagementViewFlag">
+    {{ 'CONTRIBUTOR.CONTRIBUTION-HISTORY' | translate }}
+  </div>
+  <div class="col-md-4 font-style contribution-margin mr-auto ipad-margin" *ngIf="engagementViewFlag">
+    {{ 'CONTRIBUTOR.ENGAGEMENT-HISTORY' | translate }}
+  </div>
+  <div id="desktopView" class="view-margin">
+    <div class="col-md-5">
+      <div class="serch-sort-sec search-icon">
+        <div class="d-flex flex-row custom-width-toggle ipad-width">
+          <div class="view-based">{{ 'CONTRIBUTOR.VIEW-BASED-ON' | translate }}:</div>
+          <div class="pt-2 view-mode" *ngIf="lang === 'en'">
+            <div class="view-mode-toggler">
+              <div
+                class="column-left view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'engagement',
+                  'view-mode-unselected': viewMode == 'contribution'
+                }"
+                (click)="contributionViewChange('engagement')"
+              >
+                {{ 'CONTRIBUTOR.ENGAGEMENTS' | translate }}
+              </div>
+
+              <div
+                class="column-right view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'contribution',
+                  'view-mode-unselected': viewMode == 'engagement'
+                }"
+                (click)="contributionViewChange('contribution')"
+              >
+                {{ 'CONTRIBUTOR.CONTRIBUTION' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="pt-2 view-mode" *ngIf="lang === 'ar'">
+            <div class="view-mode-toggler">
+              <div
+                class="column-left view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'contribution',
+                  'view-mode-unselected': viewMode == 'engagement'
+                }"
+                (click)="contributionViewChange('contribution')"
+              >
+                {{ 'CONTRIBUTOR.CONTRIBUTION' | translate }}
+              </div>
+              <div
+                class="column-right view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'engagement',
+                  'view-mode-unselected': viewMode == 'contribution'
+                }"
+                (click)="contributionViewChange('engagement')"
+              >
+                {{ 'CONTRIBUTOR.ENGAGEMENTS' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="filter">
+            <gosi-filter-dc
+              id="filter-area"
+              (scroll)="onScroll()"
+              (apply)="applyFilter()"
+              (reset)="clearAllFiters()"
+              [noScroll]="true"
+              [insideEvent]="insideEvent"
+              [closeEvent]="closeEvent"
+              [clearbutton]="closeButtonCLick"
+            >
+              <ng-container modalContent>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <gosi-input-daterange-dc
+                      #dateRangePicker
+                      [label]="'CONTRIBUTOR.DATE-RANGE' | translate"
+                      [control]="engagementDateForm"
+                      [monthPickerPlaceholder]="'CONTRIBUTOR.DATE-RANGE-PLACEHOLDER' | translate"
+                      [arabicDateFormatChange]="true"
+                      [monthPicker]="true"
+                      [maxDate]="maxDate"
+                      [hideOptionalLabel]="true"
+                      [showReset]="true"
+                      (reset)="clearDateRangeFiter()"
+                      [events]="resetClicked.asObservable()"
+                      (clearClicked)="clearButtonClick($event)"
+                    ></gosi-input-daterange-dc>
+                  </div>
+                  <div class="col-lg-12">
+                    <gosi-input-multi-select-dropdown-dc
+                      #selectBtn
+                      id="locationSelection"
+                      [hideOptionalLabel]="true"
+                      [list]="occupationList"
+                      [label]="'CONTRIBUTOR.OCCUPATION' | translate"
+                      (selected)="occupationListValues = $event"
+                      [showReset]="true"
+                      (reset)="clearOccupationFiter()"
+                      (clickInside)="clickInsideSelect($event)"
+                      (close)="closeCLicked($event)"
+                      [control]="engHistoryForm.get('occupation')"
+                      [allowSearch]="true"
+                      [selectedValues]="occupationListValues"
+                      [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                      (clearClicked)="clearButtonClick($event)"
+                    >
+                    </gosi-input-multi-select-dropdown-dc>
+                  </div>
+                  <div class="col-lg-12">
+                    <gosi-input-multi-select-dropdown-dc
+                      id="fullName"
+                      [hideOptionalLabel]="true"
+                      [list]="employerLovList"
+                      [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME' | translate"
+                      (selected)="employerListValues = $event; updateInsideClick()"
+                      [showReset]="true"
+                      (reset)="clearEmployerFiter()"
+                      (clickInside)="clickInsideSelect($event)"
+                      (close)="closeCLicked($event)"
+                      [control]="engHistoryForm.get('name')"
+                      [allowSearch]="true"
+                      [selectedValues]="employerListValues"
+                      [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                      (clearClicked)="clearButtonClick($event)"
+                    >
+                    </gosi-input-multi-select-dropdown-dc>
+                  </div>
+                  <!-- <div class="col-lg-12">
+                    <gosi-input-text-dc
+                      id="fullName"
+                      [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME' | translate"
+                      [maxLength]="240"
+                      [control]="engHistoryForm.get('name')"
+                      [removeSpecialCharacters]="true"
+                      [showReset]="true"
+                      (reset)="clearEmployerFiter()"
+                      [hideOptionalLabel]="true"
+                      [events]="resetClicked.asObservable()"
+                    >
+                    </gosi-input-text-dc>
+                  </div> -->
+                </div>
+              </ng-container>
+            </gosi-filter-dc>
+          </div>
+          <div class="col-md-12 align pl-0" *ngIf="indappUser">
+            <div class="calender-type ">
+              <div class="p-2 pl-4 pr-4 text-center type selected-type" (click)="changeType()">
+                <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                {{ 'CONTRIBUTOR.ADD-ENGAGEMENT-REGISTERED' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="responsiveView">
+    <div class="col-md-5">
+      <div class="serch-sort-sec search-icon">
+        <div>
+          <div class="view-based-resp">{{ 'CONTRIBUTOR.VIEW-BASED-ON' | translate }}:</div>
+          <div class="pt-2 view-mode" *ngIf="lang == 'en'">
+            <div class="view-mode-toggler-resp">
+              <div
+                class="column-left view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'engagement',
+                  'view-mode-unselected': viewMode == 'contribution'
+                }"
+                (click)="contributionViewChange('engagement')"
+              >
+                {{ 'CONTRIBUTOR.ENGAGEMENTS' | translate }}
+              </div>
+
+              <div
+                class="column-right view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'contribution',
+                  'view-mode-unselected': viewMode == 'engagement'
+                }"
+                (click)="contributionViewChange('contribution')"
+              >
+                {{ 'CONTRIBUTOR.CONTRIBUTION' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="pt-2 view-mode" *ngIf="lang === 'ar'">
+            <div class="view-mode-toggler-resp">
+              <div
+                class="column-left view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'contribution',
+                  'view-mode-unselected': viewMode == 'engagement'
+                }"
+                (click)="contributionViewChange('contribution')"
+              >
+                {{ 'CONTRIBUTOR.CONTRIBUTION' | translate }}
+              </div>
+              <div
+                class="column-right view-text"
+                [ngClass]="{
+                  'view-mode-selected': viewMode == 'engagement',
+                  'view-mode-unselected': viewMode == 'contribution'
+                }"
+                (click)="contributionViewChange('engagement')"
+              >
+                {{ 'CONTRIBUTOR.ENGAGEMENTS' | translate }}
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-resp">
+            <gosi-filter-dc
+              id="filter-area"
+              (scroll)="onScroll()"
+              (apply)="applyFilter()"
+              (reset)="clearAllFiters()"
+              [noScroll]="true"
+              [insideEvent]="insideEvent"
+              [closeEvent]="closeEvent"
+              [clearbutton]="closeButtonCLick"
+            >
+              <ng-container modalContent>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <gosi-input-daterange-dc
+                      #dateRangePicker
+                      [label]="'CONTRIBUTOR.DATE-RANGE' | translate"
+                      [control]="engagementDateForm"
+                      [monthPickerPlaceholder]="'CONTRIBUTOR.DATE-RANGE-PLACEHOLDER' | translate"
+                      [monthPicker]="true"
+                      [maxDate]="maxDate"
+                      [hideOptionalLabel]="true"
+                      [showReset]="true"
+                      (reset)="clearDateRangeFiter()"
+                      [events]="resetClicked.asObservable()"
+                      (clearClicked)="clearButtonClick($event)"
+                    ></gosi-input-daterange-dc>
+                  </div>
+                  <div class="col-lg-12">
+                    <gosi-input-multi-select-dropdown-dc
+                      id="locationSelection"
+                      [hideOptionalLabel]="true"
+                      [list]="occupationList"
+                      [label]="'CONTRIBUTOR.OCCUPATION' | translate"
+                      (selected)="occupationListValues = $event; updateInsideClick()"
+                      [showReset]="true"
+                      (reset)="clearOccupationFiter()"
+                      [control]="engHistoryForm.get('occupation')"
+                      (clickInside)="clickInsideSelect($event)"
+                      (close)="closeCLicked($event)"
+                      [allowSearch]="true"
+                      [selectedValues]="occupationListValues"
+                      [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                      (clearClicked)="clearButtonClick($event)"
+                    >
+                    </gosi-input-multi-select-dropdown-dc>
+                  </div>
+                  <div class="col-lg-12">
+                    <gosi-input-multi-select-dropdown-dc
+                      id="fullName"
+                      [hideOptionalLabel]="true"
+                      [list]="employerLovList"
+                      [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME' | translate"
+                      (selected)="employerListValues = $event; updateInsideClick()"
+                      [showReset]="true"
+                      (reset)="clearEmployerFiter()"
+                      (clickInside)="clickInsideSelect($event)"
+                      (close)="closeCLicked($event)"
+                      [control]="engHistoryForm.get('name')"
+                      [allowSearch]="true"
+                      [selectedValues]="employerListValues"
+                      [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                    >
+                    </gosi-input-multi-select-dropdown-dc>
+                  </div>
+                  <!-- <div class="col-lg-12">
+                    <gosi-input-text-dc
+                      id="fullName"
+                      [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME' | translate"
+                      [maxLength]="240"
+                      [control]="engHistoryForm.get('name')"
+                      [removeSpecialCharacters]="true"
+                      [showReset]="true"
+                      (reset)="clearEmployerFiter()"
+                      [hideOptionalLabel]="true"
+                      [events]="resetClicked.asObservable()"
+                    >
+                    </gosi-input-text-dc>
+                  </div> -->
+                </div>
+              </ng-container>
+            </gosi-filter-dc>
+          </div>
+          <div class="col-md-12 align mobile-align pl-0 pt-1" *ngIf="indappUser">
+            <div class="calender-type ">
+              <div class="p-2 pl-4 pr-4 text-center type selected-type" (click)="changeType()">
+                <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                {{ 'CONTRIBUTOR.ADD-ENGAGEMENT-REGISTERED' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-container *ngIf="!engagementViewFlag">
+  <div class="py-5" *ngIf="engagementDetails?.length > 0; else noRecord">
+    <ng-container *ngFor="let value of engagementDetails; let i = index">
+      <ng-container *ngFor="let period of value.engagementPeriod; let j = index">
+        <!-- <ng-container *ngFor="let period of engPeriodList; let j = index">
+          <ng-container *ngIf="value.registrationNo === key.registrationNo"> -->
+        <cnt-engagement-timeline-dc [isFirstItem]="i === 0" [isLastItem]="i === engagementDetails?.length - 1">
+          <div timeline-date>
+            <div class="col-md-12 flag-timeline">
+              <span class="date-font date-timeline">{{ period?.startDate | dateType }} </span>
+
+              <span class="arrow-icons">
+                <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+
+                <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+              </span>
+
+              <span class="date-font"
+                >{{ period?.endDate ? (period?.endDate | dateType) : ('CONTRIBUTOR.ONWARDS' | translate) }}
+              </span>
+              <span id="responsiveView" class="mt-n3"><br /></span>
+              <span id="duration" class="day-font duration-margin">
+                <ng-container
+                  *ngIf="period?.periodDuration?.noOfMonths !== 0 || period?.periodDuration?.noOfDays !== 0"
+                >
+                  (
+                  <ng-container *ngIf="period?.periodDuration?.noOfMonths && period?.periodDuration?.noOfMonths !== 0">
+                    <ng-container
+                      *ngIf="
+                        !(
+                          lang === 'ar' &&
+                          (period?.periodDuration?.noOfMonths === 1 || period?.periodDuration?.noOfMonths === 2)
+                        )
+                      "
+                    >
+                      {{ period?.periodDuration?.noOfMonths }}
+                    </ng-container>
+                    {{
+                      period?.periodDuration?.noOfMonths === 1
+                        ? ('CONTRIBUTOR.MONTH' | translate)
+                        : period?.periodDuration?.noOfMonths === 2
+                        ? ('CONTRIBUTOR.MONTHS-2' | translate)
+                        : period?.periodDuration?.noOfMonths > 2 && period?.periodDuration?.noOfMonths < 11
+                        ? ('CONTRIBUTOR.MONTHS-3-10' | translate)
+                        : ('CONTRIBUTOR.MONTHS-11' | translate)
+                    }}
+                  </ng-container>
+                  <ng-container *ngIf="period?.periodDuration?.noOfDays && period?.periodDuration?.noOfDays !== 0">
+                    <ng-container
+                      *ngIf="
+                        !(
+                          lang === 'ar' &&
+                          (period?.periodDuration?.noOfDays === 1 || period?.periodDuration?.noOfDays === 2)
+                        )
+                      "
+                    >
+                      {{ period?.periodDuration?.noOfDays }}
+                    </ng-container>
+                    {{
+                      period?.periodDuration?.noOfDays === 1
+                        ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                        : period?.periodDuration?.noOfDays === 2
+                        ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                        : period?.periodDuration?.noOfDays > 2 && period?.periodDuration?.noOfDays < 11
+                        ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                        : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                    }}
+                  </ng-container>
+                  )
+                  <!-- <span *ngIf="lang === 'ar'">(</span>
+                  <span *ngIf="lang === 'en'">)</span> -->
+                </ng-container>
+              </span>
+            </div>
+
+            <accordion class="engagement-container pl-1 pr-4" *ngIf="engagementDetails[i]?.engagementType == 'vic'">
+              <accordion-group class="accordion-group-class mb-3 pb-2">
+                <div accordion-heading class="accordion-heading">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="label first-lbl">{{ 'CONTRIBUTOR.WAGE-MONTH' | translate }}</div>
+
+                      <div class="label wage-lbl">
+                        {{ period?.wage?.totalWage | number: '1.2-2' }} {{ 'CONTRIBUTOR.SARS' | translate }}
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <span>
+                        <fa-icon class="icon badge-vic custom-padding" [icon]="['fas', 'user-tie']"></fa-icon>
+
+                        <span class="name-font">
+                          {{ 'CONTRIBUTOR.VIC-FULLFORM' | translate }}
+                        </span>
+                      </span>
+                    </div>
+
+                    <div class="header-wrappers ml-auto" accordion-heading>
+                      <span class="arrow-ups col-md-2">
+                        <fa-icon icon="angle-up" size="2x"></fa-icon>
+                      </span>
+
+                      <span class="arrow-downs ml-auto col-md-2" accordion-heading>
+                        <fa-icon icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="font-style margin-align col-md-6">
+                    {{ 'CONTRIBUTOR.WAGE.WAGE-DETAILS' | translate }}
+                  </div>
+                </div>
+
+                <div class="row container">
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="wageCategory"
+                      [value]="period?.wage?.wageCategory | bilingualText"
+                      label="CONTRIBUTOR.ADD-VIC.WAGE-CATEGORY"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="label first-lbl">
+                      {{ 'CONTRIBUTOR.CONTRIBUTION-AMOUNT' | translate }}
+                    </div>
+
+                    <div class="label second-lbl">
+                      {{ period?.wage?.contributoryWage * 0.18 | number: '1.2-2' }}
+                      {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="job"
+                      [value]="period?.occupation | bilingualText"
+                      label="CONTRIBUTOR.OCCUPATION"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+                </div>
+              </accordion-group>
+            </accordion>
+            <accordion class="engagement-container pl-1 pr-4" *ngIf="engagementDetails[i]?.engagementType != 'vic'">
+              <accordion-group class="accordion-group-class mb-3 pb-2">
+                <div accordion-heading class="accordion-heading">
+                  <div id="desktopView">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="label first-lbl">{{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE-MONTH' | translate }}</div>
+
+                        <div class="label wage-lbl">
+                          {{ period?.wage?.contributoryWage | number: '1.2-2' }} {{ 'CONTRIBUTOR.SARS' | translate }}
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <span>
+                          <fa-icon class="icon badge custom-padding" icon="briefcase"></fa-icon>
+
+                          <span class="name-font">
+                            {{
+                              value?.establishmentName?.english === null
+                                ? value?.establishmentName?.arabic
+                                : (value?.establishmentName | bilingualText)
+                            }}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div class="header-wrappers ml-auto" accordion-heading>
+                        <span class="arrow-ups col-md-2">
+                          <fa-icon icon="angle-up" size="2x"></fa-icon>
+                        </span>
+
+                        <span class="arrow-downs ml-auto col-md-2" accordion-heading>
+                          <fa-icon icon="angle-down" size="2x"></fa-icon>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="responsiveView">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <span>
+                          <fa-icon class="icon badge custom-padding" icon="briefcase"></fa-icon>
+
+                          <span class="name-font">
+                            {{
+                              value?.establishmentName?.english === null
+                                ? value?.establishmentName?.arabic
+                                : (value?.establishmentName | bilingualText)
+                            }}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div class="col-md-4 mt-2">
+                        <div class="label first-lbl">{{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE-MONTH' | translate }}</div>
+
+                        <div class="label wage-lbl">
+                          {{ period?.wage?.contributoryWage | number: '1.2-2' }} {{ 'CONTRIBUTOR.SARS' | translate }}
+                        </div>
+                      </div>
+
+                      <div class="header-wrappers ml-auto icon-margin" accordion-heading>
+                        <span class="arrow-ups col-md-2">
+                          <fa-icon icon="angle-up" size="3x"></fa-icon>
+                        </span>
+
+                        <span class="arrow-downs ml-auto col-md-2" accordion-heading>
+                          <fa-icon icon="angle-down" size="3x"></fa-icon>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="font-style margin-align col-md-6">
+                    {{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }}
+                  </div>
+                </div>
+
+                <div class="row container">
+                  <div class="col-md-4 mt-n2">
+                    <gosi-label-dc
+                      id="name"
+                      [value]="
+                        value?.establishmentName?.english === null
+                          ? value?.establishmentName?.arabic
+                          : (value?.establishmentName | bilingualText)
+                      "
+                      label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="regNo"
+                      [value]="value?.registrationNo"
+                      label="CONTRIBUTOR.ESTABLISHMENT-REGISTRATION-NUMBER"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="empId"
+                      [value]="value?.companyWorkerNumber"
+                      label="CONTRIBUTOR.EMPLOYEE-NUMBER"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="job"
+                      [value]="period?.occupation | bilingualText"
+                      label="CONTRIBUTOR.JOB-TITLE"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4">
+                    <gosi-label-dc
+                      id="date"
+                      [value]="value?.joiningDate?.gregorian | gosiDate"
+                      label="CONTRIBUTOR.ENGAGEMENT-START-DATE"
+                      [customStyle]="labelStyle"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <div class="label first-lbl">{{ 'CONTRIBUTOR.WAGE.WAGE' | translate }}</div>
+
+                    <div class="label second-lbl">
+                      {{ period?.wage?.totalWage | number: '1.2-2' }} {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <div class="label first-lbl">
+                      {{ 'CONTRIBUTOR.WAGE-SUBJECT-TO-CONTRIBUTION' | translate }}
+                    </div>
+
+                    <div class="label second-lbl">
+                      {{ period?.wage?.contributoryWage | number: '1.2-2' }} {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+                    </div>
+                  </div>
+
+                  <div *ngIf="value?.contractStartDate?.gregorian" class="col-md-4">
+                    <div class="label first-lbl">{{ 'CONTRIBUTOR.CONTRACT-PERIOD' | translate }}</div>
+
+                    <div class="label second-lbl">
+                      {{ value?.contractStartDate?.gregorian | gosiDate }} >
+                      {{
+                        value?.contractEndDate?.gregorian
+                          ? (value?.contractEndDate?.gregorian | gosiDate)
+                          : ('CONTRIBUTOR.WAGE.ONWARDS' | translate)
+                      }}
+                    </div>
+                  </div>
+
+                  <div *ngIf="!value?.contractStartDate?.gregorian" class="col-md-4">
+                    <gosi-label-dc id="date" [control]="null" label="CONTRIBUTOR.CONTRACT-PERIOD"></gosi-label-dc>
+                  </div>
+                </div>
+
+                <div class="row coverage-style">{{ 'CONTRIBUTOR.COVERAGE' | translate }}</div>
+
+                <div class="row row-coverage-icon">
+                  <div class="col-md-6 d-flex justify-content-start mobile-coverage-section mt-n2 pb-2">
+                    <ng-container *ngFor="let coverage of period?.coverages">
+                      <div class="icon-wrapper d-flex icon-annuity icn-padding icn-margin oh-tooltip">
+                        <ng-container
+                          *ngIf="
+                            coverage?.coverageType?.english === annuity &&
+                            coverage.coverage !== 0 &&
+                            coverage.establishmentPercentage !== 0
+                          "
+                          class="annuity-icon-padding"
+                        >
+                          <ng-template #annuityMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverage, coverageDetail: coverageDetails, engagement: period }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+
+                          <img
+                            src="assets/icons/annuity.svg"
+                            [placement]="lang === 'en' ? 'top' : 'top'"
+                            class="image-annuity"
+                            [tooltip]="displayIcon ? annuityMessage : null"
+                            alt="annuity"
+                          />
+                        </ng-container>
+                      </div>
+
+                      <div class="icon-wrapper d-flex icn-padding icn-margin ui-tooltip">
+                        <ng-container
+                          *ngIf="
+                            coverage?.coverageType?.english === ui &&
+                            coverage.coverage !== 0 &&
+                            coverage.establishmentPercentage !== 0
+                          "
+                        >
+                          <ng-template #uiMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverage, coverageDetail: coverageDetails, engagement: period }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+
+                          <div class="image-uis">
+                            <img
+                              src="assets/icons/UI.svg"
+                              alt="Unemployment insurance"
+                              [placement]="lang === 'en' ? 'top' : 'top'"
+                              [tooltip]="displayIcon ? uiMessage : null"
+                            />
+                          </div>
+                        </ng-container>
+                      </div>
+
+                      <div class="icon-wrapper d-flex icn-padding icn-ipad oh-tooltip icon-custom-margin">
+                        <ng-container
+                          *ngIf="
+                            coverage?.coverageType?.english === oh &&
+                            coverage.coverage !== 0 &&
+                            coverage.establishmentPercentage !== 0
+                          "
+                        >
+                          <ng-template #ohMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverage, coverageDetail: coverageDetails, engagement: period }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+
+                          <img
+                            src="assets/images/occupational-hazard.svg"
+                            [placement]="lang === 'en' ? 'top' : 'top'"
+                            class="image-oh"
+                            [tooltip]="displayIcon ? ohMessage : null"
+                            alt="oh"
+                          />
+                        </ng-container>
+                      </div>
+                    </ng-container>
+                  </div>
+
+                  <!-- <div class="col-md-6 d-flex justify-content-start mobile-coverage-section">
+                      <ng-container *ngFor="let coverage of value?.coverageDetails?.coverages">
+                        <div class="icon-wrapper d-flex pl-1">
+                          <ng-container *ngIf="cov?.english === ui">
+                            <img
+                              class="image-ui"
+                              src="assets/images/unemployment-insurance.svg"
+                              alt="Unemployment Insurance"
+                            />
+                          </ng-container>
+                        </div>
+                        <div class="icon-wrapper d-flex pl-1">
+                          <ng-container *ngIf="cov?.english === annuity">
+                            <img class="image-annuity" src="assets/icons/annuity.svg" alt="annuity" />
+                          </ng-container>
+                        </div>
+                        <div class="icon-wrapper d-flex pl-1">
+                          <ng-container *ngIf="cov?.english === oh">
+                            <img
+                              class="image-oh"
+                              src="assets/images/occupational-hazard.svg"
+                              alt="Occupational Hazard"
+                            />
+                          </ng-container>
+                        </div>
+                      </ng-container>
+                    </div> -->
+                </div>
+
+                <!-- <div *ngIf="value?.contractDetailsFlag" class="row btn">
+                      <div class="col">
+                        <gosi-button-dc id="primaryId" type="primary" size="md" (submit)="fetchContracts(value)">
+                          {{ 'CONTRIBUTOR.VIEW-CONTRACT' | translate }}
+                        </gosi-button-dc>
+                      </div>
+                    </div> -->
+              </accordion-group>
+            </accordion>
+          </div>
+        </cnt-engagement-timeline-dc>
+      </ng-container>
+    </ng-container>
+    <!-- </ng-container> -->
+  </div>
+  <ng-template #noRecord>
+    <gosi-card-dc type="secondary" [heading]="'CONTRIBUTOR.ENGAGEMENT-HISTORY' | translate">
+      <div class="no-active-eng">
+        <img src="assets/images/case.svg" alt="no active engagement" />
+        <div class="p-5">{{ 'CONTRIBUTOR.NO-ENGAGEMENTS-AVAILABLE' | translate }}</div>
+      </div>
+    </gosi-card-dc>
+  </ng-template>
+</ng-container>
+<ng-container *ngIf="engagementViewFlag">
+  <ng-container *ngIf="engagementDetails?.length > 0">
+    <cnt-overall-engagement-history-dc
+      [engagementList]="engagementDetails"
+      [individualApp]="true"
+      [isNin]="isNin"
+      [isUnifiedProfile]="true"
+      [paginationId]="paginationId"
+      [currentPage]="pageDetails.currentPage"
+      [contributorData]="contributorData"
+      (individualActions)="handleIndividualEngagementAction($event)"
+      (fetchContracts)="fetchContracts($event)"
+      (navigateToBillDash)="navigateToBillDashboard()"
+    ></cnt-overall-engagement-history-dc>
+    <gosi-pagination-dc
+      *ngIf="engagementDetails?.length > 4"
+      [totalSize]="engagementDetails?.length"
+      [pageDetails]="pageDetails"
+      [paginationId]="paginationId"
+      [itemsPerPage]="itemsPerPage"
+      (pageChange)="paginateEngagements($event)"
+    ></gosi-pagination-dc>
+  </ng-container>
+  <ng-container *ngIf="engagementDetails?.length === 0">
+    <gosi-card-dc type="secondary">
+      <div class="no-active-eng">
+        <img src="assets/images/search-error.svg" alt="no data" />
+        <div class="p-5">{{ 'CONTRIBUTOR.NO-DATA' | translate }}</div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+</ng-container>
+
+<ng-template #tolTemplate let-coverage="coverage" let-coverageDetail="coverageDetail" let-engagement="engagement">
+  <div class="custom-direction tooltip-custom">
+    <!-- <div class="tooltip-header">
+      {{ 'DASHBOARD.CONTRIBUTION-BREAKUP' | translate }}: {{ coverage?.coverageType | bilingualText }}
+    </div> -->
+
+    <div class="tooltip-body">
+      {{ coverage?.coverageType | bilingualText }}
+
+      <!-- <div>
+        <div class="share-header">
+          {{
+            isTotalShare
+              ? ('CONTRIBUTOR.TOTAL-CONTRIBUTOR-SHARE' | translate)
+              : ('CONTRIBUTOR.CONTRIBUTOR-SHARE' | translate)
+          }}
+        </div>
+
+        <div class="sar-value">
+          {{ coverage?.contributorShare | number: '.2-2' }} {{ 'CONTRIBUTOR.SARS' | translate }}
+        </div>
+
+        <div class="percent" *ngIf="!engagement?.endDate?.gregorian">
+          {{ coverage.contributorPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div>
+
+      <div>
+        <div class="share-header">
+          {{
+            isTotalShare ? ('CONTRIBUTOR.TOTAL-EMPLOYER-SHARE' | translate) : ('CONTRIBUTOR.EMPLOYER-SHARE' | translate)
+          }}
+        </div>
+
+        <div class="sar-value">
+          {{ coverage.establishmentShare | number: '.2-2' }} {{ 'CONTRIBUTOR.SARS' | translate }}
+        </div>
+
+        <div class="percent" *ngIf="!engagement?.endDate?.gregorian">
+          {{ coverage.establishmentPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div> -->
+    </div>
+  </div>
+</ng-template>

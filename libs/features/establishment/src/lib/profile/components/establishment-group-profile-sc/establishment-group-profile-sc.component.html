@@ -1,0 +1,165 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<est-heading-dc [isTransparent]="true" [canNavigate]="false" (backEvent)="navigateBack()">
+  {{ 'ESTABLISHMENT.ESTABLISHMENTS' | translate }}
+</est-heading-dc>
+
+<!-- Establishment Group -->
+<div class="group-profile-container" [ngClass]="{ content: (windowService.windowSize$ | async) >= 766 }">
+  <gosi-alert-sc *ngIf="!establishmentGroups && !hasSuccessAlert"></gosi-alert-sc>
+  <ng-container *ngIf="establishmentGroups">
+    <div class="row">
+      <div class="col-md-12 tabset-padding">
+        <gosi-tabset-dc
+          class="tabset-host"
+          [initialTabsCount]="initialTabsCount$ | async"
+          [groups]="estGroupTabs"
+          [selectedId]="selectedTab"
+          (selectId)="initialiseNewEstablishmentGroup($event)"
+        ></gosi-tabset-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 admin-wrapper">
+        <est-employee-list-dc
+          class="admin-list"
+          [employees]="admins"
+          [heading]="'ESTABLISHMENT.ADMINS'"
+          [actionLabel]="hasNoSuperAdmin ? 'ESTABLISHMENT.ADD-SUPER-ADMIN' : 'ESTABLISHMENT.MANAGE-ADMIN'"
+          [initalNoOfEmployees]="NO_OF_ADMINS"
+          [showButton]="!isGcc && hasNoSuperAdmin && appToken === 'PRIVATE' ? false : canManageAdmin"
+          [showRole]="true"
+          [showLoadMore]="true"
+          [isWorkflow]="false"
+          (displayModal)="navigateToAdminPage()"
+          [totalCount]="admins?.length ? admins?.length : 0"
+          [initalNoOfEmployees]="NO_OF_ADMINS"
+          [actionIcon]="hasNoSuperAdmin ? 'plus' : undefined"
+        >
+        </est-employee-list-dc>
+        <div *ngIf="admins?.length === 0" style="margin-top: 3.5rem" class="justify-content-center no-admin">
+          <div class="position-relative no-admin-image">
+            <img alt="No Super Admin" src="assets/icons/no-admin.svg" />
+          </div>
+          <div class="message">
+            <p>
+              {{ 'ESTABLISHMENT.NO-ADMIN' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8 container-wrapper" [ngClass]="{ 'mb-3 pb-2': (windowService.windowSize$ | async) < 769 }">
+        <gosi-alert-sc></gosi-alert-sc>
+        <!-- Search Branches -->
+        <div class="branch-container">
+          <est-group-actions-dc
+            [showBranchesHeading]="true"
+            [branchFilters]="branchFilters"
+            (searchEstablishmentEvent)="searchBranches($event)"
+            [actionDropDown]="actionDropDown"
+            [noOfBranches]="totalBranches"
+            (actionType)="navigateToFunctionality($event)"
+            (apply)="filterBranches($event)"
+            [isLoading]="isBranchesLoading"
+          >
+            <est-branch-filter-dc
+              filterComponent
+              class="filter"
+              [branchFilters]="branchFilters"
+              [locationList$]="locations$"
+              [statusList$]="status$"
+              [roleList$]="roles$"
+              [showRoles]="showRole"
+              [legalEntityList$]="legalEntity$"
+              (apply)="filterBranches($event)"
+            ></est-branch-filter-dc>
+          </est-group-actions-dc>
+          <!-- Branch list -->
+          <est-branch-list-dc
+            [isLoading]="isBranchesLoading"
+            [searchParam]="branchSearchParam"
+            [isResultEmpty]="isFilteredBranchesEmpty"
+            [itemsPerPage]="NO_OF_BRANCHES"
+            [establishments]="filteredBranches"
+            [pageDetails]="pageDetails"
+            [currentPage]="currentPage"
+            [totalBranches]="totalFilteredBranches >= 1 ? totalFilteredBranches : 0"
+            (selectedEstablishment)="viewEstablishmentProfile($event)"
+            (pageIndexEvent)="selectedPage($event)"
+            [showRole]="showRole"
+            [warningKey]="proactivePendingKey"
+            [proactiveStatusPending]="proactiveStatusPending"
+          >
+          </est-branch-list-dc>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #profileAccessError>
+  <gosi-modal-dc *ngIf="profileAccessErrorKey" [modalHeader]="'ESTABLISHMENT.EST-PROFILE' | translate">
+    <div modalContent>
+      <gosi-alert-dc [message]="profileAccessErrorKey | translate" type="warning" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #eligibilityWarningTemplate>
+  <gosi-modal-dc [modalHeader]="eligibilityWarningHeader | translate">
+    <div modalContent>
+      <gosi-alert-dc [alert]="eligibilityWarningMsg"> </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #editWarningTemplate>
+  <gosi-modal-dc [modalHeader]="editWarningHeading | translate">
+    <div modalContent>
+      <gosi-alert-dc [details]="editWarningMsg" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #draftModal>
+  <est-resume-modal-dc
+    [message]="draftTransaction?.message"
+    (cancel)="hideModal()"
+    (new)="cancelAndStart()"
+    (resume)="navigateToTransaction()"
+  ></est-resume-modal-dc>
+</ng-template>
+
+<ng-template #warningTemplate>
+  <div class="py-4">
+    <div class="d-flex justify-content align-items-center flex-column">
+      <img src="assets/icons/svg/warning_popup.svg" class="triangle-icon" alt="User Not Authorised" />
+      <div class="label py-4 text-center">
+        {{ 'DASHBOARD.USER-ACCESS' | translate }}
+      </div>
+      <gosi-button-dc (submit)="hideModal()" size="sm" type="secondary">
+        {{ 'DASHBOARD.OK' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>

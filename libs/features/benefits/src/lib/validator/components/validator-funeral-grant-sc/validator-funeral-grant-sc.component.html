@@ -1,0 +1,150 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <ng-container>
+    <frm-main-heading-dc [heading]="'BENEFITS.REQUEST-FUNERAL-GRANT' | translate"></frm-main-heading-dc>
+  </ng-container>
+
+  <frm-main-content-dc
+    [canEdit]="docsCanEdit"
+    [documents]="documentList"
+    [showComments]="showComments"
+    [comments]="transactionRefData"
+    (onEdit)="navigateToEdit()"
+  >
+    <div id="contentArea">
+      <bnt-funeral-grant-details-sc
+        *ngIf="funeralGrantForm && socialInsuranceNo && requestId && routerData"
+        [routerData]="routerData"
+        [socialInsuranceNo]="socialInsuranceNo"
+        [requestId]="requestId"
+        [referenceNo]="referenceNo"
+        [funeralGrantForm]="funeralGrantForm"
+      ></bnt-funeral-grant-details-sc>
+    </div>
+
+    <div id="actionArea" class="row form-action">
+      <div class="col-lg-12 action-requests">
+        <ng-container>
+          <div class="btn-section float-right">
+            <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="approve"
+                [disabled]="disableApprove"
+                type="primary"
+                (click)="approveTransaction(approveTemplate)"
+              >
+                {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+              >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReject">
+            <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc type="danger" id="reject" (click)="rejectTransaction(rejectTemplate)">
+                {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+              >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                {{ 'BENEFITS.RETURN' | translate }}
+              </gosi-button-dc>
+            </ng-container>
+          </div>
+          <!-- <div class="btn-section float-right">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="actionButton"
+              [popover]="optionsModal"
+              placement="bottom right"
+            >
+              {{ 'BENEFITS.MORE-OPTIONS' | translate }}
+              <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+            </gosi-button-dc>
+            </ng-container>
+          </div> -->
+        </ng-container>
+        <div class="btn-section float-left">
+          <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelEngagementTemplate)">
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #optionsModal>
+  <!--<gosi-button-dc
+    *ngIf="routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.VALIDATOR_1]"
+    isTransparent="true"
+    outlineOnly="true"
+    type=""
+    id="request"
+    (click)="requestInspection(requestInspectionTemplate)"
+  >
+    {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+  >-->
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE-REQUEST-FUNERAL-GRANT' | translate }}"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="funeralGrantForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveFuneral()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT-REQUEST-FUNERAL-GRANT' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="funeralGrantForm"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="confirmRejectFuneral()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN-REQUEST-FUNERAL-GRANT' | translate }}"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    [parentForm]="funeralGrantForm"
+    (returnEvent)="returnFuneralGrant()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #requestInspectionTemplate>
+  <bnt-inspection-request-dc
+    [heading]="'BENEFITS.REQUEST-INSPECTION'"
+    (cancelEvent)="hideModal()"
+    (submitEvent)="confirmInspection()"
+    [parentForm]="funeralGrantForm"
+    [inspectionList$]="inspectionList"
+  >
+  </bnt-inspection-request-dc>
+</ng-template>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,142 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="d-flex justify-content-start total-section mt-4" *ngIf="engagementPeriod?.wage?.contributoryWage">
+  <div class="flex-container d-flex flex-column">
+    <div>
+      <div class="con-label">
+        {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+      </div>
+    </div>
+    <div class="d-flex justify-content-start">
+      <div class="con-wage d-inline-flex p-2 bd-highlight">
+        {{ engagementPeriod.wage.contributoryWage | number: '.2-2' }}
+        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-column" *ngIf="engagementPeriod?.coverages && engagementPeriod?.coverages.length > 0">
+    <div>
+      <span class="con-label">
+        {{ 'CONTRIBUTOR.WAGE.COVERAGE' | translate }}
+      </span>
+    </div>
+
+    <div>
+      <div class="d-flex justify-content-start mobile-coverage-section">
+        <ng-container *ngFor="let cov of engagementPeriod.coverages">
+          <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === annuity">
+            <ng-template #annuityMessage>
+              <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+            </ng-template>
+            <img
+              src="assets/icons/annuity.svg"
+              [placement]="lang === 'en' ? 'right' : 'left'"
+              [tooltip]="displayIcon ? annuityMessage : null"
+              alt="annuity"
+            />
+            <ng-container *ngIf="!displayIcon"
+              ><div class="pr-2 pl-2">
+                <div>
+                  <span class="small-label"> {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}</span>
+                </div>
+                <div class="mid-label">
+                  {{ cov.coverage | number: '1.2-2' }}
+                  {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                </div>
+              </div>
+            </ng-container>
+          </div>
+          <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === oh">
+            <ng-template #ohMessage>
+              <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+            </ng-template>
+            <img
+              src="assets/icons/OH.svg"
+              [placement]="lang === 'en' ? 'right' : 'left'"
+              [tooltip]="displayIcon ? ohMessage : null"
+              alt="Occupational Hazard"
+            />
+            <ng-container *ngIf="!displayIcon"
+              ><div class="pr-2 pl-2">
+                <div>
+                  <span class="small-label"> {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}</span>
+                </div>
+                <div class="mid-label">
+                  {{ cov.coverage | number: '1.2-2' }}
+                  {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                </div>
+              </div>
+            </ng-container>
+          </div>
+          <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === ui">
+            <ng-template #uiMessage>
+              <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+            </ng-template>
+            <img
+              src="assets/icons/UI.svg"
+              [placement]="lang === 'en' ? 'right' : 'left'"
+              [tooltip]="displayIcon ? uiMessage : null"
+              alt="Unemployment insurance"
+            />
+            <ng-container *ngIf="!displayIcon"
+              ><div class="pr-2 pl-2">
+                <div>
+                  <span class="small-label"> {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}</span>
+                </div>
+                <div class="mid-label">
+                  {{ cov.coverage | number: '1.2-2' }}
+                  {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #tolTemplate let-coverage="coverage">
+  <div class="tooltip-custom custom-direction">
+    <div class="tooltip-header">
+      {{ 'CONTRIBUTOR.WAGE.CONTRIBUTION-BREAKUP' | translate }}:
+      {{ coverage.coverageType | bilingualText }}
+    </div>
+    <div class="tooltip-body">
+      <div>
+        <div class="share-header">
+          {{
+            isTotalShare
+              ? ('CONTRIBUTOR.TOTAL-CONTRIBUTOR-SHARE' | translate)
+              : ('CONTRIBUTOR.CONTRIBUTOR-SHARE' | translate)
+          }}
+        </div>
+        <div class="sar-value">
+          {{ coverage.contributorShare | number: '.2-2' }}
+          {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+        </div>
+        <div class="percent" *ngIf="!engagementPeriod?.endDate?.gregorian">
+          {{ coverage.contributorPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div>
+      <div>
+        <div class="share-header">
+          {{
+            isTotalShare ? ('CONTRIBUTOR.TOTAL-EMPLOYER-SHARE' | translate) : ('CONTRIBUTOR.EMPLOYER-SHARE' | translate)
+          }}
+        </div>
+        <div class="sar-value">
+          {{ coverage.establishmentShare | number: '.2-2' }}
+          {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+        </div>
+        <div class="percent" *ngIf="!engagementPeriod?.endDate?.gregorian">
+          {{ coverage.establishmentPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

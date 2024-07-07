@@ -1,0 +1,217 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row heading-section">
+    <div class="main-heading">
+      {{ 'OCCUPATIONAL-HAZARD.CLAIMS.NEW-REIMBURSEMENT-REQUEST' | translate }}
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <ng-container *ngIf="showMailWarning">
+    <gosi-alert-dc message="OCCUPATIONAL-HAZARD.EMAIL-ID-WARNING" type="warning" [dismissible]="false"></gosi-alert-dc>
+  </ng-container>
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab < totalTabs"
+    [wizardItems]="reimbursementWizardItem"
+    (clickWizard)="selectWizard($event)"
+    #reimbursementWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #reportOHTabs>
+      <tab [active]="currentTab === 0">
+        <!--Contact details-->
+        <gosi-card-dc type="secondary" id="heading-format" [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate">
+          <frm-contact-dc
+            #contactDetails 
+            (emitForm)="bindToContactForm($event)"
+            [emailMandatory]="false"
+            [applyCountryValidation]="false"
+            [isHeadingRequired]="false"
+            [reimbTransaction]="true"
+            [applyCountryValidation]="false"
+            [showTelephone]="false"
+            [parentForm]="contactForm"
+            [readOnlyAll]="true"
+            [defaultOnly]="true"
+            [defaultValue]="contributor?.person?.contactDetail?.mobileNo?.isdCodePrimary"
+            [contactDetails]="contributor?.person?.contactDetail"
+          >
+          </frm-contact-dc>
+          <div class="row" *ngIf="showAmount">
+            <div class="col-md-5">
+                <gosi-input-currency-dc
+                id="invoiceClaimAmount"
+                [control]="amountForm.get('invoiceAmount')"
+                [placeholder]="'OCCUPATIONAL-HAZARD.INVOICE-CLAIM' | translate"
+                [label]="'OCCUPATIONAL-HAZARD.INVOICE-CLAIM' | translate"
+              >
+              </gosi-input-currency-dc>
+            </div>
+            <div class="col-md-5">
+                <gosi-input-currency-dc
+                id="vatAmount"
+                [control]="amountForm.get('vatAmount')"
+                [placeholder]="'OCCUPATIONAL-HAZARD.VAT' | translate"
+                [label]="'OCCUPATIONAL-HAZARD.VAT' | translate"
+              >
+              </gosi-input-currency-dc>
+            </div>
+          <div class="col-md-5">
+            <gosi-input-select-dc
+              name="hospital"
+              [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.HOSPITAL-PAYEE' | translate"
+              id="hospital"
+              [list]="hospitalList$ | async"
+              [control]="amountForm.get('hospital')"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-md-5">
+            <gosi-input-date-dc
+              id="invoiceDate"
+              label="OCCUPATIONAL-HAZARD.INVOICE-REQUEST-DATE"
+              [control]="amountForm.get('invoiceDate') ? amountForm.get('invoiceDate').get('gregorian') : null"
+              [maxDate]="currentDate"
+            >
+            </gosi-input-date-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+
+        <!--Other details-->
+        <gosi-card-dc
+          type="secondary"
+          id="heading-format"
+          [heading]="'OCCUPATIONAL-HAZARD.CLAIMS.OTHER-DETAILS' | translate"
+        >
+          <div class="row">
+            <div class="col-md-6">
+              <gosi-input-radio-dc
+                id="payeeType"
+                name="payeeType"
+                class="payeeType"
+                [label]="'OCCUPATIONAL-HAZARD.PAYEE' | translate"
+                [control]="payeeListForm.get('payeeType')"
+                (select)="selectedpayeeList($event)"
+                [list]="payeeList"
+              >
+              </gosi-input-radio-dc>
+            </div>
+            <div class="col-md-6">
+              <gosi-input-radio-dc
+                id="isTreatmentWithinSaudiArabia"
+                name="isTreatmentWithinSaudiArabia"
+                [label]="'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DETAILS' | translate"
+                [control]="treatmentListForm.get('isTreatmentWithinSaudiArabia')"
+                (select)="selectedbooleanList($event)"
+                [list]="booleanList$ | async"
+              >
+              </gosi-input-radio-dc>
+            </div>
+          </div>
+        </gosi-card-dc>
+        <!--Button Section-->
+        <div class="row">
+          <div class="col-md-12 form-action">
+            <div class="btn-section float-right">
+              <gosi-button-dc (submit)="saveRequest()" id="saveAndNext" type="primary">
+                {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section float-left">
+              <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+                {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <!--Document Section-->
+        <oh-document-category-dc
+          [businessKey]="id"
+          [referenceNo]="referenceNo"
+          [documentScanList]="documentScanList"
+          [documentCategoryList]="documentCategoryList"
+          (refresh)="refreshDocument($event)"
+        >
+        </oh-document-category-dc>
+        <!--Comments section -->
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-text-area-dc
+              id="reimbcomments"
+              [maxLength]="maxLengthComments"
+              label="OCCUPATIONAL-HAZARD.COMMENTS"
+              [control]="commentsReimb.get('comments')"
+            >
+            </gosi-input-text-area-dc>
+          </div>
+        </div>
+        <!--Save and Next button details-->
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="personal-details">
+              <div class="float-right btn-section">
+                <gosi-button-dc (submit)="submitClaim()" id="submit" [type]="'primary'">
+                  {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="float-right btn-section">
+                <gosi-button-dc (submit)="previousForm()" id="previousPage" [type]="'secondary'">
+                  {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+                >
+              </div>
+
+              <div class="float-left btn-section">
+                <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" [type]="'secondary'">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  <!--Cancel Template-->
+  <ng-template #cancelInjury>
+    <gosi-confirm-modal-dc
+      [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+      (onConfirm)="confirmCancel()"
+      (onCancel)="decline()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #errorTemplate>
+    <div class="row message justify-content-center">
+      <gosi-modal-dc>
+        <div modalContent>
+          <gosi-alert-dc
+            [message]="'OCCUPATIONAL-HAZARD.CLAIMS.EMAIL-HELP' | translate"
+            type="info"
+            [dismissible]="false"
+            [noPadding]="true"
+          >
+          </gosi-alert-dc>
+        </div>
+        <div class="row" modalAction>
+          <div class="col-md-12 form-action">
+            <div class="float-right btn-section">
+              <gosi-button-dc id="continue" type="primary" (submit)="cancelModal()">
+                {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="float-left btn-section">
+              <gosi-button-dc id="cancel" type="secondary" (submit)="decline()">
+                {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </gosi-modal-dc>
+    </div>
+  </ng-template>
+</div>
+

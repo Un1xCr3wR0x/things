@@ -1,0 +1,589 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<ng-container>
+  <bnt-request-date-dc
+    *ngIf="showRequestDateDc"
+    [disableDate]="isValidator && benefitStatus?.english !== benefitStatusEnum.DRAFT"
+    [showConfirmButton]="showConfirmButton"
+    [emitOnLoad]="false"
+    [parentForm]="parentForm"
+    [newRequestDate]="newRequestDate"
+    [systemRunDate]="systemRunDate"
+    [maxDate]="maxDate"
+    (confirm)="requestDateChanged($event)"
+  >
+  </bnt-request-date-dc>
+  <gosi-card-dc
+    type="secondary"
+    headingSize="md"
+    *ngIf="
+      (isNonOcc && lateRequest) || (benefitDetails && (eligibleForBenefit || isModifyBackdated || isIndividualApp))
+    "
+  >
+    <div class="benefit-details-heading" *ngIf="isNonOcc && lateRequest; else otherBenefits">
+      <span class="annuity-type">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+      <gosi-alert-dc [message]="'BENEFITS.BENEFIT-DETAIL-INFO' | translate" type="info" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+    <ng-template #otherBenefits>
+      <ng-container *ngIf="benefitDetails && (eligibleForBenefit || isModifyBackdated || isIndividualApp)">
+        <!-- <div class="d-flex flex-row justify-content-between benefit-detail"> -->
+        <div class="row">
+          <div class="col-12">
+            <div class="benefit-detail-section">
+              <div class="benefit-details-heading">
+                <span class="annuity-type">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+              </div>
+              <div>
+                <div>
+                  <div class="contribution-button">
+                    <gosi-button-dc
+                      [size]="isSmallScreen ? 'sm' : 'md'"
+                      type="secondary"
+                      [outlineOnly]="true"
+                      (click)="isOcc ? showModal(calcDetails) : showModal(moreDetails)"
+                    >
+                      {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+                    </gosi-button-dc>
+                  </div>
+                  <!-- </div>
+            <span class="mx-2"></span>
+            <div> -->
+                  <gosi-button-dc
+                    *ngIf="!isOcc"
+                    [size]="isSmallScreen ? 'sm' : 'md'"
+                    class="calculation-button"
+                    type="secondary"
+                    [outlineOnly]="true"
+                    (click)="showModal(calculationDetails)"
+                  >
+                    {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+                  </gosi-button-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #moreDetails>
+          <bnt-annuity-calculation-details-dc
+            (close)="hideModal()"
+            [benefitCalculationDetails]="benefitDetails"
+            [averageMonthlyWagePeriods]="benefitDetails?.averageMonthlyWagePeriods"
+            [isLumpsum]="benefitType.includes('Lumpsum')"
+            [lang]="lang"
+            [annuitybenefits]="annuitybenefits"
+            [annuityBenefit]="annuityBenefit"
+            [isLumpsum]="isLumpsum"
+            [eligibleForPensionReform]="eligibleForPensionReform"
+            [benefitType]="benefitType"
+          ></bnt-annuity-calculation-details-dc>
+        </ng-template>
+        <ng-template #calcDetails>
+          <bnt-benefit-calc-details-dc
+            (close)="hideModal()"
+            [benefitCalculationDetails]="benefitDetails"
+            [averageMonthlyWagePeriods]="benefitDetails?.averageMonthlyWagePeriods"
+          >
+          </bnt-benefit-calc-details-dc>
+        </ng-template>
+        <!-- As per discussion with Sheena and Mukesh changing Pension Benefit Amount Label to Benefit Amount
+        Also adding Benefit Start Date Label to all pensions and Lumpsums -->
+        <div class="row pt-3">
+          <div class="col-md-4 col-lg-4" *ngIf="isHeirLumpsum">
+            <gosi-label-dc
+              id="benefitType"
+              value="{{ 'BENEFITS.HEIR-LUMPSUM-BENEFIT' | translate }}"
+              label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4 col-lg-4" *ngIf="isHeirLumpsum">
+            <gosi-label-dc
+              id="pensionBenefitAmount"
+              [value]="
+                'BENEFITS.AVERAGE-AMOUNT'
+                  | translate: { amount: benefitDetails?.totalBenefitAmount || 0 | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.TOTAL-LUMPSUM-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-4 col-lg-4"
+            *ngIf="
+              isHeirLumpsum &&
+              benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount &&
+              benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount !== 0
+            "
+          >
+            <gosi-currency-label-dc
+              id="netPrevAdjustment"
+              [label]="'BENEFITS.NET-PREV-ADJUSTMENT' | translate"
+              [currencyTo]="benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount"
+              [countryCodeFrom]="'BENEFITS.SR' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+        </div>
+
+        <div class="row">
+          <!--      <div class="col-md-4 col-lg-4" *ngIf="!isHeirLumpsum">-->
+          <!--        <gosi-label-dc-->
+          <!--          id="BenefitAmount"-->
+          <!--          value="{{-->
+          <!--            dependentHistory && dependentHistory.length > 0 && !isHeirPension && !isHeirLumpsum-->
+          <!--              ? ('BENEFITS.AMOUNT-MONTHS'-->
+          <!--                | translate: { amount: dependentHistory[0]?.totalBenefitAmount || 0 | number: '1.2-2' })-->
+          <!--              : ('BENEFITS.AMOUNT-MONTHS'-->
+          <!--                | translate: { amount: benefitDetails?.totalBenefitAmount || 0 | number: '1.2-2' })-->
+          <!--          }}"-->
+          <!--          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"-->
+          <!--        ></gosi-label-dc>-->
+          <!--      </div>-->
+
+          <div class="col-md-4 col-lg-4" *ngIf="!isHeirLumpsum">
+            <gosi-label-dc
+              id="BenefitAmount"
+              value="{{
+                (isLumpsum ? 'BENEFITS.AVERAGE-AMOUNT' : 'BENEFITS.AMOUNT-MONTHS')
+                  | translate: { amount: benefitDetails?.basicBenefitAmount || 0 | number: '1.2-2' }
+              }}"
+              label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+            </div>
+      <!-- Benefit start date not required for lumpsum
+      Final Avg wage not required for Retirement Lumpsum (Hazardous Occupation) -->
+          <div class="col-md-4 col-lg-4" *ngIf="!isLumpsum">
+            <gosi-label-dc
+              id="benefitStartDate"
+              [value]="benefitDetails?.benefitStartDate | dateType"
+              label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-4 col-lg-4" *ngIf="!isHeirLumpsum && isPensionReform() && !(isNonOcc && isLumpsum)">
+            <!--  no need to show this For heir lumpsum and Non occ lumpsum reform-->
+            <gosi-currency-label-dc
+              id="averageMonthlyWage"
+              [label]="'BENEFITS.AVERAGE-WAGE' | translate"
+              [currencyTo]="benefitDetails?.averageMonthlyContributoryWage"
+              [countryCodeFrom]="'BENEFITS.SR' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div
+            class="col-md-4 col-lg-4"
+            *ngIf="
+              isHeirPension &&
+              benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount &&
+              benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount! == 0
+            "
+          >
+            <gosi-currency-label-dc
+              id="netPrevAdjustment"
+              [label]="'BENEFITS.NET-PREV-ADJUSTMENT' | translate"
+              [currencyTo]="benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount"
+              [countryCodeFrom]="'BENEFITS.SR' | translate"
+            >
+            </gosi-currency-label-dc>
+          </div>
+          <div
+            class="col-md-4 col-lg-4"
+            *ngIf="
+              heirDetailsData?.reason?.english === benefitValues.deathOfTheContributor ||
+              heirDetailsData?.reason?.english === benefitValues.ohDeathOfTheContributor ||
+              contributorDetails?.deathDate?.gregorian
+            "
+          >
+            <!--Death date-->
+            <gosi-label-dc
+              id="death-date"
+              [value]="heirDetailsData?.eventDate || contributorDetails?.deathDate | dateType"
+              label="{{ 'BENEFITS.DEATH-DATE-CONTRIBUTOR' | translate }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="amount"
+              [value]="(eligibleForPensionReform ? 'BENEFITS.YES' : 'BENEFITS.NO') | translate"
+              label=" {{ 'BENEFITS.BENEFIT-REQUESTED-PENSION-REFORM' | translate }}"
+              [noMargin]="false"
+            ></gosi-label-dc>
+            <br>
+          </div>
+        </div>
+        <div
+          class="col-md-4 col-lg-4 row"
+          *ngIf="
+            isHeirLumpsum &&
+            benefitDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction &&
+            benefitDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction !== 0 &&
+            benefitDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount > 0
+          "
+        >
+          <gosi-currency-label-dc
+            id="lumpsumBenefitAmountDeduct"
+            [label]="'BENEFITS.HEIR-LUMPSUM-BENEFIT-AMOUNT-AFTER-DEDUCTIONS' | translate"
+            [currencyTo]="benefitDetails?.adjustmentCalculationDetails?.benefitAmountAfterDeduction"
+            [countryCodeFrom]="'BENEFITS.SR' | translate"
+          >
+          </gosi-currency-label-dc>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-md-6 col-sm-6 pb-5" *ngIf="isHeirLumpsum">
+            <!-- API Integration pending -->
+            <a
+              id="viewPrevAdjustment(benefitConstants.TRANSACTION_RETIREMENT_PENSION)"
+              (click)="onViewPreviousDetails()"
+              routerLinkActive="active"
+            >
+              <u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u>
+            </a>
+          </div>
+        </div>
+
+        <!-- TODO Heir Eligibility Details -->
+        <div class="row" *ngIf="isHeir && benefitDetails && heirEligibilityDetails">
+          <div class="col-md-12">
+            <!--benefitCalculation response is mandatory-->
+            <bnt-heir-eligibility-details-dc
+              [isHeirLumpsum]="isHeirLumpsum"
+              [systemRunDate]="systemRunDate"
+              [benefitCalculation]="benefitDetails"
+              [heirEligibilityDetails]="heirEligibilityDetails"
+              (showIneligibilityDetails)="showIneligibilityReasons($event)"
+            ></bnt-heir-eligibility-details-dc>
+          </div>
+        </div>
+        <!-- heir benefit Individual Benefit Details table  -->
+
+        <!-- <div class="row" *ngIf="benefitDetails.heirBenefitDetails && benefitDetails.heirBenefitDetails.length !== 0">
+      <div class="col-md-12 col-lg-12">
+        <span class="heir-table-heading">{{ 'BENEFITS.INDIVIDUAL-BENEFIT-DETAILS' | translate }}</span>
+        <table class="table table-borderless" [ngClass]="!isSmallScreen ? '' : 'table-responsive'">
+          <thead>
+            <tr>
+              <th>{{ 'BENEFITS.NAME' | translate }}</th>
+              <th>{{ 'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate }}</th>
+              <th>{{ 'BENEFITS.PAYEE' | translate }}</th>
+              <th>{{ 'BENEFITS.PAYMENT-METHOD' | translate }}</th>
+              <th
+                *ngIf="
+                  benefitType === 'Heir Pension Benefit' ||
+                  benefitType === 'Heir Pension Dead Contributor Benefit' ||
+                  benefitType === 'Heir Pension Missing Contributor Benefit'
+                "
+              >
+                {{ 'BENEFITS.BENEFIT-AMOUNT-SAR-PER-MONTH' | translate }}
+              </th>
+              <th
+                *ngIf="
+                  benefitType === 'Heir Lumpsum Benefit' ||
+                  benefitType === 'Heir Lumpsum Missing Contributor Benefit' ||
+                  benefitType === 'Heir Lumpsum Dead Contributor Benefit'
+                "
+              >
+                {{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody *ngFor="let heirBenefit of benefitDetails.heirBenefitDetails; let i = index" class="calc-details-body">
+            <tr class="data-row">
+              <td>
+                {{
+                  heirBenefit?.name?.english === null || heirBenefit?.name?.english?.trim() === ''
+                    ? heirBenefit?.name?.arabic
+                    : (heirBenefit?.name | bilingualText)
+                }}
+              </td>
+              <td>
+                {{ heirBenefit.relationship | bilingualText }}
+              </td>
+              <td>
+                {{ heirBenefit.payeeType | bilingualText }}
+              </td>
+              <td>
+                {{ heirBenefit.paymentMode | bilingualText }}
+              </td>
+              <td>
+                {{ heirBenefit.benefitAmount | number: '1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div> -->
+        <!-- heir details table for lumpsum -->
+
+        <ng-container *ngIf="isHeirLumpsum && eligibleHeirList?.length !== 0">
+          <div class="row d-flex align-items-center">
+            <div class="col-lg-12">
+              <table class="table table-borderless" [ngClass]="!isSmallScreen ? '' : 'table-responsive'">
+                <thead>
+                  <tr>
+                    <ng-container *ngFor="let heading of heirTableHeading">
+                      <th>{{ heading | translate }}</th>
+                    </ng-container>
+                  </tr>
+                </thead>
+                <tbody *ngFor="let heir of eligibleHeirList; let i = index">
+                  <tr class="data-row">
+                    <td>
+                      <div class="d-block">
+                        {{
+                          heir?.name?.english === null || heir?.name?.english?.trim() === ''
+                            ? heir?.name?.arabic
+                            : (heir?.name | bilingualText)
+                        }}
+                      </div>
+                      <div class="d-block nin-text">
+                        <span>{{ heir?.heirIdentifier?.idType }} :</span>
+                        {{ heir?.heirIdentifier?.id }}
+                      </div>
+                    </td>
+                    <td>{{ heir?.relationship | bilingualText }}</td>
+                    <td>{{ heir?.status | bilingualText }}</td>
+                    <td>{{ heir?.benefitAmount }}</td>
+                    <td *ngIf="showDeathGrantColumn">{{ heir?.deathGrant }}</td>
+                    <td *ngIf="showAdjustmentsColumn">
+                      {{ heir?.adjustmentCalculationDetails.previousAdjustmentAmount }}
+                    </td>
+                    <td *ngIf="heir?.benefitAmountAfterDeduction || heir?.benefitAmountAfterDeduction === 0">
+                      {{ heir?.benefitAmountAfterDeduction }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- <gosi-alert-dc [message]="{{ 'BENEFITS.LUMPSUM-BENEFIT-DEPENDENT-INFO' | translate }}" type="info"> </gosi-alert-dc> -->
+
+        <div class="flex-row pb-2" *ngIf="isLumpsum">
+          <div class="d-flex infoMessage">
+            <fa-icon [icon]="['fas', 'info-circle']" class="blue-circle" size="lg"></fa-icon>
+            <span class="col-auto info-text pr-2">{{ 'BENEFITS.LUMPSUM-BENEFIT-DEPENDENT-INFO' | translate }}</span>
+          </div>
+        </div>
+        <!-- Dependent History Section -->
+
+        <div class="row">
+          <div class="col-md-6" *ngIf="!isHeirPension && !isLumpsum && previousDependentHistory && !isOcc">
+            <ng-container>
+              <div class="dependent-text pb-4">
+                {{ 'BENEFITS.CURRENT-DEPENDENT-HISTORY' | translate }}
+              </div>
+              <bnt-dependents-history-dc
+                [benefitType]="benefitType"
+                [oldHistory]="true"
+                [isIndividualApp]="isIndividualApp"
+                [dependentHistory]="previousDependentHistory"
+                [reCalculationDetails]="benefitDetails"
+                [dependentComponents]="annuityResponse"
+                [benefitPeriodHistory]="benefitPeriodHistory"
+                [lang]="lang"
+                [isModifyBackdated]="isModifyBackdated"
+                [systemParameter]="systemParameter"
+                (showCalcModalEmitter)="showModal(historyCalcModal)"
+                (showBenefitsWagePopup)="showBenefitWageDetails($event)"
+              >
+              </bnt-dependents-history-dc>
+            </ng-container>
+          </div>
+          <div [ngClass]="previousDependentHistory ? 'col-md-6' : 'col-12'">
+            <ng-container *ngIf="!isHeirPension && !isLumpsum && (dependentHistory || heirHistory)">
+              <ng-container *ngIf="!isModifyBackdated">
+                <div *ngIf="showDependentHistoryLabel && !showHelperHistoryLabel" class="dependent-text pb-4">
+                  {{ 'BENEFITS.DEPENDENT-HISTORY' | translate }}
+                </div>
+                <div *ngIf="showHelperHistoryLabel && !showDependentHistoryLabel" class="dependent-text pb-4">
+                  {{ 'BENEFITS.HELPER-ALLOWANCE-HISTORY' | translate }}
+                </div>
+                <div *ngIf="showHelperHistoryLabel && showDependentHistoryLabel" class="dependent-text pb-4">
+                  {{ 'BENEFITS.DEPENDENT-HELPER-ALLOWANCE-HISTORY' | translate }}
+                </div>
+              </ng-container>
+              <ng-container *ngIf="isModifyBackdated && (dependentHistory.length > 0 || heirHistory)">
+                <div class="dependent-text pb-4">
+                  {{ 'BENEFITS.NEW-DEPENDENT-HISTORY' | translate }}
+                </div>
+              </ng-container>
+
+              <bnt-dependents-history-dc
+                [benefitType]="benefitType"
+                [isIndividualApp]="isIndividualApp"
+                [heirHistory]="heirHistory"
+                [dependentHistory]="dependentHistory"
+                [reCalculationDetails]="benefitDetails"
+                [dependentComponents]="annuityResponse"
+                [benefitPeriodHistory]="benefitPeriodHistory"
+                [lang]="lang"
+                [isModifyBackdated]="isModifyBackdated"
+                [systemParameter]="systemParameter"
+                (showCalcModalEmitter)="showModal(historyCalcModal)"
+                (showBenefitsWagePopup)="showBenefitWageDetails($event)"
+              >
+              </bnt-dependents-history-dc>
+            </ng-container>
+          </div>
+        </div>
+
+        <ng-container *ngIf="isHeirPension && heirHistory">
+          <bnt-dependents-history-dc
+            [benefitType]="benefitType"
+            [isIndividualApp]="isIndividualApp"
+            [heirHistory]="heirHistory"
+            [dependentHistory]="dependentHistory"
+            [reCalculationDetails]="benefitDetails"
+            [dependentComponents]="annuityResponse"
+            [benefitPeriodHistory]="benefitPeriodHistory"
+            [lang]="lang"
+            [isModifyBackdated]="isModifyBackdated"
+            [systemParameter]="systemParameter"
+            (showCalcModalEmitter)="showModal(historyCalcModal)"
+            (showBenefitsWagePopup)="showBenefitWageDetails($event)"
+          >
+          </bnt-dependents-history-dc>
+        </ng-container>
+
+        <bnt-heir-adjustment-details-dc
+          *ngIf="
+            isHeir &&
+            benefitDetails?.heirBenefitDetails &&
+            benefitDetails?.heirBenefitDetails.length &&
+            !isIndividualApp
+          "
+          [lang]="lang"
+          [heirBenefitDetails]="benefitDetails?.heirBenefitDetails"
+          [parentForm]="parentForm"
+          [approveScreen]="false"
+          [isValidator]="isValidator"
+          [topHeading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+          [deductionPlanList]="deductionPlanList"
+          [isIndividualApp]="isIndividualApp"
+          (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+          (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+        >
+        </bnt-heir-adjustment-details-dc>
+
+        <div class="statusMessage pb-4">
+          <fa-icon class="grey-circle" icon="info-circle" size="md"></fa-icon>
+          <span> {{ 'BENEFITS.BENEFIT_AMOUNT_INFO' | translate }}</span>
+        </div>
+      </ng-container>
+    </ng-template>
+  </gosi-card-dc>
+  <!-- <gosi-card-dc
+    type="secondary"
+    headingSize="md"
+    *ngIf="benefitDetails && (eligibleForBenefit || isModifyBackdated) && isNonOcc && !annuityBenefit?.lateRequest"
+  >
+    <div class="benefit-details-heading">
+      <span class="annuity-type">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+      <div class="row">
+        <gosi-alert-dc [message]="'BENEFITS.BENEFIT-DETAIL-INFO' | translate" type="info" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </gosi-card-dc> -->
+
+  <bnt-adjustment-detail-dc
+    *ngIf="(!isHeir && !isNonOcc && !isIndividualApp) || (isNonOcc && !lateRequest && !isIndividualApp)"
+    [adjustmentCalculationDetails]="benefitDetails?.adjustmentCalculationDetails"
+    [heading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+    [lang]="lang"
+  >
+  </bnt-adjustment-detail-dc>
+
+  <!-- ADDITIONAL CONTRIBUTION DETAILS -->
+  <gosi-card-dc
+    *ngIf="benefitDetails?.additionalContribution?.additionalContributionAmount"
+    type="secondary"
+    lessPadding="true"
+    heading="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-DETAILS' | translate }}"
+  >
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          [value]="benefitDetails.additionalContribution?.additionalContributionMonths"
+          label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-MONTH' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          [value]="
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount: benefitDetails.additionalContribution?.additionalContributionAmount || '0' | number: '1.2-2'
+                  }
+          "
+          label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-AMT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div>{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-DEDUCTION' | translate }}</div>
+      </div>
+      <div class="col-md-12 px-3">
+        <gosi-input-radio-dc
+          *ngIf="requestpensionForm"
+          id="deductionPlan"
+          name="deductionPlan"
+          [control]="requestpensionForm.get('deductionPlan')"
+          [list]="deductionPlanList"
+          (select)="selectdeductionPlanMethod($event)"
+          [disabled]="true"
+        >
+        </gosi-input-radio-dc>
+      </div>
+    </div>
+    <ng-container *ngIf="!isPension">
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="benefitAmount">
+          <gosi-label-dc
+            [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitAmount || '0' | number: '1.2-2' }"
+            label="{{ 'BENEFITS.DEDUCTION-AMT' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6 period-label" *ngIf="startDate?.gregorian || endDate?.gregorian">
+          {{ 'BENEFITS.ADDITIONAL-PAYMENT-PERIOD' | translate }}
+          <div class="row py-2 px-3">
+            <span class="payment-period">
+              {{ geMonthForTrans(startDate) | translate: { year: startDate?.gregorian | date: 'y' } }}
+              <fa-icon icon="arrow-right" *ngIf="lang === 'en'"></fa-icon>
+              <fa-icon icon="arrow-left" *ngIf="lang === 'ar'"></fa-icon>
+              {{ geMonthForTrans(endDate) | translate: { year: endDate?.gregorian | date: 'y' } }}
+            </span>
+            <span class="additional-Months"> ({{ month }} {{ 'BENEFITS.MONTHS' | translate }}) </span>
+          </div>
+        </div>
+      </div>
+      <!--      <div class="row">-->
+      <!--        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="paymentAmount">-->
+      <!--          <gosi-label-dc-->
+      <!--            [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: paymentAmount || '0' | number: '1.2-2' }"-->
+      <!--            label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+      <!--          ></gosi-label-dc>-->
+      <!--        </div>-->
+      <!--      </div>-->
+    </ng-container>
+  </gosi-card-dc>
+</ng-container>
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc
+    [benefitDetails]="benefitDetails"
+    [annuitybenefits]="annuitybenefits"
+    [annuityBenefit]="annuityBenefit"
+    [isLumpsum]="isLumpsum"
+    [benefitType]="benefitType"
+    [heirBenefit]="heirBenefit"
+    [eligibleForPensionReform]="eligibleForPensionReform"
+    [isPpaOhDeath]="isPpaOhDeath"
+    (close)="hideModal()"
+  ></bnt-amw-view-dc>
+</ng-template>
+<ng-template #historyCalcModal> history Calculation Modal</ng-template>

@@ -1,0 +1,284 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<!-- Capturing the details of the injury of multiple contributors-->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row" *ngIf="establishment">
+            <div class="col-lg-6 est-search">
+              <!-- <oh-establishment-search-dc
+                #ohSearch
+                (next)="searchEstablishment($event)"
+                (keyUp)="checkRegisteration($event)"
+                [parentForm]="searchEstablishmentForm"
+              >
+              </oh-establishment-search-dc> -->
+              <gosi-label-dc
+                id="registerationNumber"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.ESTABLISHMENT-REG-NO' | translate"
+                [value]="establishment.registrationNo"
+              >
+              </gosi-label-dc>
+            </div>
+
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="establishmentName"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.ESTABLISHMENT-NAME' | translate"
+                [value]="establishment?.name?.english === null ? establishment?.name?.arabic : establishment?.name | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" [formGroup]="reportGroupInjuryForm">
+        <!--Injury occurred Date-->
+        <div class="col-lg-12">
+          <div class="row pt-4">
+            <div class="col-lg-6" formGroupName="injuryDate">
+              <gosi-input-date-dc
+                id="injuryDate"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURY-DATE' | translate"
+                [maxDate]="currentDate"
+                [control]="
+                  reportGroupInjuryForm.get('injuryDate')
+                    ? reportGroupInjuryForm.get('injuryDate').get('gregorian')
+                    : null
+                "
+              >
+              </gosi-input-date-dc>
+            </div>
+            <!--Injury occured Time-->
+            <div class="col-lg-6" formGroupName="datePicker">
+              <gosi-input-time-dc
+                id="injuryTime"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURY-TIME' | translate"
+                [hour]="reportGroupInjuryForm.get('datePicker').get('injuryHour')"
+                [minute]="reportGroupInjuryForm.get('datePicker').get('injuryMinute')"
+              >
+              </gosi-input-time-dc>
+            </div>
+          </div>
+        </div>
+
+        <!--Work Disability Date-->
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" formGroupName="workDisabilityDate">
+              <gosi-input-date-dc
+                id="workDisabilityDate"
+                label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+                [control]="reportGroupInjuryForm.get('workDisabilityDate').get('gregorian')"
+                [maxDate]="deathDate"
+                [minDate]="contributorInjuryDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+
+            <!--Employee Informed Date-->
+            <div class="col-lg-6" formGroupName="employeeInformedDate">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+                [control]="reportGroupInjuryForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorInjuryDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <!-- this block will allow user to add reason for delay-->
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" *ngIf="showResonforDelay && !showResonforDelayCurrentDate">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-CONTRIBUTOR"
+                [control]="reportGroupInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" *ngIf="showResonforDelayCurrentDate && !showResonforDelay">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-EMPLOYER"
+                [control]="reportGroupInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" *ngIf="showResonforDelay && showResonforDelayCurrentDate">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-BOTH"
+                [control]="reportGroupInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+        </div>
+
+        <!--Employer Informed Date-->
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" formGroupName="employerInformedDate" *ngIf="isCsr">
+              <gosi-input-date-dc
+                id="employerInformedOn"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.EMPLOYER-INFORMED-ON' | translate"
+                [control]="reportGroupInjuryForm.get('employerInformedDate').get('gregorian')"
+                [minDate]="employerInformedDateMinDate"
+                [maxDate]="currentDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+
+        <!--Showing map for reporting injury-->
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="map-block">
+                <gosi-google-map-dc
+                  #googleMapDcComponent
+                  id="selectInjuryLocation"
+                  [showCity]="showCity"
+                  [showMap]="showMap"
+                  [countryList]="countryList"
+                  [showCityDistrict]="showCityDistrict"
+                  [latitude]="latitude"
+                  [longitude]="longitude"
+                  [cityList]="cityList"
+                  [showCountry]="showCountry"
+                  [mapViewMode]="mapViewMode"
+                  [parentForm]="reportGroupInjuryForm"
+                  [cityDistrictList]="cityDistrictList"
+                  [showMarker]="isShowMarker"
+                >
+                </gosi-google-map-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="row pt-4">
+            <!-- injury occured place list will be shown -->
+
+            <div class="col-lg-6 margin-top">
+              <gosi-input-select-dc
+                name="injuryOccuredPlace"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.PLACE-WHERE-INJURY-OCCURED' | translate"
+                id="placeInjuryOccured"
+                [control]="reportGroupInjuryForm.get('place')"
+                [list]="injuryOccuredPlace"
+                (blur)="validationCheck()"
+              >
+              </gosi-input-select-dc>
+            </div>
+
+            <div class="col-lg-6 details" >
+              <gosi-input-text-dc
+                id="placeWhereTheInjuryOccured"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.PLACE-DETAILS-WHERE-INJURY-OCCURED' | translate"
+                [control]="reportGroupInjuryForm.get('detailedPlace')"
+                [maxLength]="maxlengthData"
+              >
+              </gosi-input-text-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <gosi-input-text-area-dc
+                name="injuryOccuredPlace"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.HOW-INJURY-OCCURED' | translate"
+                [maxLength]="maxlengthData"
+                [control]="reportGroupInjuryForm.get('detailsDescription')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+
+        </div>
+
+        <!--injury Type-->
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                [name]="'accidentType'"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURY-TYPE' | translate"
+                id="injuryType"
+                [list]="injuryTypeList"
+                [control]="reportGroupInjuryForm.get('accidentType')"                
+                (select)="selectInjuryTypefn($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+
+            <!--Government Sector-->
+
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                [name]="'governmentSector'"
+                [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.GOVERNMENT-SECTOR' | translate"
+                id="governmentSector"
+                [control]="reportGroupInjuryForm.get('governmentSector')"
+                [list]="governmentSectorList"
+                (select)="selectgovernmentSectorfn($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Submit group injury details button-->
+<div class="row">
+  <div class="col-lg-12 form-action">
+    <div class="group-injury-details">
+      <div class="float-right btn-section" *ngIf="isEstablishmentFound || isAppPublic">
+        <gosi-button-dc id="employeeSaveAndNext" (submit)="submitGroupInjuryDetails()" type="primary">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="float-right btn-section" *ngIf="!isEstablishmentFound && !isAppPublic">
+        <gosi-button-dc id="employeeSaveAndNext" (submit)="submitGroupInjuryDetails()" type="primary"  disabled="true">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <!-- Cancel button for group injury details-->
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>

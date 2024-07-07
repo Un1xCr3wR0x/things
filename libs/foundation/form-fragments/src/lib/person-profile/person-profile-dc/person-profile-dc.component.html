@@ -1,0 +1,175 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="profile-wrapper-style" *ngIf="person">
+  <div [ngClass]="isUserLoggedIn ? 'd-flex flex-column' : 'd-flex flex-row even-space'">
+    <div *ngIf="isUserLoggedIn && iconName !== ''" class="row justify-content-center name-icon-style">
+      <!-- Profile icon when user logged in -->
+      <img alt="documentName" *ngIf="isUserLoggedIn && iconLocation" [src]="iconLocation" />
+      <!-- Name when admin or csr views -->
+      <div
+        *ngIf="!isUserLoggedIn && iconName !== null"
+        class="border rounded-circle icon-sections d-flex justify-content-center"
+      >
+        <div class="icon-name">{{ iconName | uppercase }}</div>
+      </div>
+    </div>
+    <div class="pl-2 pr-2">
+      <div id="arabicPersonName" class="row justify-content-center profile-name mt-4">
+        <div class="col">{{ personArabicName }}</div>
+      </div>
+      <!-- User / Contributor Name -->
+      <div id="englishPersonName" class="row justify-content-center flex-nowrap profile-name">
+        <ng-container *ngIf="person.name && person.name.english && person.name.english.name">
+          <div class="col">
+            {{ person.name.english.name }}
+          </div>
+        </ng-container>
+      </div>
+      <!-- Contributor Identifiers -->
+      <ng-container>
+        <div class="mt-4">
+          <div id="sinNumberLabel" class="person-sin -style">
+            <span
+              >{{ 'FORM-FRAGMENTS.SOCIAL-INSURANCE-NO' | translate }} :
+              <ng-container *ngIf="socialInsuranceNo; else notAvailable">
+                <span id="sinNumber" class="highlight-details"> {{ socialInsuranceNo }}</span>
+              </ng-container></span
+            >
+            <ng-template #notAvailable>
+              <span id="sinNumber" class="null-value">
+                {{ 'FORM-FRAGMENTS.NOT-AVAILABLE' | translate }}
+              </span>
+            </ng-template>
+          </div>
+          <div id="statusLabel">
+            <span class="class-label-style"
+              >{{ 'FORM-FRAGMENTS.STATUS' | translate }} :
+              <ng-container *ngIf="active !== undefined; else notAvailable">
+                <span id="status" class="highlight-details">
+                  <ng-container *ngIf="active === true">
+                    {{ 'FORM-FRAGMENTS.ACTIVE' | translate }}
+
+                    <fa-icon class="icon-wrapper-check-circle" icon="check-circle"></fa-icon>
+                  </ng-container>
+                  <ng-container *ngIf="active === false">
+                    {{ 'FORM-FRAGMENTS.INACTIVE' | translate }}
+                    <fa-icon class="in-active" icon="times-circle"></fa-icon>
+                  </ng-container>
+                </span>
+              </ng-container>
+              <ng-template #notAvailable>
+                <span id="status" class="null-value">
+                  {{ 'FORM-FRAGMENTS.NOT-AVAILABLE' | translate }}
+                </span>
+              </ng-template>
+            </span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <!-- Identifier Cards -->
+  <div class="row profile-detail justify-content-center" *ngIf="person">
+    <div class="col-md-6 card-data-padding">
+      <frm-person-card-icon-dc
+        [id]="'nationality'"
+        [icon]="'flag'"
+        [label]="'FORM-FRAGMENTS.NATIONALITY'"
+        [identifier]="person.nationality | bilingualText"
+      >
+      </frm-person-card-icon-dc>
+    </div>
+
+    <ng-container *ngFor="let item of person.identity">
+      <ng-container *ngIf="item && item !== null">
+        <div
+          class="col-md-6 card-data-padding"
+          *ngIf="item.idType !== null && [typeNin, typeGcc, typeIqama].indexOf(item.idType) !== -1"
+        >
+          <ng-container *ngIf="item.idType === typeNin">
+            <frm-person-card-icon-dc
+              [id]="'ninNumber'"
+              [icon]="'address-card'"
+              [label]="'FORM-FRAGMENTS.NIN'"
+              [identifier]="item.newNin"
+            >
+            </frm-person-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeGcc">
+            <frm-person-card-icon-dc
+              [id]="'gccNationalid'"
+              [customIcon]="'gcc-id'"
+              [label]="'FORM-FRAGMENTS.GCC-ID'"
+              [identifier]="item.id"
+            >
+            </frm-person-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeIqama">
+            <frm-person-card-icon-dc
+              [id]="'iqamaNumber'"
+              [icon]="'address-card'"
+              [label]="'FORM-FRAGMENTS.IQAMA'"
+              [identifier]="item.iqamaNo"
+              [isUnderWorkFlow]="isIqamaReturned && !isCsr"
+            >
+            </frm-person-card-icon-dc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <div class="col-md-6 card-data-padding">
+      <frm-person-card-icon-dc
+        [id]="'personDOB'"
+        [icon]="'calendar-alt'"
+        [label]="'FORM-FRAGMENTS.DATE-OF-BIRTH'"
+        [date]="person?.birthDate?.gregorian"
+      >
+      </frm-person-card-icon-dc>
+    </div>
+    <div class="col-md-6 card-data-padding">
+      <frm-person-card-icon-dc
+        [id]="'gender'"
+        [customIcon]="'gender'"
+        [label]="'FORM-FRAGMENTS.GENDER'"
+        [identifier]="person.sex | bilingualText"
+      >
+      </frm-person-card-icon-dc>
+    </div>
+    <div class="col-md-6 card-data-padding" *ngIf="isUserLoggedIn || isCsr">
+      <frm-person-card-icon-dc
+        id="maritalStatus"
+        [customIcon]="'marital-status'"
+        [label]="'FORM-FRAGMENTS.MARITAL-STATUS'"
+        [identifier]="person.maritalStatus | bilingualText"
+      >
+      </frm-person-card-icon-dc>
+    </div>
+    <ng-container *ngFor="let item of person.identity; let i = index">
+      <ng-container *ngIf="item && item !== null && [typeBorder, typePassport].indexOf(item.idType) !== -1">
+        <div class="col-md-6 card-data-padding" *ngIf="item.idType !== null">
+          <ng-container *ngIf="item.idType === typeBorder">
+            <frm-person-card-icon-dc
+              [id]="'borderNumber'"
+              [icon]="'map-marked-alt'"
+              [label]="'FORM-FRAGMENTS.BORDERNO'"
+              [identifier]="item.id"
+              [isUnderWorkFlow]="isBorderReturned && !isCsr"
+            >
+            </frm-person-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typePassport">
+            <frm-person-card-icon-dc
+              [id]="'passportNumber'"
+              [icon]="'passport'"
+              [label]="'FORM-FRAGMENTS.PASSPORT-NO'"
+              [identifier]="item.passportNo"
+            >
+            </frm-person-card-icon-dc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

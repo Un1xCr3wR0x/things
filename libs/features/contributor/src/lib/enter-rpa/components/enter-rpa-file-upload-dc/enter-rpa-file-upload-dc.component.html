@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <gosi-alert-dc
+          [message]="'CORE.ERROR.DOCUMENT-UPLOAD'"
+          type="info"
+          dismissable="false"
+        >
+        </gosi-alert-dc>
+        <!-- Document upload section -->
+        <ng-container *ngFor="let item of documentList; let i = index">
+          <gosi-input-file-sc
+            [document]="item"
+            [index]="i"
+            [businessKey]="engagementId"
+            [transactionId]="contTransactionId"
+            [referenceNo]="referenceNo"
+            (refresh)="refreshDocument(item)"
+            (uploadedEvent)="hasChanged = true"
+            (delete)="hasChanged = true"
+          ></gosi-input-file-sc>
+        </ng-container>
+        <!-- Document upload section -->
+
+        <div class="row" *ngIf="isCommentRequired">
+          <div class="col-sm-12 col-md-12">
+            <gosi-input-text-area-dc
+              [label]="'CONTRIBUTOR.COMMENTS' | translate"
+              id="comments"
+              name="comments"
+              [maxLength]="commentMaxLength"
+              [control]="documentUploadForm.get('comments')"
+            ></gosi-input-text-area-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<cnt-action-area-dc
+  [primaryButtonLabel]="'CONTRIBUTOR.SUBMIT'"
+  [showPreviousSection]="true"
+  [disablePrimary]="isApiTriggered"
+  idValue="2"
+  (submit)="checkMandatory()?showTemplate(submitTemplate):null"
+  (previous)="previousForm()"
+  (cancel)="showTemplate(cancelEngagementTemplate)"
+></cnt-action-area-dc>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc message="THEME.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #submitTemplate>
+  <gosi-confirm-modal-dc [message]="isFirstSchema? 'CONTRIBUTOR.ENTER-RPA-FIRST-SCHEME-SUBMIT-POPUP':'CONTRIBUTOR.ENTER-RPA-LAST-SCHEME-SUBMIT-POPUP'" (onConfirm)="submitEngagementDetails()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

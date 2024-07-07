@@ -1,0 +1,79 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms .
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row heading-margins">
+    <a *ngIf="currentTab === 0" (click)="navigateBackToContributorRefundPage()" class="icon-seprator">
+      <fa-icon
+        class="back-icon-size"
+        [icon]="['far', lan === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']"
+        size="2x"
+      ></fa-icon>
+    </a>
+    <span class="header-size"> {{ 'BILLING.CONTIBUTOR-REFUND-REQUEST' | translate }}</span>
+  </div>
+  <blg-contributor-backdated-info-dc
+    [status]="status"
+    [totalCreditBalance]="totalCreditBalance"
+    [contributorShare]="contributorShare"
+    [selectedTerminationPeriod]="selectedTerminationPeriod"
+  >
+  </blg-contributor-backdated-info-dc>
+  <!-- Wizard Component details -->
+  <gosi-progress-wizard-dc
+    [wizardItems]="contributorRefundWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #contributorRefundWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <!-- Contributor Backdated details -->
+          <tab [active]="currentTab === 0">
+            <div class="row">
+              <div class="col-lg-12">
+                <blg-contributor-bank-details-dc
+                  [transferModeList]="transferModeList$ | async"
+                  [parentForm]="contributorRefundMainForm"
+                  [ibanNumber]="ibanNumber"
+                  [bankName]="bankName"
+                  [transactionsDetails]="transactionsDetails"
+                  [bankNameFromApi]="bankNameFromApi"
+                  [lang]="lan"
+                  (saveDetails)="navigateToDocPage()"
+                  (saveNewIban)="saveNewBankDetails($event)"
+                  (cancel)="cancelRefundAmountPage()"
+                  (onGetBankNameChanged)="onGetBankName($event)"
+                ></blg-contributor-bank-details-dc>
+              </div>
+            </div>
+          </tab>
+          <!-------------------document page --------------------->
+          <tab [active]="currentTab === 1">
+            <blg-contributor-refund-file-upload-dc
+              [documentList]="documents"
+              [isScan]="true"
+              [uuid]="uuid"
+              [parentForm]="contributorRefundMainForm"
+              [transactionId]="documentTransactionId"
+              [businessKey]="sin"
+              (doc)="refreshDocuments($event)"
+              (cancel)="cancelRefundAmountPage()"
+              (previous)="previousFormDet()"
+              (submit)="submitContributorRefundDetails()"
+              [referenceNo]="referenceNumber"
+            >
+            </blg-contributor-refund-file-upload-dc>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>

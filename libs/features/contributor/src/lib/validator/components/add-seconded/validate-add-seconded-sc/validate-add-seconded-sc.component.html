@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+-->
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="canEdit" (onEdit)="navigateToEdit()">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.ADD-SECONDED' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="secondedDetails?.formSubmissionDate?.gregorian"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item" *ngIf="contributor">
+        <!-- Personal Details Section -->
+        <cnt-contributor-personal-details-dc [contributor]="contributor" [age]="age" [canEdit]="false">
+        </cnt-contributor-personal-details-dc>
+      </div>
+
+      <!-- Cancellation details. -->
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="seconded-icon"
+          [isSvg]="true"
+          heading="CONTRIBUTOR.ADD-SECONDED-DETAILS"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToEdit()"
+        >
+        </frm-content-heading-dc>
+        <!-- Seconded details. -->
+        <cnt-view-seconded-details-dc
+          *ngIf="secondedDetails"
+          [establishment]="establishment"
+          [secondedDetails]="secondedDetails"
+        ></cnt-view-seconded-details-dc>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplateSeconded)"
+        (rejectEvent)="showModal(rejectTemplateSeconded)"
+        (returnEvent)="showModal(returnTemplateSeconded)"
+        (cancelEvent)="navigateToInbox()"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+<ng-template #approveTemplateSeconded>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (approveEvent)="handleWorkflowEvents(0)"
+    (cancelEvent)="hideModal()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplateSeconded>
+  <frm-reject-template-dc
+    heading="CONTRIBUTOR.REJECT-ADD-SECONDED"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [parentForm]="validatorForm"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplateSeconded>
+  <frm-return-template-dc
+    heading="CONTRIBUTOR.RETURN-ADD-SECONDED"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+    [parentForm]="validatorForm"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

@@ -1,0 +1,129 @@
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <span class="mr-3"></span>
+    <div class="col-auto header">
+      {{ type | bilingualText }}
+      <span *ngIf="type === 'Saned Pension'; else details">{{ 'ADJUSTMENT.BENEFIT-DETAILS' | translate }}</span>
+      <ng-template #details>{{ 'ADJUSTMENT.DETAILS' | translate }}</ng-template>
+    </div>
+  </div>
+  <gosi-card-dc type="secondary">
+    <div class="row mb-4">
+      <div class="col-lg-4 custom-heading">{{ 'ADJUSTMENT.ADJUSTMENTS' | translate }}</div>
+      <div class="col-lg-5"></div>
+      <div class="col-lg-3 custom-text-end">
+        <gosi-button-dc
+          *ngIf="activeAdjustments?.adjustments?.length > 0"
+          [size]="'md'"
+          [outlineOnly]="true"
+          [disabled]="!isEligible"
+          (click)="navigateToAddModify()"
+          [type]="'primary'"
+        >
+          {{ 'ADJUSTMENT.ADD-MODIFY-CANCEL' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          *ngIf="activeAdjustments?.adjustments?.length === 0"
+          [size]="'md'"
+          [outlineOnly]="true"
+          [disabled]="!isEligible"
+          (click)="navigateToAdd()"
+          [type]="'primary'"
+        >
+          {{ 'ADJUSTMENT.ADD-ADJUSTMENT' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div class="row mb-4" *ngIf="adjustments">
+      <div class="col-md-12 d-flex align-items-center justify-content-end">
+        <span>
+          <pmt-adjustment-search-dc (onAdjustmentIdSearch)="filterTransactions($event)"></pmt-adjustment-search-dc>
+        </span>
+        <span class="mr-4"></span>
+        <span>
+          <div class="filter-component">
+            <pmt-adjustment-filter-dc id="benefitAdjustmentFilter" (adjustDetailsFilter)="filterTransactions($event)">
+            </pmt-adjustment-filter-dc>
+          </div>
+        </span>
+        <span class="mr-4"></span>
+        <div class="custom-seperator"></div>
+        <span class="mr-4"></span>
+        <span>
+          <gosi-sort-dc
+            id="benefitAdjustmentSort"
+            [list]="adjustmentSort | async"
+            [hidePlaceholder]="false"
+            [initialDirection]="direction === 'ASCENDING' ? 'ASC' : 'DESC'"
+            (direction)="sortOrder($event)"
+            (sortItemSelected)="sortList($event)"
+          >
+          </gosi-sort-dc>
+        </span>
+      </div>
+    </div>
+    <div class="row mt-4" *ngIf="adjustments && adjustments?.length > 0; else noResult">
+      <div class="col-lg-12">
+        <div class="table-responsive">
+          <table class="table table-borderless">
+            <thead>
+              <tr>
+                <th>{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}</th>
+                <th>{{ 'ADJUSTMENT.DATE-CREATED' | translate }}</th>
+                <th>{{ 'ADJUSTMENT.ADJUSTMENT-REASON' | translate }}</th>
+                <th>{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate }}</th>
+                <th>{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT-LBL' | translate }}</th>
+                <th>{{ 'ADJUSTMENT.ADJUSTMENT-STATUS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let adjustment of adjustments">
+                <td>
+                  <a class="view-link" (click)="navigateToAdjustmentDetails(adjustment?.adjustmentId)">{{
+                    adjustment?.adjustmentId
+                  }}</a>
+                </td>
+                <td>{{ adjustment?.createdDate?.gregorian | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ adjustment?.adjustmentReason | bilingualText }}</td>
+                <td>{{ adjustment?.adjustmentType | bilingualText }}</td>
+                <td>{{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}</td>
+                <td>
+                  <div
+                    *ngIf="adjustment?.adjustmentStatus"
+                    class="custom-box py-1 px-3"
+                    [ngClass]="adjustment?.adjustmentStatus?.english === 'Active' ? 'custom-active' : 'custom-color'"
+                  >
+                    {{ adjustment?.adjustmentStatus | bilingualText | uppercase }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <ng-template #noResult>
+      <div class="mt-5 text-center" *ngIf="adjustments && adjustments?.length === 0">
+        <img src="assets/images/search-error.svg" alt="search-error" />
+        <br />
+        <p class="text-muted">{{ 'ADJUSTMENT.NO-DATA' | translate }}</p>
+      </div>
+    </ng-template>
+  </gosi-card-dc>
+</div>

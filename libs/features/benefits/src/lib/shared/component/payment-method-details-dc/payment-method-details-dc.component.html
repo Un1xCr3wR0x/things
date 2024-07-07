@@ -1,0 +1,444 @@
+<ng-container *ngIf="payeeForm">
+  <!----------------------- Payee Type - self/authorized person/guradian ------------------------>
+  <div class="row" *ngIf="!isIndividualApp">
+    <div class="col-md-12">
+      <gosi-input-radio-dc
+        [label]="'BENEFITS.PAYEE' | translate"
+        id="{{ 'payee' + personId }}"
+        name="{{ 'payee' + personId }}"
+        [control]="payeeForm?.get('payee')"
+        [list]="payeeList"
+        [noMargin]="true"
+        (select)="selectPayeeType($event)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+  <!-- [list]="isHeir ? payeeList : payeeListToShow" -->
+
+  <!--------------------------- Authorized person section  ------------------------------->
+  <ng-container *ngIf="payee === 2 && !isIndividualApp">
+    <!-- [message]="'BENEFITS.AUTHORISED-PERSON-INFO-MODIFY' | translate" -->
+    <gosi-alert-dc
+      *ngIf="!attorneyList || attorneyList?.length <= 0"
+      [message]="
+        (isHeir ? 'BENEFITS.AUTHORISED-PERSON-INFO-MODIFY' : 'BENEFITS.AUTHORIZED-PERSON-INFO-BENEFICIARY') | translate
+      "
+      type="info"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+
+    <div class="row auth-margin" *ngIf="attorneyList?.length">
+      <div class="col-md-12">
+        <label for="auth" placement="top" triggers="mouseenter:mouseleave"
+          >{{ 'BENEFITS.SELECT-AUTHORISED-PERSON' | translate }}
+        </label>
+      </div>
+
+      <div class="form-group d-flex align-items-center col-12" *ngFor="let attorney of attorneyList; let i = index">
+        <div class="custom-control">
+          <input
+            class="custom-control-input"
+            name="{{ 'name' + personId + i }}"
+            type="radio"
+            (change)="getPerson(i)"
+            id="{{ 'authId' + personId + i }}"
+            [checked]="attorney.personId === payeeForm.get('authorizedPersonId')?.value"
+          />
+          <label class="custom-control-label" for="{{ 'authId' + personId + i }}"> </label>
+        </div>
+        <div class="row bg-color w-100 pb-3 pt-3">
+          <div class="col-md-4">
+            <div>
+              {{ attorney.name | nameToString }}
+            </div>
+            <ng-container *ngIf="attorney?.identity && attorney?.identity?.length > 0">
+              <div *ngIf="attorney?.identity[0]?.newNin">
+                {{ 'BENEFITS.NATIONAL-ID' | translate }} :
+                <a routerLinkActive="active"
+                  ><u>{{ attorney.identity[0].newNin }}</u></a
+                >
+              </div>
+              <div *ngIf="attorney?.identity[0]?.passportNo">
+                {{ 'BENEFITS.PASSPORT-NO' | translate }} :
+                <a routerLinkActive="active"
+                  ><u>{{ attorney.identity[0].passportNo }}</u></a
+                >
+              </div>
+              <div *ngIf="attorney?.identity[0]?.iqamaNo">
+                {{ 'BENEFITS.IQAMA-NUMBER' | translate }} :
+                <a routerLinkActive="active"
+                  ><u>{{ attorney?.identity[0]?.iqamaNo }}</u></a
+                >
+              </div>
+              <div *ngIf="attorney?.identity[0]?.idType === 'BORDERNO'">
+                {{ 'BENEFITS.BORDER-NO' | translate }} :
+                <a routerLinkActive="active"
+                  ><u>{{ attorney?.identity[0]?.id }}</u></a
+                >
+              </div>
+              <div *ngIf="attorney?.identity[0]?.idType === 'GCCID'">
+                {{ 'BENEFITS.GCC-NIN' | translate }} :
+                <a routerLinkActive="active"
+                  ><u>{{ attorney.identity[0].id }}</u></a
+                >
+              </div>
+            </ng-container>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="certificateNumber"
+              [isLink]="true"
+              label="{{ 'BENEFITS.CERTIFICATE-NUMBER' | translate }}"
+              [value]="attorney?.attorneyDetails?.certificateNumber"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="certificateDate"
+              label="{{ 'BENEFITS.CERTIFICATE-EXPIRATION-DATE' | translate }}"
+              [value]="(attorney?.attorneyDetails?.certificateExpiryDate | dateType) || '-'"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--    <div class="row ml-1 item-align">-->
+    <!--      <a class="mr-auto action-item-btn">-->
+    <!--        {{ 'BENEFITS.CLICK-HERE-TO-ADD-AUTHORISATION' | translate }}-->
+    <!--      </a>-->
+    <!--    </div>-->
+  </ng-container>
+
+  <ng-container *ngIf="payee === 3 && !isIndividualApp">
+    <!-- *ngIf="!heirDetail?.guardianPersonId || heirDetail?.guardianPersonId === 0" -->
+    <gosi-alert-dc
+      *ngIf="!guardianList || guardianList?.length <= 0"
+      [message]="'BENEFITS.NO-GUARDIAN-DETAILS FOUND' | translate"
+      type="info"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+    <div class="form-group d-flex align-items-center col-12" *ngFor="let attorney of guardianList; let i = index">
+      <div class="custom-control">
+        <input
+          class="custom-control-input"
+          name="{{ 'guardianName' + personId + i }}"
+          type="radio"
+          (change)="getGuardianPerson(i)"
+          id="{{ 'guardianId' + personId + i }}"
+          [checked]="attorney.personId === payeeForm.get('guardianPersonId')?.value"
+        />
+        <label class="custom-control-label" for="{{ 'guardianId' + personId + i }}"> </label>
+      </div>
+      <div class="row bg-color w-100 pb-3 pt-3">
+        <div class="col-md-4">
+          <div>
+            {{ attorney.name | nameToString }}
+          </div>
+          <ng-container *ngIf="attorney?.identity && attorney?.identity?.length > 0">
+            <div *ngIf="attorney?.identity[0]?.newNin">
+              {{ 'BENEFITS.NATIONAL-ID' | translate }} :
+              <a routerLinkActive="active"
+                ><u>{{ attorney.identity[0].newNin }}</u></a
+              >
+            </div>
+            <div *ngIf="attorney?.identity[0]?.passportNo">
+              {{ 'BENEFITS.PASSPORT-NO' | translate }} :
+              <a routerLinkActive="active"
+                ><u>{{ attorney.identity[0].passportNo }}</u></a
+              >
+            </div>
+            <div *ngIf="attorney?.identity[0]?.iqamaNo">
+              {{ 'BENEFITS.IQAMA-NUMBER' | translate }} :
+              <a routerLinkActive="active"
+                ><u>{{ attorney?.identity[0]?.iqamaNo }}</u></a
+              >
+            </div>
+            <div *ngIf="attorney?.identity[0]?.idType === 'BORDERNO'">
+              {{ 'BENEFITS.BORDER-NO' | translate }} :
+              <a routerLinkActive="active"
+                ><u>{{ attorney?.identity[0]?.id }}</u></a
+              >
+            </div>
+            <div *ngIf="attorney?.identity[0]?.idType === 'GCCID'">
+              {{ 'BENEFITS.GCC-NIN' | translate }} :
+              <a routerLinkActive="active"
+                ><u>{{ attorney.identity[0].id }}</u></a
+              >
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="certificateNumber"
+            [isLink]="true"
+            label="{{ 'BENEFITS.CERTIFICATE-NUMBER' | translate }}"
+            [value]="attorney?.attorneyDetails?.certificateNumber"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-md-4" *ngIf="attorney?.attorneyDetails?.certificateExpiryDate">
+          <gosi-label-dc
+            id="certificateDate"
+            label="{{ 'BENEFITS.CERTIFICATE-EXPIRATION-DATE' | translate }}"
+            [value]="(attorney?.attorneyDetails?.certificateExpiryDate | dateType) || '-'"
+          ></gosi-label-dc>
+        </div>
+      </div>
+    </div>
+
+    <!--    <div class="row auth-margin" *ngIf="heirDetail?.guardianPersonId && heirDetail?.guardianPersonId !== 0">-->
+    <!--      <div class="col-md-12">-->
+    <!--        <label for="auth" placement="top" triggers="mouseenter:mouseleave"-->
+    <!--          >{{ 'BENEFITS.SELECT-GUARDIAN' | translate }}-->
+    <!--        </label>-->
+    <!--      </div>-->
+    <!--      &lt;!&ndash; Guardian Section &ndash;&gt;-->
+    <!--      <div class="form-group d-flex align-items-center col-12">-->
+    <!--        <div class="custom-control">-->
+    <!--          <input class="custom-control-input" type="radio" [checked]="true" />-->
+    <!--          <label class="custom-control-label"> </label>-->
+    <!--        </div>-->
+    <!--        <div class="row bg-color w-100 pb-3 pt-3">-->
+    <!--          <div class="col-md-4">-->
+    <!--            <div>-->
+    <!--              {{ heirDetail?.guardianPersonName | bilingualText }}-->
+    <!--            </div>-->
+    <!--            <ng-container *ngIf="heirDetail?.guardianPersonIdentity && heirDetail?.guardianPersonIdentity.length > 0">-->
+    <!--              <div *ngIf="heirDetail?.guardianPersonIdentity[0]?.newNin">-->
+    <!--                {{ 'BENEFITS.NATIONAL-ID' | translate }} :-->
+    <!--                <a routerLinkActive="active"-->
+    <!--                  ><u>{{ heirDetail?.guardianPersonIdentity[0].newNin }}</u></a-->
+    <!--                >-->
+    <!--              </div>-->
+    <!--              <div *ngIf="heirDetail?.guardianPersonIdentity[0]?.passportNo">-->
+    <!--                {{ 'BENEFITS.PASSPORT-NO' | translate }} :-->
+    <!--                <a routerLinkActive="active"-->
+    <!--                  ><u>{{ heirDetail?.guardianPersonIdentity[0].passportNo }}</u></a-->
+    <!--                >-->
+    <!--              </div>-->
+    <!--              <div *ngIf="heirDetail?.guardianPersonIdentity[0]?.iqamaNo">-->
+    <!--                {{ 'BENEFITS.IQAMA-NUMBER' | translate }} :-->
+    <!--                <a routerLinkActive="active"-->
+    <!--                  ><u>{{ heirDetail?.guardianPersonIdentity[0].iqamaNo }}</u></a-->
+    <!--                >-->
+    <!--              </div>-->
+    <!--              <div *ngIf="heirDetail?.guardianPersonIdentity[0]?.idType === 'BORDERNO'">-->
+    <!--                {{ 'BENEFITS.BORDER-NO' | translate }} :-->
+    <!--                <a routerLinkActive="active"-->
+    <!--                  ><u>{{ heirDetail?.guardianPersonIdentity[0].id }}</u></a-->
+    <!--                >-->
+    <!--              </div>-->
+    <!--              <div *ngIf="heirDetail?.guardianPersonIdentity[0]?.idType === 'GCCID'">-->
+    <!--                {{ 'BENEFITS.GCC-NIN' | translate }} :-->
+    <!--                <a routerLinkActive="active"-->
+    <!--                  ><u>{{ heirDetail?.guardianPersonIdentity[0].id }}</u></a-->
+    <!--                >-->
+    <!--              </div>-->
+    <!--            </ng-container>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--    </div>-->
+    <!--    <div class="row ml-1 item-align">-->
+    <!--      <a class="mr-auto action-item-btn">-->
+    <!--        {{ 'BENEFITS.CLICK-HERE-TO-ADD-AUTHORISATION' | translate }}-->
+    <!--      </a>-->
+    <!--    </div>-->
+  </ng-container>
+
+  <!--------- Payment Method - bank transfer/cheque -------->
+
+  <div class="row" *ngIf="showPaymentMethod() && !isIndividualApp">
+    <div class="col-md-12">
+      <gosi-input-radio-dc
+        id="{{ 'paymentMethod' + personId }}"
+        [label]="'BENEFITS.PAYMENT-METHOD' | translate"
+        name="{{ 'paymentMethod' + personId }}"
+        [control]="payeeForm?.get('paymentMode')"
+        [list]="paymentModeList"
+        [noMargin]="true"
+        (select)="selectPaymentMethod($event)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+
+  <!----------------------- IBAN Details ------------------------>
+  <ng-container *ngIf="(showBankDetails && showPaymentMethod()) || isIndividualApp">
+    <gosi-alert-dc
+      *ngIf="bankAccountList?.length <= 0"
+      [message]="'BENEFITS.NO-BANK-DETAILS-FOUND' | translate"
+      type="info"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="d-inline-block pt-2 bank-type">
+          <div class="bank-method-toggler">
+            <div
+              class="column-left bank-text"
+              [ngClass]="{
+                'bank-type-selected': bankType == 'selectIban',
+                'bank-type-unselected': bankType == 'addNewIban',
+                'div-disable': isDisableSelectIban
+              }"
+              (click)="bankTypeChange('selectIban')"
+            >
+              {{ 'BENEFITS.SELECT-IBAN' | translate }}
+            </div>
+            <div
+              class="column-right bank-text"
+              [ngClass]="{
+                'bank-type-selected': bankType == 'addNewIban',
+                'bank-type-unselected': bankType == 'selectIban'
+              }"
+              (click)="bankTypeChange('addNewIban')"
+            >
+              {{ 'BENEFITS.ADD-NEW-IBAN' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- select existing IBAN from dropdown -->
+    <div class="row pt-2" *ngIf="!newIban && selectIbanForm">
+      <div class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'BENEFITS.IBAN-NUMBER' | translate"
+          id="existingIban"
+          [control]="selectIbanForm?.get('selectIbanMode')"
+          [list]="existingIbanLovList"
+          [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+          (selectLov)="IBANSelcted($event)"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-md-6" *ngIf="selectIbanForm?.get('selectIbanMode.english').value">
+        <gosi-label-dc id="bank-name" [value]="bankname | bilingualText" label="{{ 'BENEFITS.BANK-NAME' | translate }}">
+        </gosi-label-dc>
+      </div>
+    </div>
+    <!-- Saudi or Non-Saudi check -->
+    <div class="row" *ngIf="newIban && bankEditForm && !isIndividualApp">
+      <div class="col-md-12">
+        <gosi-input-radio-dc
+          [label]="'BENEFITS.BANK-IS-IN-SAUDI' | translate"
+          id="{{ 'saudi' + personId }}"
+          name="{{ 'saudi' + personId }}"
+          [control]="payeeForm?.get('nationality')"
+          [list]="listYesNo"
+          [noMargin]="true"
+          (select)="selectNationality($event)"
+        >
+        </gosi-input-radio-dc>
+      </div>
+    </div>
+    <!-- Select Add New Iban Display -->
+    <div
+      class="row pt-2"
+      *ngIf="
+        newIban && bankEditForm && showSaudiAddnewIban && payeeForm?.get('nationality')?.get('english')?.value === 'Yes'
+      "
+    >
+      <div class="col-md-6">
+        <gosi-input-text-dc
+          id="new-iban"
+          [label]="'BENEFITS.IBAN-NUMBER' | translate"
+          [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+          [control]="bankEditForm?.get('ibanBankAccountNo')"
+          (blur)="getName()"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6" *ngIf="newBankName?.english">
+        <gosi-label-dc id="bank-name" [value]="newBankName | bilingualText" [label]="'BENEFITS.BANK-NAME' | translate">
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div
+      class="row pt-2"
+      *ngIf="
+        newIban &&
+        bankEditForm &&
+        (!showSaudiAddnewIban || payeeForm?.get('nationality')?.get('english')?.value === 'No')
+      "
+    >
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-alert-dc
+          [noPadding]="'true'"
+          [message]="'BENEFITS.IBAN-BANKDETAIL-ACCHOLDER-WARN' | translate"
+          type="warning"
+          [dismissible]="false"
+        >
+        </gosi-alert-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-input-text-dc
+          id="new-iban"
+          [label]="'BENEFITS.IBAN-NUMBER' | translate"
+          [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+          [control]="bankEditForm?.get('nonSaudiIbanAccNo')"
+          [maxLength]="30"
+        >
+          <!-- Defect 482383 (blur)="getName($event)" -->
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-input-text-dc
+          id="bank-name"
+          [control]="bankEditForm.get('nonSaudiBankName')?.get('english')"
+          [label]="'BENEFITS.BANK-NAME' | translate"
+          (blur)="nonSaudiBankName()"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-input-text-dc
+          id="swiftCode"
+          [control]="bankEditForm?.get('swiftCode')"
+          [label]="'BENEFITS.SWIFT-CODE' | translate"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </div>
+    <!-- <gosi-alert-dc
+      *ngIf="isExistingIban === true"
+      [message]="'BENEFITS.EXISTING-IBAN' | translate"
+      type="info"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc> -->
+  </ng-container>
+  <!-- <div class="row">
+      <div class="col-md-12" *ngIf="heirDetail?.bankAccount?.verificationStatus && isRestart">
+          <gosi-label-dc
+          id="iban"
+          [value]="heirDetail?.bankAccount?.verificationStatus"
+          label="{{ 'BENEFITS.STATUS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </div> -->
+</ng-container>
+<frm-address-dc
+  *ngIf="
+    (isModifybank ? payeeForm?.get('nationality').get('english').value === BenefitValues.no : isAddressRequired)
+  "
+  [idValue]="heirDetail?.personId"
+  [cityList]="cityList$ | async"
+  [showCard]="false"
+  [countryList]="countryList$ | async"
+  [hasNationalAddress]="true"
+  [hasPOAddress]="true"
+  [hasOverseasAddress]="true"
+  [isViewOnly]="
+    payeeForm?.get('nationality').get('english').value === BenefitValues.no || !isAddressReadOnly ? false : true
+  "
+  [mandatoryOverseasAddress]="payeeForm?.get('nationality')?.get('english')?.value === 'No'"
+  [addressDetails]="heirDetail?.contactDetail?.addresses"
+  [currentMailingAddress]="heirDetail?.contactDetail?.currentMailingAddress"
+  #addressComponent
+>
+</frm-address-dc>

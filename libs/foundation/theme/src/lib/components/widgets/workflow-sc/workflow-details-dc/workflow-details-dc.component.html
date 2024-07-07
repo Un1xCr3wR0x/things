@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="hide-details" (click)="showContentMethod()" *ngIf="!showContent" id="showDetails">
+  <p class="pointer mb-0 text-muted">
+    {{ 'THEME.SHOW-DETAILS' | translate }} <fa-icon [icon]="['fas', 'chevron-down']"></fa-icon>
+  </p>
+</div>
+<div class="workflow-details" *ngIf="showContent">
+  <div class="table-responsive">
+    <table class="table">
+      <tbody *ngIf="workflowItems">
+        <tr *ngFor="let workflow of workflowItems?.slice()?.reverse()">
+          <td class="px-0 text-left" style="width: 10%; vertical-align: top">
+            <ng-container *ngIf="workflow.date && workflow.date.gregorian; else notShow">
+              <div class="workflow-date-wrapper" dir="ltr">
+                <span class="workflow-date">{{ workflow.date.gregorian | gosiDate }}</span>
+                <span class="workflow-time">{{ workflow.date.gregorian | date: 'hh:mm a':'GMT' }}</span>
+              </div>
+            </ng-container>
+            <ng-template #notShow> -- </ng-template>
+          </td>
+          <td style="width: 80%; vertical-align: top">
+            <div class="workflow-desc">
+              <p class="approver-name m-0">
+                <ng-container *ngIf="!workflow.isProfileLoading; else loadingTemplate">
+                  {{
+                    workflow?.approverName?.english === null
+                      ? ('THEME.NOT-AVAILABLE' | translate)
+                      : workflow?.approverRole?.english === 'AdminPool'
+                      ? workflow?.assigneeName
+                      : (workflow.approverName | bilingualText)
+                  }}
+                </ng-container>
+              </p>
+              <p
+                class="approver-role m-0"
+                *ngIf="
+                  workflow?.approverName?.english !== workflow?.approverRole?.english &&
+                  ( workflow?.approverRole?.english.search('Admin') === -1 || workflow?.approverRole?.english === 'AdminPool' )
+                "
+              >
+                {{
+                  workflow?.approverRole?.english === null
+                    ? ('THEME.NOT-AVAILABLE' | translate)
+                    : workflow?.approverRole?.english === 'AdminPool'
+                    ? (workflow?.approverName | bilingualText)
+                    : (workflow.approverRole | bilingualText)
+                }}
+              </p>
+            </div>
+          </td>
+          <td class="px-0 text-right" style="width: 10%">
+            <gosi-status-badge-dc [label]="workflow.status" [type]="statusBadgeType(workflow)"></gosi-status-badge-dc>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="pointer mb-0 text-muted" (click)="showContentMethod()">
+    {{ 'THEME.HIDE-DETAILS' | translate }} <fa-icon icon="chevron-up"></fa-icon>
+  </p>
+</div>
+<ng-template #loadingTemplate>
+  <div class="col-lg-6 col-md-6 col-sm-12 p-0">
+    <gosi-skeleton-text-dc></gosi-skeleton-text-dc>
+  </div>
+</ng-template>

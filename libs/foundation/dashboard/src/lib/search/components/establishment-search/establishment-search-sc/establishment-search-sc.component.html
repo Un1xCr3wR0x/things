@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div [ngClass]="!isPrivate ? 'p-4' : ''">
+  <div class="pt-0">
+    <dsb-common-search-dc
+      [isEstablishment]="true"
+      (show)="onAdvancedSearchShow()"
+      (search)="onSearchEstablishment()"
+      [parentForm]="searchForm.get('searchKeyForm')"
+      [searchKey]="searchKey"
+      (reset)="onReset()"
+      [isAdvancedSearch]="dashboardSearchService.enableEstablishmentAdvancedSearch"
+      [width]="width"
+    ></dsb-common-search-dc>
+    <dsb-advanced-search-dc
+      [isEstablishment]="true"
+      *ngIf="dashboardSearchService.enableEstablishmentAdvancedSearch"
+      [parentForm]="searchForm"
+      [searchRequest]="searchRequest"
+      (close)="onAdvancedSearchClose()"
+      (search)="onAdvancedSearch()"
+      [gccCountryList]="gccCountryList$ | async"
+      [registrationStatusList]="statusList$ | async"
+    >
+    </dsb-advanced-search-dc>
+    <ng-container *ngIf="!dashboardSearchService.isSummaryPage">
+      <dsb-search-header-dc
+        [isPrivate]="isPrivate"
+        [isSearch]="isSearch"
+        [commonSortFilter]="commonSortFilter"
+        [searchCount]="searchCount"
+      >
+      </dsb-search-header-dc>
+      <div class="desktop-view">
+        <dsb-establishment-entries-dc
+          (navigate)="navigateToEstablishment($event)"
+          *ngIf="establishmentEntry && searchRequest"
+          #estEntry
+          [establishmentSearchCount]="establishmentSearchCount"
+          (limit)="onLimit($event)"
+          [limitItem]="searchRequest.limit"
+          [establishmentEntry]="establishmentEntry"
+          [isPrivate]="isPrivate"
+        >
+        </dsb-establishment-entries-dc>
+      </div>
+      <div class="mobile-view">
+        <dsb-search-card-dc
+          #searchEstEntry
+          (navigate)="navigateToEstablishment($event)"
+          [isEstablishment]="true"
+          (limit)="onLimit($event)"
+          [limitItem]="searchRequest && searchRequest.limit"
+          [totalSize]="establishmentSearchCount"
+          [establishmentEntry]="establishmentEntry"
+          [isPrivate]="isPrivate"
+        >
+        </dsb-search-card-dc>
+      </div>
+      <div class="no-results d-flex justify-content-center align-items-center" *ngIf="noResults">
+        <gosi-no-result-dc [message]="currentError"></gosi-no-result-dc>
+      </div>
+
+      <ng-template #searchCount>
+        <dsb-search-results-label-dc
+          *ngIf="isSearchCount"
+          [count]="establishmentSearchCount"
+          [searchRequest]="searchRequest"
+          [isEstablishment]="true"
+          [lang]="selectedLanguage"
+        ></dsb-search-results-label-dc>
+      </ng-template>
+      <ng-template #commonSortFilter>
+        <dsb-common-sort-filter-dc
+          #commonSortFilterComponent
+          (sort)="onSort($event)"
+          (filter)="onFilter($event)"
+          [isEstablishment]="true"
+          [searchRequest]="searchRequest"
+          [isPrivate]="isPrivate"
+          [fieldOfficeList]="fieldOfficeList$ | async"
+          [entityList]="entityList$ | async"
+          [statusList]="statusList$ | async"
+        ></dsb-common-sort-filter-dc>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <dsb-establishment-details-sc
+    (navigate)="loadSearchPage()"
+    *ngIf="dashboardSearchService.isSummaryPage"
+  ></dsb-establishment-details-sc>
+</div>

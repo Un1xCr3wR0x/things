@@ -1,0 +1,214 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-md-12 table-responsive" *ngIf="engagementWageDetails.length > 0">
+    <div>
+      <gosi-alert-dc *ngIf="wagePreviousEdit" [alert]="wagePreviousEdit"></gosi-alert-dc>
+    </div>
+    <div *ngIf="hideWageInfoSection">
+      <gosi-alert-dc [message]="'CONTRIBUTOR.WAGE-OCCUPATION-INFO' | translate" type="info"></gosi-alert-dc>
+    </div>
+
+    <table class="table table-wage row_separate">
+      <thead
+        *ngIf="!editWagePeriodOn || !editWagePeriodOnBoolean || (editWagePeriodOn && engagementWageDetails.length > 1)"
+      >
+        <tr>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+          </th>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+          </th>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+          </th>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+          </th>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+          </th>
+          <th class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+          </th>
+          <th *ngIf="!ppaEstablishment" class="text-left" scope="col">
+            {{ 'CONTRIBUTOR.OCCUPATION' | translate | uppercase }}
+          </th>
+          <th *ngIf="ppaEstablishment" scope="col">{{ 'CONTRIBUTOR.JOB-CLASS' | translate | uppercase }}</th>
+          <th *ngIf="ppaEstablishment" scope="col">{{ 'CONTRIBUTOR.RANK' | translate | uppercase }}</th>
+          <th *ngIf="ppaEstablishment" scope="col">{{ 'CONTRIBUTOR.GRADE' | translate | uppercase }}</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let wageDetail of engagementWageDetails; let i = index; last as isLast; first as isFirst"
+          style="height: 4rem"
+        >
+          <ng-container *ngIf="!wageDetail.canEdit">
+            <td class="engagementPeriod">
+              <span *ngIf="wageDetail.startDate.entryFormat == typeGregorian">
+                {{ wageDetail.startDate.gregorian | date: 'MMM yyyy' }}
+              </span>
+              <span *ngIf="wageDetail.startDate.entryFormat == typeHijira">
+                {{ wageDetail.startDate.hijiri | singleFormat | monthNameHijri: 'mm-yyyy' }}
+              </span>
+              <span class="ml-1 faw-icons">
+                <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+              </span>
+              <span class="ml-1">
+                <span *ngIf="!wageDetail?.endDate?.gregorian">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+              </span>
+              <span
+                *ngIf="isFirst && wageDetail?.endDate?.gregorian && wageDetail.endDate.entryFormat == typeGregorian"
+              >
+                {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+              </span>
+              <span *ngIf="isFirst && wageDetail?.endDate?.hijiri && wageDetail.endDate.entryFormat == typeHijira">
+                {{ wageDetail.endDate.hijiri | singleFormat | monthNameHijri: 'mm-yyyy' }}
+              </span>
+              <span
+                *ngIf="!isFirst && wageDetail?.endDate?.gregorian && wageDetail.startDate.entryFormat == typeGregorian"
+              >
+                {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+              </span>
+              <span *ngIf="!ppaEstablishment">
+                <span
+                  *ngIf="
+                    !isFirst &&
+                    wageDetail?.endDate?.hijiri &&
+                    this.hijiriDateConst.gosiMaxHijiriNextYearInGregorian > getYear(wageDetail?.endDate?.gregorian) &&
+                    wageDetail.startDate.entryFormat == typeHijira
+                  "
+                >
+                  {{ wageDetail.endDate.hijiri | singleFormat | monthNameHijri: 'mm-yyyy' }}
+                </span>
+                <span
+                  *ngIf="
+                    !isFirst &&
+                    wageDetail?.endDate?.hijiri &&
+                    !(
+                      this.hijiriDateConst.gosiMaxHijiriNextYearInGregorian > getYear(wageDetail?.endDate?.gregorian)
+                    ) &&
+                    wageDetail?.endDate?.gregorian > maxEndDateForHijiri &&
+                    wageDetail.startDate.entryFormat == typeHijira
+                  "
+                >
+                  {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                </span>
+              </span>
+              <span *ngIf="ppaEstablishment">
+                <!-- (getYear(this.hijiriDateConst.ppaMaxHijiriNextDateInGregorian) >
+                      getYear(wageDetail?.endDate?.gregorian) -->
+                <span
+                  *ngIf="
+                    !isFirst &&
+                    wageDetail?.endDate?.hijiri &&
+                    wageDetail.startDate.entryFormat == typeHijira &&
+                    !isEndDateAfterPpaDate(wageDetail?.endDate?.gregorian)
+                  "
+                >
+                  {{ wageDetail.endDate.hijiri | singleFormat | monthNameHijri: 'mm-yyyy' }}
+                </span>
+                <!-- !(getYear(this.hijiriDateConst.ppaMaxHijiriNextDateInGregorian) >
+                      getYear(wageDetail?.endDate?.gregorian)
+                    ) &&
+                    wageDetail?.endDate?.gregorian > maxEndDateForHijiri && -->
+                <span
+                  *ngIf="
+                    !isFirst &&
+                    wageDetail?.endDate?.hijiri &&
+                    wageDetail.startDate.entryFormat == typeHijira &&
+                    isEndDateAfterPpaDate(wageDetail?.endDate?.gregorian)
+                  "
+                >
+                  {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                </span>
+              </span>
+            </td>
+
+            <td>{{ wageDetail.wage.basicWage | number }}</td>
+            <td>
+              {{
+                ppaEstablishment &&
+                ((wageDetail.wage.housingBenefit | number) === '0' || wageDetail.wage.housingBenefit === null)
+                  ? '-'
+                  : (wageDetail.wage.housingBenefit | number)
+              }}
+            </td>
+            <td>
+              {{
+                ppaEstablishment &&
+                ((wageDetail.wage.commission | number) === '0' || wageDetail.wage.commission === null)
+                  ? '-'
+                  : (wageDetail.wage.commission | number)
+              }}
+            </td>
+            <td>
+              {{
+                ppaEstablishment &&
+                ((wageDetail.wage.otherAllowance | number) === '0' || wageDetail.wage.otherAllowance === null)
+                  ? '-'
+                  : (wageDetail.wage.otherAllowance | number)
+              }}
+            </td>
+            <td>{{ wageDetail.wage.totalWage | number }}</td>
+            <td *ngIf="!ppaEstablishment">{{ wageDetail.occupation | bilingualText }}</td>
+            <td *ngIf="ppaEstablishment">{{ wageDetail.jobClassName | bilingualText }}</td>
+            <td *ngIf="ppaEstablishment">{{ wageDetail.jobRankName | bilingualText }}</td>
+            <td *ngIf="ppaEstablishment">{{ wageDetail.jobGradeName | bilingualText }}</td>
+            <td>
+              <div>
+                <a id="'edit' + i" class="delete-icon" (click)="editWagePeriod(wageDetail, i)">
+                  <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                </a>
+              </div>
+            </td>
+            <td>
+              <div>
+                <a id="{{ 'delete' + i }}" class="delete-icon" (click)="removeWagePeriod(i)" *ngIf="isFirst">
+                  <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                </a>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container *ngIf="wageDetail.canEdit && !isVic">
+            <td style="background: none; border: none" colspan="9">
+              <cnt-engagement-wage-add-dc
+                [isUpdate]="wageDetail.canEdit"
+                [disableJoining]="isLast"
+                [disableOccupation]="disableOccupation"
+                [hijiriDateConst]="hijiriDateConst"
+                [engagementWageEntryEditDetails]="engagementWageEntryEditDetails"
+                [occupationList]="occupationList"
+                [engagementWageDetails]="engagementWageDetails"
+                [isPrivate]="isPrivate"
+                [contributorType]="contributorType"
+                (wageUpdateEvent)="updateWageDetails($event)"
+                (cancelWageEditEvent)="cancelWageEdit()"
+                [jobClassLov]="jobClassLov"
+                (jobClassListChange)="jobClassListChangeForPPA($event)"
+                [jobRankLov]="jobRankLov"
+                (jobRankListChange)="jobRankListChangeForPPA($event)"
+                [jobGradeLov]="jobGradeLov"
+                [ppaEstablishment]="ppaEstablishment"
+                [jobGradeApiResponse]="jobGradeApiResponse"
+                [disabledOnEdit]="disableWage"
+                [hideOccupation]="hideOccupation"
+                [wageStartDate]="wageStartDate"
+              >
+              </cnt-engagement-wage-add-dc>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

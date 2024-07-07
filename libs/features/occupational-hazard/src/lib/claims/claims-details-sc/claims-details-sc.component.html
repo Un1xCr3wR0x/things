@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-alert-sc></gosi-alert-sc>
+<div class="row allowance-content" *ngIf="claimsWrapper">
+  <ng-container>
+    <div class="col-md-6 total-amount claims-card">
+      <gosi-card-dc type="secondary" lessPadding="true">
+        <div class="claims-card-heading">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-CLAIMS' | translate }}</div>
+        {{ totalAmount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+      </gosi-card-dc>
+    </div>
+    <div class="col-md-6 claims-card">
+      <gosi-card-dc type="secondary" lessPadding="true">
+        <div class="claims-card-heading">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-PERIOD' | translate | uppercase }}
+        </div>
+        <ng-container *ngIf="claimsWrapper.startDate && claimsWrapper.endDate; else notAvailable">
+          <div>
+            {{ claimsWrapper.startDate.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+            {{ claimsWrapper.endDate.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+            <span class="view-details"> ({{ daysDifference }} {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span>
+          </div>
+        </ng-container>
+        <ng-template #notAvailable>
+          {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+        </ng-template>
+      </gosi-card-dc>
+    </div>
+  </ng-container>
+</div>
+<ng-container *ngIf="showHoldInfo">
+  <gosi-alert-dc
+    [message]="
+      'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMS-ON_HOLD'
+        | translate: { date: holdDetails.holdFromDate.gregorian | date: 'dd/MM/yyyy', reason: holdDetails.reason }
+    "
+    [dismissible]="false"
+    [type]="'warning'"
+    noPadding="true"
+  >
+  </gosi-alert-dc>
+</ng-container>
+<ng-container>
+  <div class="row">
+    <div class="col-md-6">
+      <fa-icon [icon]="['fas', 'coins']" class="allowance"></fa-icon>
+      {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMS' | translate }}
+    </div>
+    <div class="col-md-6 mb-2">
+      <div class="float-right d-flex responsive-view">
+        <span *ngIf="showNewClaims && !diseaseId">
+          <gosi-button-dc
+            *gosiShow="reimbuserRoles; regNo: establishment?.registrationNo"
+            id="new"
+            (submit)="newClaim()"
+            type="primary"
+            class="btn-margins"
+          >
+            <span class="btn-text"> {{ 'OCCUPATIONAL-HAZARD.CLAIMS.NEW-CLAIM' | translate }}</span>
+          </gosi-button-dc></span
+        >
+        <ng-container *ngIf="showFilter">
+          <div class="filter">
+            <oh-claims-details-filter-dc
+              [claimTypes]="claimType$ | async"
+              [claimPayees]="claimPayee$ | async"
+              [status]="statusTemp$ | async"
+              [claimsWrapper]="claimsDetailsForFilter"
+              (filterValues)="applyFilter($event)"
+            ></oh-claims-details-filter-dc>
+          </div>
+        </ng-container>
+        <div class="switch-timeline">
+          <a (click)="navigateTimelineView()">
+            <fa-icon [icon]="['fas', 'stream']" [ngStyle]="currentTab == 1 ? { color: lighterLabel } : ''"></fa-icon>
+          </a>
+          <span class="border-style"></span>
+          <a (click)="navigateTableView()">
+            <fa-icon [icon]="['fas', 'table']" [ngStyle]="currentTab === 0 ? { color: lighterLabel } : ''"></fa-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="isError">
+  <div class="noClaims">
+    <img src="assets/images/No Claims.svg" alt="noClaims" />
+    <div class="row no-claims-message justify-content-center">
+      {{ 'OCCUPATIONAL-HAZARD.CLAIMS.NO-CLAIMS' | translate }}
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="currentTab === 0 && claimsWrapper && claimsWrapper.claims && !isError">
+  <oh-claims-details-timeline-dc
+    [socialInsuranceNo]="socialInsuranceNo"
+    [registrationNumber]="registrationNo"
+    [showNewClaims]="showNewClaims"
+    [injuryId]="injuryId"
+    [documents]="documents"
+    [claimsDetails]="claimsWrapper"
+    [claimBreakUpList]="claimBreakUpList"
+    (upload)="uploadDocuments($event)"
+    (navigateToCtbtr)="navigateToContributor()"
+    (navigateToEst)="navigateToEstProfile()"
+  >
+  </oh-claims-details-timeline-dc>
+</ng-container>
+<ng-container class="row" *ngIf="currentTab === 1 && claimsWrapper && claimsWrapper.claims && !isError">
+  <oh-claims-details-table-dc
+    [socialInsuranceNo]="socialInsuranceNo"
+    [registrationNumber]="registrationNo"
+    [showNewClaims]="showNewClaims"
+    [injuryId]="injuryId"
+    [documents]="documents"
+    [claimsDetails]="claimsWrapper"
+    [claimBreakUpList]="claimBreakUpList"
+    (upload)="uploadDocuments($event)"
+    (navigateToCtbtr)="navigateToContributor()"
+    (navigateToEst)="navigateToEstProfile()"
+  >
+  </oh-claims-details-table-dc>
+</ng-container>
+

@@ -1,0 +1,165 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+  <div [formGroup]="engagementWageAddForm" *ngIf="isEngagementWageAddFormVisible">
+    <div *ngIf="mandatoryAlert">
+      <gosi-alert-dc
+        message="CORE.ERROR.MANDATORY-FIELDS"
+        type="danger"
+        [dismissible]="true"
+        (closed)="mandatoryAlert = false"
+      ></gosi-alert-dc>
+    </div>
+    <div class="wage-details-border p-2">
+      <div class="row pl-lg-3">
+        <div class="col-lg-6">
+          <div>
+            <gosi-input-month-dc
+              class="min-width-seven"
+              id="startDate"
+              [minDate]="minWageAddDate"
+              [disabled]="disableAll || disableJoining"
+              [maxDate]="maxWageAddDate"
+              [control]="engagementWageAddForm.get('startDate').get('gregorian')"
+              [label]="'CONTRIBUTOR.WAGE-START-MONTH' | translate"
+              [readOnly]="true"
+            >
+            </gosi-input-month-dc>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div>
+            <gosi-input-select-dc
+              class="min-width-300"
+              id="occupation"
+              [control]="engagementWageAddForm.get('occupation')"
+              [list]="occupationList"
+              [label]="'CONTRIBUTOR.OCCUPATION'"
+              [placeholder]="'CONTRIBUTOR.OCCUPATION-PLH' | translate"
+              [disabled]="disableAll || disableOccupation"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+      </div>
+      <div class="row pl-lg-3">
+        <div class="col-12">
+          <div class="wage-section">
+            <div>
+              <gosi-input-currency-dc
+                id="basicWage"
+                (blur)="onBlur(engagementWageAddForm)"
+                (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                [label]="'CONTRIBUTOR.BASIC-WAGE' | translate"
+                [control]="engagementWageAddForm.get('wage').get('basicWage')"
+                [disabled]="disableAll"
+                [separatorLimit]="wageSeparatorLimit"
+              >
+              </gosi-input-currency-dc>
+            </div>
+            <span class="align-self-center faw-icons">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="hra"
+                (blur)="onBlur(engagementWageAddForm)"
+                (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                [label]="'CONTRIBUTOR.HOUSING' | translate"
+                [placeholder]="'CONTRIBUTOR.HOUSING' | translate"
+                [control]="engagementWageAddForm.get('wage').get('housingBenefit')"
+                [disabled]="disableAll"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+              >
+              </gosi-input-currency-dc>
+            </div>
+            <span class="align-self-center faw-icons">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="commission"
+                (blur)="onBlur(engagementWageAddForm)"
+                (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                [label]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                [placeholder]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                [control]="engagementWageAddForm.get('wage').get('commission')"
+                [disabled]="disableAll"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+              >
+              </gosi-input-currency-dc>
+            </div>
+            <span class="align-self-center faw-icons">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="otherAllowance"
+                (blur)="onBlur(engagementWageAddForm)"
+                (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                [label]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                [placeholder]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                [control]="engagementWageAddForm.get('wage').get('otherAllowance')"
+                [disabled]="disableAll"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+              >
+              </gosi-input-currency-dc>
+            </div>
+            <span class="align-self-center faw-icons">
+              <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="totalWage"
+                [control]="engagementWageAddForm.get('wage').get('totalWage')"
+                [label]="'CONTRIBUTOR.TOTAL-WAGE' | translate"
+                [disabled]="true"
+                (blur)="onBlur(engagementWageAddForm)"
+              >
+              </gosi-input-currency-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center align-items-center" *ngIf="!isUpdate">
+        <div class="col-auto" [ngClass]="lang === 'ar' ? 'cancel-sd-ar' : 'cancel-sd-en'" 
+        *ngIf="engagementWageDetails.length >= 1">
+          <gosi-button-dc type="outline-secondary" id="cancelnewperiod" (submit)="cancelAddWagePeriod()" [size]="'md'">
+            {{ 'CONTRIBUTOR.CANCEL' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="col-auto">
+          <gosi-button-dc
+            type="outline-primary"
+            id="addnewperiod"
+            (submit)="addWagePeriod()"
+            size="md"
+            [disabled]="disableAll"
+          >
+            <span class="pr-1 pl-1">
+              <fa-icon [icon]="['fas', 'business-time']"></fa-icon>
+            </span>
+            {{ 'CONTRIBUTOR.ADD-ENGAGEMENT-PERIOD' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+      <div class="row justify-content-center" *ngIf="isUpdate">
+        <div class="col-auto">
+          <gosi-button-dc type="outline-secondary" id="canceledit" size="md" (submit)="cancelWageEdit()">
+            {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="col-auto">
+          <gosi-button-dc type="outline-primary" id="updatewage" size="md" (submit)="updateWageDetails()">
+            {{ 'CONTRIBUTOR.SAVE' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>

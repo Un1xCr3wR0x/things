@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="form-group fc-margin" [ngClass]="[ignoreLabel ? 'no-label' : '', validateField() ? 'is-invalid' : '']">
+  <label *ngIf="!ignoreLabel" for="{{ id }}"
+    >{{ label | translate }}
+    <span class="optional-field" *ngIf="!isRequired()">({{ 'THEME.OPTIONAL' | translate }})</span>
+  </label>
+
+  <div class="input-group" *ngIf="selectedCountry">
+    <div class="input-group-prepend" dropdown>
+      <button
+        id="btn-{{ id }}"
+        class="btn btn-outline-secondary dropdown-toggle"
+        dropdownToggle
+        type="button"
+        [ngClass]="[defaultOnly || disabled ? 'disabled' : '', defaultOnly ? 'default-only' : '']"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span class="flag-icon {{ selectedCountry?.icon }}"></span>
+      </button>
+      <ng-container *ngIf="!defaultOnly">
+        <ul *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
+          <li role="menuitem" *ngFor="let gccCountry of gccList">
+            <a class="dropdown-item" (click)="selectCountry(gccCountry)">
+              <span class="flag-icon {{ gccCountry.icon }}"></span>
+              <span class="icon-text">{{ gccCountry.label | bilingualText }}</span>
+            </a>
+          </li>
+        </ul>
+      </ng-container>
+    </div>
+    <input
+      class="prefix"
+      [ngClass]="[
+        validateField() ? 'is-invalid' : '',
+        disabled ? 'disabled' : '',
+        readOnly ? 'disabled' : '',
+        hasValue ? 'has-value' : ''
+      ]"
+      type="text"
+      readonly="readonly"
+      value="({{ selectedCountry.prefix }})"
+    />
+
+    <input
+      [formControl]="control"
+      class="number"
+      [ngClass]="[
+        validateField() ? 'is-invalid' : '',
+        disabled ? 'disabled' : '',
+        readOnly ? 'disabled' : '',
+        hasValue ? 'has-value' : ''
+      ]"
+      type="text"
+      placeholder="{{ selectedCountry.format }}"
+      [readonly]="readOnly"
+      (blur)="onBlur($event)"
+      (keyup)="onKeyUp($event)"
+      id="{{ id }}"
+      mask="{{ getMask() }}"
+      autocomplete="off"
+    />
+  </div>
+  <div class="invalid-feedback" id="{{ id }}-feedback" *ngIf="validationError">
+    {{ validationError.error | translate: validationError }}
+  </div>
+
+  <small class="form-text text-muted" *ngIf="helpText">
+    {{ helpText }}
+  </small>
+</div>

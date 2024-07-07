@@ -1,0 +1,181 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container
+  *ngIf="
+    transaction?.transactionId === SuperAddTnxId ||
+    transaction?.transactionId === GccAddTnxId ||
+    transaction?.transactionId === OtherAddTnxId
+  "
+>
+  <!-- establishment details -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}">
+        <div class="row">
+          <div class="col-sm-12 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="registrationnumber"
+              [isLink]="true"
+              (select)="goToEstProfile(establishment?.registrationNo)"
+              [value]="establishment?.registrationNo"
+              label="ESTABLISHMENT.REGISTRATION-NO"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="arabicName"
+              [control]="establishment?.name?.arabic"
+              label="ESTABLISHMENT.ESTABLISHMENT-NAME-AR"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="englishName"
+              [control]="establishment?.name?.english"
+              label="ESTABLISHMENT.ESTABLISHMENT-NAME-EN"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-4 col-lg-4">
+            <gosi-label-dc
+              id="establishmentStartDate"
+              [date]="true"
+              [control]="establishment?.startDate?.gregorian | formatDate"
+              label="ESTABLISHMENT.ESTABLISHMENT-START-DATE"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- New Admin Section -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ADMIN-DETAILS' | translate }}">
+        <div class="col-md12" *ngIf="newAdmin">
+          <div class="sub-content-item">
+            <div class="row">
+              <div class="col-md-12">
+                <span class="card-heading">
+                  {{ newAdminHeading | translate }}
+                </span>
+                <ng-container *ngIf="transaction?.transactionId === 300327 && !branchAdmin">
+                  <ng-container *ngFor="let role of roleAdmins">
+                    <span class="role-admins role-border">
+                      {{ role | bilingualText }}
+                    </span>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </div>
+            <div class="row pt-4">
+              <div id="ArabicName" class="col-sm-6" *ngIf="newAdmin.person">
+                <gosi-label-dc id="ArabicName" [value]="getAdminName(newAdmin)" label="ESTABLISHMENT.NAME-IN-ARABIC">
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="newAdmin.person.name.english">
+                <gosi-label-dc
+                  id="EnglishName"
+                  [control]="newAdmin.person.name.english.name"
+                  label="ESTABLISHMENT.NAME-IN-ENGLISH"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row pt-3">
+              <div class="col-sm-12 col-lg-6">
+                <gosi-label-dc
+                  id="nationality"
+                  [control]="newAdmin.person.nationality"
+                  label="ESTABLISHMENT.NATIONALITY"
+                >
+                </gosi-label-dc>
+              </div>
+              <ng-container *ngIf="!checkNull(newAdmin.person.identity) && getIdentifierType(newAdmin)">
+                <ng-container *ngFor="let item of newAdmin.person.identity">
+                  <div class="col-sm-12 col-lg-6" *ngIf="saudiNationality">
+                    <gosi-label-dc id="nin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.id">
+                    <gosi-label-dc id="nationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="(gccNationality || others) && item.iqamaNo">
+                    <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.passportNo">
+                    <gosi-label-dc id="passportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+                    </gosi-label-dc>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <gosi-label-dc id="Gender" [control]="newAdmin.person.sex" label="ESTABLISHMENT.GENDER"></gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="newAdmin.person.birthDate">
+                <gosi-label-dc
+                  [date]="true"
+                  id="birthDate"
+                  [control]="newAdmin.person.birthDate.gregorian"
+                  label="ESTABLISHMENT.BIRTH-DATE"
+                ></gosi-label-dc>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="newAdmin.person.contactDetail">
+            <div class="col-sm-12 col-md-12">
+              {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+            </div>
+            <div class="col-sm-12 col-lg-6 pt-3">
+              <gosi-label-dc
+                id="TelephoneNumber"
+                [control]="newAdmin.person.contactDetail.telephoneNo?.primary"
+                label="ESTABLISHMENT.TELEPHONE-NUMBER"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="Extension"
+                [control]="newAdmin.person.contactDetail.telephoneNo?.extensionPrimary"
+                label="ESTABLISHMENT.EXTENSION"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="MobileNo"
+                [control]="newAdmin.person.contactDetail.mobileNo?.primary"
+                label="ESTABLISHMENT.MOBILE-NUMBER"
+                ><span id="prefixValue">{{ getISDCodePrefix() }}</span>
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="EmailId"
+                [control]="newAdmin.person.contactDetail?.emailId?.primary"
+                label="ESTABLISHMENT.EMAIL-ID"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- Documents section -->
+  <div class="row" *ngIf="documentList?.length > 0">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

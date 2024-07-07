@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Basid Details Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="!establishmentToValidate?.activityType?.english"
+        [message]="'ESTABLISHMENT.WARNING.ACTIVITY-MISSING'"
+        [dismissible]="false"
+        type="warning"
+      >
+      </gosi-alert-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc name="basicDetails" [establishment]="establishment">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          [heading]="'ESTABLISHMENT.EST-BASIC-DETAILS-AFTER-CHANGES' | translate"
+          (onEdit)="changeEstablishmentService.navigateToEditBasicDetails()"
+        ></frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-6 col-sm-12" *ngIf="establishmentToValidate.name?.arabic !== establishment.name?.arabic">
+            <gosi-label-dc [control]="establishmentToValidate.name.arabic" label="ESTABLISHMENT.ESTABLISHMENT-ARABIC">
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6 col-sm-12" *ngIf="establishmentToValidate.name?.english !== establishment.name?.english">
+            <gosi-label-dc [control]="establishmentToValidate.name.english" label="ESTABLISHMENT.ESTABLISHMENT-NAME-EN">
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.activityType?.english !== establishment.activityType?.english"
+          >
+            <gosi-label-dc [control]="establishmentToValidate.activityType" label="ESTABLISHMENT.ACTIVITY-TYPE">
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.nationalityCode?.english !== establishment.nationalityCode?.english"
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate.nationalityCode?.english"
+              label="ESTABLISHMENT.NATIONALITY"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              isGcc &&
+              establishment.gccEstablishment?.registrationNo !==
+                establishmentToValidate.gccEstablishment?.registrationNo
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate.gccEstablishment.registrationNo"
+              label="ESTABLISHMENT.GCC-REGISTRATION-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="isGcc && establishmentToValidate.startDate?.gregorian !== establishment?.startDate?.gregorian"
+          >
+            <gosi-label-dc
+              [date]="true"
+              [control]="establishmentToValidate.startDate?.gregorian"
+              label="ESTABLISHMENT.ESTABLISHMENT-START-DATE"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              isGcc &&
+              establishmentToValidate.gccEstablishment.country?.english !==
+                establishment.gccEstablishment.country?.english
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate.gccEstablishment.country"
+              label="ESTABLISHMENT.GCC-COUNTRY-NAME"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(basicDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(basicDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(basicDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="basicDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-BASIC'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(basicDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="basicDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-BASIC'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(basicDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="basicDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(basicDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

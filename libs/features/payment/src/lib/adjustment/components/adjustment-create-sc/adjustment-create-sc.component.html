@@ -1,0 +1,75 @@
+<div class="content">
+  <div class="row custom-heading m-0">{{ 'ADJUSTMENT.CREATE-ADJUSTMENT' | translate }}</div>
+  <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="adjustmentWizards" #adjustmentWizard>
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset class="pills" #adjustmentTab>
+      <tab [active]="currentTab === 0">
+        <gosi-card-dc type="secondary" [heading]="'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate">
+          <div *ngIf="isAddAdjustment">
+            <pmt-adjustment-common-form-dc
+              *ngIf="beneficiaries && adjustmentReasonList$"
+              [adjustmentAddForm]="adjustmentAddForm"
+              [benefitTypeList]="benefitTypeList"
+              [benefitItems]="benefitItems"
+              [selectedType]="selectedType"
+              [isValidator]="isValidator"
+              [adjustmentReasonList$]="adjustmentReasonList$"
+              (onBenefitTypeSelected)="getBenefits($event)"
+            ></pmt-adjustment-common-form-dc>
+            <div class="row">
+              <div class="col-lg-12">
+                <pmt-action-area-dc
+                  [idValue]="'adjustmentCreateSaveAndNext'"
+                  [primaryButtonLabel]="'ADJUSTMENT.SAVE-NEXT' | translate"
+                  [showPreviousSection]="false"
+                  [disablePrimary]="!adjustmentAddForm.valid"
+                  (submit)="saveAdjustment()"
+                  (onCancelAction)="showModal(cancelTemplate)"
+                ></pmt-action-area-dc>
+              </div>
+            </div>
+          </div>
+        </gosi-card-dc>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-alert-sc></gosi-alert-sc>
+            <!-- document details section -->
+            <pmt-file-upload-dc
+              [parentForm]="parentForm"
+              [isCommentRequired]="isEditMode"
+              [businessKey]="adjustmentSubmitResponse?.adjustmentModificationId || adjustmentModificationId"
+              [transactionId]="transactionId"
+              [referanceNumber]="adjustmentSubmitResponse?.referenceNo || referenceNumber"
+              [documentList]="documents"
+              [isContract]="'contract-auth'"
+              (refresh)="refreshDocument($event, true)"
+              (onDelete)="deleteDocument($event)"
+              (previous)="navigateToPreviousTab()"
+              (cancelDoc)="cancelAdjustment()"
+              (submit)="onSubmitDocuments()"
+            ></pmt-file-upload-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'ADJUSTMENT.INFO-CANCEL'"
+    (onConfirm)="cancelConfirmed()"
+    (onCancel)="modalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #docTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'ADJUSTMENT.DOC-CONFIRM'"
+    (onConfirm)="submitAdjustments()"
+    (onCancel)="modalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

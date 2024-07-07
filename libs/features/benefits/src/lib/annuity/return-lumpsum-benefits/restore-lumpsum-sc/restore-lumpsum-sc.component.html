@@ -1,0 +1,116 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <!-- main heading -->
+    <div class="col-auto mr-auto header">{{ 'BENEFITS.ENABLE-RETURN-LUMPSUM-HEADING' | translate }}</div>
+  </div>
+  <!-- alert component -->
+  <div [ngClass]="{ hide: hideAlertComponent(currentTab, wizardItems) }">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div>
+    <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="wizardItems" #restoreBenefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+
+  <!-- main content begins here -->
+  <div class="hide-tab">
+    <tabset type="pills" #disabilityAssessmentDetailsTab>
+      <!-- disability details tab -->
+      <tab [active]="isTabSlctdInWizard(uiConst.RESTORE_DETAILS, currentTab, wizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-restore-reason-dc
+              [parentForm]="requestRestorationLumpsumForm"
+              [reasonList]="reasonListSorted"
+              [inRestoreEditMode]="inRestoreEditMode"
+              [restorationDetails]="restorationDetails"
+            ></bnt-restore-reason-dc>
+          </div>
+        </div>
+        <div class="row form-action-buttons">
+          <div class="col-auto form-action-btn">
+            <gosi-button-dc
+              [ngClass]="isSmallScreen ? '' : 'float-left'"
+              id="cancelButton"
+              [isFullWidth]="isSmallScreen"
+              type="secondary"
+              (click)="cancelTransaction()"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="ml-auto col-auto form-action-btn">
+            <ng-container *gosiShow="accessForActionPrivate"
+            >
+            <gosi-button-dc
+              *gosiShow="accessForActionPrivate"
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              type="primary"
+              [disabled]="!requestRestorationLumpsumForm.dirty || requestRestorationLumpsumForm.invalid"
+              [isFullWidth]="isSmallScreen"
+              (submit)="saveRestoreReason()"
+            >
+              {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </ng-container>
+          </div>
+        </div>
+      </tab>
+
+      <!-- document details tab -->
+
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_DOCUMENTS, currentTab, wizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="restoreTransactionConstant"
+              [documentList]="requiredDocs"
+              [isWorkflow]="false"
+              [isEditMode]="inRestoreEditMode"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransaction()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<!-- templates -->
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

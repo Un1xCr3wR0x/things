@@ -1,0 +1,262 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="transactionHeading | translate"> </frm-main-heading-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishment"
+          [estHeading]="'ESTABLISHMENT.MAIN-EST-DETAILS'"
+        ></est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="user-cog"
+          [heading]="'ESTABLISHMENT.ADMIN-DETAILS' | translate"
+          [canEdit]="!canReturn"
+          (onEdit)="navigateToReplaceSuperAdmin()"
+        ></frm-content-heading-dc>
+        <!------------------- Current Admin Section -->
+        <div class="col-md12" *ngIf="currentAdmin">
+          <div class="row">
+            <div class="col-md-12">
+              <h6 class="card-heading">
+                {{ currentAdminHeading | translate }}
+              </h6>
+            </div>
+          </div>
+          <div class="row pt-3">
+            <ng-container *ngIf="!checkNull(currentAdmin.person.identity) && getIdentifierType(currentAdmin)">
+              <ng-container *ngFor="let item of currentAdmin.person.identity">
+                <div class="col-sm-12 col-lg-6" *ngIf="saudiNationality">
+                  <gosi-label-dc
+                    id="nin"
+                    [isLink]="true"
+                    (select)="goToEstProfile()"
+                    [control]="item.newNin"
+                    label="ESTABLISHMENT.NIN"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.id">
+                  <gosi-label-dc
+                    id="nationalId"
+                    [isLink]="true"
+                    (select)="goToEstProfile()"
+                    [control]="item.id"
+                    label="ESTABLISHMENT.GCC-ID"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="(gccNationality || others) && item.iqamaNo">
+                  <gosi-label-dc
+                    id="iqama"
+                    [isLink]="true"
+                    (select)="goToEstProfile()"
+                    [control]="item.iqamaNo"
+                    label="ESTABLISHMENT.IQAMA-NUMBER"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.passportNo">
+                  <gosi-label-dc
+                    id="passportNumber"
+                    [isLink]="true"
+                    (select)="goToEstProfile()"
+                    [control]="item.passportNo"
+                    label="ESTABLISHMENT.PASSPORT-NO"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+          <div class="row">
+            <div id="ArabicName" class="col-sm-6" *ngIf="currentAdmin.person">
+              <gosi-label-dc id="ArabicName" [value]="getAdminName(currentAdmin)" label="ESTABLISHMENT.NAME-IN-ARABIC">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6" *ngIf="currentAdmin.person.name.english">
+              <gosi-label-dc
+                id="EnglishName"
+                [control]="currentAdmin.person.name.english.name"
+                label="ESTABLISHMENT.NAME-IN-ENGLISH"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+        <!-- New Admin Section -->
+        <div class="col-md12" *ngIf="newAdmin">
+          <div class="sub-content-item">
+            <div class="row">
+              <div class="col-md-12">
+                <h6 class="card-heading">
+                  {{ newAdminHeading | translate }}
+                </h6>
+              </div>
+            </div>
+            <div class="row pt-3">
+              <div id="ArabicName" class="col-sm-6" *ngIf="newAdmin.person">
+                <gosi-label-dc id="ArabicName" [value]="getAdminName(newAdmin)" label="ESTABLISHMENT.NAME-IN-ARABIC">
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="newAdmin.person.name.english">
+                <gosi-label-dc
+                  id="EnglishName"
+                  [control]="newAdmin.person.name.english.name"
+                  label="ESTABLISHMENT.NAME-IN-ENGLISH"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row pt-3">
+              <div class="col-sm-12 col-lg-6">
+                <gosi-label-dc
+                  id="nationality"
+                  [control]="newAdmin.person.nationality"
+                  label="ESTABLISHMENT.NATIONALITY"
+                >
+                </gosi-label-dc>
+              </div>
+              <ng-container *ngIf="!checkNull(newAdmin.person.identity) && getIdentifierType(newAdmin)">
+                <ng-container *ngFor="let item of newAdmin.person.identity">
+                  <div class="col-sm-12 col-lg-6" *ngIf="saudiNationality">
+                    <gosi-label-dc id="nin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.id">
+                    <gosi-label-dc id="nationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="(gccNationality || others) && item.iqamaNo">
+                    <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.passportNo">
+                    <gosi-label-dc id="passportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+                    </gosi-label-dc>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <gosi-label-dc id="Gender" [control]="newAdmin.person.sex" label="ESTABLISHMENT.GENDER"></gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="newAdmin.person.birthDate">
+                <gosi-label-dc
+                  [date]="true"
+                  id="birthDate"
+                  [control]="newAdmin.person.birthDate.gregorian"
+                  label="ESTABLISHMENT.BIRTH-DATE"
+                ></gosi-label-dc>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="newAdmin.person.contactDetail">
+            <div class="col-sm-12 col-md-12">
+              {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+            </div>
+            <div class="col-sm-12 col-lg-6 pt-3">
+              <gosi-label-dc
+                id="TelephoneNumber"
+                [control]="newAdmin.person.contactDetail.telephoneNo?.primary"
+                label="ESTABLISHMENT.TELEPHONE-NUMBER"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="Extension"
+                [control]="newAdmin.person.contactDetail.telephoneNo?.extensionPrimary"
+                label="ESTABLISHMENT.EXTENSION"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="MobileNo"
+                [control]="newAdmin.person.contactDetail.mobileNo?.primary"
+                label="ESTABLISHMENT.MOBILE-NUMBER"
+                ><span id="prefixValue">{{ getISDCodePrefix() }}</span>
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="EmailId"
+                [control]="newAdmin.person.contactDetail?.emailId?.primary"
+                label="ESTABLISHMENT.EMAIL-ID"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        (approveEvent)="approveTransaction(adminDetailsValidationForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(adminDetailsValidationForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(adminDetailsValidationForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="adminDetailsValidationForm"
+    heading="ESTABLISHMENT.REJECT.REPLACE-ADMIN"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(adminDetailsValidationForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="adminDetailsValidationForm"
+    heading="ESTABLISHMENT.RETURN.REPLACE-ADMIN"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(adminDetailsValidationForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="adminDetailsValidationForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(adminDetailsValidationForm)"
+  ></frm-approve-template-dc>
+</ng-template>

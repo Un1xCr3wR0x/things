@@ -1,0 +1,150 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row mt-4" *ngIf="showContributor || showContributorEditMode">
+    <div class="col-lg-12 mb-2" *ngIf="!showContributorEditMode">
+      <h5 class="card-heading">
+        {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.ADD-CONTRIBUTOR' | translate }}
+      </h5>
+    </div>
+    <div class="col-lg-12" *ngIf="!showContributorEditMode">      
+        <oh-contributor-search-dc #ohSearch (next)="searchContributor($event)" [isGroupInjuryScreen]="true" [parentForm]="searchContributorForm">
+        </oh-contributor-search-dc>
+      </div>       
+      <div class="col-md-12 mt-4" *ngIf="isContributorFound">
+          <!-- Contributor details view  -->
+            <oh-contributor-info-dc            
+            #personDetails
+            [personDetails]="person"
+            >
+            </oh-contributor-info-dc> 
+     </div>   
+     <div class="col-md-12" *ngIf="isContributorFound">
+        <h5 class="card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-DETAILS' | translate }}
+          </h5>
+          <oh-injury-statistics-details-dc
+            [injuryStatistics]="injuryStatistics"
+            [socialInsuranceNo]="socialInsuranceNo"
+          ></oh-injury-statistics-details-dc>       
+      </div>    
+      <div class="col-lg-12" *ngIf="isContributorFound">
+        <div class="dead-confirmation-block mb-4">
+          <div class="d-flex bd-highlight">
+            <div class="p-4 w-100 bd-highlight injuryDescription">
+              <span>{{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURY-LEADS-TO-DEATH' | translate }}</span>
+            </div>
+            <div class="p-2 flex-shrink-1 bd-highlight">
+              <gosi-input-toggle-dc id="injuryToDeathIndicator" name="injuryToDeathIndicator" ignoreLabel="true"
+                [control]="contributorGroupInjuryForm.get('injuryLeadsToDeathIndicator')" (changeEvent)="validationCheck()">
+              </gosi-input-toggle-dc>
+            </div>
+          </div>
+        </div> 
+      </div>
+     <!-- this block shows the user to select death date if person is dead -->         
+     <div class="col-lg-6 mt-2" *ngIf="isPersonDead && isContributorFound">
+        <gosi-input-date-dc
+              id="deathDate"
+              label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+              [control]="contributorGroupInjuryForm.get('deathDate').get('gregorian')"
+              [maxDate]="currentDate"
+              [minDate]="workDisabilityDate"
+              [disabled]="disableDeath"
+            >
+            </gosi-input-date-dc>
+      </div>
+     
+      <div class="col-lg-6 mt-2" *ngIf="isContributorFound">
+            <gosi-input-select-dc
+              name="occupation"
+              [label]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.EMPLOYEE-OCCUPATION' | translate"
+              id="contributorsOccupationWhenInjuryOccured"
+              [list]="employeeActivityAtInjuryTime"
+              [control]="contributorGroupInjuryForm.get('occupation')"
+            >
+            </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-6 mt-2" *ngIf="isContributorFound">
+          <gosi-input-radio-dc
+            id="treatmentCompleted"
+            name="treatmentStarted"
+            [control]="contributorGroupInjuryForm.get('treatmentCompleted')"
+            label="OCCUPATIONAL-HAZARD.TREATMENT-COMPLETED"
+            [list]="booleanList"
+          >
+          </gosi-input-radio-dc>
+        </div>
+     
+        <div class="col-lg-6 mt-2" *ngIf="isContributorFound">
+            <gosi-input-select-dc
+              [name]="'injuryReason'"
+              [label]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-REASON' | translate"
+              id="injuryReason"
+              [list]="injuryReasonList"
+              [control]="contributorGroupInjuryForm.get('injuryReason')"             
+            >
+            </gosi-input-select-dc>
+          </div>
+      
+      <div class="col-lg-12" >
+        <oh-group-injury-person-details-dc *ngIf="isContributorFound"
+        #personDetails       
+        [isdControl]="isdControl"
+        [cityList]="cityList"
+        [countryList]="countryList"
+        [isValidator1]="isValidator1"
+        [prohibitUpdate]="prohibitInspection"  
+        [parentForm]="contributorGroupInjuryForm"       
+        [isAddressPresent]="isAddressPresent"  
+        [person]="person"
+        [workFlowType]="workFlowType"
+        [disabled]="disabled"
+        [processType]="processType"
+        [payeeT]="payeeT"
+        [isGroupInjuryScreen]="true"           
+        [emergencyContact]="emergencyContact"
+        (setPayeeType) ="setPayee($event)"
+        (template)="showCancelTemplate()"
+        (contactNumberDetails)="showFormValidation()"
+      >
+      </oh-group-injury-person-details-dc>
+
+        <!--Address details-->
+      <frm-address-dc *ngIf="isContributorFound && !isAddressPresent"
+      idValue="oh"
+      [cityList]="cityList"
+      [countryList]="countryList"
+      [hasNationalAddress]="true"
+      [hasPOAddress]="true"
+      [hasOverseasAddress]="true"  
+      [isOptional]="false"
+      [contactDetail]="person.contactDetail"
+      [addressDetails]="person.contactDetail?.addresses ? person.contactDetail?.addresses : null"
+      [currentMailingAddress]="person.contactDetail ? person.contactDetail.currentMailingAddress : null"
+      [parentForm]="contributorGroupInjuryForm"
+      #addressForm
+      >
+      </frm-address-dc>
+      
+  </div>
+  </div>
+  <div class="col-md-12 text-center mt-3"  *ngIf="showContributor || showContributorEditMode">
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" size="lg"  (click)="cancelAddContributor()">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-right" *ngIf="isContributorFound && !showContributorEditMode">
+      <gosi-button-dc id="save" type="primary" size="lg"  (click)="save()" >
+        {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.ADD-CONTRIBUTOR' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right" *ngIf="isContributorFound && showContributorEditMode">
+      <gosi-button-dc id="save" type="primary" size="lg"  (click)="save()" >
+        {{ 'OCCUPATIONAL-HAZARD.SAVE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+

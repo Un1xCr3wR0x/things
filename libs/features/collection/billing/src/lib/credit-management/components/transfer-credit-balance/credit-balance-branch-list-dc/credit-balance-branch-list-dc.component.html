@@ -1,0 +1,111 @@
+<div class="heading-font">{{ 'BILLING.SELECT-ESTABLISHMENT' | translate }}</div>
+<div class="menu d-flex align-search search-heading-align">
+  <div class="sub-heading-font main-est">
+    {{ 'BILLING.MAIN-ESTABLISHMENT' | translate }}
+  </div>
+  <div class="search-component">
+    <gosi-search-dc
+      [placeholder]="'BILLING.SEARCH' | translate"
+      (search)="onSearchAmount($event)"
+      (keyup)="onSearchAmount($event.target.value)"
+    >
+    </gosi-search-dc>
+  </div>
+</div>
+
+<ng-container>
+  <!-------------------- start of main establishment details ------------------->
+  <div class="table-scroll table-responsive">
+    <table class="table table-borderless">
+      <tbody>
+        <ng-container>
+          <tr class="border-bottom">
+            <td class="estname-align">
+              <div class="icon-margin buliding-color"><fa-icon [icon]="['far', 'building']"></fa-icon></div>
+              <div>
+                <div>
+                  {{
+                    establishmentDetails.name.english === null
+                      ? establishmentDetails.name.arabic
+                      : (establishmentDetails.name | bilingualText)
+                  }}
+                </div>
+                <div class="font-tweleve">
+                  <span> {{ 'BILLING.REGISTRATION-NUMBER' | translate }}: </span>
+                  <span>{{ establishmentDetails.registrationNo }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="icon-margin location-color"><fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon> </span
+              >{{
+                establishmentDetails.fieldOfficeName.english === null
+                  ? establishmentDetails.fieldOfficeName.arabic
+                  : (establishmentDetails.fieldOfficeName | bilingualText)
+              }}
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <!-------------------- end of main establishment details --------------------->
+  <!--------------- start of branch establishment details --------------------->
+  <div class="table-scroll table-responsive">
+    <div class="sub-heading-font branch-pd">
+      {{ 'BILLING.BRANCH-ESTABLISHMENT' | translate }}
+    </div>
+    <table class="table table-borderless" *ngIf="branchLists?.length > 0; else noResult">
+      <tbody>
+        <ng-container *ngFor="let item of branchLists; let i = index">
+          <ng-container *ngIf="item.establishmentType.english !== 'Main'">
+            <tr class="border-bottom">
+              <td>
+                <gosi-input-checkbox-dc
+                  id="check{{ i }}"
+                  (select)="selectEstablishment(i)"
+                  [control]="branchListValue.controls[i].get('checkBoxFlag')"
+                  [lessPadding]="false"
+                  [noSpacing]="true"
+                >
+                </gosi-input-checkbox-dc>
+              </td>
+              <td class="estname-align">
+                <div class="icon-margin buliding-color"><fa-icon [icon]="['far', 'building']"></fa-icon></div>
+                <div>
+                  <div>{{ item.name.english === null ? item.name.arabic : (item.name | bilingualText) }}</div>
+                  <div class="font-tweleve">
+                    <span> {{ 'BILLING.REGISTRATION-NUMBER' | translate }}: </span>
+                    <span>{{ item.registrationNo }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="icon-margin location-color"><fa-icon [icon]="['fas', 'map-marker-alt']"></fa-icon> </span>
+                {{ item.location.english === null ? item.location.arabic : (item.location | bilingualText) }}
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <!-------------------- start of branch establishment details -------------------->
+  <div class="btn-section">
+    <div class="confirmation-btn">
+      <gosi-button-dc id="cancel" type="secondary" (click)="closePopUp()">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+      <gosi-button-dc id="confirm" type="primary" (click)="confirm()">
+        {{ 'BILLING.CONFIRM' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</ng-container>
+<ng-template #noResult>
+  <div class="mt-5 text-center">
+    <img src="assets/images/search-error.svg" alt="search-error" />
+    <br />
+    <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+  </div>
+</ng-template>

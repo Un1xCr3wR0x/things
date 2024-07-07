@@ -1,0 +1,222 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<i class="faSpinner" style="font-size: 24px"></i>
+<oh-widget-loading-dc *ngIf="isLoading; else content"></oh-widget-loading-dc>
+<ng-template #content>
+  <div class="row" *ngIf="injuryHistory; else noPreviousOH">
+    <div class="col-md-12 col-sm-12 px-0">
+      <ng-container>
+        <ul [ngClass]="{
+            timeline: true,
+            'timeline-shortBar': lastInjury,
+            'timeline-largeBar': !lastInjury,
+            'border-green': injuryHistory.status.english == 'Approved',
+            'border-yellow': injuryHistory.status.english == 'In Progress' || injuryHistory.status.english == 'Pending',
+            'border-gray':
+              injuryHistory.status.english == 'Closed' ||
+              injuryHistory.status.english == 'Cured Without Disability' ||
+              injuryHistory.status.english == 'Cured With Disability' ||
+              injuryHistory.status.english == 'Resulted in Death' ||
+              injuryHistory.status.english == 'Closed without continuing treatment',
+            'border-red': injuryHistory.status.english == 'Rejected'
+          }">
+          <li class="timeline-item">
+            <div class="timeline-badge"></div>
+            <gosi-label-dc ignoreLabel="true" id="injuryDate"
+              [value]="injuryHistory?.date?.gregorian | gosiDate"></gosi-label-dc>
+            <div class="type-pic">
+              <fa-icon class="icon" icon="user-injured" class="injury" size="md"></fa-icon>
+              <span class="injury-heading"> {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY' | translate }}</span>
+            </div>
+
+            <accordion>
+              <accordion-group>
+                <div accordion-heading>
+                  <ng-container>
+                    <div class="d-flex justify-content-center history-details">
+                      <div [ngClass]="
+                          isHeading && isAppPrivate
+                            ? 'injury-id col-lg-4 col-md-4 col-sm-4 ml-1 mr-2'
+                            : 'injury-id ml-1 mr-5'
+                        " *ngIf="isDisabled && isAppPrivate">
+                        <gosi-label-dc id="injuryId" [value]="injuryHistory.injuryId"
+                          label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                      <div [ngClass]="
+                          isHeading && isAppPrivate
+                            ? 'injury-id col-lg-4 col-md-4 col-sm-4 ml-1 mr-2'
+                            : 'injury-id  ml-1 mr-5'
+                        " *ngIf="!isDisabled && isAppPrivate">
+                        <gosi-label-dc id="injuryId" [value]="injuryHistory.injuryId"
+                          label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                      <div [ngClass]="lang === 'en' ? 'injury-id-public' : 'injury-id-public-ar'"
+                        *ngIf="isDisabled && !isAppPrivate">
+                        <gosi-label-dc id="injuryId" [value]="injuryHistory.injuryId"
+                          label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                      <div [ngClass]="lang === 'en' ? 'injury-id-public' : 'injury-id-public-ar'"
+                        *ngIf="!isDisabled && !isAppPrivate">
+                        <gosi-label-dc id="injuryId" [value]="injuryHistory.injuryId"
+                          label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                      <div class="d-sm-block mr-auto est-name" *ngIf="isAppPrivate && !mobileView">
+                        <gosi-label-dc id="establishmentName" label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME"
+                          [value]="injuryHistory.establishmentName | bilingualText" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                      <div [ngClass]="getColor(injuryHistory.status)" class="injury-status" *ngIf="
+                          isAppPrivate &&
+                          !(
+                            injuryHistory.actualStatus.english === 'Cured With Disability' ||
+                            injuryHistory.actualStatus.english === 'Cured Without Disability' ||
+                            injuryHistory.actualStatus.english === 'Closed without continuing treatment' ||
+                            injuryHistory.actualStatus.english === 'Closed' ||
+                            injuryHistory.actualStatus.english === 'Resulted in Death' ||
+                            injuryHistory.actualStatus.english === 'Cancelled' ||
+                            injuryHistory.actualStatus.english === 'Cancelled By System'
+                          )
+                        ">
+                        {{ injuryHistory.status | bilingualText }}
+                      </div>
+                      <div [ngClass]="getColor(injuryHistory.actualStatus)" class="injury-status-closedWCT" *ngIf="
+                          isAppPrivate &&
+                          (injuryHistory.actualStatus.english === 'Cured With Disability' ||
+                            injuryHistory.actualStatus.english === 'Cured Without Disability' ||
+                            injuryHistory.actualStatus.english === 'Closed without continuing treatment' ||
+                            injuryHistory.actualStatus.english === 'Closed' ||
+                            injuryHistory.actualStatus.english === 'Resulted in Death' ||
+                            injuryHistory.actualStatus.english === 'Cancelled' ||
+                            injuryHistory.actualStatus.english === 'Cancelled By System')
+                        ">
+                        {{ injuryHistory.actualStatus | bilingualText }}
+                      </div>
+                      <div [ngClass]="getColor(injuryHistory.status)" class="injury-status"
+                        *ngIf="appToken === 'PUBLIC'">
+                        {{ injuryHistory.status | bilingualText }}
+                      </div>
+                      <div style="box-sizing: content-box;" [ngClass]="getColor(injuryHistory.status)"
+                        class="injury-status {{ class }}" *ngIf="appToken === 'INDIVIDUAL_APP'">
+                        {{ injuryHistory.status | bilingualText }}
+                      </div>
+                      <div class="arrow">
+                        <span class="arrow-up" accordion-heading>
+                          <fa-icon icon="angle-up" size="lg"></fa-icon>
+                        </span>
+                        <span class="arrow-down" accordion-heading>
+                          <fa-icon icon="angle-down" size="lg"></fa-icon>
+                        </span>
+                      </div>
+                      <div class="d-sm-block mr-auto est-name" *ngIf="isAppPrivate && mobileView">
+                        <gosi-label-dc id="establishmentName" label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME"
+                          [value]="injuryHistory.establishmentName | bilingualText" noMargin="true">
+                        </gosi-label-dc>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+                <ng-container>
+                  <div class="row label-class">
+                    <div
+                      [ngClass]="isHeading ? 'pt-4  col-lg-7 additional-detail' : 'pt-4  col-lg-7  additional-detail'">
+                      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ADDITIONAL-DETAILS' | translate }}
+                    </div>
+                    <div
+                      class="text-right pt-4 col-lg-5 col-sm-12 additional-detail d-sm-none d-md-block d-none view-link"
+                      *ngIf="!isDisabled || appToken === 'INDIVIDUAL_APP'">
+                      <a (click)="viewInjuryDetails(injuryHistory)" [gosiEnable]="userRoles">
+                        {{ 'OCCUPATIONAL-HAZARD.VIEW-FULL-DETAILS' | translate }}</a>
+                    </div>
+                  </div>
+                  <div class="row label-class injury-type pl-3 pr-3">
+                    <div class="row flex-nowrap">
+                      <div [ngClass]="isHeading ? 'pt-4 mr-4  ml-4' : 'pt-4 col'">
+                        <gosi-label-dc id="injuryType" label="OCCUPATIONAL-HAZARD.INJURY.MANAGE-INJURY-TYPE"
+                          [control]="injuryHistory.injuryType | bilingualText | titlecase">
+                        </gosi-label-dc>
+                      </div>
+
+                      <div [ngClass]="
+                          isHeading
+                            ? 'pt-4 col ml-5 injury-location injury-location-arabic'
+                            : 'pt-4 col injury-location'
+                        ">
+                        <gosi-label-dc id="injuryLocation" label="OCCUPATIONAL-HAZARD.INJURY.INJURY-LOCATION"
+                          [control]="injuryHistory.location">
+                        </gosi-label-dc>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-12 pb-3 additional-detail d-sm-block d-md-none view-link"
+                    *ngIf="!isDisabled || appToken === 'INDIVIDUAL_APP'">
+                    <a (click)="viewInjuryDetails(injuryHistory)" [gosiEnable]="userRoles">
+                      {{ 'OCCUPATIONAL-HAZARD.VIEW-FULL-DETAILS' | translate }}</a>
+                  </div>
+                  <div class="border-style d-sm-none d-md-block d-none"></div>
+                  <div>
+                    <div class="row">
+                      <div class="complication-heading col-lg-6">
+                        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION' | translate }}
+                      </div>
+                      <ng-container *ngIf="
+                          injuryHistory.actualStatus.english === 'Cured With Disability' ||
+                          injuryHistory.actualStatus.english === 'Cured Without Disability'
+                        ">
+                        <div class="text-right col-lg-6 report-complication d-sm-none d-md-block d-none mx-0">
+                          <gosi-button-dc id="view" (submit)="addComplication(injuryHistory)" type="primary" size="md"
+                            *gosiShow="roleValidation; regNo: establishment?.registrationNo">
+                            {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REPORT-COMPLICATION' | translate }}</gosi-button-dc>
+                        </div>
+                      </ng-container>
+                    </div>
+                    <ng-container *ngIf="
+                        injuryHistory.actualStatus.english === 'Cured With Disability' ||
+                        injuryHistory.actualStatus.english === 'Cured Without Disability'
+                      ">
+                      <div class="row d-sm-block d-md-none mb-2">
+                        <div class="col-lg-12">
+                          <div *ngIf="appToken === 'INDIVIDUAL_APP'" class="classname">
+                            <gosi-button-dc id="view" (submit)="addComplication(injuryHistory)" type="primary" size="md"
+                              *gosiShow="roleValidation; regNo: establishment?.registrationNo">
+                              {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REPORT-COMPLICATION' | translate }}</gosi-button-dc>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <ng-container
+                      *ngIf="injuryHistory.complication && injuryHistory.complication.length > 0; else noComplication">
+                      <ng-container *ngFor="let injuryComplication of injuryHistory.complication">
+                        <oh-view-complication-dc [injuryComplication]="injuryComplication"
+                          (complicationSelected)="viewComplication(injuryComplication)"></oh-view-complication-dc>
+                      </ng-container>
+                    </ng-container>
+                    <ng-template #noComplication>
+                      <div class="row">
+                        <div class="col-lg-12">
+                          <button class="btn more-options">
+                            {{ 'OCCUPATIONAL-HAZARD.NO-COMPLICATIONS' | translate }}
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                  </div>
+                </ng-container>
+              </accordion-group>
+            </accordion>
+          </li>
+        </ul>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+<ng-template #noPreviousOH>
+  <div class="d-flex justify-content-center no-previous-oh">
+    {{ 'OCCUPATIONAL-HAZARD.NO-PREVIOUS-OH' | translate }}
+  </div>
+</ng-template>
+

@@ -1,0 +1,300 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row no-gutters">
+  <div class="col-lg-12">
+    <div class="d-flex flex-row justify-content-between pb-2 py-2">
+      <div class="col-lg-6 px-1">
+        <span class="payment-heading">{{ 'BENEFITS.BENEFIT-PAYMENT-HISTORY' | translate }}</span>
+      </div>
+      <div class="col-lg-6 px-1 d-inline-flex justify-content-end">
+        <div class="mx-2">
+          <bnt-direct-payment-history-filter-dc
+            [paymentTypesList]="paymentTypesList$ | async"
+            [paymentStatusList]="paymentStatusList$ | async"
+            [benefitTypeList]="benefitTypeList"
+            [hasFiltered]="hasFiltered"
+            [clearHistoryFilter]="clearHistoryFilter"
+            [directPaymentHistory]="directPaymentHistory"
+            (paymentFilterEvent)="getDirectPaymentHistory(sin, $event)"
+            (apply)="filterApplied($event)"
+          ></bnt-direct-payment-history-filter-dc>
+        </div>
+        <div>
+          <gosi-button-dc [size]="'sm'">{{ 'BENEFITS.DOWNLOAD-XLS' | translate }}</gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="d-flex justify-content-start applied-filter" *ngIf="this.appliedFilter.length > 0">
+  <gosi-applied-filters-dc [filters]="appliedFilter" (clearFilter)="cancelledFilter($event)"></gosi-applied-filters-dc>
+</div>
+<div class="row" *ngIf="directPaymentHistory && directPaymentHistory.length > 0; else noItem">
+  <div class="col-md-12" *ngFor="let paymentHistory of directPaymentHistory; let i = index">
+    <!-- on hold to be confirmed with payment team-->
+    <bnt-timeline-dc>
+      <div class="row" timeline-date>
+        <div class="col-md-12 flag-timeline">
+          <span class="flag-date">{{ paymentHistory?.paidDate | dateType }}</span>
+        </div>
+      </div>
+      <div *ngIf="paymentHistory?.history && paymentHistory?.history?.length > 0" class="row" timeline-content>
+        <ng-container *ngFor="let history of paymentHistory?.history">
+          <div class="col-md-12">
+            <accordion class="active-payment-container pl-1 pr-4">
+              <accordion-group class="accordion-group-class mb-3 pb-2" (isOpenChange)="isOpened($event, history)">
+                <div accordion-heading class="accordion-heading-text px-3">
+                  <div class="amount">
+                    {{ history?.benefitAmount | number: '1.0-2' }} {{ 'BENEFITS.SR' | translate }}
+                  </div>
+                  <div class="sub-text" *ngIf="history?.benefitType?.english">
+                    {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}
+                  </div>
+                  <div class="sub-text" *ngIf="!history?.benefitType?.english">
+                    {{ 'BENEFITS.DIRECT-PAYMENT' | translate }}
+                  </div>
+                </div>
+                <div accordion-heading class="accordion-heading-txt px-3" *ngIf="!history?.isOpened">
+                  <!-- <div class="float-right px-3"> -->
+                  <div class="sub-text" *ngIf="history?.benefitType?.english">
+                    {{ 'BENEFITS.BENEFIT-TYPE' | translate }}
+                  </div>
+                  <div class="benefitType" *ngIf="history?.benefitType?.english">
+                    {{ history?.benefitType | bilingualText }}
+                  </div>
+                  <!-- </div>  -->
+                </div>
+                <div class="header-wrapper ml-auto" accordion-heading>
+                  <!-- [ngClass]="lang === 'en' ? 'ml-auto' : 'mr-auto'" -->
+                  <div class="custom-row px-3">
+                    <gosi-status-badge-dc
+                      [label]="history?.eventType | bilingualText"
+                      [type]="
+                        history?.eventType?.english === 'Paid'
+                          ? 'success'
+                          : history?.eventType?.english === 'Payment in progress' ||
+                            history?.eventType?.english === 'On Hold' ||
+                            history?.eventType?.english === 'Returned Payment' ||
+                            history?.eventType?.english === 'Stopped' 
+                          ? 'danger'
+                          : ''
+                      "
+                    >
+                    </gosi-status-badge-dc>
+                    <span class="arrow-up col-md-2">
+                      <fa-icon icon="angle-up" size="2x"></fa-icon>
+                    </span>
+                    <span class="arrow-down ml-auto col-md-2" accordion-heading>
+                      <fa-icon icon="angle-down" size="2x"></fa-icon>
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                  <div class="row">
+                    <gosi-label-dc
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.PAYEE"
+                      [value]="history?.benefitDetails?.payeeType | bilingualText"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      *ngIf="history?.benefitDetails?.authorizedPersonName?.english"
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.AUTHORISED-PERSON-NAME"
+                      [value]="history?.benefitDetails?.authorizedPersonName | bilingualText"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      *ngIf="
+                        history?.benefitDetails?.authorizedPersonId &&
+                        payeeTypes.AuthorizedPerson == history?.benefitDetails?.payeeType?.english
+                      "
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.NATIONAL-ID-OF-AUTHORISED-PERSON"
+                      [value]="history?.benefitDetails?.authorizedPersonId | translate"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.PAYMENT-METHOD"
+                      [value]="history?.benefitDetails?.paymentMethod | bilingualText"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.BANK-NAME"
+                      [value]="history?.benefitDetails?.bankName | bilingualText"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.IBAN-NUMBER"
+                      [value]="history?.benefitDetails?.iban"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      *ngIf="
+                        history?.benefitDetails?.paymentReferenceNumber &&
+                        payeeTypes.AuthorizedPerson == history?.benefitDetails?.payeeType?.english
+                      "
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.PAYMENT-REFERENCE-NUMBER"
+                      [value]="history?.benefitDetails?.paymentReferenceNumber | translate"
+                    >
+                    </gosi-label-dc>
+                    <gosi-label-dc
+                      class="col-sm-4"
+                      [isBackgroundWhite]="true"
+                      label="BENEFITS.PAYMENT-DATE"
+                      [value]="history?.date | dateType"
+                    >
+                    </gosi-label-dc>
+                  </div>
+
+                  <ng-container *ngIf="history?.benefitType && history?.payments?.length > 0">
+                    <hr class="hr-line" />
+
+                    <!--BENEFIT DETAILS-->
+
+                    <div class="row pt-1 pb-4">
+                      <div class="col-sm-9">
+                        <span class="benefit-heading">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }} </span>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="table-scroll table-responsive history-table">
+                          <table class="table table-borderless rounded">
+                            <thead class="table-header">
+                              <tr>
+                                <th>{{ 'BENEFITS.PAYMENT-TYPE' | translate }}</th>
+                                <th>{{ 'BENEFITS.ELIGIBILITY-DATE' | translate }}</th>
+                                <th>{{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <ng-container *ngFor="let payment of history?.payments; let i = index">
+                                <tr class="data-row border-bottom">
+                                  <td>
+                                    <div class="block">{{ (payment?.paymentType | bilingualText) || '-' }}</div>
+                                    <!-- <div class="value lighter-label">{{ 'BENEFITS.BENEFITS.PARTY-CODE' | translate }} : '</div> -->
+                                  </td>
+                                  <td>
+                                    <ng-container *ngIf="payment?.dateFrom">{{
+                                      payment?.dateFrom | dateType
+                                    }}</ng-container>
+                                    <ng-container *ngIf="payment?.dateTo">
+                                      <span>></span>{{ payment?.dateTo | dateType }}</ng-container
+                                    >
+                                  </td>
+                                  <td>
+                                    {{ payment?.amount | number: '1.0-2' }}
+                                    <a
+                                      *ngIf="payment?.paymentType?.english === 'Benefit Amount'"
+                                      id="paymentoptions"
+                                      routerLinkActive="active"
+                                      (click)="getCalculationDetails(calculationDetails, history)"
+                                    >
+                                      <u>{{ 'BENEFITS.VIEW-CALC-DETAILS' | translate }}</u>
+                                    </a>
+                                    <a
+                                      id="paymentoptions"
+                                      routerLinkActive="active"
+                                      (click)="viewAdjustmentModal(history)"
+                                      *ngIf="showAdjustmetDetailsLink(history.payments, i)"
+                                    >
+                                      <u>{{ 'BENEFITS.VIEW-ADJUSTMENT-DETAILS' | translate }}</u>
+                                    </a>
+                                  </td>
+                                </tr>
+                              </ng-container>
+                              <tr>
+                                <td class="font-weight-bold">{{ 'BENEFITS.FINAL-BENEFIT-AMOUNT' | translate }}</td>
+                                <td></td>
+                                <!-- <td *ngIf="isSaned"></td> -->
+                                <td class="font-weight-bold">
+                                  {{ history?.benefitAmount || '-' | number: '1.0-2' }}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="!history?.benefitType && history?.paidAdjustments?.length > 0">
+                    <!--Adjustment DETAILS-->
+
+                    <div class="row pt-1 pb-4">
+                      <div class="col-sm-9">
+                        <span class="benefit-heading">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }} </span>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="table-scroll table-responsive history-table">
+                          <table class="table table-borderless rounded">
+                            <thead class="table-header">
+                              <tr>
+                                <th>{{ 'BENEFITS.ADJUSTMENT-TYPE' | translate }}</th>
+                                <th>{{ 'BENEFITS.ADJUSTMENT_ID' | translate }}</th>
+                                <th>{{ 'BENEFITS.BENEFIT-TYPE' | translate }}</th>
+                                <th>{{ 'BENEFITS.ADJUSTMENT-AMOUNT' | translate }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <ng-container *ngFor="let adjustment of history?.paidAdjustments; let i = index">
+                                <tr class="data-row border-bottom">
+                                  <td>
+                                    <div class="block">{{ (adjustment?.adjustmentType | bilingualText) || '-' }}</div>
+                                  </td>
+                                  <td (click)="navigateToAdjustments(history, adjustment?.adjustmentId)">
+                                    <div class="block link">{{ (adjustment?.adjustmentId | translate) || '-' }}</div>
+                                  </td>
+                                  <td>
+                                    <div class="block">{{ (adjustment?.benefitType | bilingualText) || '-' }}</div>
+                                  </td>
+                                  <td>
+                                    <div class="block">{{ (adjustment?.adjustedAmount | number) || '-' }}</div>
+                                  </td>
+                                </tr>
+                              </ng-container>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </accordion-group>
+            </accordion>
+          </div>
+        </ng-container>
+      </div>
+    </bnt-timeline-dc>
+  </div>
+</div>
+
+<ng-template #noItem>
+  <span class="dropdown-item no-items">
+    {{ 'THEME.NO-ITEMS-FOUND' | translate }}
+  </span>
+</ng-template>
+<ng-template #calculationDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculation"
+    [averageMonthlyWagePeriods]="benefitCalculation?.averageMonthlyWagePeriods"
+    [lang]="lang"
+  ></bnt-annuity-calculation-details-dc>
+  <!-- <bnt-amw-view-dc [benefitDetails]="benefitCalculation" (close)="hideModal()"></bnt-amw-view-dc> -->
+</ng-template>

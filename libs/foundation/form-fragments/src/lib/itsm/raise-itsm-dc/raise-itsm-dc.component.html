@@ -1,0 +1,118 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content">
+  <gosi-main-heading-dc [isBack]="true" header="{{ 'FORM-FRAGMENTS.RAISE-ITSM' | translate }}"> </gosi-main-heading-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-lg-12">
+      <frm-transaction-summary-dc *ngIf="transactionSummary" [transactionSummary]="transactionSummary">
+      </frm-transaction-summary-dc>
+    </div>
+    <div class="col-lg-12">
+      <gosi-card-dc type="secondary">
+        <div class="row">
+          <!-- <div class="col-lg-6">
+            <gosi-input-text-dc id="itsmReason" [control]="raiseItsmForm.get('reason')"
+              [label]="'FORM-FRAGMENTS.SUMMARY' | translate" [placeholder]="'FORM-FRAGMENTS.REASON-ITSM' | translate"
+              gosiSpecialCharacterMask gosiByteLimit [removeExtraSpecialCharacters]="true" [maxLength]="100">
+            </gosi-input-text-dc>
+          </div> -->
+          <div class="col-lg-6">
+            <gosi-input-select-dc [label]="'FORM-FRAGMENTS.ITSM-TYPE' | translate" [list]="dropdownList1"
+              [control]="raiseItsmForm.get('itsmtype')" (select)="selectType($event)">
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-lg-6" *ngIf="dropdownList2">
+            <gosi-input-select-dc [label]="'FORM-FRAGMENTS.ITSM-SUBTYPE' | translate" [list]="dropdownList2"
+              [control]="raiseItsmForm.get('itsmsubtype')" (select)="selectSubType($event)"> </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6" *ngIf="dropdownList3">
+            <gosi-input-select-dc [label]="'FORM-FRAGMENTS.ITSM-SUBTYPE2' | translate" [list]="dropdownList3"
+              [control]="raiseItsmForm.get('itsmsubtype2')" (select)="selectSubtype2()"> </gosi-input-select-dc>
+          </div>
+        </div>   
+        <div class="row">
+          <div class="col-lg-2" *ngIf="severityList">
+            <gosi-input-select-dc [label]="'FORM-FRAGMENTS.ITSM-SEVERITY' | translate" [list]="severityList"
+              [control]="raiseItsmForm.get('itsmSeverity')" (select)="selectSeverityType()"> </gosi-input-select-dc>
+          </div>
+        </div> 
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-text-area-dc id="itsmRequiredAction" [control]="raiseItsmForm.get('requiredAction')" (click)="onClick()"
+              [label]="'FORM-FRAGMENTS.ITSM-REQUIRED-ACTION' | translate" [placeholder]="" [maxLength]="1200" gosiSpecialCharacterMask>
+            </gosi-input-text-area-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-radio-dc id="errorMessage" [label]="'FORM-FRAGMENTS.ITSM-ERROR-MESSAGE' | translate" [control]="raiseItsmForm.get('errorMessage')"
+              [list]="paymentStopList">
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6" *ngIf="(isErrorMessageEnabled$ | async) === 'Yes'">
+            <gosi-input-text-area-dc id="errorMessageText" [control]="raiseItsmForm.get('errorMessageText')"  (click)="onClick()"
+              [label]="'FORM-FRAGMENTS.ITSM-ERROR-MESSAGE' | translate" [placeholder]="" [maxLength]="1200" gosiSpecialCharacterMask>
+            </gosi-input-text-area-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-radio-dc id="paymentStopList" [label]="'FORM-FRAGMENTS.PAYMENT-STOP' | translate" [control]="raiseItsmForm.get('paymentStop')"
+              [list]="paymentStopList">
+            </gosi-input-radio-dc>
+          </div>
+          <div class="col-lg-12">
+            <span class="impact-style">{{ 'FORM-FRAGMENTS.FINANCIAL-IMPACT-HEAD' | translate }}</span>
+            <gosi-input-radio-dc id="financialImpact" [label]="'FORM-FRAGMENTS.FINANCIAL-IMPACT' | translate" [control]="raiseItsmForm.get('financialImpact')"
+              [list]="paymentStopList">
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-text-area-dc id="itsmReason" [control]="raiseItsmForm.get('note')" (click)="onClick()"
+              [label]="'FORM-FRAGMENTS.NOTE' | translate" [placeholder]="" [maxLength]="1200" gosiSpecialCharacterMask>
+            </gosi-input-text-area-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div>
+    <cim-documents-dc [documents]="documents" [isScan]="false" [disableAutoDoc]="true"
+      (add)="addAnotherDocument()"></cim-documents-dc>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="itsm-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" (submit)="showModal(cancelTemplate)" [type]="'secondary'">
+            {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc>
+        </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc id="submit" (submit)="submitItsm(confirmTemplate)" [type]="'primary'">
+            {{ 'COMPLAINTS.SUBMIT' | translate }}</gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Cancel template-->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'FORM-FRAGMENTS.INFO-CANCEL' | translate" (onConfirm)="confirmCancel()"
+    (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--Confirm template-->
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'FORM-FRAGMENTS.ITSM-CONFIRM-MESSAGE' | translate" (onConfirm)="confirmEvent()"
+    (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

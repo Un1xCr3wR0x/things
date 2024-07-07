@@ -1,0 +1,160 @@
+<div class="row border m-0">
+  <div class="col-lg-7 p-0">
+    <div class="card custom-card p-4">
+      <div class="card-header border-top border-right border-left">
+        <span
+          >{{ 'BILLING.GUARANTEE' | translate }}: {{ installmentDetails?.guaranteeDetail[0]?.category | bilingualText }}
+        </span>
+        <span *ngIf="installmentDetails?.guaranteeDetail[0]?.category.english != 'Other'"
+          >({{ installmentDetails?.guaranteeDetail[0]?.guaranteeName | bilingualText }})</span
+        >
+      </div>
+      <div class="card-body border p-3">
+        <div class="row pt-1">
+          <div class="col-lg-8">
+            <gosi-label-dc
+              id="guaranteeType"
+              [control]="installmentDetails?.guaranteeDetail[0]?.type | bilingualText"
+              [label]="'BILLING.GUARANTEE-TYPE' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-lg-4" *ngIf="installmentDetails?.guaranteeDetail[0]?.category.english != 'Other'">
+            <gosi-label-dc
+              id="guaranteeNumber"
+              [control]="installmentDetails?.guaranteeDetail[0]?.guarantorId"
+              [label]="guaranteeNumber | translate"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div
+          class="row"
+          [ngClass]="lang === 'en' ? 'pt-1' : 'pt-4'"
+          *ngIf="guarantee === guarantees || guarantee === promissory"
+        >
+          <div class="col-lg-4">
+            <gosi-label-dc
+              id="startDate"
+              [control]="installmentDetails?.guaranteeDetail[0]?.startDate?.gregorian | date: 'dd/MM/yyyy'"
+              [label]="startDate | translate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc
+              id="endDate"
+              [control]="installmentDetails?.guaranteeDetail[0]?.endDate?.gregorian | date: 'dd/MM/yyyy'"
+              [label]="endDate | translate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <div>
+              <div *ngIf="guarantee === guarantees">{{ 'BILLING.GUARANTEE-AMOUNT' | translate }}</div>
+              <div *ngIf="guarantee === promissory">{{ 'BILLING.PROMISORY-AMOUNT' | translate }}</div>
+              <div>{{ installmentDetails?.guaranteeDetail[0]?.guaranteeAmount | number: '1.2-2' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="row" *ngIf="guarantee === pension">
+          <div class="col-lg-8">
+            <gosi-label-dc
+              id="guaranteeAmount"
+              [control]="installmentDetails?.guaranteeDetail[0]?.guaranteeAmount"
+              [label]="'BILLING.PENSION' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc
+              id="guaranteeAmount"
+              [control]="installmentDetails?.monthlyInstallmentAmount"
+              [label]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="guarantee === 'Other'">
+          <ng-container
+            *ngIf="installmentDetails?.guaranteeDetail[0]?.type?.english === installmentType.EST_OWNER_ON_JOB"
+          >
+            <div class="col-lg-4">
+              <gosi-currency-label-dc
+                id="salaryAmount"
+                [label]="'BILLING.SALARY-AMOUNT'"
+                [currencyTo]="installmentDetails?.guaranteeDetail[0]?.guaranteeAmount"
+                [countryCodeFrom]="'BILLING.SAR' | translate"
+              ></gosi-currency-label-dc>
+            </div>
+            <div class="col-lg-4">
+              <gosi-currency-label-dc
+                [label]="'BILLING.INSTALLMENT-AMOUNT'"
+                id="installmentAmount"
+                [currencyTo]="installmentDetails?.monthlyInstallmentAmount"
+                [countryCodeFrom]="'BILLING.SAR' | translate"
+              ></gosi-currency-label-dc>
+            </div>
+          </ng-container>
+          <ng-container
+            *ngIf="installmentDetails?.guaranteeDetail[0]?.type?.english === installmentType.DECEASED_NO_INCOME"
+          >
+            <div class="col-lg-4">
+              <gosi-label-dc
+                id="guaranteeAmount"
+                [control]="installmentDetails?.guaranteeDetail[0]?.deathDate?.gregorian | date: 'dd/MM/yy'"
+                [label]="'BILLING.DEATH-DATE' | translate"
+              >
+              </gosi-label-dc>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5 p-0">
+    <div class="card custom-card gurantee-value py-4 pr-3 pl-0">
+      <div class="card-header border-top border-right border-left">{{ 'BILLING.DOWN-PAYMENT' | translate }}</div>
+      <div class="card-body border pt-3 pr-3 pl-3">
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="downPaymentPercentage"
+              [control]="
+                installmentDetails?.downPaymentPercentage === 0
+                  ? ('BILLING.NO' | translate)
+                  : ('BILLING.YES' | translate)
+              "
+              [label]="'BILLING.DOWN-PAYMENT-REQUIREMENT' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="downPaymentPercentage"
+              [control]="installmentDetails?.downPaymentPercentage"
+              [label]="'BILLING.DOWN-PAYMENT-DUES' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <div>
+              <div>{{ 'BILLING.DOWN-PAYMENT-AMOUNT-SAR' | translate }}</div>
+              <div>{{ installmentDetails?.downPayment | number: '1.2-2' }}</div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="gracePeriod"
+              [control]="installmentDetails?.gracePeriod"
+              [label]="'BILLING.DOWN-PAYMENT-GRACE-PERIOD-DAYS' | translate"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

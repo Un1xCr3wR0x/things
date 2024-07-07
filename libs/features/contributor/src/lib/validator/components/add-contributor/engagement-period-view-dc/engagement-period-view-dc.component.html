@@ -1,0 +1,209 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-sm-12 col-md-12">
+    <span class="sub-heading">
+      {{ 'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate }}
+    </span>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 table-responsive" *ngIf="engagement.engagementPeriod">
+    <table class="table table-wage row_separate">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'CONTRIBUTOR.PERIOD-START-DATE' | translate }}</th>
+          <th scope="col">{{ 'CONTRIBUTOR.PERIOD-END-DATE' | translate }}</th>
+          <th scope="col">{{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}</th>
+          <th scope="col">{{ 'CONTRIBUTOR.HRA' | translate }} &nbsp; &nbsp;</th>
+          <th scope="col">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+          <th scope="col">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+          <th scope="col">{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}</th>
+          <th *ngIf="!engagement.ppaIndicator" scope="col">{{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+          <th *ngIf="engagement.ppaIndicator" scope="col">{{ 'CONTRIBUTOR.JOB-CLASS' | translate }}</th>
+          <th *ngIf="engagement.ppaIndicator" scope="col">{{ 'CONTRIBUTOR.RANK' | translate }}</th>
+          <th *ngIf="engagement.ppaIndicator" scope="col">{{ 'CONTRIBUTOR.GRADE' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let wageDetail of engagement.engagementPeriod; let i = index">
+          <td>{{ wageDetail.startDate | dateType }}</td>
+          <td>
+            <span *ngIf="wageDetail.endDate; else notAvailable">{{ wageDetail.endDate | dateType }}</span>
+            <ng-template #notAvailable>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+          </td>
+          <td>{{ wageDetail.wage.basicWage | number }}</td>
+          <td>
+            {{
+              engagement.ppaIndicator && ((wageDetail.wage.housingBenefit | number) === '0' || wageDetail.wage.housingBenefit === null)
+                ? '-'
+                : (wageDetail.wage.housingBenefit | number)
+            }}
+          </td>
+          <td>
+            {{
+              engagement.ppaIndicator && ((wageDetail.wage.commission | number) === '0' || wageDetail.wage.commission === null)
+                ? '-'
+                : (wageDetail.wage.commission | number)
+            }}
+          </td>
+          <td>
+            {{
+              engagement.ppaIndicator && ((wageDetail.wage.otherAllowance | number) === '0' || wageDetail.wage.otherAllowance === null)
+                ? '-'
+                : (wageDetail.wage.otherAllowance | number)
+            }}
+          </td>
+          <td>{{ wageDetail.wage.totalWage | number }}</td>
+          <td *ngIf="!engagement.ppaIndicator">{{ wageDetail.occupation | bilingualText }}</td>
+          <td *ngIf="engagement.ppaIndicator">{{ wageDetail.jobClassName | bilingualText }}</td>
+          <td *ngIf="engagement.ppaIndicator">{{ wageDetail.jobRankName | bilingualText }}</td>
+          <td *ngIf="engagement.ppaIndicator">{{ wageDetail.jobGradeName | bilingualText }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<hr />
+<div class="row" *ngIf="engagement.engagementPeriod">
+  <div class="col-lg-12 col-md-12 card-info">
+    <div class="row">
+      <div class="col-12">
+        <div class="feedback-heading">
+          {{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE-COVERAGE-DETAILS' | translate }}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="info-content">
+          <table class="table table-bordered table-lg">
+            <thead class="table-head">
+              <tr>
+                <th class="px-3">
+                  {{ 'CONTRIBUTOR.PERIOD' | translate }}
+                </th>
+                <th class="text-center">
+                  {{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE' | translate }}
+                </th>
+                <th *ngIf="!engagement.ppaIndicator" class="text-center">
+                  {{ 'CONTRIBUTOR.ANNUITY' | translate }}
+                </th>
+                <th *ngIf="!engagement.ppaIndicator" class="text-center">
+                  {{ 'CONTRIBUTOR.OCCUPATIONAL-HAZARD' | translate }}
+                </th>
+                <th *ngIf="!engagement.ppaIndicator" class="text-center">
+                  {{ 'CONTRIBUTOR.UNEMPLOYMENT-INS' | translate }}
+                </th>
+                <th *ngIf="engagement.ppaIndicator && showPPAAnnuity" class="text-center">
+                  {{ 'CONTRIBUTOR.PPA-ANNUITY' | translate }}
+                </th>
+                <th *ngIf="showPensionReform" class="text-center">
+                  {{'CONTRIBUTOR.PENSION-REFORM' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngIf="engagement.engagementPeriod">
+              <tr class="table-row" *ngFor="let item of engagement.engagementPeriod; let i = index">
+                <td class="px-3 engagement-period">
+                  <span
+                    *ngIf="
+                      item.startDate != null &&
+                      item.startDate.gregorian != null &&
+                      item.endDate != null &&
+                      item.endDate.gregorian != null
+                    "
+                    >{{ item.startDate | dateType }} - {{ item.endDate | dateType }}</span
+                  >
+                  <span *ngIf="item.startDate != null && item.startDate.gregorian != null && !item.endDate"
+                    >{{ item.startDate | dateType }} - {{ 'CONTRIBUTOR.ONWARDS' | translate }}</span
+                  >
+                </td>
+
+                <td class="text-center">
+                  {{
+                    item.wage.contributoryWage !== 0
+                      ? (item.wage.contributoryWage | number)
+                      : (item.wage.basicWage | number)
+                  }}
+                </td>
+                <td *ngIf="!engagement.ppaIndicator" class="text-center">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isAnnuityCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td *ngIf="!engagement.ppaIndicator" class="text-center">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isOHCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  ></fa-icon>
+                </td>
+                <td *ngIf="!engagement.ppaIndicator" class="text-center">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isUICoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  ></fa-icon>
+                </td>
+                <td *ngIf="engagement.ppaIndicator && showPPAAnnuity" class="text-center">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isPpaCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  ></fa-icon>
+                </td>
+                <td *ngIf="showPensionReform" class="text-center">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': checkPensionReformCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  ></fa-icon>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<hr />
+
+<div class="col-lg-12 peanlity" *ngIf="!engagement.ppaIndicator && conType && conType === contTypeEnum.SAUDI && engagement.backdatingIndicator">
+  <form class="form-inline">
+    <div class="col-lg-6">
+      <span class="peanlity-label"> {{ 'CONTRIBUTOR.APPLY-PENALITY' | translate }}</span>
+    </div>
+    <div class="col-lg-3"></div>
+
+    <div class="col-lg-3">
+      <gosi-input-toggle-dc
+        [disabled]="!canEdit && !canEditPenalty"
+        class="slider"
+        id="applyLatePenality"
+        [control]="cntValidatorForm.get('penaltyIndicator')"
+        [ignoreLabel]="true"
+      >
+      </gosi-input-toggle-dc>
+    </div>
+  </form>
+</div>

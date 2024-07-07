@@ -1,0 +1,160 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<table
+  class="table table-borderless"
+  *ngIf="sessionStatusDetails?.mbList?.length > 0; else noResult"
+>
+  <thead id="table-heading" class="thead-light">
+    <tr>
+      <th id="member-id">
+        {{ 'MEDICAL-BOARD.NIN' | translate }}
+      </th>
+      <th id="member-name">
+        {{ 'MEDICAL-BOARD.DOCTOR-NAME-EN' | translate }}
+      </th>
+      <th id="member-type">
+        {{ 'MEDICAL-BOARD.MEMBER-TYPE' | translate }}
+      </th>
+      <th id="speciality">
+        {{ 'MEDICAL-BOARD.SPECIALITY' | translate }}
+      </th>
+      <th id="sub-speciality">
+        {{ 'MEDICAL-BOARD.SUBSPECIALITY' | translate }}
+      </th>
+      <th id="member-number">
+        {{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}
+      </th>
+      <th id="status"></th>
+    </tr>
+  </thead>
+  <tbody
+    id="table-body"
+    *ngFor="
+      let session of sessionStatusDetails?.mbList
+        | paginate
+          : {
+              id: 'paginationId',
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: sessionStatusDetails?.totalNoOfMBRecords
+            };
+      let i = index
+    "
+  >
+    <tr class="border-bottom" *ngIf="session">
+      <td id="identity-value">
+        <ng-container *ngIf="session.identity; else notAvailable">
+          <a class="member-click" (click)="navigateToProfile(session.identity)"
+            >{{ session.identity }}</a
+          >
+        </ng-container>
+      </td>
+      <td>
+        <span *ngIf="lang === 'en'">
+          {{ session?.name?.english === null || session?.name?.english?.length
+          === 0 ? session?.name?.arabic : session?.name?.english }}
+        </span>
+        <span *ngIf="lang === 'ar'">
+          {{ session?.name?.arabic }}
+        </span>
+      </td>
+
+      <td>
+        <ng-container *ngIf="session.contractType; else notAvailable">
+          {{ session.contractType | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.specialty; else notAvailable">
+          {{ session.specialty | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container
+          *ngIf="session.subSpecialty?.length > 0; else notAvailable"
+        >
+          <ng-container *ngFor="let subspeciality of session.subSpecialty">
+            <span class="days">
+              {{ subspeciality | bilingualText }}</span
+            ></ng-container
+          >
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.mobileNo; else notAvailable">
+          <span id="prefixValue">{{ getISDCodePrefix(session) }}</span>
+          {{ session.mobileNo }}
+        </ng-container>
+      </td>
+      <td id="ellipsis-icon" 
+      >
+      <!--  acces for only ambo and pmbo -->
+      <div *gosiShow="allowedMedicalOfficerRole"> 
+        <div *ngIf="(canHide || sessionPassedInRegular) ? false : true">
+          <fa-icon
+            *ngIf="!isAmb"
+            class="dropdown-icon data-row"
+            placement="top"
+            [ngClass]="!session?.canPmbRemove || isDisableMembers || mbManager ? 'fa-disabled' : ''"
+            outsideClick="true"
+            [popover]="session?.canPmbRemove && !isDisableMembers && !mbManager ? optionsModal : null"
+            (click)="setIndex(i)"
+            icon="ellipsis-v"
+          ></fa-icon>
+          <fa-icon
+            *ngIf="isAmb"
+            class="dropdown-icon data-row"
+            placement="top"
+            [ngClass]="!session?.canAmbRemove || isDisableMembers ? 'fa-disabled' : ''"
+            outsideClick="true"
+            [popover]="session?.canAmbRemove && !isDisableMembers ? optionsModal : null"
+            (click)="setIndex(i)"
+            icon="ellipsis-v"
+          ></fa-icon>
+        </div>
+      </div>
+      </td>
+      <!-- <td id="ellipsis-icon" *ngIf="canHide"> -->
+      <!-- </td> -->
+    </tr>
+  </tbody>
+</table>
+<gosi-pagination-dc
+  *ngIf="sessionStatusDetails?.totalNoOfMBRecords > itemsPerPage"
+  [totalSize]="sessionStatusDetails?.totalNoOfMBRecords"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  paginationId="paginationId"
+  (pageChange)="selectPage($event)"
+>
+</gosi-pagination-dc>
+<!-- period popup -->
+<ng-template #optionsModal>
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showRemoveModal(removeConfirm)"
+  >
+    {{ 'MEDICAL-BOARD.REMOVE-THIS-MEMBER' | translate }}
+  </button>
+</ng-template>
+<ng-template #removeConfirm>
+  <gosi-confirm-modal-dc
+    [message]="lang === 'en' ? doctorname.english : doctorname.arabic"
+    (onConfirm)="removeMember()"
+    (onCancel)="cancelRemoving()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #notAvailable>
+  <div class="null-value">{{ 'MEDICAL-BOARD.NOT-AVAILABLE' | translate }}</div>
+</ng-template>
+<ng-template #noResult>
+  <div class="pt-4">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+</ng-template>

@@ -1,0 +1,114 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="table-responsive table-scroll">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>
+          <!-- To change the date format in Arabic  -->
+          <ng-container class="col-lg-12">
+            <div *ngIf="showToday">
+              {{ 'MEDICAL-BOARD.TODAY' | translate }}, {{ currentSelected | gosiDate: 'dd/mm/yyyy' }}
+            </div>
+            <div *ngIf="currentSelected && !showToday">
+              {{ currentSelected | gosiDate: 'dd/mm/yyyy' }}
+            </div>
+          </ng-container>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngIf="sessionList && sessionList?.length > 0 && !isNoSessions">
+        <tr *ngFor="let session of sessionList">
+          <td>
+            <div class="float-container">
+              <div class="float-child">
+                {{ session.sessionStartTime }}
+              </div>
+              <div class="float-child float-child2">
+                <div>{{ session.startTimeAmOrPm | bilingualText }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="col-lg-6" *ngIf="session">
+              <div class="d-flex flex-row">
+                <div class="values pb-2" *ngIf="session?.status?.english !== 'Cancel'">
+                  <a (click)="navigateToStatus(session)"
+                    >{{ 'MEDICAL-BOARD.SESSION-ID' | translate }} : {{ session.sessionId }}</a
+                  >
+                </div>
+                <div class="disabled-values pb-2" *ngIf="session?.status?.english === 'Cancel'">
+                  {{ 'MEDICAL-BOARD.SESSION-ID' | translate }} : {{ session.sessionId }}
+                </div>
+                <span
+                  class="float-right"
+                  [ngClass]="session?.status?.english !== 'On Hold' ? 'status pb-2' : 'pb-2 lighter-value'"
+                >
+                  {{ session?.status | bilingualText }}
+                </span>
+              </div>
+
+              <div class="second-row pb-2">
+                {{ session.sessionType | bilingualText }}
+              </div>
+              <div class="third-row pb-2">
+                {{ session.fieldOffice | bilingualText }}
+              </div>
+              <div *ngIf="lang === 'en'">
+                <div class="row forth-row pb-2" dir="ltr">
+                  <div class="float-container">
+                    <div class="float-child mr-1">{{ session.sessionStartTime }}</div>
+                    <div class="float-child mr-1">{{ session.startTimeAmOrPm | bilingualText }}</div>
+                    -
+                    <div class="float-child mr-1 ml-1">{{ session.sessionEndTime }}</div>
+                    <div class="float-child">{{ session.endTimeAmOrPm | bilingualText }}</div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="lang === 'ar'">
+                <div class="row forth-row pb-2" dir="rtl">
+                  <div class="float-container">
+                    <div class="float-child ml-1">{{ session.sessionStartTime }}</div>
+                    <div class="float-child ml-1">{{ session.startTimeAmOrPm | bilingualText }}</div>
+                    -
+                    <div class="float-child ml-1">{{ session.sessionEndTime }}</div>
+                    <div class="float-child">{{ session.endTimeAmOrPm | bilingualText }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fifth-row pb-2">
+                <ng-container *ngIf="session?.noOfDoctorsAccepted || session?.noOfDoctorsInvited">
+                  <fa-icon class="icon-wrapper stethoscope-icon" [icon]="['fas', 'stethoscope']" size="sm"></fa-icon>
+                  <span class="sub-value">{{ session?.noOfDoctorsAccepted }} / {{ session?.noOfDoctorsInvited }}</span>
+                </ng-container>
+                <ng-container *ngIf="session?.noOfParticipants || session?.maximumBeneficiaries">
+                  <fa-icon class="icon-wrapper user-icon" icon="user-md" size="sm"></fa-icon>
+                  <span class="sub-value">{{ session?.noOfParticipants }} / {{ session?.maximumBeneficiaries }}</span>
+                </ng-container>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="isNoSessions">
+        <div class="col-lg-12">
+          <div class="mt-10 text-center">
+            <img src="assets/images/search-error.svg" alt="search-error" />
+            <br />
+            <p class="text-muted">{{ 'MEDICAL-BOARD.NO-SESSIONS' | translate }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

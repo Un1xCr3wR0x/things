@@ -1,0 +1,189 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="d-lg-flex justify-content-between flex-wrap">
+  <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.PARTICIPANTS-QUEUE' | translate }}"> </gosi-main-heading-dc>
+
+  <div class="d-flex align-items-start custom_flex">
+    <div class="search-filter d-flex">
+      <gosi-search-dc
+        id="search-area"
+        [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+        class="pr-2 pl-2 search-value"
+        (search)="onSearchMember($event)"
+        (keyup)="onSearchEnable($event.target.value)"
+        [searchParam]="searchParams"
+        (reset)="onResetSearch()"
+      >
+      </gosi-search-dc>
+
+      <mb-participant-filter-dc
+        [specialtyList]="specialtyLists"
+        [locationList]="locationLists"
+        [assessmentTypeLists]="assessmentTypeLists"
+        (filter)="onFilter($event)"
+        [isPmb]="isPmb"
+        [fieldLocationList]="fieldLocationList"
+        #participantFilter
+      >
+      </mb-participant-filter-dc>
+      <div class="col-lg-3 col-md-2 col-sm-2 d-flex flex-row-reverse">
+        <!-- <gosi-dropdown-dc
+          [ngClass]="isDisabled ? 'actions-disabled-cmp' : 'actions-cmp'"
+          [list]="actionDropDown"
+          minWidthRem="21.42rem"
+          (selectedItem)="navigateToAssign($event)"
+        > -->
+        <gosi-button-dc
+          class="mb-2"
+          [ngClass]="!isDisabled ? 'disabled' : ''"
+          type="secondary"
+          size="sm"
+          id="actionsBtn"
+          [disabled]="isDisabled"
+          [popover]="optionsModal"
+          [outsideClick]="true"
+          placement="bottom"
+        >
+          {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+          <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+        </gosi-button-dc>
+        <!-- </gosi-dropdown-dc> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="flex-container" *ngIf="lang == 'en'">
+      <div
+        class="pt-1 flex-item"
+        *ngFor="let speciality of participantsInQueue?.participantPrimarySpecialityCount | keyvalue"
+      >
+        <gosi-card-dc class="assign-value" type="secondary">
+          <span>
+            {{ speciality.key | englishkeyText }}
+          </span>
+          <div>{{ speciality.value }}</div>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <div class="flex-container" *ngIf="lang == 'ar'">
+      <div
+        class="pt-1 flex-item"
+        *ngFor="let speciality of participantsInQueue?.participantPrimarySpecialityCount | keyvalue"
+      >
+        <gosi-card-dc class="assign-value" type="secondary">
+          <span>{{ speciality.key | arabickeyText }}</span>
+          <div>{{ speciality.value }}</div>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <div class="table-worklist">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.NAME' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.MOBILE-NUMBER' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.NATIONAL-ADDRESS' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.MEDICAL-BOARD' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.PRIMARY-SPECIALTIES' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.SECONDARY-SPECIALTIES' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.IN-QUEUE-SINCE' | translate | uppercase }}
+              </th>
+              <th scope="col">
+                {{ 'MEDICAL-BOARD.PARTICIPANT-PRESENCE' | translate | uppercase }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="border-bottom"
+              *ngFor="
+                let participants of participantsInQueue?.participantsList
+                  | paginate: { id: id, itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalItems };
+                let i = index
+              "
+            >
+              <td style="width: 1%">
+                <gosi-input-checkbox-dc
+                  id="checkBox"
+                  name="checkBox"
+                  [control]="ParticipantcheckForm?.controls[pageSize * (currentPage - 1) + i]?.get('checkBoxFlag')"
+                  (select)="selectMember($event, participants, i)"
+                ></gosi-input-checkbox-dc>
+              </td>
+              <td>
+                {{ participants?.name | bilingualText }}
+                <div>{{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} : {{ participants?.identityNumber }}</div>
+              </td>
+              <td>{{ participants?.mobileNumber }}</td>
+              <td>{{ participants?.location | bilingualText }}</td>
+              <td>{{ getAssessmentType(participants?.assessmentType) | bilingualText }}</td>
+              <td>{{ participants?.mbType | bilingualText }}</td>
+              <td>
+                <ng-container *ngFor="let valuesprimary of participants?.primarySpecialty">
+                  <span class="value">{{ valuesprimary | bilingualText }}</span>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container *ngFor="let valuessecondary of participants?.secondarySpecialty">
+                  <span class="value">{{ valuessecondary | bilingualText }}</span>
+                </ng-container>
+              </td>
+              <td>
+                {{ participants?.createdTimeStamp?.gregorian | gosiDate
+                }}<span class="days">{{ participants.noOfDaysInQueue }} {{ 'MEDICAL-BOARD.DAYS' | translate }}</span>
+                <span class="days" *ngIf="participants?.isReassessment">{{
+                  'MEDICAL-BOARD.REASSESSMENT' | translate
+                }}</span>
+              </td>
+              <td>{{ participants?.participantAttendance | bilingualText }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #optionsModal>
+  <button type="button" id="assign" class="d-flex btn text-left action-pop-btn" (click)="assignToSeesion()">
+    {{ 'MEDICAL-BOARD.ASSIGN-TO-SESSION' | translate }}
+  </button>
+  <button type="button" id="create" class="d-flex btn text-left action-pop-btn" (click)="createNewSession()">
+    {{ 'MEDICAL-BOARD.CREATE-NEW-SESSION' | translate }}
+  </button>
+  <button type="button" id="cancel" class="d-flex btn text-left action-pop-btn" (click)="cancel(cancelTemplate)" *ngIf="!cancelButton" >
+    {{ 'MEDICAL-BOARD.CANCEL-ASSESSMENT-QUEUE' | translate }}
+  </button>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    message="MEDICAL-BOARD.PARTICIPANT-QUEUE-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

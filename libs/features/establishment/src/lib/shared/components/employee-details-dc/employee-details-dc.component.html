@@ -1,0 +1,221 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="verifyPersonStatus">
+  <gosi-card-dc [noHeadingMargin]="true" type="secondary" [showCard]="!noPadding">
+    <div class="row">
+      <div class="col-md-6 col-lg-3">
+        <gosi-input-text-dc
+          [readOnly]="!editPersonDetails ? (isProActive ? person?.name?.arabic?.firstName?.trim() : true) : false"
+          name="arabicFirstName"
+          gosiArabicMask
+          gosiRestrictNumber
+          gosiSpecialCharacters
+          [id]="idValue + 'ArabicFirstName'"
+          [label]="'ESTABLISHMENT.NAME-IN-ARABIC' | translate"
+          [placeholder]="'ESTABLISHMENT.FIRST-NAME' | translate"
+          [control]="personForm.get('name').get('arabic').get('firstName')"
+          [maxLength]="arabicNameMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <gosi-input-text-dc
+          [readOnly]="
+            !editPersonDetails
+              ? isProActive
+                ? person?.name?.arabic?.firstName?.trim() && person?.name?.arabic?.familyName?.trim()
+                : true
+              : false
+          "
+          gosiArabicMask
+          gosiRestrictNumber
+          gosiSpecialCharacters
+          name="arabicSecondName"
+          [id]="idValue + 'ArabicSecondName'"
+          [ignoreLabel]="true"
+          [placeholder]="'ESTABLISHMENT.SECOND-NAME' | translate"
+          [control]="personForm.get('name').get('arabic').get('secondName')"
+          [maxLength]="arabicNameMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <gosi-input-text-dc
+          [readOnly]="
+            !editPersonDetails
+              ? isProActive
+                ? person?.name?.arabic?.firstName?.trim() && person?.name?.arabic?.familyName?.trim()
+                : true
+              : false
+          "
+          gosiArabicMask
+          gosiRestrictNumber
+          gosiSpecialCharacters
+          name="arabicThirdName"
+          [id]="idValue + 'ArabicThirdName'"
+          [ignoreLabel]="true"
+          [placeholder]="'ESTABLISHMENT.THIRD-NAME' | translate"
+          [control]="personForm.get('name').get('arabic').get('thirdName')"
+          [maxLength]="arabicNameMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <gosi-input-text-dc
+          [readOnly]="!editPersonDetails ? (isProActive ? person?.name?.arabic?.familyName : true) : false"
+          gosiArabicMask
+          gosiRestrictNumber
+          gosiSpecialCharacters
+          name="arabicFamilyName"
+          [id]="idValue + 'ArabicFamilyName'"
+          [ignoreLabel]="true"
+          [placeholder]="'ESTABLISHMENT.FAMILY-NAME' | translate"
+          [control]="personForm.get('name').get('arabic').get('familyName')"
+          [maxLength]="arabicNameMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-lg-6">
+        <gosi-input-text-dc
+          [readOnly]="
+            !editPersonDetails ? (isProActive ? (person?.name?.english?.name ? true : !enable) : true) : false
+          "
+          gosiEnglishMask
+          gosiRestrictNumber
+          gosiSpecialCharacters
+          name="englishName"
+          [id]="idValue + 'EnglishName'"
+          [label]="'ESTABLISHMENT.NAME-IN-ENGLISH' | translate"
+          [control]="personForm.get('name').get('english').get('name')"
+          [maxLength]="englishNameMax"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-lg-6" *ngIf="gccNationality">
+        <gosi-input-number-dc
+          [readOnly]="gccIdExists || !enable"
+          [name]="'nationalId'"
+          [id]="idValue + 'GccIdEntry'"
+          [label]="'ESTABLISHMENT.GCC-ID' | translate"
+          [control]="personForm.get('id')"
+          [maxLength]="getIdMaxLength()"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-md-6 col-lg-6" *ngIf="gccNationality">
+        <gosi-input-number-dc
+          [readOnly]="iqamaExists || !enable"
+          name="iqamaNo"
+          [id]="idValue + 'IqamaEntry'"
+          [label]="'ESTABLISHMENT.IQAMA-NUMBER' | translate"
+          [control]="personForm.get('iqamaNo')"
+          [maxLength]="iqamaLength"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="genderList">
+        <gosi-input-radio-dc
+          [name]="idValue + 'Gender'"
+          [disabled]="!editPersonDetails || !enable ? person.sex?.english : false"
+          [label]="'ESTABLISHMENT.GENDER' | translate"
+          [id]="idValue + 'Gender'"
+          [list]="genderList"
+          [control]="personForm.get('sex')"
+        ></gosi-input-radio-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <ng-container *ngIf="person && person.contactDetail">
+    <ng-container *ngIf="gccEstablishment"
+      ><div *ngIf="noPadding" class="mb-4 pb-2 line-break">
+        <ng-container *ngTemplateOutlet="line"></ng-container>
+      </div>
+      <frm-address-dc
+        [showCard]="!noPadding"
+        #addressDetails
+        [cityList]="cityList"
+        [contactDetail]="person.contactDetail"
+        [addressDetails]="person.contactDetail.addresses"
+        [readOnlyAll]="!enable"
+        [idValue]="idValue"
+        [countryList]="gccCountryList"
+        [hasNationalAddress]="false"
+        [hasPOAddress]="false"
+        [hasOverseasAddress]="true"
+        [mandatoryOverseasAddress]="true"
+        [currentMailingAddress]="person.contactDetail.currentMailingAddress"
+      ></frm-address-dc>
+    </ng-container>
+    <ng-container *ngIf="!gccEstablishment && isProActive">
+      <div *ngIf="noPadding" class="mb-4 pb-2">
+        <ng-container *ngTemplateOutlet="line"></ng-container>
+      </div>
+      <frm-address-dc
+        [showCard]="!noPadding"
+        #addressDetails
+        [cityList]="cityList"
+        [lessPadding]="true"
+        [contactDetail]="person.contactDetail"
+        [addressDetails]="person.contactDetail.addresses"
+        [readOnlyAll]="!enable"
+        [idValue]="idValue"
+        [countryList]="gccCountryList"
+        [isSaudiAddrMandatory]="true"
+        [hasNationalAddress]="true"
+        [hasPOAddress]="true"
+        [hasOverseasAddress]="false"
+        [mandatoryOverseasAddress]="false"
+        [currentMailingAddress]="person.contactDetail.currentMailingAddress"
+      ></frm-address-dc>
+    </ng-container>
+    <div *ngIf="noPadding" class="mb-4 pb-2">
+      <ng-container *ngTemplateOutlet="line"></ng-container>
+    </div>
+    <gosi-card-dc [showCard]="!noPadding" heading="{{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}" type="secondary">
+      <frm-contact-dc
+        #contactDetails
+        [isHeadingRequired]="false"
+        [contactDetails]="person.contactDetail"
+        [defaultOnly]="defaultOnly || !enable"
+        [readOnlyAll]="!enable"
+        [idValue]="idValue"
+        [enableEmail]="enableEmail"
+        [emailMandatory]="emailMandatory"
+      ></frm-contact-dc>
+    </gosi-card-dc>
+  </ng-container>
+  <ng-container *ngIf="canSave">
+    <est-footer-buttons-dc
+      primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+      primaryId="{{ idValue + 'SaveAndNext' }}"
+      cancelId="{{ idValue + 'cancel' }}"
+      previousId="{{ idValue + 'previous' }}"
+      (cancel)="popUp(draftTemplate)"
+      (previous)="previousSection()"
+      (submit)="savePerson()"
+    ></est-footer-buttons-dc>
+  </ng-container>
+  <ng-template #line>
+    <hr />
+  </ng-template>
+</ng-container>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #draftTemplate>
+  <est-draft-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="decline()"
+    (onCancel)="confirmCancel()"
+  ></est-draft-popup-dc>
+</ng-template>

@@ -1,0 +1,167 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <span class="mr-3"></span>
+    <div class="col-auto header">
+      {{ 'PAYMENT.DIRECT-PAYMENT' | translate }}
+    </div>
+  </div>
+  <div *ngIf="isEligibleUser">
+    <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="paymentWizards" #miscPayWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div *ngIf="!isUserHaveBankDetails || !isEligibleUser">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div *ngIf="showError">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="hide-tab">
+    <tabset class="pills" #paymentDetailsTab>
+      <tab [active]="currentTab === 0" heading="'PAYMENT.PAYMENT-DETAILS'">
+        <div *ngIf="isEligibleUser">
+          <!-- payment details component -->
+          <div class="row">
+            <div class="col-lg-12">
+              <pmt-payment-details-dc [benefitList]="payDetails.benefitList" [netAmount]="netAmount">
+              </pmt-payment-details-dc>
+            </div>
+          </div>
+          <!-- Bank Account component -->
+          <div class="row">
+            <div class="col-lg-12">
+              <!-- <pmt-bank-details-dc
+                *ngIf="payDetails.bankAccountList"
+                [bankAccountList]="payDetails.bankAccountList"
+                [parentForm]="parentForm"
+                [bankResponse]="bankResponse"
+                [bankName]="bankName"
+                [fromValidator]="fromValidator"
+                (editEvent)="saveBankDetails($event)"
+                (onSelectIBAN)="setBankRequest($event)"
+                (onIbanTypeChange)="ibanTypeChange($event)"
+              ></pmt-bank-details-dc> -->
+              <!-- (clearSuccessMessage)="clearSuccessMessage()" -->
+              <pmt-payment-method-dc
+                #paymentDetailsComponent
+                *ngIf="payDetails"
+                [payDetails]="payDetails"
+                (getBankName)="getBankName($event)"
+                (loadBankInfoForId)="getBankDetails($event)"
+                [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                [agentId]="payDetails?.agentId"
+                [listOfGuardians]="guardianList"
+                [bankAccountList]="bankAccountList"
+                [valNonsaudiBankDetails]="valNonsaudiBankDetails" 
+                [savedAddress]="contactDetails"
+                [bankDetails]="bankAccountList"
+                [bankName]="bankName"
+                [isDraft]="routerData?.draftRequest"
+                [isValidator]="fromValidator"
+                [lang]="lang"
+                [listYesNo]="listYesNo$ | async"
+                [newBankForm]="true"
+                [parentForm]="paymentForm"
+                [payeeList]="payeeList"
+                [showBankTransferOnly]="true"
+                [savedPayeType]="savedPayeType"
+                [savedPayMethod]="savedPayMethod"
+                [showBankTransferOnly]="true"
+                [paymentMethodList]="paymentMethodList$ | async"
+                [personId]="personId"
+                [showAccountInfo]="true"
+                [cityList$]="cityList$"
+                [countryList$]="countryList$"
+                [isAddressReadOnly]="checkAddessDetails(false)"
+                [showInfo]="false"
+                [heirNationality]="BenefitValues.SaudiArabia"
+                [showPaymentMethod]="true"
+              >
+              </pmt-payment-method-dc>
+            </div>
+          </div>
+          <!-- [annuityResponse]="annuityResponse" -->
+          <!-- [isHeirAlive]="!personDetails.deathDate?.gregorian" -->
+          <!-- [personId]="getPersonId()" -->
+          <!-- [isIndividualApp]="isIndividualApp" -->
+          <!-- [saveApiResp]="saveApiResp"
+                [savedPayMethod]="savedPayMethod"
+                [savedPayeType]="savedPayeType"
+                [preselctdAttorney]="preSelectedAuthperson" -->
+
+          <!-- form action button -->
+          <div class="row pt-5">
+            <div class="col-md-12">
+              <div class="float-left form-action-btn pb-2">
+                <gosi-button-dc
+                  id="cancel"
+                  [type]="'secondary'"
+                  [isFullWidth]="isSmallScreen"
+                  (click)="popUp(cancelTemplate)"
+                >
+                  {{ 'PAYMENT.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-right form-action-btn">
+                <gosi-button-dc
+                  id="saveNext"
+                  [type]="'primary'"
+                  [disabled]="fromValidator ? false : !paymentForm?.valid"
+                  [isFullWidth]="isSmallScreen"
+                  (submit)="saveAndNext()"
+                >
+                  {{ 'PAYMENT.SAVE-AND-NEXT' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-alert-sc></gosi-alert-sc>
+            <!-- document details section -->
+            <pmt-file-upload-dc
+              [parentForm]="parentForm"
+              [isCommentRequired]="isEditMode"
+              [businessKey]="paymentSuccessResponse?.miscPaymentId || miscPaymentId"
+              [transactionId]="transactionId"
+              [referanceNumber]="paymentSuccessResponse?.referenceNo || transactionNumber"
+              [documentList]="documents"
+              [isContract]="'contract-auth'"
+              (refresh)="refreshDocument($event)"
+              (previous)="navigateToPreviousTab()"
+              (cancelDoc)="navigateToPaymentSearch()"
+              (submit)="onSubmitDocuments()"
+            ></pmt-file-upload-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

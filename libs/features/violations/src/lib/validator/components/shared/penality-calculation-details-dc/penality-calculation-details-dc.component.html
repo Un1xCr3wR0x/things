@@ -1,0 +1,319 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- Heading-->
+<div class="penality-details">
+  <div class="row">
+    <div class="col-md-12">
+      <frm-content-heading-dc
+        [canEdit]="false"
+        icon="Penalty Calculation Details icon"
+        [isSvg]="true"
+        [heading]="'VIOLATIONS.PENALITY-CALCULATION-DETAILS' | translate"
+      >
+      </frm-content-heading-dc>
+    </div>
+  </div>
+  <!-- Penality Calculation Table  Details-->
+  <div class="row d-flex align-items-center">
+    <div class="col-md-12">
+      <div *ngIf="penaltyInfoDetails.length >= 1" class="table-scroll table-responsive table-penality">
+        <div *ngFor="let details of penaltyInfoDetails; let i = index; let odd = odd">
+          <div class="mobile-view">
+            <div
+              *ngIf="
+                details.memberId !== assigneeId &&
+                isVch &&
+                (details.selectedViolationClass !== null ||
+                  (isViolatingProvisions && !(details.excludedContributors.length === 0 && !details.penaltyAmount)))
+              "
+            >
+              <div
+                class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                [ngClass]="odd ? 'odd' : 'even'"
+              >
+                <div class="card-body align-items-center">
+                  <div class="first-row d-flex flex-row justify-content-between my-2">
+                    <div class="first-cell">
+                      <p class="title">
+                        {{ details.decisionBy | titlecase }}
+                        <span class="title"> ({{ 'VIOLATIONS.' + getRole(details.role) | translate }}) </span>
+                      </p>
+
+                      <p class="sub-title" *ngIf="isCancelEngagement || isIncorrectWage">
+                        {{ 'VIOLATIONS.VIOLATION-CLASS' | translate }}:
+                        <span class="title-two"> {{ details.selectedViolationClass | bilingualText }} </span>
+                      </p>
+                      <p
+                        class="sub-title"
+                        *ngIf="!(isViolatingProvisions && transactionDetails?.contributors?.length === 0)"
+                      >
+                        <span class="exluded-class">{{ 'VIOLATIONS.NO-OF-CONTRIBUTORS' | translate }} </span> :
+                        <span class="title-two"> {{ penaltyArrayLen[i] }} </span>
+                      </p>
+                      <p class="sub-title">
+                        {{ 'VIOLATIONS.PENALTY-AMT' | translate }} :
+                        <span class="title-two">
+                          {{ details.penaltyAmount | number: '1.2-2' }}
+                          <ng-template #penalityCalculation>
+                            <ng-container *ngTemplateOutlet="showPenalty; context: { contributorDetail: details }">
+                            </ng-container>
+                          </ng-template>
+                          <!-- <fa-icon
+                            id="mobile-view-icon"
+                            *ngIf="
+                              !isCancelEngagement && !(details?.selectedViolationClass?.english === doNotImposePenalty)
+                            "
+                            [icon]="['fas', 'info-circle']"
+                            class="info-icon pl-3 pr-3"
+                            [tooltip]="penalityCalculation"
+                          ></fa-icon> -->
+                        </span>
+                      </p>
+                      <p
+                        id="mobile-view"
+                        class="title-two"
+                        *ngIf="
+                          !(details?.selectedViolationClass?.english === doNotImposePenalty) && !isViolatingProvisions
+                        "
+                      >
+                        <a class="link-clr" (click)="showPenalityDetails(i, false)"
+                          >{{ 'VIOLATIONS.VIEW-DETAILS' | translate }}
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="desktop-view">
+          <table class="table table-borderless table-striped">
+            <thead *ngIf="isVch" class="thead-light">
+              <tr
+                [ngClass]="
+                  isViolatingProvisions && transactionDetails?.contributors?.length === 0 ? 'other-tr' : 'normal-tr'
+                "
+              >
+                <th id="decisionBy">
+                  {{ 'VIOLATIONS.DECISION-BY' | translate }}
+                </th>
+                <th *ngIf="isCancelEngagement || isIncorrectWage">
+                  {{ 'VIOLATIONS.VIOLATION-CLASS' | translate }}
+                </th>
+                <th
+                  *ngIf="!(isViolatingProvisions && transactionDetails?.contributors?.length === 0)"
+                  class="pl-0 pr-0"
+                  id="excludedContributors"
+                >
+                  <span class="exluded-class">{{ 'VIOLATIONS.NO-OF-CONTRIBUTORS' | translate }} </span>
+                </th>
+                <th
+                  id="penalityAmount"
+                  name="claimedamount"
+                  [ngClass]="
+                    isViolatingProvisions && transactionDetails?.contributors?.length === 0
+                      ? 'other-penalty-head'
+                      : 'penalty-head'
+                  "
+                >
+                  {{ 'VIOLATIONS.PENALTY-AMT' | translate }}
+                  <span class="lighter-label">
+                    {{ 'VIOLATIONS.SAR' | translate }}
+                  </span>
+                </th>
+                <th *ngIf="!isViolatingProvisions"></th>
+              </tr>
+            </thead>
+            <tbody class="content border-bottom">
+              <ng-container *ngFor="let details of penaltyInfoDetails; let i = index">
+                <tr
+                  *ngIf="
+                    details.memberId !== assigneeId &&
+                    isVch &&
+                    (details.selectedViolationClass !== null ||
+                      (isViolatingProvisions && !(details.excludedContributors.length === 0 && !details.penaltyAmount)))
+                  "
+                  class="content history-contdent"
+                >
+                  <td>
+                    <div class="row pl-3 pr-3">{{ details.decisionBy | titlecase }}</div>
+                    <div class="row lighter-label pl-3 pr-3">
+                      ({{ 'VIOLATIONS.' + getRole(details.role) | translate }})
+                    </div>
+                  </td>
+                  <td *ngIf="isCancelEngagement || isIncorrectWage">
+                    {{ details.selectedViolationClass | bilingualText }}
+                  </td>
+                  <td *ngIf="!(isViolatingProvisions && transactionDetails?.contributors?.length === 0)">
+                    {{ penaltyArrayLen[i] }}
+                  </td>
+                  <td class="align-items-center">
+                    {{ details.penaltyAmount | number: '1.2-2' }}
+                    <ng-template #penalityCalculation>
+                      <ng-container *ngTemplateOutlet="showPenalty; context: { contributorDetail: details }">
+                      </ng-container>
+                    </ng-template>
+                  </td>
+                  <td *ngIf="!isViolatingProvisions">
+                    <a
+                      class="link-clr"
+                      (click)="showPenalityDetails(i, false)"
+                      *ngIf="details?.selectedViolationClass?.english !== doNotImposePenalty"
+                    >
+                      {{ 'VIOLATIONS.VIEW-DETAILS' | translate }}
+                    </a>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--  Exclude Contributor Details Button Area-->
+  <div class="row pt-2" *ngIf="checkAnyExcluded() === 1">
+    <div class="col-lg-12 exclude-contributor-btn">
+      <gosi-button-dc
+        id="excludeContributorDetails"
+        type="primary"
+        size="md"
+        [outlineOnly]="true"
+        (click)="showExcludeContributorDetails()"
+        [isTransparent]="true"
+      >
+        {{ 'VIOLATIONS.EXCLUDE-CONTRIBUTOR-DETAILS' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+  <!-- sytem suggested class and amount -->
+  <div class="row pt-4">
+    <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="autoTierClass?.violationClass?.english">
+      <gosi-label-dc
+        label="VIOLATIONS.SYSTEM-SUGGESTED-VIOLATION-CLASS"
+        [value]="autoTierClass?.violationClass | bilingualText"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="autoTierClass?.establishmentViolationAmount !== null">
+      <div class="block">
+        {{ 'VIOLATIONS.SYSTEM-SUGGESTED-PENALTY-AMOUNT' | translate }}
+      </div>
+      <div>
+        {{ autoTierClass?.establishmentViolationAmount | number: '1.2-2' }}
+        {{ 'VIOLATIONS.CURRENCY' | translate }}
+      </div>
+    </div>
+  </div>
+  <div *ngIf="checkAnyExcluded() === 1" class="col-md-12 exclude-contributor mt-3"></div>
+  <!-- Justification Area-->
+  <div class="row mt-3">
+    <div class="col-lg-12">
+      {{ assigneeName | titlecase }}
+      <span class="color-label"> ( {{ 'VIOLATIONS.' + getRole(assignedRole) | translate }} ) </span>
+    </div>
+
+    <div class="col-lg-12" *ngIf="!isViolatingProvisions">
+      <gosi-input-select-dc
+        id="violationClass"
+        [label]="'VIOLATIONS.VIOLATION-CLASS' | translate"
+        [control]="penaltyForm.get('penalty')"
+        [lookup]="violationClassList"
+        (selectLov)="selectPenaltyClass($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+
+    <div class="col-lg-6 mb-4" *ngIf="!isViolatingProvisions">
+      <div class="block">
+        {{ 'VIOLATIONS.NO-OF-CONTRIBUTORS' | translate }}
+      </div>
+      <div>
+        {{ calculateExcluded(assigneeIndex) }}
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4" *ngIf="(penaltyCalculationResponse || isPrepopulateClass) && !isViolatingProvisions">
+      <div class="block">
+        {{ 'VIOLATIONS.PENALTY-AMT' | translate }}
+      </div>
+      <div>
+        {{
+          (isPrepopulateClass
+            ? autoTierClass?.establishmentViolationAmount
+            : penaltyCalculationResponse?.establishmentViolationAmount
+          ) | number: '1.2-2'
+        }}
+        {{ 'VIOLATIONS.CURRENCY' | translate }}
+        <span class="pl-4 pr-4">
+          <a
+            class="link-clr"
+            (click)="showPenalityDetails(assigneeIndex, true)"
+            *ngIf="
+              (penaltyCalculationResponse?.violationClass?.english &&
+                penaltyCalculationResponse?.violationClass?.english !== doNotImposePenalty) ||
+              isPrepopulateClass
+            "
+          >
+            {{ 'VIOLATIONS.VIEW-DETAILS' | translate }}
+          </a></span
+        >
+      </div>
+    </div>
+
+    <div class="col-lg-12 mt-4" *ngIf="transactionDetails?.contributors.length === 0 && isViolatingProvisions">
+      <gosi-input-checkbox-dc
+        id="impose-no-penalty"
+        label="VIOLATIONS.IMPOSE-NO-PENALTY"
+        [control]="parentForm?.get('selectNotImposePenalty')"
+        (select)="othersNotImposePenalty()"
+      ></gosi-input-checkbox-dc>
+    </div>
+    <div class="col-lg-12" *ngIf="isViolatingProvisions && !allExcluded && !noImposePenalty">
+      <gosi-input-number-dc
+        id="penalityAmount"
+        label="VIOLATIONS.PENALTY-AMT"
+        [control]="parentForm.get('penaltyAmount')"
+        [hideOptionalLabel]="hideOptionalLabel"
+      >
+      </gosi-input-number-dc>
+    </div>
+    <div class="col-lg-12" *ngIf="isViolatingProvisions && (allExcluded || noImposePenalty)">
+      <gosi-input-select-dc
+        id="violationClass"
+        label="VIOLATIONS.PENALTY-AMT"
+        [lookup]="violationClassList"
+        [control]="parentForm.get('othersExcludedPenaltyForm')"
+        [hideOptionalLabel]="hideOptionalLabel"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-lg-12">
+      <gosi-input-text-area-dc
+        id="justification"
+        label="VIOLATIONS.JUSTIFICATION"
+        [maxLength]="justificationMaxLength"
+        [control]="justification"
+        (blur)="setJustification()"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+  </div>
+</div>
+
+<!-- From Table -->
+<ng-template #showPenalty let-contributorDetail="contributorDetail">
+  <ng-container>
+    <div class="row penality-row1">{{ 'VIOLATIONS.PENALITY-CALCULATION' | translate }}</div>
+    <div class="penality-row-group">
+      <div class="row penality-row2">
+        {{ 'VIOLATIONS.VIOLATION-CLASS' | translate }} : {{ contributorDetail.selectedViolationClass | bilingualText }}
+      </div>
+      <div class="row penality-row3 w-100">
+        {{ 'VIOLATIONS.PENALTY-AMT' | translate }} =
+        {{ contributorDetail?.penaltyCalculationEquation | bilingualText }}
+      </div>
+    </div>
+  </ng-container>
+</ng-template>

@@ -1,0 +1,163 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="Violations Details icon"
+      [isSvg]="true"
+      [heading]="'VIOLATIONS.VIOLATIONS-DETAILS' | translate"
+      [canEdit]="false"
+    >
+    </frm-content-heading-dc>
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-TYPE' | translate"
+          [value]="
+            isCancelViolation || isModifyViolation
+              ? (violationDetails?.violationType | bilingualText)
+              : (transactionDetails?.violationType | bilingualText)
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <!-- Added for raise violation  -->
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="(isRaiseViolationFo && !isModifyViolation && !isCancelViolation) || isRaiseVioFoVcm === true"
+      >
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-DISCOVERY-DATE' | translate"
+          [date]="true"
+          [value]="transactionDetails?.dateReported | dateType | formatDate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isRaiseViolationFo">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-DISCOVERED-AFTER-AN-INSPECTION' | translate"
+          [control]="transactionDetails?.discoveredAfterInspection"
+        ></gosi-label-dc>
+      </div>
+      <ng-container
+        *ngIf="
+          isRaiseViolationFo && transactionDetails?.inspectionInfo?.inspectionType != null && !isViolatingProvision
+        "
+      >
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.INSPECTION-TYPE' | translate"
+            [control]="transactionDetails?.inspectionInfo?.inspectionType"
+          ></gosi-label-dc>
+        </div>
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="transactionDetails?.inspectionInfo?.visitId != null && !isViolatingProvision"
+        >
+          <gosi-label-dc
+            [label]="'VIOLATIONS.VISIT-ID' | translate"
+            [control]="transactionDetails?.inspectionInfo?.visitId"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="isRaiseViolationFo">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-DESCRIPTIONS' | translate"
+          [control]="transactionDetails?.violationDescription"
+        ></gosi-label-dc>
+      </div>
+      <!--  -->
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="!isCancelViolation && !isModifyViolation && !isRaiseViolationFo && !isViolatingProvisions"
+      >
+        <gosi-label-dc [label]="'VIOLATIONS.REPEATED-VIOLATION' | translate" [value]="getViolationType() | translate">
+        </gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isCancelViolation || (isModifyViolation && !isRaiseViolationFo)">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-NUMBER' | translate"
+          [value]="violationDetails?.violationId"
+          [isLink]="true"
+          (select)="profileNavigation.emit(violationDetails?.violationId)"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="
+          !isCancelViolation &&
+          !isModifyViolation &&
+          getViolationType() === 'VIOLATIONS.YES' &&
+          !isRaiseViolationFo &&
+          !isViolatingProvisions
+        "
+      >
+        <gosi-label-dc
+          [label]="'VIOLATIONS.REPETITION-COUNT' | translate"
+          [value]="transactionDetails?.repetitionCount"
+        >
+        </gosi-label-dc>
+      </div>
+
+      <!-- Number of contributors affected new -->
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="
+          !isCancelViolation &&
+          !isModifyViolation &&
+          !isRaiseViolationFo &&
+          transactionDetails?.numberOfContributorsAffected != 0
+        "
+      >
+        <gosi-label-dc
+          [label]="'VIOLATIONS.NUMBER-OF-CONTRIBUTORS-AFFECTED' | translate"
+          [value]="transactionDetails?.numberOfContributorsAffected"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isCancelViolation && !isRaiseViolationFo">
+        <gosi-currency-label-dc
+          id="amountReceived"
+          [label]="'VIOLATIONS.PENALTY-AMT' | translate"
+          [currencyTo]="violationDetails?.currentPenaltyAmount"
+          [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="(!isCancelViolation && !isModifyViolation && !isRaiseViolationFo) || isRaiseVioFoVcm === true"
+      >
+        <gosi-label-dc
+          [label]="'VIOLATIONS.REPORTED-CHANNEL' | translate"
+          [value]="transactionDetails?.inspectionInfo?.channel | bilingualText | titlecase"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6 vio" *ngIf="isRaiseVioFoVcm === true">
+        <div class="identity-heading no-wrap title-label">
+          {{ 'VIOLATIONS.TRANSACTION-ID' | translate }}
+        </div>
+        <a class="link-clr" (click)="navigateToTrasaction.emit(transactionDetails?.violationReferenceNumber)">
+          {{ transactionDetails?.violationReferenceNumber }}
+        </a>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isRaiseVioFoVcm === true">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.TRANSACTION-SUBMITTION-DATE' | translate"
+          [value]="transactionDetails?.transactionSubmittedDate?.gregorian | gosiDate"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="isRaiseVioFoVcm === true">
+        <gosi-label-dc
+          [label]="'VIOLATIONS.VIOLATION-DESCRIPTIONS' | translate"
+          [value]="transactionDetails?.violationDescription"
+        ></gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,184 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+-->
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="main-heading" *ngIf="!isDoctorEdit; else doctorEditTemplate">
+        {{ 'CONTRIBUTOR.ADD-VIC.REGISTER-VIC' | translate }}
+      </h4>
+      <ng-template #doctorEditTemplate>
+        <cnt-header-section-dc
+          heading="CONTRIBUTOR.WAGE.DOCUMENTS"
+          (goBack)="checkForChanges(cancelTemplate)"
+        ></cnt-header-section-dc>
+      </ng-template>
+    </div>
+  </div>
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="contributor && activeTab !== 0 && activeTab < totalTab">
+    <div class="col-lg-12">
+      <cnt-contributor-banner-dc
+        [contributor]="contributor"
+        [requiredFields]="addVicBanner"
+      ></cnt-contributor-banner-dc>
+    </div>
+  </div>
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- Progress wizard icons section -->
+  <gosi-progress-wizard-dc
+    *ngIf="activeTab !== 0 && activeTab < totalTab && !isDoctorEdit"
+    [wizardItems]="wizardItems"
+    (clickWizard)="selectFormWizard($event + 1)"
+    #progressWizardItems
+  ></gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset class="pills">
+      <tab [active]="activeTab === 0">
+        <div class="mt-4">
+          <cnt-search-saudi-dc
+            role="vic"
+            [parentForm]="parentForm"
+            (verify)="searchSaudiPerson($event.queryParams, $event.personDetails.identity[0].newNin)"
+            (error)="showMandatoryFieldsError()"
+            (reset)="parentForm.get('saudiSearch').dirty ? showModal(resetTemplate) : null"
+          ></cnt-search-saudi-dc>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row" *ngIf="activeTab > 0">
+          <div class="col-12">
+            <cnt-person-details-dc
+              [specializationList]="specializationList$ | async"
+              [educationList]="educationList$ | async"
+              [cityList]="cityList$ | async"
+              [nationalityList]="nationalityList$ | async"
+              [parentForm]="parentForm"
+              [person]="isEditMode ? contributor?.person : person"
+              [canEdit]="!isDoctorEdit"
+              [isEditMode]="isEditMode"
+              (savePerson)="isDoctorEdit ? setNextTab() : onSavePerson($event)"
+              (cancelTransaction)="checkForChanges(cancelTemplate)"
+            >
+            </cnt-person-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 2">
+        <div class="row">
+          <div class="col-12">
+            <cnt-vic-engagement-details-dc
+              [occupationList]="occupationList$ | async"
+              [purposeOfRegList]="purposeOfEngagement"
+              [wageCategories]="vicWageCategories"
+              [parentForm]="parentForm"
+              [vicEngagement]="vicEngagement"
+              [canEdit]="!isDoctorEdit"
+              [showPreviousSection]="true"
+              [wageList]="vicWageList"
+              [hasCurrentYearVicEngagement]="hasCurrentYearVicEngagement"
+              [isEditMode]="isEditMode"
+              [isRegisterVic]="true"
+              [maxDate]="maxDate"
+              [minDate]="minDate"
+              (purposeChange)="handlePurposeOfRegistrationChange($event)"
+              (previous)="setPreviousTab()"
+              (saveEngagement)="isDoctorEdit ? setNextTab() : onSaveVicEngagement($event)"
+              (cancelTransaction)="checkForChanges(cancelTemplate)"
+              (showWarning)="showWarningMessage($event)"
+              (addWageEvent)="addWagePeriod($event)"
+              [systemParams]="systemParams"
+            >
+            </cnt-vic-engagement-details-dc>
+          </div>
+        </div>
+      </tab>
+
+      <tab [active]="activeTab === 3">
+        <div class="row">
+          <div class="col-12">
+            <cnt-health-record-details-dc
+              [healthRecordList]="healthRecordList"
+              [parentForm]="parentForm"
+              [healthRecordDetails]="vicEngagement?.healthRecords"
+              [canEdit]="!isDoctorEdit"
+              (previous)="setPreviousTab()"
+              (saveHealthDetails)="isDoctorEdit ? setNextTab() : saveHealthRecordDetails($event)"
+              (cancelTransaction)="checkForChanges(cancelTemplate)"
+            >
+            </cnt-health-record-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 4">
+        <div class="row" [ngClass]="{ 'mt-4': isDoctorEdit }">
+          <div class="col-12" *ngIf="documents.length > 0">
+            <cnt-document-upload-dc
+              [documentList]="documents"
+              [businessKey]="engagementId"
+              [parentForm]="parentForm"
+              [referenceNo]="referenceNo"
+              [transactionId]="transactionId"
+              [showDocuments]="true"
+              [showComments]="true"
+              (refresh)="refreshDocument($event)"
+            ></cnt-document-upload-dc>
+          </div>
+          <div class="col-12" *ngIf="!(isEditMode || isDoctorEdit)">
+            <gosi-input-checkbox-dc
+              id="vicCheckBox"
+              [noSpacing]="true"
+              label="CONTRIBUTOR.ADD-VIC.VIC-SUBMIT-ACKNOWLEDGEMENT"
+              [control]="parentForm.get('vicSubmitCheck')"
+            ></gosi-input-checkbox-dc>
+          </div>
+          <div class="col-12">
+            <cnt-action-area-dc
+              primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+              [showPreviousSection]="!isDoctorEdit"
+              (previous)="setPreviousTab()"
+              (submit)="isDoctorEdit ? onDoctorSubmit() : onSubmitVicRegistration()"
+              (cancel)="checkForChanges(cancelTemplate)"
+            ></cnt-action-area-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 5">
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <!-- Feedback -->
+              <cnt-vic-feedback-dc
+                *ngIf="successMessage"
+                [messageToDisplay]="successMessage"
+                [hideAddContributor]="false"
+                [engagementDetails]="registrationSummary"
+                (addContributor)="navigateBack()"
+              ></cnt-vic-feedback-dc>
+            </div>
+          </div>
+        </ng-container>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #resetTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.INFO-RESET' | translate"
+    (onConfirm)="resetSaudiSearch()"
+    (onCancel)="hideModal()"
+  ></gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

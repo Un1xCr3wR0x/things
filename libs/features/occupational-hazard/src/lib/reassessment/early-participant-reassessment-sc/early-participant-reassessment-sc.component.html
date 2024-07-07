@@ -1,0 +1,137 @@
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <!-- main heading -->
+    <div class="col-auto mr-auto header">
+      {{ heading | translate }}
+    </div>
+    <div class="col-sm-3 col-md-3 col-lg-3">
+      <div class="float-right">
+        <gosi-button-dc
+          id="contributor"
+          type="secondary"
+          [outlineOnly]="true"
+          size="md"
+          (click)="assessmentInstruction(instrcutionModal)"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.NEED-HELP' | translate }}
+          <!-- <fa-icon icon="question-circle"></fa-icon> -->
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+  <!-- alert component -->
+  <gosi-comments-dc *ngIf="isReturn" [comments]="comment ? comment : []"></gosi-comments-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!-- PROGRESS WIZARD -->
+  <div>
+    <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="assessmentWizards" #assessmentWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <!-- main content begins here -->
+  <div class="hide-tab">
+    <tabset type="pills" #disabilityAssessmentDetailsTab>
+      <!-- disability details tab -->
+      <tab [active]="currentTab === 0" heading="'OCCUPATIONAL-HAZARD.DISABILITY-DETAILS'">
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="col-md-12" *ngIf="hospital$">
+                <oh-report-form-dc
+                  [hospital]="hospital$ | async"
+                  [serviceAddress]="serviceAddress"
+                  [parentForm]="parentForm"
+                  [occEarlyReassessment]="occEarlyReassessment"
+                  [previousDisabilityDetails]="previousDisabilityDetails"
+                  [disabilityDetails]="disabilityDetails"
+                  (fileDownload)="fileDownload($event)"
+                  (hospitalName)="onServiceProviderSelected($event)"
+                  (hospitalChange)="onHospitalPatch($event)"
+                  (previousAssessmentDetails)="previousAssessmentDetails($event)"
+                  (pychiatricForm)="downloadPsychiatricForm()"
+                ></oh-report-form-dc>
+              </div>
+              <div class="col-md-12">
+                <oh-early-disability-details-dc
+                  [reasonList]="reasonList"
+                  [parentForm]="parentForm"
+                  [isReturn]="isReturn"
+                  [disabilityDetails]="disabilityDetails"
+                ></oh-early-disability-details-dc>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <div class="row">
+          <div class="col-auto form-action-btn">
+            <gosi-button-dc
+              [ngClass]="isSmallScreen ? '' : 'float-left'"
+              id="cancelButton"
+              [isFullWidth]="isSmallScreen"
+              type="secondary"
+              (click)="cancelTransaction()"
+            >
+              {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="ml-auto col-auto form-action-btn">
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              type="primary"
+              [isFullWidth]="isSmallScreen"
+              (submit)="saveDisabilityDescription()"
+            >
+              {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <oh-add-document-dc
+          [businessKey]="mbReassessmentReqId"
+          [documentScanList]="documentScanList"
+          [documentCategoryList]="documentCategoryList"
+          (refresh)="refreshDocument($event)"
+          [parentForm]="parentForm"
+          [referenceNo]="referenceNo"
+          [earlyReassessment]="true"
+          [txnIdEarlyReassessment]="txnId"
+        >
+        </oh-add-document-dc>
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="document-details">
+              <div class="float-right btn-section">
+                <gosi-button-dc id="submit" (submit)="submitDocument()" [type]="'primary'">
+                  {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="float-right btn-section">
+                <gosi-button-dc (submit)="previousForm()" id="previousContributor" [type]="'secondary'">
+                  {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc (submit)="showTemplate(confirmTemplate)" id="cancel" [type]="'secondary'">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<!-- templates -->
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+    <!-- (onConfirm)="confirm()" (onCancel)="decline() -->
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #instrcutionModal>
+  <oh-disability-reassessment-instruction-dc [occReassessment]="occEarlyReassessment" (close)="hideInstructionModal()">
+  </oh-disability-reassessment-instruction-dc>
+</ng-template>

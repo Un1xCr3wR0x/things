@@ -1,0 +1,200 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+  <!-- <div class="row no-gutters mx-2">
+    <div class="col-auto heading">
+      {{ 'CONTRIBUTOR.ENGAGEMENT-PERIODS' | translate: { count: engagementPeriods.length } }}
+    </div>
+  </div> -->
+
+<!-- Month wise period view -->
+<div class="row no-gutters mx-2">
+  <!-- Period navigation grid -->
+  <div class="col-lg-12 mt-1">
+    <cnt-period-navigation-dc
+      [periods]="engagementPeriods"
+      [activeStartDate]="activeStartDate"
+      [disableCalendar]="disableCalendar"
+      [checkPrivate]="true"
+      (select)="periodChanged($event)"
+    ></cnt-period-navigation-dc>
+  </div>
+  <!-- Alert to show period split warning   -->
+  <!-- <div class="col-lg-12 split-warning" *ngIf="showWarning">
+    <gosi-alert-dc message="CONTRIBUTOR.PERIOD-SPLIT-WARNING" type="warning" [dismissible]="false"></gosi-alert-dc>
+  </div> -->
+  <!-- Calendar widget -->
+  <!-- <div class="col-lg-12">
+    <cnt-engagement-calendar-view-dc
+
+      [period]="selectedPeriod"
+      [changeableStartDate]="engagementPeriods[engagementPeriods.length - 1].startDate.gregorian"
+      [changeableEndDate]="engagementPeriods[0].endDate?.gregorian"
+      [systemParameter]="systemParameter"
+      [canEdit]="enableCalendarView"
+      (split)="handleCalendarSplit($event)"
+      [periodJoiningDate]="joiningDate"
+      [isAppPublic]="isAppPublic"
+    ></cnt-engagement-calendar-view-dc>
+  </div> -->
+  <div class="col mt-4"
+
+  >
+    <!-- <div class="float-right">
+     <gosi-button-dc type="primary" size="sm"   [disabled]="disableSplit || !enableCalendarView" (click)="!(disableSplit || !enableCalendarView) && showTemplate()">{{'CONTRIBUTOR.SPLIT-PERIOD' | translate}}</gosi-button-dc>
+    </div> -->
+  </div>
+</div>
+<!-- Selected period wage breakup -->
+
+<div
+  class="row no-gutters mx-3"
+  [ngClass]="{ 'mt-5': i === 0, 'wage-margin': i !== periods.length - 1 }"
+  *ngFor="let period of periods; let i = index"
+>
+  <ng-container >
+    <div class="col timeline-section" [ngClass]="{
+      active:
+        ((i !== periods.length - 1 && isPeriodSplit) || (i === periods.length - 1 && period.isSplit) ? true : false)
+
+    }">
+      <cnt-wage-breakup-dc
+        [selectedPeriod]="period"
+        [occupationList]="occupationList"
+        [ppaIndicator]="ppaIndicator"
+        
+        [yesOrNoList]="yesOrNoList"
+        
+        [systemParameter]="systemParameter"
+        [isPeriodSplit]="
+          (i !== periods.length - 1 && isPeriodSplit) || (i === periods.length - 1 && period.isSplit) ? true : false
+        "
+        [parentForm]="parentForm"
+        [periodIndex]="i"
+        [isSaudiPerson]="isSaudiPerson"
+        [validatorEdit]="false"
+        [wageDetails]="wageDetails"
+        [activePeriodIndex]="activePeriodIndex"
+        [(disableSplit)] = "disableSplit"
+        [totalPeriods]="periods.length"
+        (saveWage)="verifyWageDetails($event)"
+        (split)="splitSelectedPeriod($event)"
+        (delete)="deleteSplitPeriod($event)"
+        (periodSelect)="handleSelectionOnEdit($event)"
+        (cancelEdit)="cancelPeriodEdit()"
+        [isWageVerified]="isWageVerified"
+        [checkPrivate]="true"
+        
+        
+        
+      ></cnt-wage-breakup-dc>
+      <!--   [isGccEstblishment]="isGccEstblishment" 
+           [changesInPeriod]="changesInPeriod"-->
+    </div>
+  </ng-container>
+  <!-- <div class="col" >
+    <cnt-modify-coverage-dc
+      [selectedPeriod]="period"
+      [periodIndex]="i"
+      [parentForm]="parentForm"
+      (saveModifyCoverage)="modifycoverageEdit($event)"
+      [periodIndex]="i"
+      [coveragePeriod]="coveragePeriod"
+      [newCoverages]="newCoverages"
+      [reasonForChange]="reasonForChange"
+      (modifyCoverage)="modifyCoverages($event)"
+      (modifyCoverageDate)="modifyCoverageDate($event)"
+      [tempCoverageModify]="tempCoverageModify"
+      [coverageEdited]="coverageEdited"
+      (cancel)="cancelPeriodEdit()"
+      [tempModifyCoveragePeriod]="tempModifyCoveragePeriod"
+      [isPrevious]="isPrevious"
+    [isHijiri]= "isHijiri"
+    [validatorEdit]="editMode"
+    [formSubmissionDate]="formSubmissionDate"
+    ></cnt-modify-coverage-dc>
+  </div> -->
+</div>
+
+<!-- Modals -->
+<ng-template #periodSplitModal>
+  <gosi-modal-dc>
+    <div class="row content-heading" modalContent>
+      <div class="col-lg-12">
+        <h4>{{'CONTRIBUTOR.ENG-HEADER' | translate}}</h4>
+      </div>
+      <div class="col-lg-12 split-warning" *ngIf="showMandatoryErr">
+        <gosi-alert-dc message="CORE.ERROR.MANDATORY-FIELDS" type="warning" [dismissible]="false"></gosi-alert-dc>
+      </div>
+      <div class="col-lg-6">
+        <h6>{{'CONTRIBUTOR.CURRENT-ENG-PERIOD'| translate}}</h6>
+      </div>
+      <div class="col-lg-6">
+        <span class="breakup-period">
+          {{ startMonthLabel | monthTranslator }}
+          <fa-icon  *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+          <fa-icon  *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+          <ng-container *ngIf="!isPeriodActive; else onwards">
+            {{ endMonthLabel | monthTranslator }}
+          </ng-container>
+        </span>
+        <ng-template #onwards>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+      </div>
+      <div class="col-lg-12 mt-3">
+        <h6>{{'CONTRIBUTOR.CURRENT-ENG-SPLIT' | translate}}</h6>
+      </div>
+      <!----------- calendar type for handle hijiri ------------>
+
+    <div class="monthSelect d-flex align-items-center" [ngClass]="[selectedPeriod.startDate.entryFormat === typeGregorian ? 'mt-4' : '']">
+      <div class="col-lg-6">
+        <gosi-input-month-dc
+        *ngIf="selectedPeriod.startDate.entryFormat === typeGregorian"
+          id="gregoriandate"
+          [control]="dateForm.get('splitDate.gregorian')"
+          [minDate]="minGregorianDate"
+          [maxDate]="maxGregorianDate"
+          [readOnly]="true"
+        >
+        </gosi-input-month-dc>
+        <!---------- hijiri calendar ---------->
+        <gosi-input-hijiri-dc
+        *ngIf="selectedPeriod.startDate.entryFormat === typeHijira"
+          id="hijiriMonth"
+          [control]="dateForm.get('splitDate.hijiri')"
+          [minDate]="minHijiriDate"
+          [maxDate]="maxHijiriDate"
+          [readOnly]="true"
+          [isMonthPicker]="true"
+          [show]="false"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+      <div class="col-lg-6" [ngClass]="[selectedPeriod.startDate.entryFormat === typeHijira ? 'mb-2' : '']">
+        <cnt-calender-radio-dc
+        id="calenderTypeRadio"
+        *ngIf="dateForm.get('dateFormat.english').value"
+        (onSelected)="switchCalendarType($event)"
+        [calendarType]="dateForm.get('dateFormat.english').value"
+        [disabled]="true"
+        ></cnt-calender-radio-dc>
+      </div>
+    </div>
+    </div>
+    <div class="mt-5" modalAction>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancel" type="secondary" size="md" (submit)="decline()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc id="continue" type="primary" size="md" (submit)="confirm()">
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+

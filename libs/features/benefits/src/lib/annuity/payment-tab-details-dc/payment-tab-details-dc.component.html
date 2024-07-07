@@ -1,0 +1,231 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- payment details card -->
+<gosi-card-dc type="secondary" class="custom-card" headingSize="md" [canEdit]="false">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row pb-3">
+        <div class="col-md-6 header">
+          {{ 'BENEFITS.PAYMENT-DETAILS' | translate }}
+        </div>
+        <ng-container
+          *ngIf="showPaymentEditOptions && funeralTypeCheck() && (isIndividualApp ? true : !isHeirBenefit(benefitType))"
+        >
+          <div class="col-md-6" *ngIf="benefitPaymentDetails">
+            <ng-container *ngIf="!benefitPaymentDetails.haveBankCommitment">
+              <div [ngClass]="isSmallScreen ? 'btn-section float-right pt-2' : 'btn-section float-right'">
+                <ng-container *gosiShow="isIndividualApp ? true : accessForActionPrivate">
+                  <gosi-button-dc
+                    class="bank-button pl-3"
+                    [size]="isSmallScreen ? 'sm' : 'md'"
+                    type="primary"
+                    (submit)="navigateToAddCommitment()"
+                    [disabled]="
+                      isAddDisabled ||
+                      benefitPaymentDetails?.disableBankCommitment ||
+                      benefitType === 'Unemployment Insurance' ||
+                      activeBenefitDetails?.status?.english === 'Stopped'
+                    "
+                  >
+                    {{ 'BENEFITS.ADD-BANK-COMMITMENT' | translate }}
+                  </gosi-button-dc>
+                </ng-container>
+              </div>
+              <div [ngClass]="isSmallScreen ? 'btn-section float-right pt-2' : 'btn-section float-right'">
+                <ng-container *gosiShow="isIndividualApp ? accessForActionPublic : accessForActionPrivate">
+                  <gosi-button-dc
+                    [size]="isSmallScreen ? 'sm' : 'md'"
+                    type="primary"
+                    [disabled]="!benefitPaymentDetails?.isEditable"
+                    (submit)="navigateToModifyCommitment()"
+                  >
+                    {{ 'BENEFITS.EDIT' | translate
+                    }}<fa-icon class="pl-2 pr-0" [icon]="['fas', 'pencil-alt']" size="sm"></fa-icon>
+                  </gosi-button-dc>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="benefitPaymentDetails.haveBankCommitment">
+              <div [ngClass]="isSmallScreen ? 'btn-section float-right pt-2' : 'btn-section float-right'">
+                <ng-container *gosiShow="isAppPrivate ? accessForActionPrivate : accessForActionPublic">
+                  <gosi-button-dc
+                    [size]="isSmallScreen ? 'sm' : 'md'"
+                    type="primary"
+                    (submit)="!benefitPaymentDetails?.disableRemoveCommitment ? navigateToRemoveCommitment() : ''"
+                    [disabled]="
+                      benefitPaymentDetails?.disableRemoveCommitment ||
+                      activeBenefitDetails?.status?.english === 'Stopped'
+                    "
+                  >
+                    {{ 'BENEFITS.REMOVE-BANK-COMMITMENT' | translate }}
+                  </gosi-button-dc>
+                </ng-container>
+              </div>
+              <div [ngClass]="isSmallScreen ? 'btn-section float-right pt-2 px-2' : 'btn-section float-right px-2'">
+                <ng-container *gosiShow="isAppPrivate ? accessForActionPrivate : accessForActionPublic">
+                  <gosi-button-dc
+                    class="bank-button pl-3"
+                    [size]="isSmallScreen ? 'sm' : 'md'"
+                    type="primary"
+                    [disabled]="activeBenefitDetails?.status?.english === 'Stopped'"
+                    (submit)="navigateToViewCommitment()"
+                  >
+                    {{ 'BENEFITS.VIEW-BANK-COMMITMENT' | translate }}
+                  </gosi-button-dc>
+                </ng-container>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="payeeType"
+        [value]="benefitPaymentDetails?.benefitDetails?.payeeType | bilingualText"
+        label="{{ 'BENEFITS.PAYEE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <ng-container *ngIf="benefitPaymentDetails?.benefitDetails?.payeeType?.english === BenefitValues.authorizedPerson">
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="nameOfTheAuthorizedPerson"
+          [value]="benefitPaymentDetails?.benefitDetails?.authorizedPersonName | bilingualText"
+          label="{{ 'BENEFITS.NAME-OF-AUTHORIZED-PERSON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="nationalIdOfTheAuthorizedPerson"
+          [value]="authorizedPersonId?.id"
+          [isLink]="true"
+          label="{{ 'BENEFITS.NATIONAL-ID-OF-AUTHORIZED' | translate }}"
+        ></gosi-label-dc>
+        <!-- benefitPaymentDetails?.authorizedPersonIdentifier -->
+      </div>
+    </ng-container>
+    <ng-container *ngIf="benefitPaymentDetails?.benefitDetails?.payeeType?.english === BenefitValues.guardian">
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="nameOfTheGuardianPerson"
+          [value]="benefitPaymentDetails?.benefitDetails?.authorizedPersonName | bilingualText"
+          label="{{ 'BENEFITS.NAME-OF-GUARDIAN' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="nationalIdOfTheGuardianPerson"
+          [value]="authorizedPersonId?.id"
+          [isLink]="true"
+          label="{{ 'BENEFITS.NATIONAL-ID-OF-GUARDIAN' | translate }}"
+        ></gosi-label-dc>
+        <!-- benefitPaymentDetails?.authorizedPersonIdentifier -->
+      </div>
+    </ng-container>
+
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="paymentMethod"
+        [value]="benefitPaymentDetails?.benefitDetails?.paymentMethod | bilingualText"
+        label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4 ltr" *ngIf="benefitPaymentDetails?.benefitDetails?.iban">
+      <gosi-label-dc
+        id="iban"
+        [value]="benefitPaymentDetails?.benefitDetails?.iban"
+        label="{{ 'BENEFITS.IBAN' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefitPaymentDetails?.benefitDetails?.bankName">
+      <gosi-label-dc
+        id="bankName"
+        [value]="benefitPaymentDetails?.benefitDetails?.bankName | bilingualText"
+        label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="lastUpdatedOn"
+        [value]="benefitPaymentDetails?.benefitDetails?.lastUpdatedOn | dateType"
+        label="{{ 'BENEFITS.LAST-UPDATED-ON' | translate }}"
+        [noMargin]="true"
+      ></gosi-label-dc>
+    </div>
+    <div
+      class="col-sm-4 col-md-4 col-lg-4"
+      *ngIf="
+        isSaned && (benefitPaymentDetails?.samaVerification || benefitPaymentDetails?.benefitDetails?.samaVerification)
+      "
+    >
+      <gosi-label-dc
+        id="status"
+        label="{{ 'BENEFITS.STATUS' | translate }}"
+        [value]="
+          (benefitPaymentDetails?.samaVerification
+            ? benefitPaymentDetails?.samaVerification
+            : benefitPaymentDetails?.benefitDetails?.samaVerification
+          ) | bilingualText
+        "
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!-- payment history -->
+<tabset [justified]="false" type="tabs" class="pension-listing-tabset">
+  <tab heading="{{ 'BENEFITS.PAYMENT-HISTORY' | translate }}" id="paymentHistoryTab">
+    <div class="row no-gutters" *ngIf="benefitPaymentDetails?.benefitDetails">
+      <div class="col-sm-12 col-md-12">
+        <bnt-payment-history-dc
+          [paymentHistory]="benefitPaymentDetails?.history"
+          [paymentEventsList]="paymentEventsList"
+          [paymentStatusList]="paymentStatusList"
+          [benefitCalculation]="benefitCalculation"
+          [benefitDetails]="benefitDetails"
+          [benefitType]="benefitType"
+          [isLumpsum]="isLumpsum"
+          [identity]="identity"
+          (showAdjustmentModal)="showModal($event)"
+          (navigateToAdjustmentDetails)="navigateToAdjustmentDetails.emit()"
+          [isSaned]="isSaned"
+          [isIndividualApp]="isIndividualApp"
+          (paymentFilterEvent)="filterPaymentHistory($event)"
+          #paymentTimeline
+        ></bnt-payment-history-dc>
+      </div>
+    </div>
+  </tab>
+  <tab
+    heading="{{ 'BENEFITS.PAYMENT-HISTORY-SIMIS' | translate }}"
+    id="paymentHistorySimisTab"
+    (selectTab)="getSimisPayments()"
+    *ngIf="!isIndividualApp"
+  >
+    <bnt-payment-history-simis-dc *ngIf="simisPayments" [simisPaymentHistory]="simisPayments">
+    </bnt-payment-history-simis-dc>
+  </tab>
+  <tab
+    heading="{{ 'BENEFITS.PAYMENT-HISTORY-MAINFRAME' | translate }}"
+    id="paymentHistoryMainframeTab"
+    (selectTab)="getMainframePayments()"
+    *ngIf="!isIndividualApp"
+  >
+    <bnt-payment-history-mainframe-dc *ngIf="mfPayments" [mainframePaymentHistory]="mfPayments">
+    </bnt-payment-history-mainframe-dc>
+  </tab>
+  <tab
+  heading="{{ 'BENEFITS.PREVIOUS-PAYMENT-HISTORY-SIMIS' | translate }}"
+  id="previousPaymentHistorySimisTab"
+  (selectTab)="getSimisSanedPayments()"
+  *ngIf="!isIndividualApp"
+  >
+    <bnt-previous-payment-history-simis-dc *ngIf="simisSanedPayments" 
+    [simisSanedPaymentHistory]="simisSanedPayments">
+    </bnt-previous-payment-history-simis-dc>
+  </tab>
+</tabset>

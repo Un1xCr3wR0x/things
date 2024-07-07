@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc type="secondary">
+  <div>
+    <div class="heading-font">{{ 'BILLING.AVAILABLE-BALANCE-DETAILS' | translate }}</div>
+    <div class="row margin">
+      <div class="col-lg-4 font-clr margin-bt">
+        <div class="row lable-margin">
+          {{ 'BILLING.TRANSFERABLE-CREDIT' | translate }}
+        </div>
+        <div class="row label-colour" *ngIf="creditBalanceDetails !== undefined">
+          <span class="credit-balance">{{ creditBalanceDetails.transferableBalance | number: '1.2-2' }}</span>
+          <span class="currency-lbl margin-border"> {{ 'BILLING.SAR' | translate }}</span>
+        </div>
+      </div>
+      <div class="col-lg-4 font-clr margin-bt">
+        <div class="row lable-margin">
+          {{ 'BILLING.TOTAL-CREDIT-BALANCE' | translate }}
+        </div>
+        <div class="row label-colour" *ngIf="creditBalanceDetails !== undefined">
+          {{ creditBalanceDetails.totalCreditBalance | number: '1.2-2'
+          }}<span class="currency-lbl"> {{ 'BILLING.SAR' | translate }}</span>
+        </div>
+      </div>
+
+      <div class="col-lg-4 font-clr margin-bt">
+        <div class="row lable-margin">
+          <span>
+            {{ 'BILLING.CREDIT-BALANCE-RETAINED' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" placement="top" [tooltip]="toolTemplateInfo"></fa-icon>
+          </span>
+        </div>
+        <div class="row label-colour" *ngIf="creditBalanceDetails !== undefined">
+          {{ creditBalanceDetails.retainedBalance | number: '1.2-2'
+          }}<span class="currency-lbl"> {{ 'BILLING.SAR' | translate }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+<blg-recepient-establishment-details-dc
+  (registerNo)="searchBranches($event)"
+  [fieldArray]="fieldArray"
+  [branchLists]="branchLists"
+  [establishmentDetails]="establishmentDetails"
+  [creditBalanceDetails]="creditBalanceDetails"
+  [parentForm]="parentForm"
+  (selectedBranchList)="selectedBranch($event)"
+  (errorFlag)="setErrorMessage($event)"
+  (searchValue)="searchValues($event)"
+  [inWorkflow]="inWorkflow"
+  (popupCancel)="popupCancel()"
+  (amountFlagValue)="amountFlagValue($event)"
+  (wrongSearch)="wrongSearch()"
+></blg-recepient-establishment-details-dc>
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelButtons" type="secondary" (submit)="popUp(cancelTemplates)">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section">
+      <gosi-button-dc id="saveAndNexts" type="primary" [disabled]="amountValue" (submit)="saveAndNext()">
+        {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplates>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #toolTemplateInfo>
+  <div class="d-flex flex-column">
+    <div *ngIf="creditBalanceDetails.retainedBalance !== 0">{{ 'BILLING.CREDIT-BALANCE-INFO-EST' | translate }}</div>
+    <div *ngIf="creditBalanceDetails.retainedBalance === 0">{{ 'BILLING.CREDIT-REFUND-MESG' | translate }}</div>
+  </div>
+</ng-template>
+
+<ng-template #branchDetailsView>
+  <div class="model-margin">
+    <blg-credit-balance-summary-dc
+      [creditDetailsReq]="creditDetailsReq"
+      [establishmentDetails]="establishmentDetails"
+      [fromPage]="'confrimPage'"
+      [creditBalanceDetails]="creditBalanceDetails"
+      (confirmDetails)="confirmModal()"
+      (cancelModal)="cancelModal()"
+    ></blg-credit-balance-summary-dc>
+  </div>
+</ng-template>

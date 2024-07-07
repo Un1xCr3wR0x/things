@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary" [heading]="'CONTRIBUTOR.SEC-DOCUMENTS' | translate" [noHeadingMargin]="!isContract">
+  <div class="row" *ngIf="isContract; else noDocUploaded">
+    <div class="col">
+      <gosi-alert-dc
+        [message]="isPrivate ? 'CORE.ERROR.DOCUMENT-SCAN' : 'CORE.ERROR.DOCUMENT-UPLOAD'"
+        type="info"
+        dismissable="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <div class="row mb-4" *ngIf="!isContract">
+    <div class="col-lg-12 secondary-info">
+      <fa-icon [icon]="['fas', 'info-circle']" size="lg"></fa-icon>
+      <span class="pl-2">{{
+        isPrivate ? ('CORE.ERROR.DOCUMENT-SCAN' | translate) : ('CORE.ERROR.DOCUMENT-UPLOAD' | translate)
+      }}</span>
+    </div>
+  </div>
+  <!-- Document upload section -->
+  <ng-container *ngFor="let item of documentList; let i = index">
+    <gosi-input-file-sc
+      [isScan]="isPrivate"
+      [businessKey]="contractId"
+      [transactionId]="isContract === 'contract-auth' ? contTransactionId : transactionNumber"
+      [referenceNo]="referenceNumber"
+      [document]="item"
+      [index]="i"
+      [uuid]="uuid"
+      (refresh)="refreshDocument(item)"
+      (uploadedEvent)="changeDocStatus()"
+      (delete)="changeDocStatus()"
+    ></gosi-input-file-sc>
+  </ng-container>
+  <!-- Document upload section -->
+</gosi-card-dc>
+
+<div class="row" *ngIf="isCommentRequired">
+  <div class="col-sm-12 col-md-12">
+    <gosi-input-text-area-dc
+      [label]="'CONTRIBUTOR.COMMENTS' | translate"
+      id="comments"
+      name="comments"
+      [maxLength]="commentMaxLength"
+      [control]="documentUploadForm.get('comments')"
+    ></gosi-input-text-area-dc>
+  </div>
+</div>
+
+<!-- Action area -->
+<div class="row" *ngIf="isContract === 'contract-auth'">
+  <div class="col-lg-12">
+    <cnt-action-area-dc
+      primaryButtonLabel="CONTRIBUTOR.SAVE-AND-NEXT"
+      [showPreviousSection]="true"
+      (previous)="previousContForm()"
+      (submit)="submitContractDetails()"
+      (cancel)="confirmContractCancel()"
+    ></cnt-action-area-dc>
+  </div>
+</div>
+<ng-template #cancelContractTemplate>
+  <gosi-confirm-modal-dc
+    message="THEME.CONFIRM-CANCEL"
+    (onConfirm)="confirmContractCancel()"
+    (onCancel)="declineContract()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #noDocUploaded>
+  <div class="col p-0 pt-2 pb-2">
+    <gosi-alert-dc
+      [message]="infoMessage"
+      [type]="'info'"
+      [dismissable]="false"
+      [noPadding]="true"
+    >
+    </gosi-alert-dc>
+  </div>
+</ng-template>

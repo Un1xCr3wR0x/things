@@ -1,0 +1,174 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="transaction?.transactionId === 101527">
+  <!-- Establishment details section -->
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.PERSONAL-DETAILS' | translate"
+        headingSize="md"
+        icon="user"
+      >
+        <oh-personal-details-dc
+          [person]="person"
+          [injuryDate]="complicationDetails.injuryDate"
+          [engagement]="engagement"
+          [registrationNo]="registrationNo"
+          [socialInsuranceNo]="socialInsuranceNo"
+          [isValidatorView]="true"
+        >
+        </oh-personal-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+
+  <!-- Complication details section -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.COMPLICATION.SEC-COMPLICATION-DETAILS' | translate"
+        headingSize="md"
+        icon="user-injured"
+      >
+        <oh-complication-view-details-dc
+          [complicationDetails]="complicationDetails"
+          [idCode]="idCode"
+        ></oh-complication-view-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <!-- Injury Details section -->
+  <div class="row" *ngIf="isAppPrivate || complicationDetails.isComplicationIsInInjuryEstablishment">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate"
+        headingSize="md"
+        icon="user-injured"
+      >
+        <oh-injury-details-dc [injury]="injury" (injurySelected)="viewInjury()"></oh-injury-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Reject Complication -->
+<ng-container *ngIf="transaction?.transactionId === 101569">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="file-alt" [heading]="'OCCUPATIONAL-HAZARD.REJECTION-DETAILS' | translate">
+        <oh-reject-complication-dc
+          [complication]="complicationDetails"
+          (complicationSelected)="viewComplication()"
+          (injurySelected)="viewInjury()"
+          [transactionReferenceData]="transactionReferenceData"
+          [showHeading]="false"
+        ></oh-reject-complication-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Modify and Reopen Complication-->
+<ng-container *ngIf="transaction?.transactionId === 101574 || transaction?.transactionId === 101572">
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate">
+        <!--Contributor Details-->
+        <oh-engagement-details-dc
+          [establishment]="establishment"
+          [contributor]="contributor"
+          [registrationNo]="registrationNo"
+          [showHeading]="false"
+        >
+        </oh-engagement-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user-injured"
+        [heading]="'OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DETAILS' | translate"
+      >
+        <oh-complication-view-dc
+          [canEdit]="false"
+          [idCode]="idCode"
+          [complication]="complicationDetails"
+          (complicationSelected)="viewComplication()"
+          (injurySelected)="viewInjury()"
+          [modify]="true"
+          [showHeading]="false"
+          [reopen]="transientComplicationDetails"
+          [transactionId]="transaction.transactionId"
+          [status]="transaction.status.english"
+        >
+        </oh-complication-view-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="modifiedcomplicationDetails && complicationDetails.modifyComplicationIndicator">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="file-alt"
+        [heading]="'OCCUPATIONAL-HAZARD.COMPLICATION.MODIFY-COMPLICATION-DETAILS' | translate"
+      >
+        <oh-modified-complication-details-dc
+          [complication]="modifiedcomplicationDetails"
+          [idCode]="isdCode"
+          [showHeading]="false"
+        >
+        </oh-modified-complication-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Close Complication-->
+<ng-container *ngIf="transaction?.transactionId === 101570">
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate">
+        <!--Contributor Details-->
+        <oh-engagement-details-dc
+          [establishment]="establishment"
+          [contributor]="contributor"
+          [registrationNo]="registrationNo"
+          [showHeading]="false"
+        >
+        </oh-engagement-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="file-alt"
+        [heading]="'OCCUPATIONAL-HAZARD.COMPLICATION-CLOSING-DETAILS' | translate"
+      >
+        <oh-close-complication-dc
+          [complication]="complicationDetails"
+          [canEdit]="false"
+          (injurySelected)="viewInjury()"
+          (complicationSelected)="viewComplication()"
+          [complicationClosingStatus]="complicationClosingStatus"
+          [showHeading]="false"
+        >
+        </oh-close-complication-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Documents section -->
+<ng-container *ngIf="transaction?.transactionId !== 101570">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="allocation-info">
+  <div class="row">
+    <div class="col-lg-3" *ngIf="estAllocationDetails?.receiptAmount !== undefined">
+      <gosi-currency-label-dc
+        id="totalReceiptAmount"
+        [label]="'BILLING.TOTAL-RECEIPT-AMOUNT' | translate"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+        [currencyTo]="estAllocationDetails?.receiptAmount"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="estAllocationDetails?.allocatedAmount !== undefined">
+      <gosi-currency-label-dc
+        id="totalAllocatedAmount"
+        [label]="'BILLING.TOTAL-ALLOCATED-AMOUNT' | translate"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+        [currencyTo]="estAllocationDetails?.allocatedAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="totalUnallocatedAmount"
+        [label]="'BILLING.UNALLOCATED-AMOUNT' | translate"
+        [currencyTo]="estAllocationDetails?.unAllocatedAmount.toString()"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3 info-icon">
+      <div>
+        <gosi-label-dc
+          id="noOfEst"
+          [control]="estAllocationDetails?.noOfRecords"
+          [label]="'BILLING.NO-OF-ESTABLISHEMNT'"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="pl-3 pr-3"><fa-icon [icon]="['fas', 'info-circle']" [tooltip]="noOfEstTemplateValue"></fa-icon></div>
+    </div>
+  </div>
+</div>
+<div class="row search-align table-margin">
+  <div class="sub-heading">
+    {{ 'BILLING.RECEIPT-ALLOCATION-ESTABLISHMENTS' | translate }}
+  </div>
+  <div class="search-windows">
+    <div class="search-value d-flex">
+      <div class="search" id="searchPeriod">
+        <gosi-search-dc
+          [placeholder]="'BILLING.SEARCH' | translate"
+          (search)="onSearchAmount($event)"
+          (keyup)="searchAmount($event.target.value)"
+        >
+        </gosi-search-dc>
+      </div>
+      <div class="filter">
+        <blg-mof-allocation-breakup-filter-dc (filterValues)="filterReceipts($event)">
+        </blg-mof-allocation-breakup-filter-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="branchDetails?.length > 0; else noResult">
+  <div class="col-lg-12 table-scroll table-responsive">
+    <table class="table table-borderless">
+      <thead class="thead-light">
+        <tr>
+          <th>{{ 'BILLING.REGISTRATION-NO' | translate }}</th>
+          <th>{{ 'BILLING.ESTABLISHMENT-NAME' | translate }}</th>
+          <th>{{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}</th>
+          <th id="status">{{ 'BILLING.ALLOCATION-DATE' | translate }}</th>
+          <th>
+            {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+            <span class="currency-label">({{ 'BILLING.SAR' | translate }}) </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container
+          *ngFor="
+            let items of branchDetails
+              | paginate
+                : {
+                    id: 'paginationId',
+                    itemsPerPage: itemsPerPage,
+                    currentPage: pageDetails.currentPage,
+                    totalItems: estAllocationDetails.noOfRecords
+                  };
+            let i = index
+          "
+        >
+          <ng-container>
+            <tr class="border-bottom">
+              <td>{{ items.registrationNo }}</td>
+              <td>
+                {{ items.name.english === null ? items.name.arabic : (items.name | bilingualText) }}
+              </td>
+              <td>{{ items.fieldOffice | bilingualText | titlecase }}</td>
+              <td>{{ items.allocationDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                {{ items.allocatedAmount.amount | number: '1.2-2' }}
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <ng-container>
+    <div class="col-lg-12">
+      <gosi-pagination-dc
+        *ngIf="estAllocationDetails?.noOfRecords > itemsPerPage"
+        [totalSize]="estAllocationDetails?.noOfRecords"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+        paginationId="paginationId"
+      ></gosi-pagination-dc>
+    </div>
+  </ng-container>
+</div>
+<ng-template #noResult>
+  <div class="col-lg-12">
+    <div class="mt-10 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #noOfEstTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column">
+      <div>{{ 'BILLING.NO-OF-EST-TOOLTIP' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>

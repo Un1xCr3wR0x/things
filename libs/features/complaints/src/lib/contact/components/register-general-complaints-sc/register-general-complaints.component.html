@@ -1,0 +1,241 @@
+<div class="content">
+  <div class="col-md-12" *ngIf="showMandatory">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="col-md-12" *ngIf="showSuccess">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="col-md-12" *ngIf="showError">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="col-md-12" *ngIf="!showMandatory && !showError && !showSuccess">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <gosi-main-heading-dc
+    [header]="'COMPLAINTS.REGISTER-COMPLAINT-SUGGESTION-ENQUIRY' | translate"
+    (back)="onBack()"
+  ></gosi-main-heading-dc>
+  <!-- <div class="heading-class" *ngIf="isShowSection">
+
+    <div class="col">
+      <gosi-label-dc label="COMPLAINTS.EST-NAME"
+        [value]="establishment?.name?.enlgish ? establishment?.name.english: establishment?.name?.arabic">
+      </gosi-label-dc>
+    </div>
+    <div class="col">
+      <gosi-label-dc label="COMPLAINTS.REGISTRATION-NUMBER" [value]="establishment?.registrationNo">
+      </gosi-label-dc>
+    </div>
+    <div class="col">
+      <gosi-label-dc label="COMPLAINTS.LEGAL-ENTITY" [value]="establishment?.legalEntity | bilingualText">
+      </gosi-label-dc>
+    </div>
+  </div> -->
+
+  <div class="row banner mb-3" *ngIf="isShowSection">
+    <div class="col-lg-2 col-md-6 col-sm-12">
+      <gosi-label-dc
+        label="COMPLAINTS.EST-NAME"
+        [value]="establishment?.name?.enlgish ? establishment?.name.english : establishment?.name?.arabic"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-12">
+      <gosi-label-dc label="COMPLAINTS.REGISTRATION-NUMBER" [value]="establishment?.registrationNo"> </gosi-label-dc>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-12">
+      <gosi-label-dc label="COMPLAINTS.LEGAL-ENTITY" [value]="establishment?.legalEntity | bilingualText">
+      </gosi-label-dc>
+    </div>
+  </div>
+  <ng-container *ngIf="!isShowSection">
+    <gosi-card-dc type="secondary" [negativeMobileMargin]="false">
+      <div class="row">
+        <div class="col-lg-9 est-head">
+          {{ 'COMPLAINTS.ESTABLISHMENTS' | translate }}
+        </div>
+        <!-- <div class="col-lg-12">
+                <ces-establishment-select-dc [items]="selectedItemsArray" (selectionChanged)="onSelectionChanged($event)"></ces-establishment-select-dc>
+
+               </div> -->
+        <div class="col-lg-3 heading">
+          <div class="btn-section float-right">
+            <gosi-button-dc id="submit" [size]="'sm'" type="primary" (click)="showModal(selectEngagement)">
+              <fa-icon [icon]="['fas', 'plus']" class="mr-1"></fa-icon> {{ 'COMPLAINTS.SELECT' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+      <div class="establishment-view mt-2">
+        <div class="col-lg-12">
+          <ces-establishment-select-dc
+            [items]="selectedItemsArray"
+            (delete)="deleteTile($event)"
+            [isSelectionNeeded]="false"
+            [initialSelected]="selectedItemsArray"
+          ></ces-establishment-select-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  <gosi-card-dc type="secondary" [negativeMobileMargin]="false">
+    <ces-required-details-dc
+      [parentForm]="contactForm"
+      [categoryList]="categoryList$ | async"
+      [typeList]="typeList$ | async"
+      [subTypeList]="subTypeList$ | async"
+      [isCategorySelected]="isCategorySelected"
+      [isTypeSelected]="isTypeSelected"
+      (clear)="onFocus()"
+      (category)="onCategorySelection($event)"
+      (registerCategory)="onCategoryRegister($event)"
+      (type)="onCategoryTypeSelect($event)"
+      [typeLabels]="typeLabel"
+      [subTypeLabels]="subTypeLabel"
+      [typePlaceholders]="typePlaceholder"
+      [subTypePlaceholders]="subTypePlaceholder"
+      [isPublicApp]="true"
+      [cardItems]="cardItems"
+      (isCardSelected)="isCardSelected($event)"
+      (isShowContactDetails)="showContactDetails($event)"
+      [isSubmitted]="showSuccess"
+    ></ces-required-details-dc>
+
+    <div class="col-md-12 comments-margin" *ngIf="isCategorySelected">
+      <gosi-input-text-area-dc
+        (focus)="onFocus()"
+        [maxLength]="1200"
+        gosiSpecialCharacterMask
+        gosiMaxLength
+        [maxByteLength]="2000"
+        [label]="'COMPLAINTS.COMMENTS' | translate"
+        [control]="commentForm.get('csrComment')"
+        id="comments"
+        [mandatory]="true"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+  </gosi-card-dc>
+
+  <ng-template #selectEngagement>
+    <div class="est-modal">
+      <gosi-modal-dc>
+        <div class="row" modalContent>
+          <div class="col-lg-12 mt-2 d-block d-sm-none d-md-block">
+            <div class="header-part">
+              <!-- <div class="col-lg-10"> -->
+              <div class="modal-headers modal-heaader-custom">{{ 'COMPLAINTS.SELECT-ESTABLISHMENTS' | translate }}</div>
+              <!-- </div> -->
+            </div>
+          </div>
+          <div
+            class="col-lg-12 d-flex justify-content-end icon-wrapper"
+            [ngClass]="lang == 'en' ? 'icon-wrapper-en' : 'icon-wrapper-ar'"
+          >
+            <div class="search-component">
+              <gosi-search-dc
+                [placeholder]="'COMPLAINTS.NAME-REGISTRATION NUMBER' | translate"
+                [searchParam]="searchParam"
+                (search)="onSearch($event)"
+                (keyup)="onSearch($event.target.value)"
+                (reset)="resetSearch()"
+              >
+              </gosi-search-dc>
+            </div>
+            <span class="mr-4 d-none d-md-block" style="margin-top: 0.2rem">
+              <gosi-button-dc id="submit" [size]="'sm'" type="primary" (click)="selectionDone()">
+                {{ 'COMPLAINTS.DONE-SELECTION' | translate }}</gosi-button-dc
+              >
+            </span>
+            <span class="d-md-none" style="margin-top: 0.2rem" [ngClass]="lang == 'en' ? '' : 'button-margin-ar'">
+              <gosi-button-dc id="submit" [size]="'sm'" type="primary" (click)="selectionDone()">
+                {{ 'COMPLAINTS.DONE' | translate }}</gosi-button-dc
+              >
+            </span>
+            <span class="times-icon" [ngClass]="lang == 'en' ? 'times-icon-en' : ''">
+              <fa-icon icon="times" (click)="hideModal()"></fa-icon
+            ></span>
+          </div>
+          <ng-container *ngIf="itemsArray.length > 0; else noResult">
+            <div class="col-lg-12 d-none d-lg-block">
+              <div class="header-part">
+                <!-- <div class="col-lg-10"> -->
+                <div class="modal-headers modal-heaader-custom">
+                  {{ 'COMPLAINTS.SELECT-ESTABLISHMENTS' | translate }}
+                </div>
+                <!-- </div> -->
+              </div>
+            </div>
+
+            <div class="col-lg-12 justify-content-center d-flex d-none d-md-block">
+              <ces-establishment-select-dc
+                [items]="itemsArray"
+                [isSelectionNeeded]="true"
+                [initialSelected]="selectedItemsArray"
+                (selectionChanged)="onSelectionChanged($event)"
+              ></ces-establishment-select-dc>
+            </div>
+            <div class="justify-content-center d-flex d-md-none">
+              <ces-establishment-select-dc
+                [items]="itemsArray"
+                [isSelectionNeeded]="true"
+                [initialSelected]="selectedItemsArray"
+                (selectionChanged)="onSelectionChanged($event)"
+              ></ces-establishment-select-dc>
+            </div>
+          </ng-container>
+        </div>
+      </gosi-modal-dc>
+    </div>
+  </ng-template>
+  <div *ngIf="cardSelected">
+    <ces-customer-details-dc [isPublicApp]="true" [parentForm]="contactTypeForm"></ces-customer-details-dc>
+  </div>
+  <div class="row" *ngIf="cardSelected">
+    <div class="col-md-12">
+      <ces-complaint-file-upload-dc
+        *ngIf="category"
+        [documents]="uploadDocuments"
+        (add)="getRequiredDocuments()"
+        [isScan]="false"
+        [uuid]="uuid"
+        [transactionId]="transactionId"
+        (refresh)="refreshDocument($event)"
+        (remove)="removeDocuments($event)"
+        [disableAutoDoc]="true"
+      >
+      </ces-complaint-file-upload-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="complaint-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelTemplate)">
+            {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc id="submit" type="primary" (submit)="onSubmitComplaint()">
+            {{ 'COMPLAINTS.SUBMIT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="COMPLAINTS.INFO-CANCEL" (onConfirm)="confirmGeneralCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #noResult>
+  <div class="col-lg-12">
+    <div class="mt-5 text-center full-width">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'COMPLAINTS.NO-ESTABLISHMENT' | translate }}</p>
+    </div>
+  </div>
+</ng-template>

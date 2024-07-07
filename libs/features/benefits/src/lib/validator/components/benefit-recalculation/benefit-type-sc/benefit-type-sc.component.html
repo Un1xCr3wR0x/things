@@ -1,0 +1,420 @@
+<frm-main-content-dc [documents]="[]" [showComments]="true">
+  <div id="mainHeading" class="main-heading">
+    <frm-main-heading-dc heading="{{ 'BENEFITS.TRANSFER-LUMPSUM-PENSION-ENGAGEMENT-CHANGE' | translate }}">
+    </frm-main-heading-dc>
+  </div>
+  <div id="contentArea">
+    <frm-content-heading-dc
+      icon="user"
+      heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+      [canEdit]="false"
+      *ngIf="benefitDetails"
+    >
+    </frm-content-heading-dc>
+    <bnt-validator-adjustment-contributor-dc
+      *ngIf="benefitDetails"
+      [personDetails]="benefitDetails"
+      (onContributorIdClicked)="viewContributorInfo()"
+    ></bnt-validator-adjustment-contributor-dc>
+    <bnt-dependent-details-dc
+      [benefitType]="benefitType"
+      [requestType]="requestType"
+      [dependentDetails]="dependentDetails"
+      [notificationDate]="notificationDate"
+      [dependentHistory]="dependentHistory"
+    ></bnt-dependent-details-dc>
+    <!--Current benefit details-->
+    <div class="row custom-margin">
+      <div class="col-md-12 col-sm-12 col-lg-12">
+        <frm-content-heading-dc
+          heading="{{ 'BENEFITS.CURRENT-BENEFIT-DETAILS' | translate }}"
+          [isSvg]="true"
+          icon="Benefits"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <bnt-new-benefitdetails-dc *ngIf="benefitDetails" [benefitRecalculationDetails]="benefitDetails">
+        </bnt-new-benefitdetails-dc>
+      </div>
+    </div>
+    <div class="row custom-margin">
+      <div class="col-md-12 col-sm-12 col-lg-12">
+        <frm-content-heading-dc
+          heading="{{ 'BENEFITS.NEW-BENEFIT-DETAILS' | translate }}"
+          [isSvg]="true"
+          icon="Benefits"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <bnt-contribution-detail-dc
+          *ngIf="benefitRecalculationData"
+          [benefitRecalculationDetails]="benefitRecalculationData"
+          [lang]="lang"
+        ></bnt-contribution-detail-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 adjustments-subheading">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</div>
+    </div>
+    <div class="row" *ngIf="benefitRecalculationData">
+      <div
+        class="col-lg-6"
+        *ngIf="
+          benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+            ?.additionalContributionAmount
+        "
+      >
+        <gosi-label-dc
+          id="additionalAmount"
+          label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-AMOUNT' | translate }}"
+          [value]="
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails
+                        ?.additionalContribution?.additionalContributionAmount || 0 | number: '1.2-2'
+                  }
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="lumpsumBenefitAmountReturn"
+          label="{{ 'BENEFITS.LUMPSUM-BENEFIT-AMOUNT-RETURNED' | translate }}"
+          [value]="
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.returnAmount ||
+                        0 | number: '1.2-2'
+                  }
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="netAdjustmentAmount"
+          label="{{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }}"
+          [value]="
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      Math.abs(
+                        benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails
+                          ?.netAdjustmentAmount
+                      ) || 0 | number: '1.2-2'
+                  }
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="debitPercentage"
+          label="{{ 'BENEFITS.DEBIT-PERCENTAGE' | translate }}"
+          value="
+            {{
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.adjustmentPercentage
+          }} {{
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.adjustmentPercentage
+              ? '%'
+              : ''
+          }}
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-lg-6"
+        *ngIf="
+          benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.adjustmentReasons?.length
+        "
+      >
+        <gosi-label-dc
+          id="adjustmentReasons"
+          label="{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}"
+          value="
+          {{
+            getAdjustmentReasons(
+              benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.adjustmentReasons
+            )
+          }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-lg-6"
+        *ngIf="
+          benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+            ?.deductionAmount
+        "
+      >
+        <gosi-label-dc
+          id="deductionAmountToPay"
+          label="{{ 'BENEFITS.DEDUCTION-AMT' | translate }}"
+          value="{{
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.deductionAmount || 0
+          }} {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-6 col-md-6 col-lg-4"
+        *ngIf="
+          benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+            ?.startDate?.gregorian
+        "
+      >
+        <div class="label-color">{{ 'BENEFITS.EXPECTED-DEDUCTION-AMOUNT-PERIOD' | translate }}</div>
+        <div
+          id="additionalContributionDate"
+          class="label-content"
+          *ngIf="
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.startDate?.gregorian
+          "
+        >
+          {{
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.startDate?.gregorian | date: 'dd/MM/yyyy'
+          }}
+          <fa-icon class="arrow" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+          {{
+            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.endDate?.gregorian | date: 'dd/MM/yyyy'
+          }}
+          <span
+            *ngIf="
+              benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+                ?.endDate?.gregorian
+            "
+          >
+            ({{
+              getMonths(
+                benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+                  ?.endDate?.gregorian,
+                benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+                  ?.startDate?.gregorian
+              )
+            }}
+            {{ 'BENEFITS.MONTH' | translate }} )
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex flex-row justify-content-between py-2">
+      <div class="adjustments-subheading">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</div>
+      <div class="pt-3 float-right">
+        <gosi-button-dc size="md" type="primary" [outlineOnly]="true">
+          {{ 'BENEFITS.HOW-IS-IT-CALC' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="benefitRecalculationData">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="PensionBenefitAmount"
+          label="{{ 'BENEFITS.PENSION-BENEFIT-AMOUNT' | translate }}"
+          value="{{ benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.pensionAmount || 0 }} {{
+            'BENEFITS.SR' | translate
+          }}/{{ 'BENEFITS.MONTH' | translate }}
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <!--      <div-->
+      <!--        class="col-lg-6"-->
+      <!--        *ngIf="-->
+      <!--          benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution-->
+      <!--            ?.paymentAmount-->
+      <!--        "-->
+      <!--      >-->
+      <!--        <gosi-label-dc-->
+      <!--          id="benefitContributionPaymentPeriod"-->
+      <!--          label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+      <!--          value="{{-->
+      <!--            benefitRecalculationData?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution-->
+      <!--              ?.paymentAmount || 0-->
+      <!--          }} {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }}-->
+      <!--          "-->
+      <!--        >-->
+      <!--        </gosi-label-dc>-->
+      <!--      </div>-->
+    </div>
+    <div class="row">
+      <div class="col-lg-6 adjustments-subheading">{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}</div>
+    </div>
+    <div class="row" *ngIf="benefitRecalculationData">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="payeeType"
+          [label]="'BENEFITS.PAYEE' | translate"
+          [value]="benefitPaymentDetails?.benefitDetails?.payeeType | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="paymentMethod"
+          [label]="'BENEFITS.PAYMENT-METHOD' | translate"
+          [value]="benefitPaymentDetails?.benefitDetails?.paymentMethod | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="ibanNumber"
+          [label]="'BENEFITS.IBAN' | translate"
+          [value]="benefitPaymentDetails?.benefitDetails?.iban"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="bankName"
+          [label]="'BENEFITS.BANK-NAME' | translate"
+          [value]="benefitPaymentDetails?.benefitDetails?.bankName | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</frm-main-content-dc>
+<div id="benefitsActionArea">
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <div class="action-request">
+        <div class="btn-section float-right">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            id="benefitsApprove"
+            type="primary"
+            (click)="showModal(approveTemplate)"
+          >
+            {{ 'BENEFITS.APPROVE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'FC Approver'">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            type="secondary"
+            id="benefitsReturn"
+            (submit)="showModal(returnRecalculationTemplate)"
+          >
+            {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'Validator1'">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            type="secondary"
+            id="benefitsReportCalculation"
+            (click)="showModal(reportCalcTemplate)"
+          >
+            {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <!--<div
+          class="btn-section float-right"
+          *ngIf="payload?.assignedRole === rolesEnum.VALIDATOR_1 && benefitRecalculationData?.hasOverlappingEngagements"
+        >
+          <gosi-button-dc
+            type="secondary"
+            id="benefitsRequestInspection"
+            (click)="requestInspection(requestInspectionTemplate)"
+          >
+            {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+          </gosi-button-dc>
+        </div>-->
+        <div class="btn-section float-left">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            id="benefitsCancel"
+            type="secondary"
+            (click)="showCancelTemplate(cancelTemplate)"
+          >
+            {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Approve Template-->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    (cancelEvent)="commonModalRef.hide()"
+    heading="{{ 'PAYMENT.APPROVE' | translate }} - {{
+      'BENEFITS.TRANSFER-LUMPSUM-PENSION-ENGAGEMENT-CHANGE' | translate
+    }}"
+    [parentForm]="retirementForm"
+    (approveEvent)="confirmApprove(retirementForm)"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+
+<!--Cancel Template-->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    (onConfirm)="confirmCancel()"
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onCancel)="commonModalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{
+      'BENEFITS.TRANSFER-LUMPSUM-PENSION-ENGAGEMENT-CHANGE' | translate
+    }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (rejectEvent)="confirmReject(retirementForm)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<!-- Return Template -->
+<ng-template #returnRecalculationTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.BENEFIT-RECALCULATION_ENGAGEMENT-CHANGE' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-FC-RETURN-VALIDATOR'"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (returnEvent)="confirmReturn(retirementForm)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!--Report Calculation Issue Template-->
+<ng-template #reportCalcTemplate>
+  <bnt-report-recalculation-template-dc
+    *ngIf="retirementForm"
+    heading="{{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}"
+    [parentForm]="retirementForm"
+    [isCommentsMandatory]="true"
+    [infoMessage]="'BENEFITS.INCORRECT-CALC-BENEFIT' | translate: { id: referenceNo }"
+    (submitEvent)="raiseItsmTicket()"
+    (cancelEvent)="commonModalRef.hide()"
+  >
+  </bnt-report-recalculation-template-dc>
+</ng-template>

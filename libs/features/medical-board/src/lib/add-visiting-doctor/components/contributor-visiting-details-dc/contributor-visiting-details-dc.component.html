@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <ng-container>
+      <frm-content-heading-dc icon="user" heading="MEDICAL-BOARD.CONTRIBUTOR-DETAILS" [canEdit]="false">
+      </frm-content-heading-dc>
+    </ng-container>
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-label-dc
+          id="contributorNIN"
+          [value]="primaryIdentity.id"
+          [label]="primaryIdentityType | translate"
+          isLink="true"
+          (click)="navigateToInjuryDetails()"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorName"
+          [value]="personNameEnglish"
+          label="MEDICAL-BOARD.CONTRIBUTOR-NAME"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorName"
+          [value]="personNameArabic"
+          label="MEDICAL-BOARD.CONTRIBUTOR-NAME-AR"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorDob"
+          value="{{ contributor?.person?.birthDate?.gregorian | date: getDateFormat(lang) }} ({{
+            'MEDICAL-BOARD.AGE-TITLE' | translate
+          }}:{{ contributor?.person?.ageInHijiri }})"
+          label="MEDICAL-BOARD.DATE-OF-BIRTH"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heirDisabilityAssessment">
+        <gosi-label-dc
+          id="disabiltydetails"
+          value="{{ activeBenefitDetails?.deathDate?.gregorian | date: getDateFormat(lang) }} ({{
+            'MEDICAL-BOARD.AGE-TITLE' | translate
+          }}:{{ activeBenefitDetails?.deathDate?.hijiri }})"
+          label="MEDICAL-BOARD.DATE-OF-DEATH"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorOccupation"
+          [value]="
+            injury.occupation === null
+              ? null
+              : injury?.occupation?.english
+              ? injury?.occupation?.english
+              : injury?.occupation?.arabic
+          "
+          label="MEDICAL-BOARD.OCCUPATION"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorMobileNumber"
+          [value]="contributor?.person?.contactDetail?.mobileNo?.primary"
+          label="MEDICAL-BOARD.MOBILE-NO"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-label-dc
+          id="contributorLocation"
+          [value]="contributor?.person?.contactDetail?.addresses[0]?.city === null ? null : cityLocation"
+          label="MEDICAL-BOARD.LOCATION"
+        ></gosi-label-dc>
+      </div>
+      <div [ngClass]="collapseView ? 'col-sm-6 col-md-6 col-lg-6' : ''" *ngIf="!heirDisabilityAssessment">
+        <gosi-button-dc
+          id="contributor"
+          type="secondary"
+          [outlineOnly]="true"
+          size="md"
+          (click)="previousAssessment(previousAssessmentModal)"
+        >
+          <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+          {{ 'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!heirDisabilityAssessment">
+        <gosi-button-dc id="contributor" type="secondary" [outlineOnly]="true" size="md" (submit)="onOHClicked.emit()">
+          <!-- (click)="addVisitingDoctor(visitingDoctorModal)" -->
+          {{ 'MEDICAL-BOARD.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #previousAssessmentModal>
+  <mb-previous-assessments-dc
+    [previousDisabilityDetails]="previousDisabilityDetails"
+    (onAssessmentIdClicked)="viewAssessmentById($event)"
+    (close)="hideModal()"
+  >
+  </mb-previous-assessments-dc>
+</ng-template>

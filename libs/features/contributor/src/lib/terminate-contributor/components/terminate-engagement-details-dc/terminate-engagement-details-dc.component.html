@@ -1,0 +1,322 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc type="secondary" [heading]="'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate" [noHeadingMargin]="true">
+  <div class="row">
+    <div class="col-lg-6 mt-4">
+      <gosi-input-date-dc
+        *ngIf="this.calendarCheck === typeGregorian"
+        id="joiningDateG"
+        [control]="terminateDetailsForm.get('joiningDate.gregorian')"
+        [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+        [disabled]="true"
+      ></gosi-input-date-dc>
+      <div [ngClass]="{ disabledIcon: true }">
+        <gosi-input-hijiri-dc
+          *ngIf="this.calendarCheck === typeHijira"
+          id="joiningDateH"
+          [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+          [control]="terminateDetailsForm.get('joiningDate.hijiri')"
+          [disabled]="true"
+          [hideOptionalLabel]="true"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-2" *ngIf="checkPrivate || ppaEstablishment">
+      <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+      <cnt-calender-radio-dc
+        id="calenderTypeRadio"
+        *ngIf="dateForm1.get('dateFormat.english').value"
+        (onSelected)="switchCalendarType($event)"
+        [calendarType]="dateForm1.get('dateFormat.english').value"
+        [disabled]="dateForm1.get('dateFormat.english').disabled"
+      ></cnt-calender-radio-dc>
+    </div>
+    <div [ngClass]="checkPrivate || ppaEstablishment ? 'col-lg-4' : 'col-lg-6'">
+      <gosi-input-date-dc
+        *ngIf="dateForm1.get('dateFormat.english').value === typeGregorian"
+        id="leavingDate"
+        [control]="terminateDetailsForm.get('leavingDate.gregorian')"
+        [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+        [minDate]="minLeavingDate"
+        [maxDate]="maxLeavingDate"
+        [disabled]="disableLeavingDate"
+      >
+      </gosi-input-date-dc>
+      <div [ngClass]="{ disabledIcon: disableLeavingDate }">
+        <gosi-input-hijiri-dc
+          *ngIf="dateForm1.get('dateFormat.english').value === typeHijira"
+          id="startDateHijiri1"
+          [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+          [control]="terminateDetailsForm.get('leavingDate.hijiri')"
+          [minDate]="minLeavingDateH"
+          [maxDate]="maxHijLeavingDate"
+          [disabled]="disableLeavingDate"
+          [hideOptionalLabel]="true"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+    </div>
+    <div class="col-lg-5 tooltip-custom">
+      <gosi-input-select-dc
+        id="leavingReason"
+        [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+        [tooltipContent]="'CONTRIBUTOR.LEAVING-REASON-SELECTION' | translate"
+        [control]="terminateDetailsForm.get('leavingReason')"
+        [list]="leavingReasonList"
+        (select)="checkLeavingReason()"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="!ppaEstablishment">
+    <div class="col-lg-12">
+      <gosi-input-checkbox-dc
+        id="penaltyDisclaimer"
+        [noSpacing]="true"
+        label="CONTRIBUTOR.LEAVING-REASON-INFO"
+        [control]="terminateDetailsForm.get('penaltyDisclaimer')"
+      ></gosi-input-checkbox-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<!-- Secondment Engagement Details -->
+<gosi-card-dc
+  type="secondary"
+  [heading]="'CONTRIBUTOR.SECONDMENT-ENG-DETAILS' | translate"
+  [noHeadingMargin]="true"
+  *ngIf="
+    terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.SECONDMENT &&
+    ppaEstablishment
+  "
+>
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        id="establishmentType"
+        [control]="terminateDetailsForm?.get('secondmentDetails')?.get('establishmentType')"
+        [label]="'CONTRIBUTOR.TRANSFER-CON.ESTABLISHMENT-TYPE' | translate"
+        [list]="SecondmentEstType"
+        (select)="selectEstType($event)"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        *ngIf="
+          terminateDetailsForm?.get('secondmentDetails')?.get('establishmentType')?.get('english').value ===
+          excludedEstablishment
+        "
+        id="establishmentName"
+        [control]="terminateDetailsForm?.get('secondmentDetails')?.get('establishmentName')"
+        [label]="'CONTRIBUTOR.SELECT-ESTABLISHMENT' | translate"
+        [list]="secondmentEstablishments"
+        (select)="selectExcludedEst($event)"
+        [placeholder]="'CONTRIBUTOR.ESTABLISHMENT' | translate"
+      ></gosi-input-select-dc>
+    </div>
+    <!-- secondment start date section -->
+    <div class="col-lg-2">
+      <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+      <cnt-calender-radio-dc
+        id="calenderTypeRadio2"
+        (onSelected)="switchSecStartDateType($event)"
+        [calendarType]="secondmentDateForm?.get('startDateFormat')?.value"
+      ></cnt-calender-radio-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-input-date-dc
+        *ngIf="secondmentDateForm?.get('startDateFormat')?.value === typeGregorian"
+        id="startDateG"
+        [control]="secondmentDetailsForm?.get('secondmentStartDate')?.get('gregorian')"
+        [label]="'CONTRIBUTOR.START_DATE' | translate"
+        [disabled]="false"
+        [hideOptionalLabel]="true"
+        [minDate]="minSecondmentStartDate"
+        [maxDate]="maxSecondmentStartDate"
+        (changeEvent)="secondmentStartDateGSelected()"
+      >
+      </gosi-input-date-dc>
+      <div [ngClass]="{ disabledIcon: false }">
+        <gosi-input-hijiri-dc
+          *ngIf="secondmentDateForm?.get('startDateFormat')?.value === typeHijira"
+          id="secStartDateH"
+          [label]="'CONTRIBUTOR.START_DATE' | translate"
+          [control]="secondmentDetailsForm?.get('secondmentStartDate')?.get('hijiri')"
+          [disabled]="false"
+          [hideOptionalLabel]="true"
+          [minDate]="minSecondmentStartDateH"
+          [maxDate]="maxSecondmentStartDateH"
+          (changeEvent)="secondmentStartDateHSelected()"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+    </div>
+    <!-- secondment end date section -->
+    <div class="col-lg-2">
+      <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+      <cnt-calender-radio-dc
+        id="calenderTypeRadio3"
+        (onSelected)="switchSecEndDateType($event)"
+        [calendarType]="secondmentDateForm?.get('endDateFormat')?.value"
+        [disabled]="secondmentDateForm.get('endDateFormat')?.disabled"
+      ></cnt-calender-radio-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-input-date-dc
+        *ngIf="secondmentDateForm?.get('endDateFormat')?.value === typeGregorian"
+        id="secEndDateG"
+        [control]="secondmentDetailsForm?.get('secondmentEndDate')?.get('gregorian')"
+        [label]="'CONTRIBUTOR.END-DATE' | translate"
+        [disabled]="disableSecEndDate"
+        [hideOptionalLabel]="true"
+        [minDate]="minSecondmentEndDate"
+        (changeEvent)="secondmentEndDateGSelected()"
+      >
+      </gosi-input-date-dc>
+      <!-- [maxDate]="maxSecondmentEndDate" -->
+      <div [ngClass]="{ disabledIcon: disableSecEndDate }">
+        <gosi-input-hijiri-dc
+          *ngIf="secondmentDateForm?.get('endDateFormat')?.value === typeHijira"
+          id="secEndDateH"
+          [label]="'CONTRIBUTOR.END-DATE' | translate"
+          [control]="secondmentDetailsForm?.get('secondmentEndDate')?.get('hijiri')"
+          [disabled]="disableSecEndDate"
+          [hideOptionalLabel]="true"
+          [minDate]="minSecondmentEndDateH"
+          [maxDate]="maxSecondmentEndDateH"
+          (changeEvent)="secondmentEndDateHSelected()"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!-- Study Leave Details -->
+<gosi-card-dc
+  type="secondary"
+  [heading]="'CONTRIBUTOR.STUDY-LEAVE-DETAILS' | translate"
+  [noHeadingMargin]="true"
+  *ngIf="
+    terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.STUDYLEAVE &&
+    ppaEstablishment
+  "
+>
+  <div class="row">
+    <div class="col-lg-12">
+      <gosi-alert-dc [message]="'CONTRIBUTOR.STUDY-LEAVE-INFO' | translate" type="info" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-input-radio-dc
+        id="studyInsideSaudi"
+        name="studyInsideSaudi"
+        [control]="studyLeaveForm.get('studyInsideSaudi')"
+        [list]="studyTypeList"
+        [label]="'CONTRIBUTOR.STUDY-INSIDE-SAUDI' | translate"
+        [disabled]="false"
+        (select)="certificateType($event)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        id="certification"
+        [label]="'CONTRIBUTOR.CERTIFICATION-TYPE' | translate"
+        [control]="studyLeaveForm.get('certification')"
+        [list]="certificationList"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-2">
+      <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+      <cnt-calender-radio-dc
+        id="calenderTypeRadio4"
+        (onSelected)="switchStudyStartDateType($event)"
+        [calendarType]="studyLeaveDateForm?.get('startDateFormat')?.value"
+      ></cnt-calender-radio-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-input-date-dc
+        *ngIf="studyLeaveDateForm?.get('startDateFormat')?.value === typeGregorian"
+        id="studyLeaveStartDateGregorian"
+        [control]="studyLeaveForm?.get('studyLeaveStartDate')?.get('gregorian')"
+        [label]="'CONTRIBUTOR.START_DATE' | translate"
+        [hideOptionalLabel]="true"
+        [disabled]="false"
+        [minDate]="minSecondmentStartDate"
+        [maxDate]="maxSecondmentStartDate"
+        (changeEvent)="studyLeaveStartDateGSelected()"
+      >
+      </gosi-input-date-dc>
+      <gosi-input-hijiri-dc
+        *ngIf="studyLeaveDateForm?.get('startDateFormat')?.value === typeHijira"
+        id="studyLeaveStartDateHijiri"
+        [control]="studyLeaveForm?.get('studyLeaveStartDate')?.get('hijiri')"
+        [label]="'CONTRIBUTOR.START_DATE' | translate"
+        [hideOptionalLabel]="true"
+        [disabled]="false"
+        [minDate]="minSecondmentStartDateH"
+        [maxDate]="maxSecondmentStartDateH"
+        (changeEvent)="studyLeaveStartDateHSelected()"
+      >
+      </gosi-input-hijiri-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!-- bank details -->
+<cnt-person-bank-details-dc
+  *ngIf="engagement?.secondment || engagement?.studyLeave"
+  [bankNameList$]="bankNameList$"
+  [bankDetails]="bankDetails"
+  [parentForm]="parentForm"
+  [isEditMode]="isEditMode"
+  [notMandatory]="true"
+  [isBankDetailsPending]="isBankDetailsPending"
+  (IBANChange)="IBANChange.emit($event)"
+  (bankEditMode)="toggleBankEditMode($event)"
+  (cancel)="clearErrors()"
+></cnt-person-bank-details-dc>
+<div
+  class="row mt-4"
+  *ngIf="
+    documentList.length > 0 &&
+    (terminateDetailsForm?.get('leavingDate')?.get('gregorian')?.value ||
+      terminateDetailsForm?.get('leavingDate')?.get('hijiri')?.value ||
+      terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.SECONDMENT ||
+      terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.STUDYLEAVE ||
+      engagement?.studyLeave ||
+      engagement?.secondment)
+  "
+>
+  <div class="col-lg-12">
+    <cnt-document-upload-dc
+      [documentList]="documentList"
+      [businessKey]="engagementId"
+      [transactionId]="
+        terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.SECONDMENT
+          ? secondmentTransactionId
+          : terminateDetailsForm?.get('leavingReason')?.get('english').value === terminationReason.STUDYLEAVE
+          ? studyLeaveTransactionId
+          : terminateTransactionId
+      "
+      [parentForm]="parentForm"
+      [referenceNo]="referenceNo"
+      [showDocuments]="isDocumentsRequired"
+      [showComments]="isDocumentsRequired"
+      (refresh)="refreshDocument($event)"
+      [uuid]="uuid"
+    >
+    </cnt-document-upload-dc>
+  </div>
+</div>

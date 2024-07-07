@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <est-heading-dc [canNavigate]="false" (backEvent)="navigateBack()">
+    {{ 'ESTABLISHMENT.MANAGE-ADMIN' | translate }}
+  </est-heading-dc>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+    </div>
+    <!-- Body -->
+    <div class="col-md-12 mt-2" *ngIf="canInitialise">
+      <div class="row">
+        <div class="col-md-4 border-section">
+          <!-- Admins Component -->
+          <est-admin-list-dc
+            [adminsForView]="adminsForView"
+            [totalAdmin]="totalAdmin"
+            [selectedAdminId]="selectedAdminId"
+            [nationalityList$]="nationalityFilter$"
+            [roleList$]="roleList$"
+            [canAdd]="canAdd"
+            [showFilter]="showFilter"
+            (add)="addAdmin()"
+            (search)="searchAdmin($event)"
+            (select)="selectAdmin($event)"
+            (apply)="filterAdmin($event)"
+            [adminSearchParam]="adminSearchParam"
+            [totalCount]="adminsForView.length"
+            [pageSize]="noOfAdminsInitially"
+            [isLoadingAdmin]="isLoadingAdmin"
+          >
+            <div id="adminDetails">
+              <ng-container *ngTemplateOutlet="adminDetailsTemplate"></ng-container>
+            </div>
+          </est-admin-list-dc>
+        </div>
+        <div class="col-md-8 d-none d-md-block" *ngIf="selectedAdmin">
+          <ng-container *ngTemplateOutlet="adminDetailsTemplate"></ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #deleteModal>
+  <est-delete-admin-modal-dc [admin]="selectedAdmin" (onConfirm)="confirmDelete()" (onCancel)="hideModal()">
+  </est-delete-admin-modal-dc>
+</ng-template>
+
+<ng-template #adminDetailsTemplate>
+  <div class="row" id="adminDetails">
+    <div class="top-section col-md-12 mb-4">
+      <!-- Sub Profile Component -->
+      <est-admin-details-dc
+        [admin]="selectedAdmin.person"
+        (replaceAdmin)="replaceAdmin()"
+        (deleteAdmin)="deleteAdmin(deleteModal)"
+      ></est-admin-details-dc>
+    </div>
+    <div class="bottom-section col-md-12">
+      <est-administrating-branches-dc
+        [branchList]="administringBranches"
+        [totalBranches]="totalBranches"
+        [actionDropDown]="filteredActions"
+        (actionType)="selectedAction($event, deleteModal)"
+        [pageDetails]="branchPagination"
+        [currentPage]="currentBranchPage"
+        (pageIndexEvent)="selectBranch($event)"
+        [itemsPerPage]="itemsPerPage"
+        (search)="searchBranches($event)"
+        [branchSearchParam]="branchSearchParam"
+        [roles$]="roles$"
+        [searchForm]="searchForm"
+        (filterApply)="filterBranches($event)"
+        [branchFilters]="branchFilters"
+        [isLoading]="isLoadingBranches"
+        [selectedAdmin]="selectedAdmin"
+        [loggedInAdminId]="loggedInAdminId"
+      ></est-administrating-branches-dc>
+    </div>
+  </div>
+</ng-template>
+<ng-template #draftModal>
+  <est-resume-modal-dc
+    [message]="draftTransaction?.message"
+    (cancel)="hideModal()"
+    (new)="cancelAndStart()"
+    (resume)="navigateToTransaction()"
+  ></est-resume-modal-dc>
+</ng-template>
+<ng-template #replaceAdminRestrictTemplate>
+  <gosi-modal-dc [modalHeader]="editWarningHeading | translate">
+    <div modalContent>
+      <gosi-alert-dc [details]="editWarningMsg" type="warning" [dismissible]="false"></gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>

@@ -1,0 +1,101 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc (onEdit)="navigateToCsrView(2)" [documents]="documents ? documents : []" [comments]="comments">
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc
+        [heading]="
+          isAddContract
+            ? ('CONTRIBUTOR.ADD-CONTRACT' | translate)
+            : ('CONTRIBUTOR.CONTRACT-AUTH.CANCEL-CONTRACT' | translate)
+        "
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate"
+        [subValue]="socialInsuranceNo"
+        [formSubmissionDate]="formSubmissionDate"
+        [transactionRefNo]="referenceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="entityDetails"></div>
+    <div id="contentArea">
+      <!-- Personal details -->
+      <cnt-validator-personal-view-dc
+        *ngIf="contributor"
+        [contributor]="contributor"
+        [conType]="contributor?.contributorType"
+        (onPersonalEditClicked)="navigateToCsrView(0)"
+        [canEdit]="canEdit && isAddContract"
+      ></cnt-validator-personal-view-dc>
+      <!-- Engagement section -->
+      <cnt-validator-engagement-view-dc
+        *ngIf="establishment"
+        [establishmentDetails]="establishment"
+        [registrationNumber]="registrationNo"
+      >
+      </cnt-validator-engagement-view-dc>
+      <!-- Contract details section -->
+      <cnt-view-contract-details-dc *ngIf="contractId" (onViewDetailsClicked)="openPreviewTab()">
+      </cnt-view-contract-details-dc>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        [disableApprove]="isBillBatch"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!------------------------  Modals ----------------------------->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="isAddContract ? 'CONTRIBUTOR.CONTRACT-AUTH.REJECT-REASON' : 'CONTRIBUTOR.CONTRACT-AUTH.REJECT-CANCEL'"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleContractWorklowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.CONTRACT-AUTH.RETURN-REASON'"
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-RETURN-VALIDATOR'"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleContractWorklowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleContractWorklowEvents(0)"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.INFO-CANCEL'" (onConfirm)="navigateToInbox()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

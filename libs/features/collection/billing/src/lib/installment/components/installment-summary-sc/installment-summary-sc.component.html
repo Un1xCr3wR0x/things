@@ -1,0 +1,92 @@
+<div class="content">
+  <!-----------------------------------Content Starts--------------------------------------------------------->
+  <ng-container>
+    <gosi-alert-sc></gosi-alert-sc>
+    <!-----------------------------------Header--------------------------------------------------------->
+    <div class="row mb-3">
+      <ng-container *ngIf="active && installmentSummary">
+        <div class="col-lg-10">
+          <div class="row m-0">
+            <div class="d-inline-block installment-period">
+              {{ installmentSummary?.schedule[0]?.installmentMonth | bilingualText }}
+              <fa-icon class="arrow-custom" [icon]="['fas', lang === 'ar' ? 'arrow-left' : 'arrow-right']"></fa-icon>
+              {{
+                installmentSummary?.schedule[installmentSummary?.schedule?.length - 1]?.installmentMonth | bilingualText
+              }}
+            </div>
+            <div class="mx-4">
+              <gosi-status-badge-dc
+                [label]="installmentSummary?.status | bilingualText"
+                [type]="'success'"
+              ></gosi-status-badge-dc>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <div class="custom-btn-align" [ngClass]="active ? 'col-lg-2' : 'col-lg-12'">
+        <gosi-button-dc
+          [outlineOnly]="true"
+          id="installmenthistory"
+          type="secondary"
+          [size]="'md'"
+          (click)="navigateToInstallmentHistory()"
+        >
+          {{ 'BILLING.INSTALLMENT-HISTORY' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <!-----------------------------------Header Ends--------------------------------------------------------->
+    <blg-establishment-detail-dc *ngIf="establishmentDetails" [establishmentDetails]="establishmentDetails">
+    </blg-establishment-detail-dc>
+    <ng-container *ngIf="active; else noResultFound">
+      <blg-installment-summary-dc *ngIf="installmentSummary" [installmentDetails]="installmentSummary" [lang]="lang">
+      </blg-installment-summary-dc>
+      <!----------------------------------Tabset------------------------------------------>
+      <div class="add-margin-top" id="allocation-tabset">
+        <blg-installment-tabset-dc
+          [tabList]="tabList"
+          [selectedTab]="selectedTab"
+          (tabSelected)="onNewTabSelected($event)"
+        >
+        </blg-installment-tabset-dc>
+      </div>
+      <!----------------------------------Tabset Ends------------------------------------------>
+      <!----------------------------------schedule------------------------------------------>
+      <div *ngIf="selectedTab === 'BILLING.INSTALLMENT-SCHEDULE'">
+        <blg-installment-schedule-summary-dc
+          *ngIf="installmentSummary?.schedule"
+          [installmentSchedule]="installmentSummary?.schedule"
+        >
+        </blg-installment-schedule-summary-dc>
+      </div>
+      <!----------------------------------schedule ends------------------------------------------>
+      <div *ngIf="selectedTab === 'BILLING.GUARANTEE-DETAILS'">
+        <blg-installment-guarantee-view-dc
+          *ngIf="installmentSummary"
+          [installmentDetails]="installmentSummary"
+          [guarantee]="guarantee"
+        ></blg-installment-guarantee-view-dc>
+      </div>
+      <div *ngIf="selectedTab === 'BILLING.DOCUMENTS'">
+        <div class="row border m-0" *ngIf="documents?.length > 0; else noDocuments">
+          <div class="col-lg-4 col-md-4 col-sm-4 hori-align" *ngFor="let item of documents; let i = index">
+            <gosi-document-view-dc [document]="item"></gosi-document-view-dc>
+          </div>
+        </div>
+        <ng-template #noDocuments>
+          <div class="d-flex justify-content-center no-documents">
+            {{ 'THEME.NO-DOCUMENTS' | translate }}
+          </div>
+        </ng-template>
+      </div>
+    </ng-container>
+  </ng-container>
+  <!-----------------------------------Content Ends--------------------------------------------------------->
+</div>
+<ng-template #noResultFound>
+  <div class="mt-5 text-center full-width">
+    <img src="assets/images/search-error.svg" alt="search-error" />
+    <br />
+    <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+  </div>
+</ng-template>

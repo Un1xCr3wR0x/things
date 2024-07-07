@@ -1,0 +1,91 @@
+<div class="card-container">
+  <gosi-card-dc
+    type="secondary"
+    headingSize="md"
+    [noPadding]="false">
+    <div class="d-flex align-items-center justify-content-between">
+      <h3 class="custom-heading">{{ 'VIOLATIONS.SELECT-CONTRIBUTORS' | translate | titlecase }}</h3>
+      <gosi-search-dc
+        gosiSpecialCharacters
+        [placeholder]="'VIOLATIONS.IDENTIFICATION-NUMBER' | translate | titlecase"
+        [allowOnlyNumbers]="true"
+        [minimumLength]="1"
+        (search)="search($event)"
+        (reset)="resetSearch()"
+      ></gosi-search-dc>
+    </div>
+    <div class="row bg-light rounded">
+      <div class="col-2 py-3 d-flex align-items-center">
+        <label for="select-all" class="d-inline-block mx-2">
+          <input
+            class="checkbox-contributor"
+            type="checkbox"
+            [checked]="isSelectedAll"
+            (change)="onChangeSelectAllContributor($event)"
+            id="select-all">
+          {{'VIOLATIONS.SELECT-ALL' | translate | titlecase}}
+        </label>
+      </div>
+      <div class="col-4">
+        {{'VIOLATIONS.CONTRIBUTOR-NAME' | translate | titlecase}}
+      </div>
+      <div class="col-3">
+        {{'VIOLATIONS.NIN-IQAMA' | translate | titlecase}}
+      </div>
+      <div class="col-3">
+        {{'VIOLATIONS.PENALTY-AMOUNT' | translate | titlecase}}
+      </div>
+    </div>
+    <ng-container *ngIf="contributorsList.length; else el">
+      <ng-container
+        *ngFor="let contributor of contributorsList | paginate: {itemsPerPage: itemsPerPage, currentPage: pageDetails.currentPage, totalItems: noOfRecords};
+                let i = index">
+        <label class="d-block">
+          <div class="row  bg-white rounded py-3 mx-0">
+            <div class="col-2">
+              <input type="checkbox"
+                     [checked]="contributorIds.includes(contributor?.identifier)"
+                     (change)="onChangeSelectContributor($event, contributor?.identifier)">
+            </div>
+            <div class="col-4">
+              <p>{{ contributor?.contributorName.english === null || contributor?.contributorName.english.trim() === '' ? contributor?.contributorName.arabic : (contributor?.contributorName | bilingualText) }}</p>
+            </div>
+            <div class="col-3">
+              {{contributor?.idNumber}}
+            </div>
+            <div class="col-3">
+              <p *ngIf="contributor?.violationAmount; else na">
+                {{contributor?.violationAmount}}
+              </p>
+            </div>
+          </div>
+        </label>
+      </ng-container>
+    </ng-container>
+    <ng-template #el>
+      <div class="bg-white py-3">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </ng-template>
+    <div class="mt-4">
+      <gosi-pagination-dc #paginationComponent *ngIf="noOfRecords > itemsPerPage" [totalSize]="noOfRecords"
+                          [pageDetails]="pageDetails" [itemsPerPage]="itemsPerPage" (pageChange)="selectPage($event)">
+      </gosi-pagination-dc>
+    </div>
+  </gosi-card-dc>
+  <div class="d-flex justify-content-end mt-5">
+    <button class="btn btn-primary"
+            (click)="onNextAppealDetail()">
+<!--      [disabled]="loadingData"-->
+      {{ 'VIOLATIONS.NEXT' | translate | titlecase }}
+<!--      <span class="loader" *ngIf="loadingData">-->
+<!--        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>-->
+<!--      </span>-->
+    </button>
+  </div>
+</div>
+
+
+<ng-template #na>
+  {{'VIOLATIONS.NA' | translate}}
+</ng-template>

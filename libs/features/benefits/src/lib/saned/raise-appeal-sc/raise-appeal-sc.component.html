@@ -1,0 +1,96 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ 'BENEFITS.REQUEST-SANED-HEADING' | translate }}
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-progress-wizard-dc [wizardItems]="wizardItems" (clickWizard)="selectedWizard($event)" #appealWizard>
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #appealTabs>
+      <tab>
+        <bnt-appeal-tab-dc
+          *ngIf="appealForm"
+          [parentForm]="appealForm"
+          [lang]="lang"
+          [eligiblePeriod]="eligiblePeriod$ | async"
+          [systemRunDate]="systemRunDate"
+          [reasonForAppeal]="reasonForAppeal$"
+          [saveApiResp]="saveApiResp"
+          [bankDetails]="bankDetails"
+          [benefitCalculation]="benefitCalculation"
+          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+          [listOfGuardians]="guardianList"
+          [personDetails]="personDetails"
+          [annuityResponse]="annuityResponse"
+          [bankName]="bankName"
+          [isValidator]="isValidator"
+          [payeeList]="payeeList"
+          [paymentMethodList]="paymentMethodList$ | async"
+          [payeeForm]="payeeForm"
+          [personId]="getPersonId()"
+          [uibenefits]="uibenefits"
+          [ibanBankAccountNo]="ibanBankAccountNo"
+          (cancelTransaction)="cancelTransaction()"
+          (save)="saveAndNext()"
+          (clearSuccessMessage)="clearSuccessMessage()"
+          (getBankName)="getBankName($event)"
+          (getBankDetails)="getBankDetails($event)"
+          (onConfirm)="onConfirm($event)"
+        >
+        </bnt-appeal-tab-dc>
+      </tab>
+      <!--documents-->
+      <tab>
+        <bnt-document-dc
+          #documentDetailsForm
+          [businessKey]="benefitRequestId"
+          [requestTransactionId]="sanedDocTransactionId"
+          [referenceNo]="referenceNo"
+          [documentList]="requiredDocs"
+          [parentForm]="documentForm"
+          [isSelectedReasonOthers]="isSelectedReasonOthers"
+          (cancelDoc)="cancelTransaction()"
+          (uploadFailed)="showErrorMessages($event)"
+          (confirmCancelAction)="confirm()"
+          (uploadSuccess)="docUploadSuccess($event)"
+          (documentFormDetails)="showFormValidation()"
+          (previous)="previousForm()"
+          (refresh)="refreshDocument($event)"
+        >
+        </bnt-document-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #confirmTransactionTemplate>
+  <bnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="onDiscard()"
+    (onCancel)="hideModal()"
+  ></bnt-transaction-cancel-popup-dc>
+</ng-template>

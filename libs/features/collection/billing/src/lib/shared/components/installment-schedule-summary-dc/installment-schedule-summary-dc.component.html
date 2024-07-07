@@ -1,0 +1,82 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+<div>
+  <div class="table-responsive">
+    <table class="table table-striped table-borderless">
+      <thead>
+        <tr>
+          <th>
+            {{ 'BILLING.INSTALLMENT-NUMBER' | translate | uppercase }}
+          </th>
+          <th>
+            {{ 'BILLING.INSTALLMENT-MONTH' | translate | uppercase }}
+          </th>
+          <th>
+            {{ 'BILLING.MONTHLY-INSTALLMENT-AMOUNT' | translate | uppercase }}
+          </th>
+          <th>
+            {{ 'BILLING.PAYMENT-DATE' | translate | uppercase }}
+          </th>
+          <th>{{ 'BILLING.REMAINING-AMOUNT' | translate | uppercase }}</th>
+          <th>
+            {{ 'BILLING.STATUS' | translate | uppercase }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container
+          *ngFor="
+            let item of installmentSchedule
+              | paginate
+                : {
+                    id: 'paginationId',
+                    itemsPerPage: itemsPerPage,
+                    currentPage: pageDetails.currentPage,
+                    totalItems: noOfRecords
+                  };
+            let i = index
+          "
+        >
+          <tr>
+            <td>{{ item?.installmentNumber | bilingualText }}</td>
+            <td>{{ item?.installmentMonth | bilingualText }}</td>
+            <td>{{ item?.monthlyInstallmentAmount | number: '1.2-2' }}</td>
+            <td>{{ item?.paymentDate?.gregorian | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ item?.installmentAmountRemaining | number: '1.2-2' }}</td>
+            <td>
+              <gosi-status-badge-dc
+                [label]="item?.status | bilingualText"
+                type="{{
+                  item?.status.english === 'Advance payment' || item?.status.english === 'Partially advance payment'
+                    ? 'info'
+                    : item?.status.english === 'Partially Paid' || item?.status.english === 'Partially paid (late)'
+                    ? 'warning'
+                    : item?.status.english === 'Unpaid'
+                    ? 'danger'
+                    : item?.status.english === 'Fully paid' ||
+                      item?.status.english === 'Scheduled' ||
+                      item?.status.english === 'Fully paid (late)'
+                    ? 'success'
+                    : ''
+                }}"
+              ></gosi-status-badge-dc>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <ng-container>
+    <gosi-pagination-dc
+      *ngIf="noOfRecords > itemsPerPage"
+      [totalSize]="noOfRecords"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      paginationId="paginationId"
+    ></gosi-pagination-dc>
+  </ng-container>
+</div>

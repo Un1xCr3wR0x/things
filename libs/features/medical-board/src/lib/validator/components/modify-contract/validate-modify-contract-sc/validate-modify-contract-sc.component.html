@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [canEdit]="false" [documents]="documents ? documents : []" [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'MEDICAL-BOARD.MODIFY-CONTRACT-DETAILS' | translate"></frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <mb-doctor-details-dc
+        [memberDetails]="memberDetails"
+        [canEdit]="false"
+        (profileNavigate)="profileNavigate($event)"
+      ></mb-doctor-details-dc>
+      <mb-contract-details-modify-dc
+        [canEdit]="false"
+        [contractDetails]="memberDetails"
+      ></mb-contract-details-modify-dc>
+    </div>
+    <!-- Workflow Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="true"
+        [canReturn]="false"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveModifyTemplate)"
+        (rejectEvent)="showModal(rejectModifyTemplate)"
+        (cancelEvent)="showModal(cancelModifyTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------------------------  Modals ----------------------------->
+<ng-template #approveModifyTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="null"
+    [parentForm]="validatorMemberForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="TrackWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectModifyTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorMemberForm"
+    [heading]="'CORE.REJECT-REASON'"
+    [transactionNumber]="transactionNo"
+    [warningMessage]="'MEDICAL-BOARD.REJECT-WARNING-INFO' | translate: { transactionNo: transactionNo }"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="TrackWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #cancelModifyTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'MEDICAL-BOARD.INFO-CANCEL'"
+    (onConfirm)="confirmCancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

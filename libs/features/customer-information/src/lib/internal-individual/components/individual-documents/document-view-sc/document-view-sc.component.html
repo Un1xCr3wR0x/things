@@ -1,0 +1,332 @@
+<div class="content px-0 pb-0">
+  <!-- alert -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- <a [href]="fileUrl" target="_blank"></a>
+  <div *ngIf="fileUrl">
+    <ng-container>
+      <object [data]="fileUrl" style="width: -webkit-fill-available;"></object>
+    </ng-container>
+  </div> -->
+  <div class="row">
+    <div class="col-sm-12">
+      <tabset class="saned-listing-tabset" #benefitsTab>
+        <tab heading="{{ 'CUSTOMER-INFORMATION.DIGITAL-DOCUMENTS' | translate }}" id="UItab">
+
+          <div class="document-action">
+            <div class="search-filter">
+              <div class="search-box">
+                <gosi-search-dc gosiCharacterMask [searchInput]="true" id="search-area"
+                  (keyup)="onSearchEnable($event.target.value)" (search)="searchDocument($event)"
+                  [searchParam]="searchParam" [allowOnlyNumbers]="false" class="w-100"
+                  [placeholder]="'CUSTOMER-INFORMATION.SEARCH-PLACEHOLDER' | translate">
+                </gosi-search-dc>
+              </div>
+            </div>
+            <div class="filter-btn">
+              <cim-document-filter-dc [addedByList]="newaddedByList" [documentTypeList]="newdocumentTypeList"
+                [transactionTypeList]="transactionTypeList" [systemSimisList]="systemSimisList"
+                [systemList]="systemList" [hasFiltered]="hasFiltered" [clearDocumentFilter]="clearDocumentFilter"
+                (documentFilters)="filterDocuments($event)" (apply)="filterApplied($event)" (reset)="resetApplied($event)"></cim-document-filter-dc>
+            </div>
+            <!-- <div class="p-1">
+              <gosi-button-dc type="primary" size="sm" (click)="uploadDocument()">
+                {{ 'CUSTOMER-INFORMATION.UPLOAD' | translate }}
+              </gosi-button-dc>
+            </div> -->
+          </div>
+          <div *ngIf="simisCount > 0 && !appliedFilterValue;">
+            <gosi-card-dc type="primary" *ngFor="let item of documentArrayList
+            | paginate
+                        : {
+                            id: estDigitalPagination,
+                            itemsPerPage: 10,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: simisCount
+                          }">
+                          
+                <div style="cursor: pointer;" [ngClass]="lang === 'en' ? 'margin-en' : 'margin-ar'" (click)="onDownload(item)">{{ 'CUSTOMER-INFORMATION.DOWNLOAD' | translate }}</div>
+              <div style="display: flex;cursor: pointer;" (click)="docPreveiew(item)">
+                <div class="file-info">
+                  <div class="file-icon ml-3 mr-3">
+                    <fa-icon class="file-icon-fa file-pdf" [icon]="['far', 'file-pdf']"></fa-icon>
+                  </div>
+
+                </div>
+                <div class="row" style="display: contents;">
+                  <span class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="doc-name" *ngIf="lang == 'en'">
+                      {{ item?.fileName.english }}
+                    </div>
+                    <div class="doc-name" *ngIf="lang == 'ar'">
+                      {{ item?.fileName.arabic }}
+                    </div>
+                    <div>
+                      <span class="label-value">{{ 'ESTABLISHMENT.DOCUMENT-ID' | translate }}</span> :
+                      <span class="label-value" *ngIf="item?.docParam.english == 'SIMIS'">{{ item?.displayContentId }}</span>
+                      <span class="label-value" *ngIf="item?.docParam.english != 'SIMIS'">{{ item?.transactionTraceId }}</span>
+                    </div>
+                    <div class="label-value">
+                      {{ 'CUSTOMER-INFORMATION.UPLOADERNAME' | translate }} : {{ item?.documentAddedBy ? item?.documentAddedBy : 'CUSTOMER-INFORMATION.NOT-EXISTS' | translate }} , {{item?.documentAddedByName}}
+                    </div>
+                    <div class="row">
+                      <div class="simis-div font-style" *ngIf="item?.docParam.english == 'SIMIS' && lang == 'en'">{{
+                        item?.docParam.english }}</div>
+                      <div class="ameen-div font-style" *ngIf="item?.docParam.english != 'SIMIS' && lang == 'en'">{{
+                        item?.docParam.english }}</div>
+                      <div class="simis-div font-style" *ngIf="item?.docParam.english == 'SIMIS' && lang == 'ar'">{{
+                        item?.docParam.arabic }}</div>
+                      <div class="ameen-div font-style" *ngIf="item?.docParam.english != 'SIMIS' && lang == 'ar'">{{
+                        item?.docParam.arabic }}</div>
+                      <div>
+                        <fa-icon  [tooltip]="'CUSTOMER-INFORMATION.UPLOAD-DATE' | translate" [icon]="['far', 'calendar-alt']" class="calendar-icon"></fa-icon>
+                        <div *ngIf="lang == 'en'" class="date-style label-value">{{ item?.createdDate.gregorian | date:
+                          'dd/MM/yyyy' }}</div>
+                        <div *ngIf="lang == 'ar'" class="date-style label-value right-margin-rtl">{{ item?.createdDate.hijiri | date:
+                          'dd/MM/yyyy' }}</div>
+                      </div>
+                      <div *ngIf="item?.barcode">
+                        <!-- <fa-icon class="icon-wrapper" icon="building" size="md"></fa-icon> -->
+                        <img  [tooltip]="'CUSTOMER-INFORMATION.BARCODE-NUMBER' | translate" src="assets/images/Bar Code.svg" alt="bar code" class="icon-wrapper" />
+                        <div class="date-style label-value right-margin-rtl2">{{ item?.barcode }}</div>
+                      </div>
+                      <ng-template #toolTipTemplate>
+                        <div class="label-tool">
+                          <span>{{'CUSTOMER-INFORMATION.ESTABISHMENT' | translate}}</span>
+                          <span *ngIf="lang === 'en'">{{item?.estName?.english ? item?.estName?.english : item?.estName?.arabic}}</span>
+                          <span *ngIf="lang === 'ar'">{{item?.estName?.arabic ? item?.estName?.arabic : item?.estName?.english}}</span>
+                          <span>{{item?.registrationNo}}</span>
+                        </div>
+                      </ng-template>
+                      <div *ngIf="item?.registrationNo">
+                        <fa-icon [tooltip]="toolTipTemplate" [ngClass]="item?.barcode ? 'regesticon-wrapper' : 'esticon-wrapper'" icon="building"
+                          size="md"></fa-icon>
+                        <div [ngStyle]="{'margin-left': lang == 'ar' ? '38px' : ''}" [ngClass]="item?.barcode ? 'reg-style' : 'date-style label-value margin'">{{ item?.registrationNo
+                          }}</div>
+                      </div>
+                    </div>
+                  </span>
+                  <span class="col-lg-6 col-md-6 col-sm-12 doc-description">
+                    <div class="label-color">
+                      <div>
+                        {{ 'ESTABLISHMENT.DESCRIPTION' | translate }}
+                      </div>
+                    </div>
+                    <div class="label-value" style="color: #333333">
+                      <div class="description-value" *ngIf="item?.description">{{ item?.description }}</div>
+                      <div class="description-value" *ngIf="!item?.description"> -- </div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </gosi-card-dc>
+
+            <gosi-pagination-dc #paginationDigitalComponent *ngIf="simisCount > 10" [totalSize]="simisCount"
+              [itemsPerPage]="10" [pageDetails]="pageDetails" (pageChange)="selectDigitalPage($event)"
+              [paginationId]="estDigitalPagination">
+            </gosi-pagination-dc>
+          </div>
+          <div *ngIf="simisNewCount > 0 && appliedFilterValue;">
+            <gosi-card-dc type="primary" *ngFor="let item of documentNewArrayList
+            | paginate
+                        : {
+                            id: estDigitalPagination,
+                            itemsPerPage: 10,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: simisNewCount
+                          }">
+                          
+                <div style="cursor: pointer;" [ngClass]="lang === 'en' ? 'margin-en' : 'margin-ar'" (click)="onDownload(item)">{{ 'CUSTOMER-INFORMATION.DOWNLOAD' | translate }}</div>
+              <div style="display: flex;cursor: pointer;" (click)="docPreveiew(item)">
+                <div class="file-info">
+                  <div class="file-icon ml-3 mr-3">
+                    <fa-icon class="file-icon-fa file-pdf" [icon]="['far', 'file-pdf']"></fa-icon>
+                  </div>
+
+                </div>
+                <div class="row" style="display: contents;">
+                  <span class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="doc-name" *ngIf="lang == 'en'">
+                      {{ item?.fileName.english }}
+                    </div>
+                    <div class="doc-name" *ngIf="lang == 'ar'">
+                      {{ item?.fileName.arabic }}
+                    </div>
+                    <div>
+                      <span class="label-value">{{ 'ESTABLISHMENT.DOCUMENT-ID' | translate }}</span> :
+                      <span class="label-value" *ngIf="item?.docParam.english == 'SIMIS'">{{ item?.displayContentId }}</span>
+                      <span class="label-value" *ngIf="item?.docParam.english != 'SIMIS'">{{ item?.transactionTraceId }}</span>
+                    </div>
+                    <div class="label-value">
+                      {{ 'CUSTOMER-INFORMATION.UPLOADERNAME' | translate }} : {{ item?.documentAddedBy ? item?.documentAddedBy : 'CUSTOMER-INFORMATION.NOT-EXISTS' | translate }} , {{item?.documentAddedByName}}
+                    </div>
+                    <div class="row">
+                      <div class="simis-div font-style" *ngIf="item?.docParam.english == 'SIMIS' && lang == 'en'">{{
+                        item?.docParam.english }}</div>
+                      <div class="ameen-div font-style" *ngIf="item?.docParam.english != 'SIMIS' && lang == 'en'">{{
+                        item?.docParam.english }}</div>
+                      <div class="simis-div font-style" *ngIf="item?.docParam.english == 'SIMIS' && lang == 'ar'">{{
+                        item?.docParam.arabic }}</div>
+                      <div class="ameen-div font-style" *ngIf="item?.docParam.english != 'SIMIS' && lang == 'ar'">{{
+                        item?.docParam.arabic }}</div>
+                      <div [tooltip]="'CUSTOMER-INFORMATION.UPLOAD-DATE' | translate">
+                        <fa-icon [icon]="['far', 'calendar-alt']" class="calendar-icon"></fa-icon>
+                        <div *ngIf="lang == 'en'" class="date-style label-value">{{ item?.createdDate.gregorian | date:
+                          'dd/MM/yyyy' }}</div>
+                        <div *ngIf="lang == 'ar'" class="date-style label-value right-margin-rtl">{{ item?.createdDate.hijiri | date:
+                          'dd/MM/yyyy' }}</div>
+                      </div>
+                      <div *ngIf="item?.barcode" [tooltip]="'CUSTOMER-INFORMATION.BARCODE-NUMBER' | translate">
+                        <!-- <fa-icon class="icon-wrapper" icon="building" size="md"></fa-icon> -->
+                        <img src="assets/images/Bar Code.svg" alt="bar code" class="icon-wrapper" />
+                        <div class="date-style label-value right-margin-rtl2">{{ item?.barcode }}</div>
+                      </div>
+                      <ng-template #toolTipTemplate>
+                        <div class="label-tool">
+                          <span>{{'CUSTOMER-INFORMATION.ESTABISHMENT' | translate}}</span>
+                          <span *ngIf="lang === 'en'">{{item?.estName?.english ? item?.estName?.english : item?.estName?.arabic}}</span>
+                          <span *ngIf="lang === 'ar'">{{item?.estName?.arabic ? item?.estName?.arabic : item?.estName?.english}}</span>
+                          <span>{{item?.registrationNo}}</span>
+                        </div>
+                      </ng-template>
+                      <div *ngIf="item?.registrationNo">
+                        <fa-icon  [tooltip]="toolTipTemplate" [ngClass]="item?.barcode ? 'regesticon-wrapper' : 'esticon-wrapper'" icon="building"
+                          size="md"></fa-icon>
+                        <div [ngStyle]="{'margin-left': lang == 'ar' ? '38px' : ''}" [ngClass]="item?.barcode ? 'reg-style' : 'date-style label-value margin'">{{ item?.registrationNo
+                          }}</div>
+                      </div>
+                    </div>
+                  </span>
+                  <span class="col-lg-6 col-md-6 col-sm-12 doc-description">
+                    <div class="label-color">
+                      <div>
+                        {{ 'ESTABLISHMENT.DESCRIPTION' | translate }}
+                      </div>
+                    </div>
+                    <div class="label-value" style="color: #333333">
+                      <div class="description-value" *ngIf="item?.description">{{ item?.description }}</div>
+                      <div class="description-value" *ngIf="!item?.description"> -- </div>
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </gosi-card-dc>
+            <gosi-pagination-dc #paginationDigitalComponent *ngIf="simisNewCount > 10" [totalSize]="simisNewCount"
+              [itemsPerPage]="10" [pageDetails]="pageDetails" (pageChange)="selectDigitalPage($event)"
+              [paginationId]="estDigitalPagination">
+            </gosi-pagination-dc>
+          </div>
+            <div class="noDigitalResult" *ngIf="(simisCount === 0 && !appliedFilterValue) || (simisNewCount === 0 && appliedFilterValue)">
+              <img src="assets/images/search-error.svg" style="width: 14%" alt="search-error" />
+              <br />
+              <p class="text-muted">{{ 'CUSTOMER-INFORMATION.NO-DATA' | translate | titlecase }}</p>
+            </div>
+        </tab>
+        <!-- *ngIf="showAnnuityTab" -->
+        <tab heading="{{ 'CUSTOMER-INFORMATION.MICROFILM-DOCUMENTS' | translate }}" id="annuity_tab">
+          <!-- <gosi-card-dc type="secondary"> -->
+          <div class="col-md-12">
+            <div class="wage-block-simis">
+
+              <div class="wage-card-simis">
+                <div class="table-container">
+
+                  <table class="table-dd table-responsive">
+                    <table>
+                      <tr *ngIf="simisDocDetails?.microFinches; else noResult">
+                        <th scope="col">{{'CUSTOMER-INFORMATION.SIN' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.BOX-NUMBER' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-NUMBER' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-ROW' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-COLUMN' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.COVER-CODE' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.TRANSACTION-CODE' | translate}}</th>
+                        <th scope="col">{{'CUSTOMER-INFORMATION.TRANSACTION-DATE' | translate}}</th>
+
+
+                      </tr>
+                      <tr *ngFor="let item of simisDocDetails?.microFinches
+                      | paginate
+                        : {
+                            id: estPagination,
+                            itemsPerPage: itemsPerPage,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: count
+                          }">
+                        <td class="data-rows">{{ item?.sin }}</td>
+                        <td class="data-rows">{{ item?.boxNumber }}</td>
+                        <td class="data-rows">{{ item?.microFincheNumber }}</td>
+                        <td class="data-rows">{{ item?.microFincheRow }}</td>
+                        <td class="data-rows">{{ item?.microfincheColumn }}</td>
+                        <td class="data-rows">{{ item?.coverCode }}</td>
+                        <td class="data-rows">{{ item?.transactionCode }}</td>
+                        <td class="data-rows">{{ item?.transactionDate | gosiDate }}</td>
+
+                      </tr>
+                    </table>
+                  </table>
+
+                  <ng-template #noResult>
+                    <div class="noResult">
+                      <img src="assets/images/search-error.svg" style="width: 16%" alt="search-error" />
+                      <br />
+                      <p class="text-muted">{{ 'CUSTOMER-INFORMATION.NO-DATA' | translate | titlecase }}</p>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <!-- </gosi-card-dc> -->
+          <!-- <div class="table-responsive">
+            <table class="table table-borderless margin">
+              <thead class="thead-light">
+                <tr *ngIf="simisDocDetails?.microFinches; else noResult">
+                  <th class="head-style" id="bankName">
+                    {{ 'CUSTOMER-INFORMATION.TRANSACTION-DATE' | translate }}
+                  </th>
+                  <th class="head-style" id="type">
+                    {{ 'CUSTOMER-INFORMATION.TRANSACTION-CODE' | translate }}
+                  </th>
+                  <th class="head-style" id="status">
+                    {{ 'CUSTOMER-INFORMATION.FIELD-OFFICE' | translate }}
+                  </th>
+                  <th class="head-style" id="more">
+                    {{ 'CUSTOMER-INFORMATION.BOX-NUMBER' | translate }}</th>
+                  <th class="head-style" id="more">
+                    {{ 'CUSTOMER-INFORMATION.COVER-CODE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  class="data-row border-style"
+                  *ngFor="
+                    let item of simisDocDetails?.microFinches
+                      | paginate
+                        : {
+                            id: estPagination,
+                            itemsPerPage: itemsPerPage,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: count
+                          }
+                  "
+                >
+                  <td class="data-rows">{{ item?.transactionDate | gosiDate }}</td>
+                  <td class="data-rows">{{ item?.transactionCode }}</td>
+                  <td></td>
+                  <td class="data-rows">{{ item?.boxNumber }}</td>
+                  <td class="data-rows">{{ item?.coverCode }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div> -->
+
+          <gosi-pagination-dc #paginationComponent *ngIf="count > itemsPerPage" [totalSize]="count"
+            [itemsPerPage]="itemsPerPage" [pageDetails]="pageDetails" (pageChange)="selectPage($event)"
+            [paginationId]="estPagination">
+          </gosi-pagination-dc>
+        </tab>
+      </tabset>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,207 @@
+<div class="content">
+  <gosi-card-dc [heading]="'BENEFITS.SUSPEND-UNEMPLOYMENT-INSURANCE-SANED' | translate">
+    <gosi-alert-sc></gosi-alert-sc>
+    <gosi-progress-wizard-dc
+      [wizardItems]="wizardItems"
+      (clickWizard)="selectFormWizard($event)"
+      #progressWizardItems
+    ></gosi-progress-wizard-dc>
+
+    <div class="hide-tab">
+      <tabset class="pills">
+        <tab [active]="activeTab === 0">
+          <gosi-card-dc type="secondary" [heading]="'BENEFITS.REQUEST-DETAILS' | translate">
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-6">
+                <gosi-input-date-dc
+                  id="suspendRequestDate"
+                  [label]="'BENEFITS.REQUEST-DATE' | translate"
+                  [control]="requestDetailsForm.get('requestDate').get('gregorian')"
+                >
+                </gosi-input-date-dc>
+              </div>
+            </div>
+          </gosi-card-dc>
+          <gosi-card-dc type="secondary" [heading]="'BENEFITS.BENEFIT-SUSPEND-DETAILS-CAPS' | translate | titlecase">
+            <div class="row justify-content-md-center">
+              <div class="col-sm-12 col-md-12 col-lg-6">
+                <gosi-input-date-dc
+                  id="suspendDate"
+                  [label]="'BENEFITS.SUSPEND-DATE' | translate"
+                  [control]="requestDetailsForm.get('suspendDate').get('gregorian')"
+                >
+                </gosi-input-date-dc>
+              </div>
+              <div class="col-sm-12 col-md-12 col-lg-6">
+                <gosi-input-select-dc
+                  name="suspendReason"
+                  [label]="'BENEFITS.SUSPEND-REASON' | translate"
+                  id="suspendReason"
+                  [list]="suspendReasonList | async"
+                  [control]="requestDetailsForm.get('suspendReason')"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+            <div class="row justify-content-md-center">
+              <div class="col-sm-12 col-md-12 col-lg-12">
+                <gosi-input-text-area-dc
+                  [control]="requestDetailsForm.get('notes')"
+                  [hideOptionalLabel]="true"
+                  [label]="'BENEFITS.NOTES' | translate"
+                >
+                </gosi-input-text-area-dc>
+              </div>
+            </div>
+          </gosi-card-dc>
+          <div class="row form-action">
+            <div class="col-lg-12" modalAction>
+              <div class="float-right btn-separator">
+                <gosi-button-dc (submit)="setAdjustmentDetailsSection()" type="primary">
+                  {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-left btn-margins">
+                <gosi-button-dc (submit)="popUp(cancelTemplate)" type="secondary">
+                  {{ 'BENEFITS.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </tab>
+        <tab [active]="activeTab === 1">
+          <gosi-card-dc type="secondary" [heading]="'BENEFITS.BENEFIT-DETAILS' | translate | titlecase">
+            <div class="row" *ngIf="benefitDetails">
+              <div class="col-sm-6 col-md-6 col-lg-4">
+                <gosi-label-dc
+                  id="benefitAmount"
+                  label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+                  [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.benefitAmount || 0 | number }"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-4">
+                <gosi-label-dc
+                  id="benefitStartDate"
+                  label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+                  [value]="benefitDetails.benefitStartDate.gregorian | date: 'dd/MM/yyyy'"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-4">
+                <gosi-label-dc
+                  id="sanedType"
+                  label="{{ 'BENEFITS.SANED-TYPE' | translate | titlecase }}"
+                  [value]="benefitDetails.type | bilingualText"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="details-heading">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</div>
+            <div class="adjustment-details col-md-12 row d-flex align-items-center w-100" *ngIf="adjustmentDetails">
+              <div class="table-scroll table-responsive table-adjustmentDetails">
+                <table class="table table-borderless">
+                  <thead class="table-header">
+                    <tr>
+                      <th>
+                        {{ 'BENEFITS.PAYMENT-DATE' | translate }}
+                      </th>
+                      <th class="amount">
+                        {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let adj of adjustmentDetails.suspendDetailsList" class="data-row border-bottom">
+                      <td>
+                        {{ adj.paymentDate.gregorian | date: 'dd/MM/yyyy' }}
+                      </td>
+                      <td class="amount">
+                        {{ adj.adjustmentAmount }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="total-amount text-end">
+                  {{ 'BENEFITS.TOTAL-ADJUSTMENT' | translate }} :
+                  <span [ngClass]="100 > 0 ? 'net-value-green' : 0 == 0 || !false ? '' : 'net-value-red'">
+                    {{ adjustmentDetails.totalAdjustmentAmount | number: '1.2-2' }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </gosi-card-dc>
+          <div class="row form-action">
+            <div class="col-lg-12">
+              <div class="float-right btn-separator">
+                <gosi-button-dc (submit)="initiateSuspendSaned()" type="primary">
+                  {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-left btn-margins">
+                <gosi-button-dc (submit)="popUp(cancelTemplate)" type="secondary">
+                  {{ 'BENEFITS.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="backBtn" type="secondary" (submit)="setPreviousSection()">
+                  {{ 'BENEFITS.PRE-SECTION' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </tab>
+        <tab [active]="activeTab === 2">
+          <div class="row">
+            <div class="col-md-12">
+              <bnt-document-dc
+                #documentDetailsForm
+                [businessKey]="benefitRequestId"
+                [requestTransactionId]="docTransactionId"
+                [referenceNo]="referenceNo"
+                [documentList]="documents"
+                [isSelectedReasonOthers]="false"
+                (refresh)="refreshDocument($event)"
+                (uploadSuccess)="submitSuspendSaned($event)"
+                (uploadFailed)="showError($event)"
+                (cancelDoc)="popUp(cancelTemplate)"
+                (previous)="setPreviousSection()"
+              >
+                <!-- 
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancel)="cancelTransaction()"
+              (documentFormDetails)="showFormValidation()"
+            -->
+              </bnt-document-dc>
+            </div>
+          </div>
+
+          <!-- <div class="row form-action">
+            <div class="col-lg-12">
+              <div class="float-right btn-separator">
+                <gosi-button-dc (submit)="submitTxn()" type="primary">
+                  {{ 'BENEFITS.SUBMIT' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-left btn-margins">
+                <gosi-button-dc (submit)="popUp(cancelTemplate)" type="secondary">
+                  {{ 'BENEFITS.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="float-right btn-separator">
+                <gosi-button-dc id="backBtn" type="secondary" (submit)="setPreviousSection()">
+                  {{ 'BENEFITS.PRE-SECTION' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div> -->
+        </tab>
+      </tabset>
+    </div>
+    <ng-template #cancelTemplate>
+      <gosi-confirm-modal-dc (onCancel)="decline()" (onConfirm)="confirmCancel()" message="BENEFITS.INFO-CANCEL">
+      </gosi-confirm-modal-dc>
+    </ng-template>
+  </gosi-card-dc>
+</div>

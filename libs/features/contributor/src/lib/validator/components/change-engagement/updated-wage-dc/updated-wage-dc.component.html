@@ -1,0 +1,482 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<ng-container *ngIf="updatedWageDetails">
+  <div class="row custom-scroll separator">
+    <div class="col-lg-12">
+      <table class="table table-responsive" *ngIf="updatedWageDetails.basicDetails">
+        <thead class="thead-light">
+          <tr>
+            <th>{{ 'CONTRIBUTOR.DETAILS' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.JOINING-DATE' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.LEAVING-DATE' | translate }}</th>
+            <th
+              *ngIf="
+                updatedWageDetails.basicDetails.current.leavingDate?.gregorian ||
+                updatedWageDetails.basicDetails.updated.leavingDate?.gregorian
+              "
+            >
+              {{ 'CONTRIBUTOR.LEAVING-REASON' | translate }}
+            </th>
+            <th *ngIf="isWorkTypeChanged">
+              {{ 'CONTRIBUTOR.WORK-TYPE' | translate }}
+            </th>
+            <th *ngIf="isEmployeeIDChanged">
+              {{ 'CONTRIBUTOR.EMPLOYEE-ID' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="updatedWageDetails.basicDetails.current">
+            <td class="heading">
+              {{ 'CONTRIBUTOR.OLD-DETAILS' | translate }}
+            </td>
+            <td>
+              {{ updatedWageDetails.basicDetails.current.joiningDate | dateType }}
+            </td>
+            <td>
+              {{
+                updatedWageDetails.basicDetails.current.leavingDate
+                  ? (updatedWageDetails.basicDetails.current.leavingDate | dateType)
+                  : ('CONTRIBUTOR.ONWARDS' | translate)
+              }}
+            </td>
+            <!-- <td class="heading">
+              {{ 'CONTRIBUTOR.OLD-DETAILS' | translate }}
+            </td>
+            <td>
+              {{ updatedWageDetails.basicDetails.current.joiningDate.gregorian | date: 'dd/MM/yyyy' }}
+            </td>
+            <td>
+              {{
+                updatedWageDetails.basicDetails.current.leavingDate
+                  ? (updatedWageDetails.basicDetails.current.leavingDate.gregorian | date: 'dd/MM/yyyy')
+                  : ('CONTRIBUTOR.ONWARDS' | translate)
+              }}
+            </td> -->
+            <td *ngIf="updatedWageDetails.basicDetails.current.leavingDate?.gregorian">
+              {{ updatedWageDetails.basicDetails.current.leavingReason | bilingualText }}
+            </td>
+            <td *ngIf="isWorkTypeChanged">
+              {{ updatedWageDetails.basicDetails.current.workType | bilingualText }}
+            </td>
+            <td *ngIf="isEmployeeIDChanged">
+              {{ updatedWageDetails.basicDetails.current.employeeID }}
+            </td>
+          </tr>
+          <tr *ngIf="updatedWageDetails.basicDetails.updated">
+            <td class="heading">
+              {{ 'CONTRIBUTOR.NEW-DETAILS' | translate }}
+            </td>
+            <td
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.joiningDate.gregorian !==
+                  updatedWageDetails.basicDetails.updated.joiningDate.gregorian
+              }"
+            >
+              {{ updatedWageDetails.basicDetails.updated.joiningDate | dateType }}
+            </td>
+            <td
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.leavingDate?.gregorian !==
+                  updatedWageDetails.basicDetails.updated.leavingDate?.gregorian
+              }"
+            >
+              {{
+                updatedWageDetails.basicDetails.updated.leavingDate
+                  ? (updatedWageDetails.basicDetails.updated.leavingDate | dateType)
+                  : ('CONTRIBUTOR.ONWARDS' | translate)
+              }}
+            </td>
+            <!-- <td
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.joiningDate.gregorian !==
+                  updatedWageDetails.basicDetails.updated.joiningDate.gregorian
+              }"
+            >
+              {{ updatedWageDetails.basicDetails.updated.joiningDate.gregorian | date: 'dd/MM/yyyy' }}
+            </td>
+            <td
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.leavingDate?.gregorian !==
+                  updatedWageDetails.basicDetails.updated.leavingDate?.gregorian
+              }"
+            >
+              {{
+                updatedWageDetails.basicDetails.updated.leavingDate
+                  ? (updatedWageDetails.basicDetails.updated.leavingDate.gregorian | date: 'dd/MM/yyyy')
+                  : ('CONTRIBUTOR.ONWARDS' | translate)
+              }}
+            </td> -->
+            <td
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.leavingReason !== null &&
+                  updatedWageDetails.basicDetails.updated.leavingReason !== null &&
+                  updatedWageDetails.basicDetails.current.leavingReason.english !==
+                    updatedWageDetails.basicDetails.updated.leavingReason.english
+              }"
+              *ngIf="updatedWageDetails.basicDetails.updated.leavingDate?.gregorian"
+            >
+              {{ updatedWageDetails.basicDetails.updated.leavingReason | bilingualText }}
+            </td>
+            <td
+              *ngIf="isWorkTypeChanged"
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current?.workType?.english !==
+                  updatedWageDetails.basicDetails.updated?.workType?.english
+              }"
+            >
+              {{ updatedWageDetails.basicDetails.updated.workType | bilingualText }}
+            </td>
+            <td
+              *ngIf="isEmployeeIDChanged"
+              [ngClass]="{
+                change:
+                  updatedWageDetails.basicDetails.current.employeeID !==
+                  updatedWageDetails.basicDetails.updated.employeeID
+              }"
+            >
+              {{ updatedWageDetails.basicDetails.updated.employeeID }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div
+    class="row custom-scroll separator"
+    *ngIf="updatedWageDetails.wagePeriods && updatedWageDetails.wagePeriods.length > 0"
+  >
+    <ng-container *ngFor="let period of updatedWageDetails.wagePeriods; let j = index">
+      <div class="col-lg-12">
+        <table class="table table-responsive">
+          <thead class="thead-light">
+            <tr>
+              <th>{{ 'CONTRIBUTOR.DETAILS' | translate }}</th>
+              <th>{{ 'CONTRIBUTOR.PERIOD-START' | translate }}</th>
+              <th>{{ 'CONTRIBUTOR.PERIOD-END' | translate }}</th>
+              <ng-container *ngIf="isWageChanged">
+                <th>{{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}</th>
+                <th>{{ 'CONTRIBUTOR.HOUSING' | translate }}</th>
+                <th>{{ 'CONTRIBUTOR.COMMISSION' | translate }}</th>
+                <th>{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+                <th>{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}</th>
+                <ng-container *ngIf="isPpa">
+                  <th>{{ 'CONTRIBUTOR.JOB-CLASS' | translate }}</th>
+                  <th>{{ 'CONTRIBUTOR.RANK' | translate }}</th>
+                  <th>{{ 'CONTRIBUTOR.GRADE' | translate }}</th>
+                </ng-container>
+              </ng-container>
+              <th>{{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE' | translate }}</th>
+              <th *ngIf="!isPpa">{{ 'CONTRIBUTOR.ANNUITY' | translate }}</th>
+              <th *ngIf="isPpa && showPPAAnnuity">{{ 'CONTRIBUTOR.PPA-ANNUITY' | translate }}</th>
+              <th *ngIf="showPensionReform">{{ 'CONTRIBUTOR.PENSION-REFORM' | translate }}</th>
+              <th *ngIf="!isPpa">{{ 'CONTRIBUTOR.OCCUPATIONAL-HAZARD' | translate }}</th>
+              <th *ngIf="!isPpa">{{ 'CONTRIBUTOR.UNEMPLOYMENT-INS' | translate }}</th>
+              <th *ngIf="isOccupationChanged">
+                {{ 'CONTRIBUTOR.OCCUPATION' | translate }}
+              </th>
+              <th *ngIf="isContributorAbroadChanged">
+                {{ 'CONTRIBUTOR.ABROAD' | translate }}
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td class="heading">
+                {{ 'CONTRIBUTOR.OLD-PERIOD' | translate }}
+              </td>
+              <td>{{ period.current.startDate | dateType }}</td>
+              <td>
+                {{ period.current.endDate ? (period.current.endDate | dateType) : ('CONTRIBUTOR.ONWARDS' | translate) }}
+              </td>
+              <!-- <td>{{ period.current.startDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    {{
+                      period.current.endDate
+                        ? (period.current.endDate.gregorian | date: 'dd/MM/yyyy')
+                        : ('CONTRIBUTOR.ONWARDS' | translate)
+                    }}
+                  </td> -->
+              <ng-container *ngIf="isWageChanged">
+                <td>{{ period.current.wage.basicWage | number: '1.2-2' }}</td>
+                <td>{{
+                  isPpa && ((period.current.wage.housingBenefit | number) === '0' || period.current.wage.housingBenefit === null || period.current.wage?.housingBenefit === undefined)
+                    ? '-'
+                    : (period.current.wage.housingBenefit | number: '1.2-2')
+                }}</td>
+                <td>{{
+                  isPpa && ((period.current.wage.commission | number) === '0' || period.current.wage?.commission === null || period.current.wage.commission === undefined)
+                    ? '-'
+                    : (period.current.wage.commission | number: '1.2-2')
+                }}</td>
+                <td>{{
+                  isPpa && ((period.current.wage.otherAllowance | number) === '0' || period.current.wage?.otherAllowance === null || period.current.wage?.otherAllowance === undefined)
+                    ? '-'
+                    : (period.current.wage.otherAllowance | number: '1.2-2')
+                }}</td>
+                <td>{{ period.current.wage.totalWage | number: '1.2-2' }}</td>
+                <ng-container *ngIf="isPpa">
+                  <td>{{ period.current?.jobClassName | bilingualText }}</td>
+                  <td>{{ period.current?.jobRankName | bilingualText }}</td>
+                  <td>{{ period.current?.jobGradeName | bilingualText }}</td>
+                </ng-container>
+              </ng-container>
+              <td>{{ period.current.wage.contributoryWage | number: '1.2-2' }}</td>
+              <td class="text-center" *ngIf="!isPpa">
+                <fa-icon
+                  class="cov-icon"
+                  [ngClass]="{
+                    'icon-active': isAnnuityCoverage(period.current.coverageType)
+                  }"
+                  icon="check"
+                >
+                </fa-icon>
+              </td>
+              <td class="text-center" *ngIf="isPpa && showPPAAnnuity">
+                <fa-icon
+                  class="cov-icon"
+                  [ngClass]="{
+                    'icon-active': isPPAAnnuityCoverage(period.current.coverageType)
+                  }"
+                  icon="check"
+                >
+                </fa-icon>
+              </td>
+              <td class="text-center" *ngIf="showPensionReform">
+                <fa-icon
+                  class="cov-icon"
+                  [ngClass]="{
+                    'icon-active': checkPensionReformCoverage(period.current.coverageType)
+                  }"
+                  icon="check"
+                >
+                </fa-icon>
+              </td>
+              <td class="text-center" *ngIf="!isPpa">
+                <fa-icon
+                  class="cov-icon"
+                  [ngClass]="{
+                    'icon-active': isOHCoverage(period.current.coverageType)
+                  }"
+                  icon="check"
+                ></fa-icon>
+              </td>
+              <td class="text-center" *ngIf="!isPpa">
+                <fa-icon
+                  class="cov-icon"
+                  [ngClass]="{
+                    'icon-active': isUICoverage(period.current.coverageType)
+                  }"
+                  icon="check"
+                >
+                </fa-icon>
+              </td>
+              <td *ngIf="isOccupationChanged">
+                {{ period.current.occupation | bilingualText }}
+              </td>
+              <td *ngIf="isContributorAbroadChanged">
+                {{
+                  period.current.contributorAbroad ? ('CONTRIBUTOR.YES' | translate) : ('CONTRIBUTOR.NO' | translate)
+                }}
+              </td>
+            </tr>
+            <ng-container *ngFor="let item of period.updated; let i = index">
+              <tr>
+                <td class="heading">
+                  {{ 'CONTRIBUTOR.NEW-PERIOD' | translate }}
+                  <span *ngIf="period.updated.length > 1">{{ i + 1 }}</span>
+                </td>
+                <td
+                  [ngClass]="{
+                    change: period.current.startDate.gregorian !== item.startDate.gregorian
+                  }"
+                >
+                  {{ item.startDate | dateType }}
+                </td>
+                <td
+                  [ngClass]="{
+                    change: period.current.endDate?.gregorian !== item.endDate?.gregorian
+                  }"
+                >
+                  {{ item.endDate ? (item.endDate | dateType) : ('CONTRIBUTOR.ONWARDS' | translate) }}
+                </td>
+                <!-- <td
+                      [ngClass]="{
+                        change: period.current.startDate.gregorian !== item.startDate.gregorian
+                      }"
+                    >
+                      {{ item.startDate.gregorian | date: 'dd/MM/yyyy' }}
+                    </td>
+                    <td
+                      [ngClass]="{
+                        change: period.current.endDate?.gregorian !== item.endDate?.gregorian
+                      }"
+                    >
+                      {{
+                        item.endDate ? (item.endDate.gregorian | date: 'dd/MM/yyyy') : ('CONTRIBUTOR.ONWARDS' | translate)
+                      }}
+                    </td> -->
+                <ng-container *ngIf="isWageChanged">
+                  <td
+                    [ngClass]="{
+                      change: period.current.wage.basicWage !== item.wage.basicWage
+                    }"
+                  >
+                    {{ item.wage.basicWage | number: '1.2-2' }}
+                  </td>
+                  <td
+                    [ngClass]="{
+                      change: period.current.wage.housingBenefit !== item.wage.housingBenefit
+                    }"
+                  >{{
+                    isPpa && ((item.wage.housingBenefit | number) === '0' || item.wage.housingBenefit === null || item.wage.housingBenefit === undefined)
+                      ? '-'
+                      : (item.wage.housingBenefit | number: '1.2-2')
+                  }}
+                  </td>
+                  <td
+                    [ngClass]="{
+                      change: period.current.wage.commission !== item.wage.commission
+                    }"
+                  >
+                  {{
+                    isPpa && ((item.wage.commission | number) === '0' || item.wage.commission === null || item.wage.commission === undefined)
+                      ? '-'
+                      : (item.wage.commission | number: '1.2-2')
+                  }}
+                  </td>
+                  <td
+                    [ngClass]="{
+                      change: period.current.wage.otherAllowance !== item.wage.otherAllowance
+                    }"
+                  >
+                  {{
+                    isPpa && ((item.wage.otherAllowance | number) === '0' || item.wage.otherAllowance === null || item.wage.otherAllowance === undefined)
+                      ? '-'
+                      : (item.wage.otherAllowance | number: '1.2-2')
+                  }}
+                  </td>
+                  <td
+                    [ngClass]="{
+                      change: period.current.wage.totalWage !== item.wage.totalWage
+                    }"
+                  >
+                    {{ item.wage.totalWage | number: '1.2-2' }}
+                  </td>
+                  <ng-container *ngIf="isPpa">
+                    <td
+                      [ngClass]="{
+                        change: period.current?.jobClassCode !== item?.jobClassCode
+                      }"
+                    >
+                      {{ item?.jobClassName | bilingualText }}
+                    </td>
+                    <td
+                      [ngClass]="{
+                        change: period.current?.jobClassCode !== item?.jobClassCode || period.current?.jobRankCode !== item?.jobRankCode
+                      }"
+                    >
+                      {{ item?.jobRankName | bilingualText }}
+                    </td>
+                    <td
+                      [ngClass]="{
+                        change: period.current?.jobClassCode !== item?.jobClassCode || period.current?.jobRankCode !== item?.jobRankCode || period.current?.jobGradeCode !== item?.jobGradeCode
+                      }"
+                    >
+                      {{ item?.jobGradeName | bilingualText }}
+                    </td>
+                  </ng-container>
+                </ng-container>
+                <td
+                  [ngClass]="{
+                    change: period.current.wage.contributoryWage !== item.wage.contributoryWage
+                  }"
+                >
+                  {{ item.wage.contributoryWage | number: '1.2-2' }}
+                </td>
+                <td class="text-center" *ngIf="!isPpa">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isAnnuityCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td class="text-center" *ngIf="isPpa && showPPAAnnuity">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isPPAAnnuityCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td class="text-center" *ngIf="showPensionReform">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': checkPensionReformCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td class="text-center" *ngIf="!isPpa">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isOHCoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td class="text-center" *ngIf="!isPpa">
+                  <fa-icon
+                    class="cov-icon"
+                    [ngClass]="{
+                      'icon-active': isUICoverage(item.coverageType)
+                    }"
+                    icon="check"
+                  >
+                  </fa-icon>
+                </td>
+                <td
+                  *ngIf="isOccupationChanged"
+                  [ngClass]="{
+                    change: period.current.occupation.english !== item.occupation.english
+                  }"
+                >
+                  {{ item.occupation | bilingualText }}
+                </td>
+                <td
+                  *ngIf="isContributorAbroadChanged"
+                  [ngClass]="{
+                    change: period.current.contributorAbroad !== item.contributorAbroad
+                  }"
+                >
+                  {{ item.contributorAbroad ? ('CONTRIBUTOR.YES' | translate) : ('CONTRIBUTOR.NO' | translate) }}
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>

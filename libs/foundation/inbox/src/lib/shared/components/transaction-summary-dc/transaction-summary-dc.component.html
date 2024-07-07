@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+<div class="txn-sub-heading pb-2">{{ 'INBOX.WORKLIST-SUMMARY' | translate }}</div>
+<div class="main-div">
+  <div class="d-none d-lg-block d-md-block">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" [ngClass]="isToday ? 'active' : ''" id="today-tab" (click)="getTransactionPriorityState(1)">
+          <b>{{ 'INBOX.TODAY' | translate }}</b>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          id="seven-days-tab"
+          [ngClass]="isWeek ? 'active' : ''"
+          (click)="getTransactionPriorityState(7)"
+        >
+          <b>{{ 'INBOX.LAST-SEVEN-DAYS' | translate }}</b>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          id="thirty-days-tab"
+          [ngClass]="isMonth ? 'active' : ''"
+          (click)="getTransactionPriorityState(30)"
+        >
+          <b>{{ 'INBOX.LAST-30-DAYS' | translate }}</b>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="d-block d-lg-none d-md-none">
+    <div class="transaction-tabs" [ngClass]="{ 'has-dropdown': showDropDown }">
+      <a
+        *ngFor="let tabs of inboxTabs; let i = index"
+        (click)="getTransactionPriorityState(tabs.count)"
+        [ngClass]="[
+          i > 1 ? 'd-none d-md-flex' : '',
+          isToday && tabs.count === 1 ? 'active' : '',
+          isWeek && tabs.count === 7 ? 'active' : '',
+          isMonth && tabs.count === 30 ? 'active' : ''
+        ]"
+        class="tab main"
+      >
+        <span class="value">{{ 'INBOX.' + tabs.label | translate }} </span>
+      </a>
+      <a
+        *ngIf="inboxTabs.length > 2"
+        id="more"
+        class="tab dropdown"
+        (click)="onDropDownClick()"
+        [ngClass]="{ open: showDropDown, active: activeInDropdown }"
+      >
+        <div class="value">{{ 'INBOX.MORE' | translate }}</div>
+        <fa-icon class="icon dropdown-icon" icon="caret-down"> </fa-icon>
+      </a>
+    </div>
+    <div class="dropdown-options" *ngIf="showDropDown && inboxTabs.length > 2">
+      <a
+        *ngFor="let tabs of inboxTabs.slice(2, inboxTabs.length); let i = index"
+        [ngClass]="[
+          isToday && tabs.count === 1 ? 'active' : '',
+          isWeek && tabs.count === 7 ? 'active' : '',
+          isMonth && tabs.count === 30 ? 'active' : ''
+        ]"
+        (click)="getTransactionPriorityState(tabs.count)"
+        class="dropdown-tab"
+      >
+        <span class="value">
+          {{ 'INBOX.' + tabs.label | translate }}
+        </span>
+      </a>
+    </div>
+  </div>
+  <div class="row chart-wrapper">
+    <div class="col-md-4 chartdesk-container">
+      <ng-container *ngTemplateOutlet="transactionPriority"></ng-container>
+    </div>
+    <div class="col-md-12 chartmobile-container">
+      <ng-container *ngTemplateOutlet="transactionPriority"></ng-container>
+    </div>
+    <div class="col-md-12 chartmob-container">
+      <ng-container *ngTemplateOutlet="transactionStatus"></ng-container>
+    </div>
+    <div class="col-md-4 chartdesk-container">
+      <ng-container *ngTemplateOutlet="transactionStatus"></ng-container>
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+</div>
+<ng-template #transactionPriority>
+  <gosi-transaction-priority-dc
+    *ngIf="performancePriority"
+    [highCount]="performancePriority.high"
+    [lowCount]="performancePriority.low"
+    [mediumCount]="performancePriority.medium"
+    [totalCount]="totalCount"
+  ></gosi-transaction-priority-dc>
+</ng-template>
+<ng-template #transactionStatus>
+  <ibx-transaction-status-dc
+    *ngIf="performanceCount"
+    [pendingCount]="performanceCount.pending"
+    [completeCount]="performanceCount.completed"
+    [olaExceededCount]="performanceCount.olaExceeded"
+  >
+  </ibx-transaction-status-dc>
+</ng-template>

@@ -1,0 +1,377 @@
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc *ngIf="!(isSimisFlag || noContributors)" type="secondary">
+      <div class="row d-flex">
+        <div class="col-md-5 mb-3 heading">
+          {{ 'VIOLATIONS.PENALTY-DETAILS' | translate }}
+        </div>
+        <div class="menu d-flex col-auto menu-pad" *ngIf="!isViolatingProvision">
+          <div id="selection" class="d-flex align-items-center pb-3">
+            <span class="value" *ngIf="transactionDetails?.contributors.length > 1">{{ excluded }} </span>
+            <span class="p-2" *ngIf="transactionDetails?.contributors.length > 1">
+              {{ 'VIOLATIONS.EXCLUDED' | translate }}</span
+            >
+            <span class="p-4"></span>
+            <span class="value">{{ modified }} </span> <span class="p-2">{{ 'VIOLATIONS.MODIFIED' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-effected" *ngIf="transactionDetails">
+        <div class="mobile-view">
+          <div
+            *ngFor="
+              let contributor of transactionDetails.contributors
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: noOfRecords
+                    };
+              let i = index;
+              let odd = odd
+            "
+          >
+            <div
+              class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+              [ngClass]="odd ? 'odd' : 'even'"
+            >
+              <div class="card-body align-items-center">
+                <div class="first-row d-flex flex-row justify-content-between my-2">
+                  <div class="first-cell">
+                    <p class="title">
+                      {{
+                        contributor.contributorName.english === null
+                          ? contributor.contributorName.arabic
+                          : (contributor.contributorName | bilingualText)
+                      }}
+                    </p>
+                    <ng-container *ngIf="isSinRequired(contributor.identity) === 1; else isSinTemplate">
+                      <div id="contributor-nin" *ngFor="let identifier of contributor?.identity">
+                        <div *ngIf="identifier?.idType === 'NIN'">
+                          <div class="text-grayed sub-title">
+                            {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                          </div>
+                        </div>
+
+                        <div id="contributor-iqama" *ngIf="identifier?.idType === 'IQAMA'">
+                          <div class="text-grayed sub-title">
+                            {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                          </div>
+                        </div>
+
+                        <div id="contributor-gccid" *ngIf="identifier?.idType === 'GCCID'">
+                          <div class="text-grayed sub-title">
+                            {{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <ng-template #isSinTemplate>
+                      <div class="text-grayed sub-title">
+                        {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                      </div>
+                    </ng-template>
+                  </div>
+                  <div class="second-cell" *ngIf="!isViolatingProvision">
+                    <p *ngIf="transactionDetails.contributors.length > 1">
+                      <gosi-input-checkbox-dc
+                        id="check{{ i }}"
+                        (select)="selectEstablishment($event, i)"
+                        [label]="'VIOLATIONS.EXCLUDE'"
+                        [control]="branchListValue.controls[absoluteIndex(i)].get('checkBoxFlag')"
+                        [lessPadding]="false"
+                        [noSpacing]="true"
+                      >
+                        {{ 'VIOLATIONS.SAR' | translate }}
+                      </gosi-input-checkbox-dc>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="second-row row-two d-flex flex-row justify-content-between my-2"
+                  *ngIf="!isViolatingProvision"
+                >
+                  <div class="third-cell">
+                    <p class="sub-title">
+                      {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}
+                      <span class="title-two"
+                        >{{ contributor.penaltyAmount === 0 ? '0.00' : (contributor.penaltyAmount | number: '1.2-2') }}
+                        {{ 'VIOLATIONS.CURRENCY' | translate }}
+                      </span>
+                    </p>
+                  </div>
+                  <div class="fourth-cell">
+                    <p class="sub-title">
+                      {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}
+                      <span class="title-two">
+                        <gosi-input-text-dc
+                          gosiNumberMask
+                          id="newPenltyAmount{{ i }}"
+                          (blur)="getNewPenalty(absoluteIndex(i))"
+                          [control]="branchListValue.controls[absoluteIndex(i)].get('newPenalty')"
+                          [ignoreLabel]="true"
+                          [noMargin]="true"
+                          [noPadding]="true"
+                        >
+                        </gosi-input-text-dc>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="desktop-view">
+          <table class="table table-borderless" *ngIf="transactionDetails.contributors?.length > 0">
+            <thead class="thead-light">
+              <tr>
+                <th id="contributor-heading">
+                  {{ 'VIOLATIONS.CONTRIBUTOR' | translate }}
+                </th>
+
+                <th id="current-penalty-amount">
+                  <ng-container *ngIf="!isViolatingProvision">{{
+                    'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate
+                  }}</ng-container>
+                </th>
+                <th id="new-penalty-amount" class="padding">
+                  <ng-container *ngIf="!isViolatingProvision">{{
+                    'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate
+                  }}</ng-container>
+                </th>
+                <th id="checkbox"></th>
+              </tr>
+            </thead>
+            <tbody
+              *ngFor="
+                let contributor of transactionDetails.contributors
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: noOfRecords
+                      };
+                let i = index
+              "
+            >
+              <tr class="content border-bottom">
+                <td>
+                  <div class="settlement">
+                    {{
+                      contributor.contributorName.english === null
+                        ? contributor.contributorName.arabic
+                        : (contributor.contributorName | bilingualText)
+                    }}
+                  </div>
+                  <ng-container *ngIf="isSinRequired(contributor.identity) === 1; else isSinTemplate">
+                    <div id="contributor-nin" *ngFor="let identifier of contributor?.identity">
+                      <div *ngIf="identifier?.idType === 'NIN'">
+                        <div class="lighter-label">
+                          {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                        </div>
+                      </div>
+
+                      <div id="contributor-iqama" *ngIf="identifier?.idType === 'IQAMA'">
+                        <div class="lighter-label">
+                          {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                        </div>
+                      </div>
+
+                      <div id="contributor-gccid" *ngIf="identifier?.idType === 'GCCID'">
+                        <div class="lighter-label">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}</div>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #isSinTemplate>
+                    <div class="lighter-label">
+                      {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                    </div>
+                  </ng-template>
+                </td>
+
+                <td class="pt-4">
+                  <ng-container *ngIf="!isViolatingProvision">
+                    <ng-container *ngIf="contributor.penaltyAmount >= 0; else noValue">
+                      {{ contributor.penaltyAmount === 0 ? '0.00' : (contributor.penaltyAmount | number: '1.2-2') }}
+                      {{ 'VIOLATIONS.CURRENCY' | translate }}
+                    </ng-container></ng-container
+                  >
+                </td>
+                <td>
+                  <div class="lighter-label col" *ngIf="!isViolatingProvision">
+                    <gosi-input-text-dc
+                      gosiNumberMask
+                      id="newPenaltyAmount{{ i }}"
+                      (blur)="getNewPenalty(absoluteIndex(i))"
+                      [control]="branchListValue.controls[absoluteIndex(i)].get('newPenalty')"
+                      [ignoreLabel]="true"
+                      [noMargin]="true"
+                      [noPadding]="true"
+                    >
+                    </gosi-input-text-dc>
+                  </div>
+                </td>
+                <td>
+                  <ng-container *ngIf="!isViolatingProvision">
+                    <div class="lighter-label col exclude-checkbox" *ngIf="transactionDetails.contributors.length > 1">
+                      <gosi-input-checkbox-dc
+                        id="check{{ i }}"
+                        (select)="selectEstablishment($event, i)"
+                        [label]="'VIOLATIONS.EXCLUDE'"
+                        [control]="branchListValue.controls[absoluteIndex(i)].get('checkBoxFlag')"
+                        [lessPadding]="false"
+                        [noSpacing]="true"
+                      >
+                        {{ 'VIOLATIONS.SAR' | translate }}
+                      </gosi-input-checkbox-dc>
+                    </div></ng-container
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="noOfRecords > itemsPerPage">
+          <div class="border-bottom p-3">
+            <ng-container>
+              <gosi-pagination-dc
+                [totalSize]="noOfRecords"
+                [itemsPerPage]="itemsPerPage"
+                [pageDetails]="pageDetails"
+                (pageChange)="selectPage($event)"
+                paginationId="paginationId"
+              ></gosi-pagination-dc>
+            </ng-container>
+          </div>
+        </div>
+        <div class="row p-3">
+          <div class="col penality-amount">
+            <div class="form-group form-label fc-margin">
+              <label class="label-color">
+                {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}
+              </label>
+              <ng-container *ngIf="transactionDetails.penaltyAmount !== null; else noValue">
+                <div class="label-value">
+                  {{ transactionDetails.penaltyAmount | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <div class="col penality-amount" *ngIf="!isViolatingProvision">
+            <div class="form-group form-label fc-margin">
+              <label class="label-color">
+                {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}
+              </label>
+              <div class="label-value">
+                {{ totalNewPenaltyValue | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6" *ngIf="isViolatingProvision">
+            <gosi-input-text-dc
+              gosiNumberMask
+              id="newPenaltyAmounts"
+              [control]="modifyPenaltyForm.get('newPenalty')"
+              [label]="'VIOLATIONS.NEW-PENALITY-AMOUNT'"
+              (blur)="getPenaltyValue()"
+            >
+            </gosi-input-text-dc>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group form-label fc-margin">
+              <gosi-input-select-dc
+                id="violationClass"
+                [label]="'VIOLATIONS.REASON-FOR-MODIFICATION' | translate"
+                [control]="modifyPenaltyForm.get('modifyReason')"
+                [list]="modifyReasonList"
+                (select)="selectReasonForModify($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6" *ngIf="showComments">
+            <div class="form-group form-label fc-margin">
+              <gosi-input-text-area-dc
+                id="comments"
+                label="VIOLATIONS.COMMENTS"
+                [maxLength]="commentsMaxLength"
+                [control]="modifyPenaltyForm.get('comments')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+    <gosi-card-dc *ngIf="isSimisFlag || noContributors" type="secondary">
+      <div class="row">
+        <div class="col-md-12">
+          <gosi-currency-label-dc
+            id="amountPenalty"
+            [label]="'VIOLATIONS.PENALTY-AMT' | translate"
+            [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"
+            [currencyTo]="transactionDetails?.penaltyAmount"
+          >
+          </gosi-currency-label-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-input-text-dc
+            gosiNumberMask
+            id="newPenaltyAmounts"
+            [control]="modifyPenaltyForm.get('newPenalty')"
+            [label]="'VIOLATIONS.NEW-PENALITY-AMOUNT'"
+            (blur)="getPenaltyValue()"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-input-select-dc
+            id="violationClass"
+            [label]="'VIOLATIONS.REASON-FOR-MODIFICATION' | translate"
+            [control]="modifyPenaltyForm.get('modifyReason')"
+            [list]="modifyReasonList"
+            (select)="selectReasonForModify($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-md-6" *ngIf="showComments">
+          <gosi-input-text-area-dc
+            id="comments"
+            label="VIOLATIONS.COMMENTS"
+            [maxLength]="commentsMaxLength"
+            [control]="modifyPenaltyForm.get('comments')"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="float-right">
+          <gosi-button-dc id="save-next" type="primary" (click)="savePenaltyAmount()">
+            {{ 'VIOLATIONS.SAVE-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+
+        <div class="float-left">
+          <gosi-button-dc id="cancel-next" type="secondary" (click)="cancelPenaltyDetails()">
+            {{ 'VIOLATIONS.CANCEL' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #noValue>
+  <div class="null-value label-value">
+    {{ 'VIOLATIONS.NOT-AVAILABLE' | translate }}
+  </div>
+</ng-template>

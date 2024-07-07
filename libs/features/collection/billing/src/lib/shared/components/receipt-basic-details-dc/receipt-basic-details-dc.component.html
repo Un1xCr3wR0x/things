@@ -1,0 +1,135 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div [ngClass]="isMofReceiptFlag ? 'col-lg-3 pl-0 pr-0' : 'col-lg-3 pl-0 pr-0'">
+    <gosi-label-dc
+      id="receiptDate"
+      [label]="'BILLING.RECEIPT-DATE'"
+      [value]="receipt?.receiptGenerationDate?.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+  <div [ngClass]="isMofReceiptFlag ? 'col-lg-3 pl-0 pr-0 receipt-mode' : 'col-lg-3 pl-0 pr-0'">
+    <gosi-label-dc
+      *ngIf="receipt"
+      id="receiptMode"
+      [label]="'BILLING.RECEIPT-MODE'"
+      [value]="receipt.receiptMode | bilingualText"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3 pl-0 pr-0">
+    <gosi-label-dc
+      *ngIf="receipt"
+      id="transactionDate"
+      [label]="'BILLING.TRANSACTION-DATE'"
+      [value]="receipt.transactionDate.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="!isMofReceiptFlag">
+    <ng-container *ngIf="gccFlag; else nonGcc">
+      <gosi-currency-label-dc
+        id="allocatedAmount"
+        [label]="'BILLING.AMOUNT-RECEIVED'"
+        [currencyFrom]="currencyDetails?.convertedAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+        [currencyTo]="receipt?.amountReceived?.amount"
+        [ThreeDecimalLabel]="
+          currencyDetails?.currencyCode.english === 'QAR' || currencyDetails?.currencyCode.english === 'AED'
+            ? false
+            : true
+        "
+        [countryCodeTo]="currencyDetails?.currencyCode | bilingualText"
+      >
+      </gosi-currency-label-dc>
+    </ng-container>
+    <ng-template #nonGcc>
+      <gosi-label-dc
+        *ngIf="receipt && receipt.amountReceived"
+        id="allocatedAmount"
+        [label]="'BILLING.AMOUNT-RECEIVED'"
+        [value]="receipt.amountReceived.amount | number: '1.2-2'"
+      >
+      </gosi-label-dc>
+    </ng-template>
+  </div>
+
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="isMofReceiptFlag">
+      <span class="f-margin"> {{ 'BILLING.AMOUNT-RECEIVED' | translate }}</span>
+
+    <div class="fc-margin amount-margin">
+      {{ receipt.amountReceived.amount | number: '1.2-2' }}
+      <span
+        class="button-padding"
+        *ngIf="
+          isMofReceiptFlag &&
+          (receipt.status.english === 'Fully Allocated' || receipt.status.english === 'Partially Allocated')
+        "
+      >
+        <gosi-button-dc
+          class="button-label"
+          [outlineOnly]="true"
+          id="view"
+          type="secondary"
+          [size]="'sm'"
+          (click)="getMofAllocationBreakupDetails()"
+          >{{ 'BILLING.ALLOCATION-BREAKUP' | translate }}</gosi-button-dc
+        >
+      </span> 
+  </div>
+</div>
+  <ng-container *ngIf="receipt && receipt.bank !== null">
+    <div [ngClass]="isMofReceiptFlag ? 'col-lg-3 pl-0 pr-0' : 'col-lg-3 pl-0 pr-0'">
+      <gosi-label-dc
+        id="bankLocation"
+        [label]="'BILLING.BANK-LOCATION'"
+        [value]="receipt.bank.country | bilingualText"
+      ></gosi-label-dc>
+    </div>
+
+    <div [ngClass]="isMofReceiptFlag ? 'col-lg-3 pl-0 pr-0' : 'col-lg-3 pl-0 pr-0'">
+      <gosi-label-dc
+        id="bankLocation"
+        [label]="'BILLING.BANK-NAME'"
+        [value]="receipt.bank.name !== null ? (receipt.bank.name | bilingualText) : receipt.bank.nonListedBank"
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="receipt && receipt.chequeNumber !== null">
+    <gosi-label-dc id="chequeNumber" [label]="'BILLING.CHEQUE-NUMBER'" [value]="receipt.chequeNumber"></gosi-label-dc>
+  </div>
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="receipt && receipt.chequeDate !== null">
+    <gosi-label-dc
+      id="chequeDate"
+      [label]="'BILLING.CHEQUE-DATE'"
+      [value]="receipt.chequeDate.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="receipt && receipt.referenceNo !== null">
+    <gosi-label-dc
+      id="paymentReferenceNo"
+      [label]="'BILLING.PAYMENT-REFERENCE-NUMBER'"
+      [value]="receipt.referenceNo"
+    ></gosi-label-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-3 pl-0 pr-0">
+    <gosi-label-dc
+      *ngIf="receipt"
+      id="description"
+      [label]="'BILLING.ADDITIONAL-PAYMENT-DETAILS'"
+      [control]="receipt.description | bilingualText"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3 pl-0 pr-0" *ngIf="receipt.receiptMode.english === 'Bank Transfer to a Virtual Account'">
+    <gosi-label-dc
+      id="description"
+      [label]="'BILLING.TRANSFER-IBAN'"
+      [control]="receipt.ibanAccountNo"
+    ></gosi-label-dc>
+  </div>
+  </div>

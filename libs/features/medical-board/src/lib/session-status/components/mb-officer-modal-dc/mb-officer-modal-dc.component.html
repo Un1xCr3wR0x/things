@@ -1,0 +1,116 @@
+<gosi-modal-dc>
+  <div modalContent>
+    <div class="d-flex flex-wrap align-items-center justify-content-between table-headers pt-4 pb-4">
+      <div class="d-flex justify-content-start">
+        <div class="header">
+          <h5>{{ 'MEDICAL-BOARD.SELECT-NEW-MEDICAL-BOARD-OFFICER' | translate }}</h5>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <gosi-search-dc
+          id="search-area"
+          class="pr-2 pl-2 search-value"
+          [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+          (search)="onSearchValue($event)"
+        ></gosi-search-dc>
+        <!-- (keyup)="onSearchValue($event.target.value)" -->
+        <!-- filter -->
+        <ng-container *ngIf="primaryMBOfficer">
+          <mb-change-member-filter-dc
+            [fieldOfficeLists]="fieldOfficeLists"
+            (filter)="filterArray($event)"
+          ></mb-change-member-filter-dc>
+        </ng-container>
+      </div>
+    </div>
+    <div class="table-view">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th style="width: 10%"></th>
+            <th id="name" style="width: 30%">
+              {{ 'MEDICAL-BOARD.NAME' | translate }}
+            </th>
+            <th style="width: 20%">
+              {{ 'MEDICAL-BOARD.AVAILABILITY' | translate }}
+            </th>
+            <th id="location" style="width: 20%">
+              {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+            </th>
+            <th id="mobileNumber" style="width: 20%">
+              {{ 'MEDICAL-BOARD.MOBILE-NUMBER' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="border-bottom"
+            *ngFor="
+              let mbOfficer of mbOfficerList?.mbOfficerList
+                | paginate
+                  : { itemsPerPage: itemsPerPage, currentPage: pageDetails?.currentPage, totalItems: totalCount };
+              let i = index
+            "
+          >
+            <td style="width: 10%">
+              <gosi-input-radio-dc
+                id="mbOfficer {{ i }}"
+                name="mbOfficer{{ i }}"
+                [list]="mboList"
+                ignoreLabel="true"
+                [control]="mbOfficerForm?.controls[i]?.get('flag')"
+                (select)="selectedMBO($event,mbOfficer, i)"
+                [disabled]="!mbOfficer?.available ? true : false"
+              >
+              </gosi-input-radio-dc>
+            </td>
+            <td style="width: 30%">
+              <div class="row">{{ mbOfficer?.name ? mbOfficer?.name : '-' }}</div>
+              <!-- <div class="row">
+                <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                <span
+                  ><a class="member-click" (click)="navigateMemberProfile(mbOfficer?.nationalId)">{{
+                    mbOfficer?.nationalId
+                  }}</a></span
+                >
+              </div> -->
+            </td>
+            <td style="width: 20%; padding-right: 30px">
+              <gosi-status-badge-dc
+                [label]="
+                  mbOfficer?.available
+                    ? ('MEDICAL-BOARD.AVAILABLE' | translate)
+                    : ('MEDICAL-BOARD.NOT-AVAILABLE' | translate)
+                "
+                [type]="mbOfficer?.available ? 'success' : 'danger'"
+              ></gosi-status-badge-dc>
+            </td>
+            <td style="width: 20%">{{ mbOfficer?.location | bilingualText }}</td>
+            <td style="width: 20%">{{ mbOfficer?.mobileNumber }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <gosi-pagination-dc
+        #paginationComponent
+        *ngIf="totalCount > itemsPerPage"
+        [pageDetails]="pageDetails"
+        [totalSize]="totalCount"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onSelectPage($event)"
+      >
+      </gosi-pagination-dc>
+    </div>
+  </div>
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" (click)="cancelMbo.emit()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="cancel" type="primary" (click)="saveMBO()" [disabled]="!submitEnable ? true : false">
+        {{ 'MEDICAL-BOARD.SUBMIT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>

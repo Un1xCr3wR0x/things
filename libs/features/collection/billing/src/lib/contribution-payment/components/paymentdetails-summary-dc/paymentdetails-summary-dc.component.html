@@ -1,0 +1,131 @@
+<div class="heading">
+  {{ 'BILLING.PAYMENT-DETAILS' | translate }}
+</div>
+
+<div class="row">
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="receiptDate"
+      [label]="'BILLING.RECEIPT-DATE'"
+      [value]="receiptPaymentSummaryDetails?.receiptGenerationDate?.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+
+  <div class="col-lg-3">
+    <ng-container *ngIf="!internationalFlag">
+      <ng-container *ngIf="gccFlag && !countryFlag">
+        <gosi-currency-label-dc
+          id="allocatedAmount"
+          [label]="'BILLING.AMOUNT-RECEIVED'"
+          [currencyFrom]="currencyDetails?.convertedAmount"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+          [currencyTo]="receiptPaymentSummaryDetails?.amountReceived?.amount"
+          [countryCodeTo]="currencyDetails?.currencyCode | bilingualText"
+          [ThreeDecimalLabel]="
+            currencyDetails?.currencyCode.english === 'QAR' || currencyDetails?.currencyCode.english === 'AED'
+              ? false
+              : true
+          "
+        >
+        </gosi-currency-label-dc>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="!gccFlag || internationalFlag || countryFlag">
+      <gosi-currency-label-dc
+        id="amountReceived"
+        label="BILLING.AMOUNT-RECEIVED"
+        [currencyTo]="receiptPaymentSummaryDetails?.amountReceived.amount"
+        [countryCodeTo]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </ng-container>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="transactionDate"
+      [label]="'BILLING.TRANSACTION-DATE'"
+      [value]="receiptPaymentSummaryDetails?.transactionDate?.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="receiptMode"
+      [label]="'BILLING.RECEIPT-MODE'"
+      [value]="receiptPaymentSummaryDetails?.receiptMode | bilingualText"
+    ></gosi-label-dc>
+  </div>
+</div>
+<div class="row">
+  <ng-container *ngIf="receiptPaymentSummaryDetails?.referenceNo">
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="paymentReferenceNo"
+        [label]="'BILLING.PAYMENT-REFERENCE-NUMBER'"
+        [value]="receiptPaymentSummaryDetails?.referenceNo"
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!isLocalBank && !mofFlag">
+    <div class="col-lg-3">
+      <gosi-label-dc id="country" label="BILLING.BANK-LOCATION" [control]="receiptPaymentSummaryDetails?.bank.country">
+      </gosi-label-dc>
+    </div>
+  </ng-container>
+  <div class="col-lg-3">
+    <ng-container *ngIf="!isOtherBank">
+      <gosi-label-dc
+        id="bankName"
+        label="BILLING.BANK-NAME"
+        [value]="receiptPaymentSummaryDetails?.bank.name | bilingualText"
+      >
+      </gosi-label-dc>
+    </ng-container>
+
+    <ng-container *ngIf="isOtherBank">
+      <gosi-label-dc
+        id="otherBank"
+        [label]="'BILLING.BANK-NAME'"
+        [control]="receiptPaymentSummaryDetails?.bank.nonListedBank | bilingualText"
+      >
+      </gosi-label-dc>
+    </ng-container>
+  </div>
+  <ng-container *ngIf="receiptPaymentSummaryDetails?.chequeNumber">
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="chequeNumber"
+        label="BILLING.CHEQUE-NUMBER"
+        [control]="receiptPaymentSummaryDetails.chequeNumber"
+      >
+      </gosi-label-dc>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="receiptPaymentSummaryDetails?.chequeDate">
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="chequeDate"
+        label="BILLING.CHEQUE-DATE"
+        [control]="receiptPaymentSummaryDetails.chequeDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+  </ng-container>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-label-dc
+      id="description"
+      [label]="'BILLING.ADDITIONAL-PAYMENT-DETAILS'"
+      [control]="receiptPaymentSummaryDetails?.description | bilingualText"
+    ></gosi-label-dc>
+  </div>
+</div>
+<blg-receipt-allocation-summary-dc
+  [receiptPaymentSummaryDetails]="receiptPaymentSummaryDetails"
+  [branchSummary]="branchSummary"
+  [gccCurrency]="gccCurrency"
+  [gccFlag]="gccFlag"
+  [mofFlag]="mofFlag"
+  [currencyDetails]="currencyDetails"
+  [establishmentValues]="establishmentValues"
+  [ThreeDecimalLabel]="gccFlag"
+></blg-receipt-allocation-summary-dc>

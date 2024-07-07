@@ -1,0 +1,115 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="main-heading">
+        {{ 'CONTRIBUTOR.ADD-ENGAGEMENT' | translate }}
+      </h4>
+    </div>
+  </div>
+  <div class="wiz">
+    <!-- Progress wizard icons section -->
+    <gosi-progress-wizard-dc
+      *ngIf="activeTab < totalTabs"
+      [wizardItems]="wizardItems"
+      (clickWizard)="selectFormWizard($event)"
+      #progressWizardItems
+    >
+    </gosi-progress-wizard-dc>
+  </div>
+
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- Four tabs for four section-->
+  <div class="hide-tab" *ngIf="view === 1">
+    <tabset type="pills" #registerContributorTabs>
+      <tab [active]="activeTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- Load person details form dynamically based on contributor type -->
+            <cnt-e-personal-details-overall-dc
+              (save)="onSavePersonalDetails($event)"
+              (reset)="cancelAddedContributor()"
+              (showError)="showAlertError($event)"
+              [isApiTriggered]="isApiTriggered"
+              [isEditMode]="isEditMode"
+              [perDetails]="personDetails"
+            ></cnt-e-personal-details-overall-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- Request details section -->
+            <cnt-e-request-details-dc
+              [leavingReasonList]="leavingReasonList$ | async"
+              [occupationList]="occupationList$ | async"
+              [systemParams]="systemParams"
+              (previous)="navigateToPreviousTab()"
+              (save)="onSaveEngagementDetails($event)"
+              (reset)="cancelAddedContributor()"
+              (showError)="showAlertError($event)"
+              [engDetails]="engDetailsCsr"
+              [inEditMode]="isEditMode"
+              [engDetailsCsr]="engDetailsCsr"
+              [registered]="registered"
+            ></cnt-e-request-details-dc>
+            <!-- <cnt-temp-admin></cnt-temp-admin> -->
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 2">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- documents section -->
+            <cnt-e-file-upload-dc
+              [documentList]="documents"
+              [referenceNo]="referenceNo"
+              [engagementId]="requestId"
+              (reset)="cancelAddedContributor()"
+              (previous)="navigateToPreviousTab()"
+              (submit)="isEditMode ? showModal(approveTemplate, false, false) : sendOTP()"
+              (showError)="showAlertError($event)"
+              (refresh)="refreshDocumentItem($event)"
+              [uuid]="uuid"
+              [isEditMode]="isEditMode"
+            ></cnt-e-file-upload-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 3">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- verify section -->
+            <cnt-e-auth-dc
+              (cancel)="cancelAddedContributor()"
+              (previous)="navigateToPreviousTab()"
+              (onVerifyClicked)="verifyOTP($event)"
+              (onResendOTPClicked)="reSendOTP()"
+              [mob_num]="mob"
+            ></cnt-e-auth-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleApprove()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CONFIRM-CANCEL"
+    (onConfirm)="cancelAddedContributor()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

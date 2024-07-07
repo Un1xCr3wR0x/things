@@ -1,0 +1,322 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{
+        actionType === heirStatusEnums.START_WAIVE
+          ? ('BENEFITS.WAIVING' | translate: { benefitType: heading | translate })
+          : actionType
+          ? ('BENEFITS.' + actionType | translate: { benefitType: heading | translate })
+          : (heading | translate)
+      }}
+    </div>
+  </div>
+
+  <div [ngClass]="{ hide: hideAlertComponent(currentTab, wizardItems) }">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div [ngClass]="{ hide: wizardItems.length <= 1 }">
+    <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="wizardItems" #applyretirementWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+
+  <div class="hide-tab">
+    <tabset type="pills" #retirementDetailsTab>
+      <tab
+        *ngIf="
+          isTabSlctdInWizard(uiConst.WAIVE_BENEFIT, currentTab, wizardItems) &&
+          (actionType === heirStatusEnums.START_WAIVE || actionType === heirStatusEnums.STOP_WAIVE)
+        "
+        [active]="isTabSlctdInWizard(uiConst.WAIVE_BENEFIT, currentTab, wizardItems)"
+      >
+        <!-- Applicable for non Heir pension -->
+        <bnt-waive-benefit-dc
+          [action]="actionType"
+          [parentForm]="benefitsForm"
+          [waiveTowardsList]="waiveTowardsList$ | async"
+        >
+        </bnt-waive-benefit-dc>
+      </tab>
+      <!--End Heir Details-->
+      <tab [active]="isTabSlctdInWizard(uiConst.MODIFY_DETAILS, currentTab, wizardItems)">
+        <div class="col-md-12">
+          <!--request date card-->
+          <bnt-request-date-dc
+            [parentForm]="benefitsForm"
+            [minDate]="minDate"
+            [maxDate]="maxDate"
+            [systemRunDate]="systemRunDate"
+            [isModifyBackdated]="isModifyBackdated"
+            (confirm)="getDependentList($event)"
+          ></bnt-request-date-dc>
+        </div>
+        <div class="col-md-12" *ngIf="eligibleForBenefit">
+          <bnt-dependent-modify-sc
+            *ngIf="dependentDetails"
+            [requestDate]="requestDate"
+            [isValidator]="isValidator"
+            [benefitType]="benefitType"
+            [listOfDependents]="dependentDetails"
+            [actionType]="actionType"
+            [isPension]="true"
+            [benefitStartDate]="benefitStartDate"
+            [annuityResponse]="annuityResponse"
+            [personDetails]="personDetails"
+            [sin]="socialInsuranceNo"
+            [parentForm]="benefitsForm"
+            [benefitRequestId]="benefitRequestId"
+            [eligibilityStartDate]="benefitEligibilityAndStartDate?.benefitEligibilityDate"
+            [eligibleForBenefit]="eligibleForBenefit"
+            [isDraft]="routerData?.draftRequest"
+            (save)="saveDependent($event)"
+            (cancel)="cancelTransaction()"
+          ></bnt-dependent-modify-sc>
+        </div>
+      </tab>
+      <tab *ngIf="isHeir" [active]="isTabSlctdInWizard(uiConst.HEIR_DETAILS, currentTab, wizardItems)">
+        <!--request date card-->
+        <bnt-request-date-dc
+          [parentForm]="benefitsForm"
+          [maxDate]="maxDate"
+          [minDate]="minDate"
+          [systemRunDate]="systemRunDate"
+          [showConfirmButton]="addOrModifyHeir"
+          [isModifyBackdated]="isModifyBackdated"
+          (dateChanged)="setRequestDate($event)"
+          (confirm)="getDependentList($event)"
+        ></bnt-request-date-dc>
+        <bnt-heir-modify-sc
+          *ngIf="dependentDetails"
+          [requestDate]="requestDate"
+          [benefitType]="benefitType"
+          [referenceNo]="referenceNo"
+          [heirActionType]="actionType"
+          [isPension]="true"
+          [isDraft]="routerData?.draftRequest"
+          [appliedBenefitDetails]="annuityResponse"
+          [heirDetails]="dependentDetails"
+          [eligibilityStartDate]="benefitEligibilityAndStartDate?.benefitEligibilityDate"
+          [isHeir]="isHeir"
+          [benefitStartDate]="benefitStartDate"
+          [sin]="socialInsuranceNo"
+          [lang]="lang"
+          [contributorDeathOrMissingDate]="contributorDeathOrMissingDate"
+          [isValidator]="isValidator"
+          [parentForm]="benefitsForm"
+          [benefitRequestId]="benefitRequestId"
+          [routerData]="routerData"
+          [addOrModifyHeir]="addOrModifyHeir"
+          (save)="saveHeir($event)"
+          (cancel)="cancelTransaction()"
+          (referenceNoChanged)="referenceNoChanged($event)"
+        ></bnt-heir-modify-sc>
+      </tab>
+      <tab *ngIf="isHeir" [active]="isTabSlctdInWizard(uiConst.ADJUSTMENT_DETAILS, currentTab, wizardItems)">
+        <bnt-heir-adjustment-details-dc
+          *ngIf="isHeir && benefitCalculation?.heirBenefitDetails && benefitCalculation?.heirBenefitDetails?.length"
+          [lang]="lang"
+          [heirActionType]="actionType"
+          [heirBenefitDetails]="benefitCalculation?.heirBenefitDetails"
+          [approveScreen]="false"
+          [isIndividualApp]="isIndividualApp"
+          [benefitCalculation]="benefitCalculation"
+          [topHeading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+          [deductionPlanList]="deductionPlanList$ | async"
+          (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+          (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+        >
+        </bnt-heir-adjustment-details-dc>
+      </tab>
+      <tab [active]="isTabSlctdInWizard(uiConst.BENEFIT_DETAILS, currentTab, wizardItems)">
+        <!-- BENEFIT DETAILS -->
+        <div class="row">
+          <div class="col-md-12" *ngIf="!isHeir && !actionType; else BenefitAfterModify">
+            <bnt-gosi-ui-annuity-benefits-dc
+              [benefitDetails]="benefitCalculation"
+              [showRequestDateDc]="false"
+              [isValidator]="isValidator"
+              [isIndividualApp]="isIndividualApp"
+              [dependentHistory]="dependentHistory"
+              [previousDependentHistory]="previousDependentHistory"
+              [heirHistory]="heirHistory"
+              [systemRunDate]="systemRunDate"
+              [isModifyBackdated]="true"
+              [systemParameter]="systemParameter"
+              [annuityResponse]="annuityResponse"
+              [isAppPrivate]="isAppPrivate"
+              [parentForm]="benefitsForm"
+              [benefitType]="benefitType"
+              [isPension]="true"
+              [heirEligibilityDetails]="heirEligibility"
+            >
+            </bnt-gosi-ui-annuity-benefits-dc>
+          </div>
+        </div>
+        <ng-template #BenefitAfterModify>
+          <!-- <div class="row" > -->
+          <div class="col-md-12" *ngIf="benefitCalculation">
+            <bnt-gosi-benefits-after-modify-dc
+              [isHeir]="isHeir"
+              [showRequestDate]="
+                isAppPrivate &&
+                isHeir &&
+                (actionType === heirStatusEnums.STOP_WAIVE || actionType === heirStatusEnums.START_WAIVE)
+              "
+              (showBenefitsWagePopup)="showBenefitsWagePopup(benefitsWagePopupTemplate, $event)"
+              (showIneligibilityDetails)="showIneligibilityDetails(ineligibilityTemplate, $event)"
+              [heirEligibilityDetails]="heirEligibility"
+              [systemRunDate]="systemRunDate"
+              [benefitCalculation]="benefitCalculation"
+              [actionType]="actionType"
+              [benefitType]="benefitType"
+              [historyBenefitDetails]="historyBenefitDetails[0]"
+              [annuityResponse]="annuityResponse"
+              [parentForm]="benefitsForm"
+              [acitveBenefit]="acitveBenefit"
+              [isModifyBackdated]="isModifyBackdated"
+              [dependentHistory]="dependentHistory"
+              [heirHistory]="heirHistory"
+              [heirOldHistory]="heirOldHistory"
+              [systemParameter]="systemParameter"
+            >
+            </bnt-gosi-benefits-after-modify-dc>
+          </div>
+          <!-- </div> -->
+        </ng-template>
+
+        <!-- DECLARATIONS -->
+        <bnt-declaration-dc
+          *ngIf="!isAppPrivate"
+          [content]="'BENEFITS.ANNUITY-REQUEST-DECLARATION'"
+          [heading]="'BENEFITS.DECLARATION'"
+          [checkBoxLabel]="'BENEFITS.ACCEPT-DECLARATION'"
+          [parentForm]="benefitsForm"
+          (checkBoxClicked)="changeCheck($event)"
+        ></bnt-declaration-dc>
+      </tab>
+
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_DOCUMENTS, currentTab, wizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="pensionTransactionId"
+              [referenceNo]="referenceNo"
+              [isEditMode]="isValidator"
+              [documentList]="requiredDocs"
+              [parentForm]="documentForm"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransaction()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  <div *ngIf="showActionButtons(currentTab, wizardItems)" class="row">
+    <div class="col-auto pb-2 form-action-btn">
+      <gosi-button-dc
+        [ngClass]="!isSmallScreen ? 'float-left' : ''"
+        id="cancel"
+        name="cancelSubmit"
+        type="secondary"
+        isFullWidth="isSmallScreen"
+        (submit)="cancelTransaction()"
+      >
+        {{ 'BENEFITS.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="col-auto pb-2 form-action-btn">
+      <gosi-button-dc
+        [ngClass]="!isSmallScreen ? 'float-right' : ''"
+        id="previous"
+        *ngIf="hasDependentOrHeir || actionType"
+        name="submitTransaction"
+        type="secondary"
+        isFullWidth="isSmallScreen"
+        (submit)="previousForm()"
+      >
+        {{ 'BENEFITS.PRE-SECTION' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="ml-auto col-auto form-action-btn">
+      <gosi-button-dc
+        *ngIf="currentTab + 1 >= wizardItems.length; else saveAndNext"
+        [ngClass]="!isSmallScreen ? 'float-right' : ''"
+        id="save"
+        type="primary"
+        isFullWidth="isSmallScreen"
+        (submit)="submitBenefitDetails()"
+      >
+        {{ 'BENEFITS.SUBMIT' | translate }}
+      </gosi-button-dc>
+      <ng-template #saveAndNext>
+        <gosi-button-dc
+          [ngClass]="!isSmallScreen ? 'float-right' : ''"
+          id="save"
+          type="primary"
+          isFullWidth="isSmallScreen"
+          (submit)="submitBenefitDetails()"
+        >
+          {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}
+        </gosi-button-dc>
+      </ng-template>
+    </div>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #benefitsWagePopupTemplate>
+  <bnt-benefits-wage-details-dc
+    (close)="closePopup()"
+    (navigateToProfile)="navigateToProfile($event)"
+    [acitveBenefit]="acitveBenefit"
+    [benefitWageDetail]="benefitWageDetail"
+    [lang]="lang"
+    [paramId]="paramId"
+  >
+  </bnt-benefits-wage-details-dc>
+</ng-template>
+<ng-template #ineligibilityTemplate>
+  <bnt-ineligibility-details-dc
+    (close)="closePopup()"
+    [details]="singleDepHeirDetails?.events"
+    [heirPersonId]="singleDepHeirDetails?.heirPersonId"
+    [heir]="singleDepHeirDetails"
+    [ineligibility]="benefitCalculation?.ineligibility"
+    [lang]="lang"
+    [isPension]="true"
+    [name]="singleDepHeirDetails?.name"
+    [relationship]="singleDepHeirDetails?.relationship"
+  ></bnt-ineligibility-details-dc>
+</ng-template>

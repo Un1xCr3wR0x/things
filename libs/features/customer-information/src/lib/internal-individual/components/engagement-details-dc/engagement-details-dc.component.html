@@ -1,0 +1,485 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- <div class="row badge" [ngClass]="isAppProfile ? 'mx-0' : ''" *ngIf="isAdded">
+  <div class="col-lg-12">
+    <img src="assets/images/contributions.svg" alt="Contributions" class="icon" />
+    <span class="head-value">{{ 'DASHBOARD.CONTRIBUTIONS' | translate | uppercase }} </span>
+  </div>
+</div> -->
+<ng-container *ngIf="engagementDetails?.length === 0">
+  <div class="row header pt-2" [ngClass]="isAppProfile ? 'pb-2' : 'pb-5'">
+    <div class="col-lg-12">
+      {{ 'DASHBOARD.NO-ACTIVE-ENGAGEMENTS' | translate }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 mb-3">
+      <gosi-button-dc
+        [outlineOnly]="true"
+        [isTransparent]="true"
+        type="primary"
+        size="md"
+        class="btn-class"
+        (click)="navigateToEngagement()"
+      >
+        <span class="history-value">
+          {{ 'DASHBOARD.ENGAGEMENT-HISTORY' | translate }}
+        </span>
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container>
+  <dsb-card-slider-dc
+    (onLeftClick)="onLeftClick()"
+    (onRightClick)="onRightClick()"
+    [showLeft]="showLeft"
+    [showRight]="showRight"
+    [lang]="lang"
+  >
+    <ng-container *ngFor="let engagement of engagementDetails; let i = index">
+      <div
+        [ngClass]="[engagement?.length === 1 ? 'col-lg-12' : 'col-lg-6']"
+        *ngIf="(!mobileView && (i === currentIndex || i === currentIndex + 1)) || (mobileView && i === currentIndex)"
+        (click)="navigateToEngagement()"
+      >
+        <gosi-card-dc
+          type="primary"
+          [noBorder]="engagementDetails?.length === 1"
+          [ngClass]="[
+            engagementDetails?.length > 2
+              ? 'card-value'
+              : engagementDetails?.length === 2
+              ? 'name-value'
+              : 'slide-value'
+          ]"
+          [noPadding]="engagementDetails?.length === 1"
+        >
+          <div class="row">
+            <div [ngClass]="[engagementDetails?.length === 1 ? 'col-lg-auto col-sm-6' : 'col-lg-12']" class="pb-2">
+              <div class="flex flex-column" [ngClass]="[engagementDetails?.length === 1 ? 'single-value' : '']">
+                <ng-template #excludedTemplate>
+                  <ng-container
+                    *ngTemplateOutlet="excludedTemplateInfo; context: { est: engagement?.establishmentName }"
+                  >
+                  </ng-container>
+                </ng-template>
+                <div
+                  *ngIf="!mobileView"
+                  class="response-header head-padding"
+                  [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                  placement="top"
+                >
+                  {{
+                    engagement?.establishmentName?.english === null
+                      ? engagement.establishmentName?.arabic
+                      : (engagement.establishmentName | bilingualText | titlecase)
+                  }}
+                </div>
+                <div
+                  *ngIf="mobileView"
+                  class="mob-response-header head-padding"
+                  [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                  placement="top"
+                >
+                  {{
+                    engagement?.establishmentName?.english === null
+                      ? engagement.establishmentName?.arabic
+                      : (engagement.establishmentName | bilingualText | titlecase)
+                  }}
+                </div>
+
+                <ng-template #excludedTemplateInfo let-contributorName="est">
+                  <div class="d-flex flex-column">
+                    {{ contributorName.english === null ? contributorName.arabic : (contributorName | bilingualText) }}
+                  </div>
+                </ng-template>
+                <div class="no-value" *ngIf="engagement?.establishmentName === null">
+                  {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+                </div>
+                <div class="text-value">
+                  {{ 'DASHBOARD.ACTIVE-ENGAGEMENT-FROM' | translate }}
+                  {{ engagement?.joiningDate?.gregorian | gosiDate }}
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+              <div class="icon-value" [ngClass]="[engagementDetails?.length === 1 ? 'mr-0' : 'mr-1']">
+                <div class="pt-2">
+                  <span class="con-label">
+                    {{ 'DASHBOARD.COVERAGE' | translate | uppercase }}
+                  </span>
+                </div>
+                <div class="col-lg-4">
+                  <div class="d-flex">
+                    <div class="d-flex">
+                      <ng-container *ngFor="let coverageItem of engagement?.coverageDetails?.coverages">
+                        <ng-container
+                          *ngIf="coverageItem?.coverageType?.english === annuity && coverageItem?.coverage !== 0"
+                        >
+                          <ng-template #annuityMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+                          <img
+                            src="assets/icons/annuity.svg"
+                            placement="top"
+                            class="image-annuity"
+                            [tooltip]="displayIcon ? annuityMessage : null"
+                            alt="annuity"
+                          />
+                        </ng-container>
+                        <ng-container
+                          *ngIf="coverageItem?.coverageType?.english === ui && coverageItem?.coverage !== 0"
+                        >
+                          <ng-template #uiMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+                          <img
+                            src="assets/images/unemployment-insurance.svg"
+                            alt="Unemployment insurance"
+                            class="image-ui"
+                            placement="top"
+                            [tooltip]="displayIcon ? uiMessage : null"
+                          />
+                        </ng-container>
+                        <ng-container
+                          *ngIf="coverageItem?.coverageType?.english === oh && coverageItem?.coverage !== 0"
+                        >
+                          <ng-template #ohMessage>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                tolTemplate;
+                                context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+                          <img
+                            src="assets/images/occupational-hazard.svg"
+                            alt="Occupational Hazard"
+                            placement="top"
+                            class="image-oh"
+                            [tooltip]="displayIcon ? ohMessage : null"
+                          />
+                        </ng-container>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex" *ngIf="engagementDetails?.length > 1">
+            <div class="d-flex flex-column wage-borders add-value">
+              <div class="text-grayed margin-align">{{ 'DASHBOARD.WAGE-OR-MONTH' | translate }}</div>
+              <div class="wage-value wage-margin" *ngIf="engagement?.coverageDetails?.monthlyContributoryWage">
+                {{ engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2' }}
+                {{ 'DASHBOARD.SAR' | translate }}
+              </div>
+            </div>
+            <!-- <div class="d-flex flex-column multiborder-value add-value">
+        </div> -->
+            <div class="col-lg-6 d-flex flex-column pt-4 add-value" *ngIf="isAdded">
+              <div class="text-grayed text-center">{{ 'DASHBOARD.CONTRIBUTIONS' | translate }}</div>
+              <div class="wage-value text-center" *ngIf="engagement?.engagementDuration">
+                {{
+                  'DASHBOARD.NO-OF-MONTHS'
+                    | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                }},
+                {{
+                  'DASHBOARD.NO-OF-DAYS' | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                }}
+              </div>
+            </div>
+            <!-- <gosi-dropdown-dc *ngIf="engagementDetails?.length > 1 && isAdded" [list]="actionDropDown"
+          class="float-right dropdown-value" (selectedItem)="actionType.emit($event)" minWidthInRem="21.42rem">
+          <fa-icon class="text-value" icon="ellipsis-v"></fa-icon>
+        </gosi-dropdown-dc> -->
+          </div>
+          <div class="row" *ngIf="engagementDetails?.length === 1">
+            <div class="col-auto wage-border add-value">
+              <div class="text-grayed">{{ 'DASHBOARD.WAGE-OR-MONTH' | translate }}</div>
+              <div class="wage-value" *ngIf="engagement?.coverageDetails?.monthlyContributoryWage">
+                {{ engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2' }}
+                {{ 'DASHBOARD.SAR' | translate }}
+              </div>
+            </div>
+            <!-- <div class="col-auto border-value">
+        </div> -->
+            <div class="col-2 pt-4 add-value single-card" *ngIf="isAdded">
+              <div class="text-grayed text-center">{{ 'DASHBOARD.CONTRIBUTIONS' | translate }}</div>
+              <div class="wage-value text-center" *ngIf="engagement?.engagementDuration">
+                {{
+                  'DASHBOARD.NO-OF-MONTHS'
+                    | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                }},
+                {{
+                  'DASHBOARD.NO-OF-DAYS' | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                }}
+              </div>
+            </div>
+            <!-- <gosi-dropdown-dc *ngIf="engagementDetails?.length > 1 && isAdded" [list]="actionDropDown"
+          class="float-right dropdown-value" (selectedItem)="actionType.emit($event)" minWidthInRem="21.42rem">
+          <fa-icon class="text-value" icon="ellipsis-v"></fa-icon>
+        </gosi-dropdown-dc> -->
+          </div>
+          <ng-template #WageBrkup>
+            <div class="custom-modal">
+              <gosi-modal-dc>
+                <div class="row" modalContent>
+                  <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+                    <span class="times-icon" (click)="hideModal()">
+                      <fa-icon icon="times"></fa-icon>
+                    </span>
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="header-part">
+                      <!-- <div class="col-lg-10"> -->
+                      <div class="modal-headers">{{ 'DASHBOARD.WAGE-BREAKUP' | translate }}</div>
+                      <!-- </div> -->
+                    </div>
+                  </div>
+                  <div class="col-lg-12 header-value pt-4">
+                    <div class="d-flex flex-column">
+                      <div class="est-name">
+                        {{
+                          engagement?.establishmentName?.english === null
+                            ? engagement.establishmentName?.arabic
+                            : (engagement.establishmentName | bilingualText | titlecase)
+                        }}
+                      </div>
+                      <div class="text-value">
+                        {{ 'DASHBOARD.ACTIVE-ENGAGEMENT-FROM' | translate }}
+                        {{ engagement?.joiningDate?.gregorian | gosiDate }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="desktop-table">
+                      <div class="row">
+                        <div class="col-md-11 pt-3">
+                          <span class="heading-style"> {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}</span>
+                          <div class="row mt-4">
+                            <table class="table table-borderless">
+                              <thead class="header">
+                                <tr>
+                                  <th style="width: 16.6%">{{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+                                  <th style="width: 16.6%">{{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}</th>
+                                  <th style="width: 16.6%">
+                                    {{ 'CONTRIBUTOR.HOUSING' | translate }}
+                                  </th>
+
+                                  <th style="width: 16.6%">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+                                  <th style="width: 16.6%">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+                                  <th style="width: 16.6%">{{ 'CONTRIBUTOR.TOTAL' | translate }}</th>
+                                </tr>
+                              </thead>
+                              <tbody class="value-font">
+                                <ng-container>
+                                  <tr>
+                                    <td>{{ engagement?.engagementPeriod[0]?.occupation | bilingualText }}</td>
+                                    <td>{{ engagement?.engagementPeriod[0]?.wage?.basicWage | number: '1.2-2' }}</td>
+                                    <td>
+                                      {{ engagement?.engagementPeriod[0]?.wage?.housingBenefit | number: '1.2-2' }}
+                                    </td>
+                                    <td>{{ engagement?.engagementPeriod[0]?.wage?.commission | number: '1.2-2' }}</td>
+                                    <td>
+                                      {{ engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2' }}
+                                    </td>
+                                    <td>
+                                      {{
+                                        engagement?.engagementPeriod[0]?.wage?.basicWage +
+                                          engagement?.engagementPeriod[0]?.wage?.commission +
+                                          engagement?.engagementPeriod[0]?.wage?.housingBenefit +
+                                          engagement?.engagementPeriod[0]?.wage?.otherAllowance
+                                      }}
+                                    </td>
+                                  </tr>
+                                </ng-container>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-row info-section">
+                        <!-- <div class="last-updated">
+                                {{ 'CONTRIBUTOR.WAGE.LAST-UPDATED' | translate
+                                }}{{ engagement?.engagementPeriod[0]?.lastUpdatedDate?.gregorian | gosiDate }}
+                              </div>  -->
+                        <div class="sar-style">{{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}</div>
+                      </div>
+                      <div
+                        class="d-flex justify-content-start total-section"
+                        *ngIf="engagement?.engagementPeriod[0]?.wage?.contributoryWage"
+                      >
+                        <div class="flex-container d-flex flex-column">
+                          <div>
+                            <div class="con-label-value label-value">
+                              {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+                            </div>
+                          </div>
+                          <div class="d-flex justify-content-start">
+                            <div class="con-wage d-inline-flex p-2 bd-highlight">
+                              {{ engagement?.engagementPeriod[0]?.wage?.contributoryWage | number: '.2-2' }}
+                              {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="margin-wage">
+                          <div class="d-flex flex-column">
+                            <span class="con-label-value wage-size">
+                              {{ 'CONTRIBUTOR.CONTRIBUTION-BREAKDOWN' | translate }}
+                            </span>
+                            <div>
+                              <div class="d-flex justify-content-start mobile-coverage-section">
+                                <ng-container *ngFor="let cov of engagement?.coverageDetails?.coverages">
+                                  <div class="icon-wrappers d-flex" *ngIf="cov.coverageType.english === annuity">
+                                    <ng-template #annuityMessage>
+                                      <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                      </ng-container>
+                                    </ng-template>
+                                    <img
+                                      src="assets/icons/annuity.svg"
+                                      [placement]="lang === 'en' ? 'right' : 'left'"
+                                      [tooltip]="cov.coverageType.english === annuity ? annuityMessage : null"
+                                      alt="annuity"
+                                      class="image-annuitys"
+                                    />
+                                    <ng-container *ngIf="cov.coverageType.english === annuity">
+                                      <div class="pr-2 pl-2">
+                                        <div>
+                                          <span class="small-label">
+                                            {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}</span
+                                          >
+                                        </div>
+                                        <div class="mid-label">
+                                          {{ cov.coverage | number: '1.2-2' }}
+                                          {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                        </div>
+                                      </div>
+                                    </ng-container>
+                                  </div>
+                                  <div class="icon-wrappers d-flex" *ngIf="cov.coverageType.english === oh">
+                                    <ng-template #ohMessage>
+                                      <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                      </ng-container>
+                                    </ng-template>
+                                    <img
+                                      src="assets/icons/OH.svg"
+                                      [placement]="lang === 'en' ? 'right' : 'left'"
+                                      [tooltip]="cov.coverageType.english === oh ? ohMessage : null"
+                                      alt="Occupational Hazard"
+                                      class="image-ohs"
+                                    />
+                                    <ng-container *ngIf="cov.coverageType.english === oh">
+                                      <div class="pr-2 pl-2">
+                                        <div>
+                                          <span class="small-label">
+                                            {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}</span
+                                          >
+                                        </div>
+                                        <div class="mid-label">
+                                          {{ cov.coverage | number: '1.2-2' }}
+                                          {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                        </div>
+                                      </div>
+                                    </ng-container>
+                                  </div>
+                                  <div class="icon-wrappers d-flex" *ngIf="cov.coverageType.english === ui">
+                                    <ng-template #uiMessage>
+                                      <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                      </ng-container>
+                                    </ng-template>
+                                    <img
+                                      src="assets/icons/UI.svg"
+                                      [placement]="lang === 'en' ? 'right' : 'left'"
+                                      [tooltip]="cov.coverageType.english === ui ? uiMessage : null"
+                                      alt="Unemployment insurance"
+                                      class="image-uis"
+                                    />
+                                    <ng-container *ngIf="cov.coverageType.english === ui">
+                                      <div class="pr-2 pl-2">
+                                        <div>
+                                          <span class="small-label">
+                                            {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}</span
+                                          >
+                                        </div>
+                                        <div class="mid-label">
+                                          {{ cov.coverage | number: '1.2-2' }}
+                                          {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                        </div>
+                                      </div>
+                                    </ng-container>
+                                  </div>
+                                </ng-container>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </gosi-modal-dc>
+            </div>
+          </ng-template>
+        </gosi-card-dc>
+      </div>
+    </ng-container>
+  </dsb-card-slider-dc>
+</ng-container>
+
+<ng-template #tolTemplate let-coverage="coverage" let-coverageDetail="coverageDetail">
+  <div class="tooltip-custom custom-direction">
+    <div class="tooltip-header">
+      {{ 'DASHBOARD.CONTRIBUTION-BREAKUP' | translate }}: {{ coverage?.coverageType | bilingualText }}
+    </div>
+    <div class="tooltip-body">
+      <div>
+        <div class="share-header">
+          {{
+            isTotalShare
+              ? ('DASHBOARD.TOTAL-CONTRIBUTOR-SHARE' | translate)
+              : ('DASHBOARD.CONTRIBUTOR-SHARE' | translate)
+          }}
+        </div>
+        <div class="sar-value">
+          {{ coverage?.contributorShare | number: '.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+        <div class="percent" *ngIf="!coverageDetail?.endDate?.gregorian">
+          {{ coverage.contributorPercentage }}{{ 'DASHBOARD.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div>
+      <div>
+        <div class="share-header">
+          {{ isTotalShare ? ('DASHBOARD.TOTAL-EMPLOYER-SHARE' | translate) : ('DASHBOARD.EMPLOYER-SHARE' | translate) }}
+        </div>
+        <div class="sar-value">
+          {{ coverage.establishmentShare | number: '.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+        <div class="percent" *ngIf="!coverageDetail?.endDate?.gregorian">
+          {{ coverage.establishmentPercentage }}{{ 'DASHBOARD.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

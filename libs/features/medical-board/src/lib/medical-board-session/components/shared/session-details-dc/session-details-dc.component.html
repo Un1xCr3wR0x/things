@@ -1,0 +1,240 @@
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-card-dc heading="{{ 'MEDICAL-BOARD.SESSION-DETAILS' | translate }}" type="secondary">
+      <ng-container *ngIf="isCreateSession">
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="medicalboardType"
+              [label]="'MEDICAL-BOARD.MEDICAL-BOARD-TYPE'"
+              [control]="invitationForm.get('medicalBoardList')"
+              [list]="medicalBoardType"
+              (select)="getDoctorAcceptance($event)"
+              [disabled]="true"
+              [value]="mbDetails?.medicalBoardType?.english"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="channel"
+              [label]="'MEDICAL-BOARD.SESSION-CHANNEL'"
+              [control]="invitationForm.get('sessionChannelList')"
+              [list]="sessionChannelList"
+              (select)="getDoctorAcceptance($event)"
+              [disabled]="isDisable"
+            >
+            </gosi-input-radio-dc>
+          </div>
+          <div class="col-lg-6" *ngIf="mbDetails.medicalBoardType.english === 'Primary Medical Board'">
+            <gosi-input-select-dc
+              id="officeLocation"
+              [label]="'MEDICAL-BOARD.OFFICE-LOCATION' | translate"
+              [control]="invitationForm.get('officeLocation')"
+              [list]="officeLocationList"
+              [disabled]="isReadOnly"
+              (select)="gosiOfficerLocationChange()"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-lg-6" *ngIf="lang === 'en' && mbDetails.medicalBoardType.english === 'Appeal Medical Board'">
+            <gosi-input-text-dc
+              id="officeLocationEn"
+              [label]="'MEDICAL-BOARD.OFFICE-LOCATION' | translate"
+              name="officeLocation"
+              [readOnly]="isReadOnly"
+              [control]="invitationForm.get('officeLocation').get('english')"
+            >
+            </gosi-input-text-dc>
+          </div>
+          <div class="col-lg-6" *ngIf="lang === 'ar' && mbDetails.medicalBoardType.english === 'Appeal Medical Board'">
+            <gosi-input-text-dc
+              id="officeLocationAr"
+              [label]="'MEDICAL-BOARD.OFFICE-LOCATION' | translate"
+              [readOnly]="isReadOnly"
+              name="officeLocation"
+              [control]="invitationForm.get('officeLocation').get('arabic')"
+            >
+            </gosi-input-text-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="isRegularSession">
+          <div class="col-lg-6">
+            <gosi-input-select-dc
+              id="sessionFrequency"
+              [name]="'sessionFrequency'"
+              [label]="'MEDICAL-BOARD.SESSION-FREQUENCY' | translate"
+              [control]="invitationForm.get('sessionFrequency')"
+              [list]="sessionList"
+            >
+            </gosi-input-select-dc>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col">
+                <label> {{ 'MEDICAL-BOARD.DAYS' | translate }}</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-cell col">
+                <ng-container *ngFor="let day of days; let i = index">
+                  <span class="pr-1 pl-1">
+                    {{ 'MEDICAL-BOARD.' + day.label | translate }}
+                  </span>
+                  <gosi-input-checkbox-dc
+                    id="declarationMessage"
+                    [ignoreLabel]="true"
+                    [control]="invitationForm.get('day').get(day.control)"
+                    (select)="checkDays($event, i)"
+                  >
+                  </gosi-input-checkbox-dc>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6" *ngIf="isRegularSession">
+            <gosi-input-date-dc
+              id="startDate"
+              name="startDate"
+              [minDate]="currentDate"
+              [disabled]="isDisabled"
+              [control]="invitationForm.get('startDate').get('gregorian')"
+              [label]="'MEDICAL-BOARD.START-DATE' | translate"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-lg-6" *ngIf="!isRegularSession">
+            <gosi-input-date-dc
+              id="startDate"
+              name="startDate"
+              [minDate]="currentDate"
+              [disabled]="isDisabled"
+              [control]="invitationForm.get('startDate').get('gregorian')"
+              [label]="'MEDICAL-BOARD.SESSION-DATE' | translate"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-time-dc
+              label="MEDICAL-BOARD.START-TIME"
+              [hour]="invitationForm.get('startTimePicker').get('injuryHour')"
+              [minute]="invitationForm.get('startTimePicker').get('injuryMinute')"
+              [disabled]="isTimeDisabled"
+            ></gosi-input-time-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-time-dc
+              label="MEDICAL-BOARD.END-TIME"
+              [hour]="invitationForm.get('timePicker').get('injuryHour')"
+              [minute]="invitationForm.get('timePicker').get('injuryMinute')"
+              [disabled]="isTimeDisabled && !isInCharge"
+            ></gosi-input-time-dc>
+          </div>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!isCreateSession && individualSessionDetails">
+        <div class="row">
+          <div class="col-lg-4">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.MEDICAL-BOARD-TYPE"
+              [value]="individualSessionDetails.medicalBoardType | bilingualText"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.SESSION-TYPE"
+              [value]="individualSessionDetails.sessionType | bilingualText"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.SESSION-CHANNEL"
+              [value]="individualSessionDetails.sessionChannel | bilingualText"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4" *ngIf="isRegularSession">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.SESSION-FREQUENCY"
+              [value]="individualSessionDetails.sessionFrequency | bilingualText"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4" *ngIf="isRegularSession">
+            <div class="block">{{ 'MEDICAL-BOARD.DAYS' | translate }}</div>
+            <div>
+              <ng-container *ngFor="let day of individualSessionDetails?.days">
+                <span class="days"> {{ day | bilingualText }}</span></ng-container
+              >
+            </div>
+          </div>
+          <div class="col-lg-4" *ngIf="isRegularSession">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.START-DATE"
+              [value]="individualSessionDetails.startDate.gregorian | gosiDate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4" *ngIf="!isRegularSession">
+            <gosi-label-dc
+              label="MEDICAL-BOARD.SESSION-DATE"
+              [value]="individualSessionDetails.startDate.gregorian | gosiDate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-4">
+            <div class="block">{{ 'MEDICAL-BOARD.START-TIME' | translate }}</div>
+            <div *ngIf="starttimePeriod === 'AM'">
+              <!-- {{
+                'MEDICAL-BOARD.ANTE-TIME-PERIOD'
+                  | translate: { hour: (startHour | number: '2.0'), minute: (startMinute | number: '2.0') }
+              }} -->
+              {{ (startHour | number: '2.0') + ':' + (startMinute | number: '2.0') }}
+              {{ 'MEDICAL-BOARD.AM' | translate }}
+            </div>
+            <div *ngIf="starttimePeriod === 'PM'">
+              {{ (startHour | number: '2.0') + ':' + (startMinute | number: '2.0') }}
+              {{ 'MEDICAL-BOARD.PM' | translate }}
+
+              <!-- {{
+                'MEDICAL-BOARD.POST-TIME-PERIOD'
+                  | translate: { hour: (startHour | number: '2.0'), minute: (startMinute | number: '2.0') }
+              }} -->
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="block">{{ 'MEDICAL-BOARD.END-TIME' | translate }}</div>
+            <div *ngIf="endtimePeriod === 'AM'">
+              {{ (endHour | number: '2.0') + ':' + (endMinute | number: '2.0') }}
+              {{ 'MEDICAL-BOARD.AM' | translate }}
+            </div>
+            <div *ngIf="endtimePeriod === 'PM'">
+              {{ (endHour | number: '2.0') + ':' + (endMinute | number: '2.0') }}
+              {{ 'MEDICAL-BOARD.PM' | translate }}
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <gosi-label-dc label="MEDICAL-BOARD.STATUS" [value]="individualSessionDetails.status | bilingualText">
+            </gosi-label-dc>
+          </div>
+          <ng-container *ngIf="individualSessionDetails?.status?.english === 'Hold' && !isRegularSession">
+            <div class="col-lg-4">
+              <gosi-label-dc
+                label="MEDICAL-BOARD.HOLD-REASON"
+                [value]="individualSessionDetails.holdReason | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-4" *ngIf="individualSessionDetails.holdComments">
+              <gosi-label-dc label="MEDICAL-BOARD.COMMENTS-LABEL" [value]="individualSessionDetails.holdComments">
+              </gosi-label-dc>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </gosi-card-dc>
+  </div>
+</div>

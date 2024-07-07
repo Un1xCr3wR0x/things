@@ -1,0 +1,278 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-12">
+            <h4 class="card-heading">
+              {{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }}
+            </h4>
+          </div>
+        </div>
+        <!--Joining Details -->
+        <div class="row justify-content-between">
+          <!----------- calendar type for handle hijiri ------------>
+          <div class="col-lg-2" *ngIf="checkPrivate">
+            <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+            <cnt-calender-radio-dc
+              id="calenderTypeRadio"
+              *ngIf="dateForm1.get('dateFormat.english').value"
+              (onSelected)="switchCalendarType($event)"
+              [calendarType]="dateForm1.get('dateFormat.english').value"
+              [disabled]="inEditMode"
+            ></cnt-calender-radio-dc>
+          </div>
+
+          <div [ngClass]="checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+            <gosi-input-date-dc
+              *ngIf="dateForm1.get('dateFormat.english').value === typeGregorian"
+              id="joiningDate"
+              [control]="periodDetailForm.get('joiningDate.gregorian')"
+              [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+              [minDate]="minJoiningDate"
+              [maxDate]="maxJoiningDate"
+            >
+            </gosi-input-date-dc>
+
+            <!---------- hijiri calendar ---------->
+            <gosi-input-hijiri-dc
+              *ngIf="dateForm1.get('dateFormat.english').value === typeHijira"
+              id="startDateHijiri"
+              [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+              [control]="periodDetailForm.get('joiningDate.hijiri')"
+              [minDate]="minStartDate"
+              [maxDate]="maxstartDate"
+            >
+            </gosi-input-hijiri-dc>
+          </div>
+          <div [ngClass]="checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+            <gosi-input-text-dc
+              id="employeeId"
+              [control]="periodDetailForm.get('companyWorkerNumber')"
+              [label]="'CONTRIBUTOR.EMPLOYEE-ID' | translate"
+              [maxLength]="employeeIdMaxLength"
+            >
+            </gosi-input-text-dc>
+          </div>
+        </div>
+        <!--Joining Details Ends -->
+
+        <!--Contributor Active toggle -->
+        <div class="row" *ngIf="contributorType === contributorTypes.SAUDI">
+          <div class="col-lg-12">
+            <cnt-employment-status-switch-dc
+              [label]="'CONTRIBUTOR.EMPLOYMENT-STATUS'"
+              [activeLabel]="'CONTRIBUTOR.YES'"
+              [inActiveLabel]="'CONTRIBUTOR.NO'"
+              [isToggleTypeDanger]="true"
+              [isContract]="false"
+              [control]="periodDetailForm.get('isContributorActive')"
+              (changeEvent)="onContributorActiveChange($event)"
+            >
+            </cnt-employment-status-switch-dc>
+            <br />
+          </div>
+        </div>
+        <!--Contributor Active toggle  Ends-->
+
+        <!--Leaving Details -->
+        <div
+          class="row justify-content-between"
+          *ngIf="contributorType === contributorTypes.SAUDI && !periodDetailForm.get('isContributorActive').value"
+        >
+          <!----------- calendar type for handle hijiri ------------>
+          <div class="col-lg-2" *ngIf="checkPrivate">
+            <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+            <cnt-calender-radio-dc
+              id="calenderTypeRadio"
+              *ngIf="dateForm2.get('dateFormat.english').value"
+              (onSelected)="switchCalendarType1($event)"
+              [calendarType]="dateForm2.get('dateFormat.english').value"
+              [disabled]="disableLeavingDate || inEditMode"
+            ></cnt-calender-radio-dc>
+          </div>
+
+          <div [ngClass]="checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+            <gosi-input-date-dc
+              *ngIf="dateForm2.get('dateFormat.english').value === typeGregorian"
+              id="leavingDate"
+              [control]="periodDetailForm.get('leavingDate.gregorian')"
+              [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+              [maxDate]="maxLeavingDate"
+              [minDate]="minLeavingDate"
+              [disabled]="disableLeavingDate"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-date-dc>
+            <!-------------- hijiri calendar ----------------->
+            <gosi-input-hijiri-dc
+              *ngIf="dateForm2.get('dateFormat.english').value === typeHijira"
+              id="endDateHijiri"
+              [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+              [control]="periodDetailForm.get('leavingDate.hijiri')"
+              [minDate]="minHijiriLeavingDate"
+              [maxDate]="maxHijiriLeavingDate"
+              [disabled]="disableLeavingDate"
+            >
+            </gosi-input-hijiri-dc>
+          </div>
+          <div [ngClass]="checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+            <gosi-input-select-dc
+              id="leavingReason"
+              [control]="periodDetailForm.get('leavingReason')"
+              [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+              [list]="leavingReasonLovList"
+              [disabled]="disableLeavingReason"
+              (select)="onLeavingReasonChange()"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <!--Leaving Details End -->
+
+        <!--Contributor Active toggle 2 -->
+        <!-- <div class="row" *ngIf="contributorType === contributorTypes.SAUDI && checkLegal && isPrivate && !isGccEstablishment">
+          <div class="col-lg-4">
+            <cnt-employment-status-switch-dc
+              [label]="'CONTRIBUTOR.EMPLOYMENT-CON-STATUS'"
+              [activeLabel]="'CONTRIBUTOR.YES'"
+              [inActiveLabel]="'CONTRIBUTOR.NO'"
+              [isToggleTypeDanger]="true"
+              [isContract]="true"
+              [control]="periodDetailForm.get('isContractActive')"
+              (changeEvent)="onContractActiveChange($event)"
+            >
+            </cnt-employment-status-switch-dc>
+            <br />
+          </div>
+        </div> -->
+        <!--Contributor Active toggle 2  Ends-->
+
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="workType"
+              name="workType"
+              [control]="periodDetailForm.get('workType')"
+              [list]="ppaEstablishment ? forPPA : workTypeList"
+              [label]="'CONTRIBUTOR.WORK-TYPE' | translate"
+            ></gosi-input-radio-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="contributorIsAbroad"
+              name="contributorIsAbroad"
+              [control]="periodDetailForm.get('contributorAbroad')"
+              [list]="contributorAbroad"
+              [label]="'CONTRIBUTOR.CONTRIBUTOR-IS-ABROAD' | translate"
+              *ngIf="contributorType === contributorTypes.SAUDI"
+              [disabled]="ppaEstablishment ? true : false"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #changeJoiningDateTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CHANGE-JOINING-DATE-ERR"
+    (onConfirm)="confirmJoiningDateChange(periodDetailForm.get('joiningDate.gregorian').value)"
+    (onCancel)="cancelJoiningDateChange()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #changeJoiningDateHijriTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CHANGE-JOINING-DATE-ERR"
+    (onConfirm)="confirmJoiningDateHijiriChange(periodDetailForm.get('joiningDate.hijiri').value)"
+    (onCancel)="cancelJoiningDateChange()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #changeLeavingDateTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CHANGE-LEAVING-DATE-ERR"
+    (onConfirm)="confirmLeavingDateChange(periodDetailForm.get('leavingDate.gregorian').value)"
+    (onCancel)="cancelLeavingDateChange()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #changeLeavingDateHijiriTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CHANGE-LEAVING-DATE-ERR"
+    (onConfirm)="confirmLeavingDateHijiriChange(periodDetailForm.get('leavingDate.hijiri').value)"
+    (onCancel)="cancelLeavingDateChange()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #changeLeavingReasonTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CHANGE-LEAVING-REASON-ERR"
+    (onConfirm)="confirmLeavingReasonChange()"
+    (onCancel)="cancelLeavingReasonChange()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #contractRemovingTemplate>
+  <gosi-modal-dc>
+    <div modalContent>
+      <div class="row">
+        <div class="col-12 details">
+          {{ 'CONTRIBUTOR.CONTRACT-REMOVING-INFO' | translate }}
+        </div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="form-action d-flex justify-content-between">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="setContributorActive()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          id="confirm"
+          type="primary"
+          (submit)="contributorActiveChange(periodDetailForm.get('isContributorActive').value)"
+        >
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #contractRemovingTemplate1>
+  <gosi-modal-dc>
+    <div modalContent>
+      <div class="row">
+        <div class="col-12 details">
+          {{ 'CONTRIBUTOR.CONTRACT-REMOVING-INFO-CON' | translate }}
+        </div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="form-action d-flex justify-content-between">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="setContractActive()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          id="confirm"
+          type="primary"
+          (submit)="contractActiveChange(periodDetailForm.get('isContractActive').value)"
+        >
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

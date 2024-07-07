@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="heading-font">{{ 'BILLING.REQUIRED-PAYMENT-DETAILS' | translate }}</div>
+<div class="row">
+  <div class="col-lg-12 d-flex bd-highlight">
+    <div class="bd-highlight reopen-details">
+      <span>{{ 'BILLING.IS-PAYMENT-REQUIRED' | translate }}</span>
+    </div>
+
+    <gosi-input-toggle-dc
+      id="paymentRequired"
+      [name]="'modified'"
+      [control]="paymentForm.get('paymentRequired')"
+      (changeEvent)="changePaymentType($event)"
+    >
+    </gosi-input-toggle-dc>
+  </div>
+</div>
+<ng-container *ngIf="isRequired">
+  <div class="row top-align">
+    <div id="payment" class="col-lg-6 mainStyle marginBottom">
+      <div>
+        <div class="indicators">
+          {{ 'BILLING.PAYMENT-REQUIRED' | translate }}
+        </div>
+        <div class="previous-Indicator danger">
+          <div>
+            {{ amount | number: '1.2-2' }}
+            {{ 'BILLING.SAR' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="gracePeriods" class="col-lg-6 mainStyle">
+      <div>
+        <div class="indicators">
+          {{ 'BILLING.GRACE-PERIOD' | translate }}
+        </div>
+        <div class="previous-Indicator">
+          <div *ngIf="lang === 'en'">
+            {{ gracePeriod }}
+            {{ 'BILLING.BUSINESS-DAYS' | translate }}
+          </div>
+          <div *ngIf="lang === 'ar'">{{ gracePeriod }} {{ dayLabel | translate }}</div>
+        </div>
+        <div id="extendedGracePeriodLink" class="show-details" *ngIf="!extendedGrace">
+          <a class="details-link" (click)="showModals(extendGracePeriod, 'md')">{{
+            'BILLING.EXTEND-GRACE-PERIOD' | translate
+          }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="extendedGrace && !isExtraAdded">
+    <div class="row reason-headings">
+      <div class="col-lg-3">
+        {{ 'BILLING.REASON-FOR-EXTENSION' | translate }}
+      </div>
+    </div>
+    <div class="row reasons">
+      {{ exceptionalWaiverDetailsForm.get('extensionReason').value }}
+    </div>
+    <div id="modifyGracePeriodLLink" class="row show-details reasons">
+      <a class="details-link" (click)="showModals(extendGracePeriod, 'md')">{{
+        'BILLING.MODIFY-GRACE-PERIOD' | translate
+      }}</a>
+    </div>
+  </div>
+</ng-container>
+<ng-template #extendGracePeriod>
+  <blg-penality-grace-period-extended-dc
+    (gracePeriods)="gracePeriods($event)"
+    (extendedFlag)="extendedFlag($event)"
+    (isCanceled)="isCanceled($event)"
+    [reason]="reason"
+    [addedGrace]="addedGrace"
+    [exceptionalGracePeriod]="gracePeriod"
+    [wavierDetails]="wavierDetails"
+    [validatorFlag]="validatorFlag"
+    [waiverDetailsOnEdit]="waiverDetailsOnEdit"
+  ></blg-penality-grace-period-extended-dc>
+</ng-template>

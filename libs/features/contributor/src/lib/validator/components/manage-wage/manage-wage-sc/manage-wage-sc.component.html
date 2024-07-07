@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" (onEdit)="navigateToCSR()" [documents]="documents" [canEdit]="!canReturn">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.WAGE.UPDATE-CURRENT-WAGE' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="updatedWageListResponse?.formSubmissionDate?.gregorian"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div *ngIf="contributor" class="sub-content-item">
+        <cnt-contributor-personal-details-dc
+          [canEdit]="!canReturn"
+          (onEdit)="navigateToCSR()"
+          [contributor]="contributor"
+          [isBeneficiary]="isBeneficiary"
+        >
+        </cnt-contributor-personal-details-dc>
+        <cnt-engagement-basic-details-dc [establishment]="establishment"> </cnt-engagement-basic-details-dc>
+        <cnt-wage-details-dc [updatedWageListResponse]="updatedWageListResponse" [isPPA]="isPPA"></cnt-wage-details-dc>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (cancelEvent)="navigateToInbox()"
+        (returnEvent)="showModal(returnTemplate)"
+        [disableApprove]="isBillBatch"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    heading="CONTRIBUTOR.MW-REJECT-HEADING"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="handleWorkflowEvents(1)"
+    [transactionNumber]="referenceNo"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    heading="CONTRIBUTOR.MW-RETURN-HEADING"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>

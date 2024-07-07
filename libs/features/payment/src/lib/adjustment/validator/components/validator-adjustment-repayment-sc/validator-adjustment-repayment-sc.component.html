@@ -1,0 +1,350 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [documents]="isDocuments ? documents : []" [comments]="comments">
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc [heading]="'ADJUSTMENT.PAY-ADJUSTMENTS' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <gosi-card-dc type="secondary">
+        <!--------------------------Contributor Details-------------------------------------->
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <frm-content-heading-dc
+              icon="user"
+              [canEdit]="false"
+              heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+            >
+            </frm-content-heading-dc>
+            <div class="row">
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="contributorNIN"
+                  label="{{ 'ADJUSTMENT.NATIONAL-IDENTIFICATION-NUMBER' | translate }}"
+                  [value]="authorizedPersonId?.id"
+                  [isLink]="true"
+                  (click)="viewContributorInfo()"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="dob"
+                  value="{{ adjustmentRepayDetails?.contributor?.dateOfBirth?.gregorian | date: 'dd/MM/yyyy' }} ({{
+                    'ADJUSTMENT.AGE' | translate
+                  }}:{{ adjustmentRepayDetails?.contributor?.age }})"
+                  label="ADJUSTMENT.DATE-OF-BIRTH"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="dobHijiri"
+                  [control]="'BENEFITS.AGE' | translate: { age: adjustmentRepayDetails?.contributor?.hijiriAge }"
+                  label="BENEFITS.DATE-OF-BIRTH-HIJIRI"
+                >
+                  <span id="prefixValue">{{
+                    adjustmentRepayDetails?.contributor?.dateOfBirth?.hijiri | date: 'dd/MM/yyyy'
+                  }}</span>
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="contributorName"
+                  label="{{ 'ADJUSTMENT.CONTRIBUTOR-NAME' | translate }}"
+                  [value]="adjustmentRepayDetails?.contributor?.name?.english"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="contributorName"
+                  label="{{ 'ADJUSTMENT.CONTRIBUTOR-NAME-AR' | translate }}"
+                  [value]="adjustmentRepayDetails?.contributor?.name?.arabic"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--------------------------Adjustment Details-------------------------------------->
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <frm-content-heading-dc
+              icon="Benefits"
+              isSvg="true"
+              [canEdit]="false"
+              heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}"
+            >
+            </frm-content-heading-dc>
+            <div class="row">
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="totalDebitAdjustmentBalance"
+                  label="{{ 'ADJUSTMENT.TOTAL-DEBIT-ADJUSTMENT-BALANCE' | translate }}"
+                  value="{{ adjustmentRepayDetails?.totalBalanceAmount || 0 | number: '1.0-2' }} {{
+                    'ADJUSTMENT.SAR' | translate
+                  }}"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="amountPaid"
+                  label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+                  [value]="adjustmentRepayDetails?.totalPaidAmount || 0 | number: '1.0-2'"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <accordion class="saned-accordion w-100">
+                  <ng-container *ngFor="let items of adjustmentRepayDetails?.repayItems; let i = index">
+                    <accordion-group class="wrapper-accordion-group" [isOpen]="true">
+                      <div accordion-heading class="float-left font-weight-normal">
+                        {{ items?.benefitType | bilingualText }}
+                      </div>
+                      <div class="header-wrapper ml-auto" accordion-heading>
+                        <span class="paid-amount font-weight-normal"
+                          >{{ 'ADJUSTMENT.PAID' | translate }} : {{ items?.paidAmount || 0 | number: '1.0-2' }}
+                          {{ 'ADJUSTMENT.SAR' | translate }}</span
+                        >
+                        <span class="arrow-up arrow-color">
+                          <fa-icon icon="angle-up" size="lg"></fa-icon>
+                        </span>
+                        <span class="arrow-down arrow-color">
+                          <fa-icon icon="angle-down" size="lg"></fa-icon>
+                        </span>
+                      </div>
+                      <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                        <div class="row">
+                          <div class="col-sm-6 col-md-6 col-lg-6">
+                            <gosi-label-dc
+                              label="ADJUSTMENT.ADJUSTMENT-ID"
+                              [isLink]="true"
+                              [value]="items?.adjustmentId"
+                              (click)="navigateToAdjustment(items?.adjustmentId)"
+                            >
+                            </gosi-label-dc>
+                          </div>
+                          <div class="col-sm-6 col-md-6 col-lg-6">
+                            <gosi-label-dc
+                              label="ADJUSTMENT.BENEFIT-START-DATE"
+                              [value]="items?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy'"
+                            >
+                            </gosi-label-dc>
+                          </div>
+                          <div class="col-sm-6 col-md-6 col-lg-6">
+                            <gosi-label-dc
+                              label="ADJUSTMENT.ADJUSTMENT-AMOUNT"
+                              value="{{ items?.adjustmentAmount || 0 | number: '1.0-2' }} {{
+                                'ADJUSTMENT.SAR' | translate
+                              }}"
+                            >
+                            </gosi-label-dc>
+                          </div>
+                          <div class="col-sm-6 col-md-6 col-lg-6">
+                            <gosi-label-dc
+                              label="ADJUSTMENT.AMOUNT-PAID"
+                              value="{{ items?.paidAmount || 0 | number: '1.0-2' }} {{ 'ADJUSTMENT.SAR' | translate }}"
+                            ></gosi-label-dc>
+                          </div>
+                          <div class="col-sm-6 col-md-6 col-lg-6">
+                            <gosi-label-dc
+                              label="ADJUSTMENT.BAL-AMT-AFTER-SETTLEMENT"
+                              value="{{ items?.balanceAmount || 0 | number: '1.0-2' }} {{
+                                'ADJUSTMENT.SAR' | translate
+                              }}"
+                            ></gosi-label-dc>
+                          </div>
+                        </div>
+                      </div>
+                    </accordion-group>
+                  </ng-container>
+                </accordion>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!------------------PAYMENT DETAILS------------------------->
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <frm-content-heading-dc
+              icon="money-bill-alt"
+              heading="{{ 'ADJUSTMENT.PAYMENT-DETAILS' | translate }}"
+              [canEdit]="validatorCanEdit && isValidatorCanEditPayment"
+              (onEdit)="navigateToEdit()"
+            >
+            </frm-content-heading-dc>
+            <ng-container *ngIf="!isSadad">
+              <div class="row">
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                  <gosi-label-dc
+                    id="receiptMode"
+                    label="{{ 'ADJUSTMENT.RECEIPT-MODE' | translate }}"
+                    [value]="adjustmentRepayDetails?.repaymentDetails?.receiptMode | bilingualText"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                  <gosi-label-dc
+                    id="transactionDate"
+                    label="{{ 'ADJUSTMENT.TRANSACTION-DATE' | translate }}"
+                    [value]="adjustmentRepayDetails?.repaymentDetails?.transactionDate?.gregorian | date: 'dd/MM/yyyy'"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                  <gosi-label-dc
+                    id="referenceNumber"
+                    label="{{ 'ADJUSTMENT.PAYMENT-REFERENCE-NUMBER' | translate }}"
+                    [value]="adjustmentRepayDetails?.repaymentDetails?.paymentReferenceNo"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                  <gosi-label-dc
+                    id="amountPaid"
+                    label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+                    value="{{ adjustmentRepayDetails?.repaymentDetails?.amountTransferred || 0 | number: '1.0-2' }} {{
+                      'ADJUSTMENT.SAR' | translate
+                    }}"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                  <gosi-label-dc
+                    id="additionalPaymentDetails"
+                    label="{{ 'ADJUSTMENT.ADDITIONAL-PAYMENT-DETAILS' | translate }}"
+                    [value]="adjustmentRepayDetails?.repaymentDetails?.additionalPaymentDetails"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+            </ng-container>
+            <div class="row" *ngIf="isSadad">
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="receiptMode"
+                  label="{{ 'ADJUSTMENT.RECEIPT-MODE' | translate }}"
+                  [value]="adjustmentRepayDetails?.repaymentDetails?.paymentMethod | bilingualText"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="amountPaid"
+                  label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+                  value="{{ adjustmentRepayDetails?.repaymentDetails?.amountTransferred || 0 | number: '1.0-2' }} {{
+                    'ADJUSTMENT.SAR' | translate
+                  }}"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </frm-main-content-dc>
+  <div id="actionArea">
+    <div class="row form-action">
+      <div class="col-lg-12">
+        <div class="action-requests">
+          <div class="btn-section float-right" *ngIf="canApprove">
+            <gosi-button-dc
+              
+              id="dApprove"
+              [disabled]="disableApprove"
+              type="primary"
+              (submit)="approveTransaction(approveTemplate)"
+              >{{ 'ADJUSTMENT.APPROVE' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReject">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="danger"
+              id="reject"
+              (submit)="rejectTransaction(rejectTemplate)"
+              >{{ 'ADJUSTMENT.REJECT' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="return"
+              (submit)="returnTransaction(returnTemplate)"
+            >
+              {{ 'ADJUSTMENT.RETURN' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showCancelTemplate(cancelAdjustmentTemplate)"
+              >{{ 'ADJUSTMENT.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      heading="{{ 'ADJUSTMENT.APPROVE' | translate }} - {{ 'ADJUSTMENT.ADJUSTMENT-PAYMENT' | translate }}"
+      [isCommentsMandatory]="approveComments"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="ConfirmApproveAdjustmentRepayment()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <ng-template #cancelAdjustmentTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      heading="{{ 'ADJUSTMENT.REJECT' | translate }} - {{ 'ADJUSTMENT.ADJUSTMENT-PAYMENT' | translate }}"
+      [warningMessage]="rejectWarningMessage | translate: { transactionNo: transactionNumber }"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (rejectEvent)="ConfirmRejectAdjustmentRepayment()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <!----Return template---->
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      heading="{{ 'ADJUSTMENT.RETURN' | translate }} - {{ 'ADJUSTMENT.ADJUSTMENT-PAYMENT' | translate }}"
+      [warningMessage]="
+        routerData.assignedRole === RoleConst.VALIDATOR_2
+          ? 'PAYMENT.INFO-VALIDATOR-RETURN-VALIDATOR'
+          : 'PAYMENT.INFO-FC-RETURN-VALIDATOR'
+      "
+      [parentForm]="form"
+      (returnEvent)="ConfirmReturnAdjustmentRepayment()"
+      (cancelEvent)="hideModal()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="otp-modal">
+  <gosi-modal-dc [isCustomFooter]="true">
+    <div modalContent>
+      <div class="row">
+        <div class="col-lg-12 pt-4 pb-4">
+          <span class="header"> {{ 'COMPLAINTS.VERIFY-OTP' | translate }}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <gosi-alert-dc
+            [message]="'COMPLAINTS.OTP-MESSAGE' | translate"
+            type="info"
+            [dismissible]="false"
+            [noPadding]="true"
+            *ngIf="currentAlert.length === 0 && !isExpiredAlert"
+          ></gosi-alert-dc>
+          <ng-container *ngIf="!isExceeded">
+            <gosi-alert-dc
+              *ngFor="let alert of currentAlert"
+              [message]="alert | bilingualText"
+              [type]="isResend ? 'success' : 'danger'"
+              [dismissible]="true"
+              [noPadding]="true"
+              (closed)="onClose()"
+            ></gosi-alert-dc>
+          </ng-container>
+          <gosi-alert-dc
+            [message]="'COMPLAINTS.OTP-EXPIRED' | translate"
+            type="danger"
+            [dismissible]="true"
+            [noPadding]="true"
+            (closed)="onExpireClose()"
+            *ngIf="isExceeded && currentAlert.length === 0"
+          ></gosi-alert-dc>
+        </div>
+      </div>
+      <div class="text-center mt-4 otp-label pt-4">
+        {{ 'COMPLAINTS.ENTER-OTP' | translate }}
+      </div>
+      <div class="text-center mx-auto otp-line">
+        <gosi-input-otp-dc
+          [isValid]="isOtpValid"
+          [otpLength]="4"
+          [parentForm]="otpParentForm"
+          [control]="otpForm.get('otp')"
+        >
+        </gosi-input-otp-dc>
+      </div>
+      <div class="d-flex justify-content-center flex-column mt-4 mb-5">
+        <gosi-timer-dc
+          *ngIf="isExceeded === false && enableResend === false; else showResend"
+          [min]="4"
+          (timerStopped)="timerStopped()"
+        >
+        </gosi-timer-dc>
+        <div>
+          <ng-template #showResend>
+            <a class="d-flex justify-content-center resend-otp" id="resendOtp" (click)="onReSendOtp()">{{
+              'COMPLAINTS.RESEND-OTP' | translate
+            }}</a>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="row">
+        <div class="col-md-12 form-action">
+          <div class="complaint-value">
+            <div class="btn-section float-left">
+              <gosi-button-dc class="btn-width" type="secondary" id="cancel" (submit)="onCancel()">
+                {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section float-right">
+              <gosi-button-dc
+                class="btn-width"
+                [disabled]="otpParentForm.invalid"
+                (submit)="onVerify()"
+                type="primary"
+                id="submit"
+              >
+                {{ 'COMPLAINTS.VERIFY' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</div>

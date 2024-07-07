@@ -1,0 +1,210 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-card-dc
+      heading="{{ 'BENEFITS.FUNERAL-GRANT-DETAILS' | translate }}"
+      type="secondary"
+      lessPadding="lessPadding"
+    >
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!deathDate">
+          <gosi-input-date-dc
+            id="deathDate"
+            label="{{ 'BENEFITS.DEATH-DATE-CONTRIBUTOR' | translate }}"
+            [maxDate]="maxDate"
+            [minDate]="minDate"
+            [hideOptionalLabel]="true"
+            [control]="funeralDetailsForm.get('eventDate').get('gregorian')"
+            (blur)="deathDateChange(funeralDetailsForm?.get('eventDate')?.get('gregorian')?.value)"
+          >
+          </gosi-input-date-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="deathDate">
+          <gosi-label-dc
+            id="dateOfBirth"
+            [value]="deathDate | dateType"
+            label="{{ 'BENEFITS.DEATH-DATE-CONTRIBUTOR' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="funeralDetailsForm.get('lateRequestReason')">
+          <gosi-input-text-dc
+            name="lateRequestReason"
+            id="lateRequestReason"
+            [label]="'BENEFITS.REASON-FOR-LATE-REQUEST' | translate"
+            [control]="funeralDetailsForm.get('lateRequestReason')"
+            [maxLength]="maxLength"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-md-12 col-lg-12 mt-4">
+          <gosi-input-text-area-dc
+            id="funeralComments"
+            [label]="'BENEFITS.NOTES' | translate"
+            name="funeralComments"
+            [maxLength]="maxLength"
+            [control]="funeralDetailsForm.get('notes')"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+
+        <div class="col-md-12">
+          <gosi-input-radio-dc
+            id="beneficiaryType"
+            [label]="'BENEFITS.BENEFICIARY-TYPE' | translate"
+            name="beneficiaryType"
+            [control]="funeralDetailsForm?.get('beneficiaryType')"
+            [list]="beneficiaryTypeList"
+            (select)="selectBeneficiaryType($event)"
+          >
+          </gosi-input-radio-dc>
+        </div>
+        <div
+          class="col-12"
+          *ngIf="
+            funeralDetailsForm?.get('beneficiaryType.english')?.value === benefitConstants.HEIR_BILINGUAL_TEXT?.english;
+            else searchHeir
+          "
+        >
+          <!-- This method is to select heir -->
+          <bnt-select-heir-dc
+            *ngIf="heirs?.length"
+            [heirs]="heirs"
+            [parentForm]="parentForm"
+            (select)="heirSelected($event)"
+          ></bnt-select-heir-dc>
+        </div>
+        <ng-template #searchHeir>
+          <div
+            class="col-md-12"
+            *ngIf="
+              funeralDetailsForm?.get('beneficiaryType.english')?.value ===
+                benefitConstants.OTHER_BILINGUAL_TEXT?.english && !searchResult?.personId
+            "
+          >
+            <bnt-search-person-dc
+              [systemRunDate]="systemRunDate"
+              [nationalityList$]="nationalityList$"
+              [parentForm]="parentForm"
+              (searchPerson)="search($event)"
+              [showCancel]="false"
+            >
+            </bnt-search-person-dc>
+          </div>
+          <!--search result and payment method with address-->
+          <!-- if heir show hier details and payment method-->
+          <div
+            class="col-md-12"
+            *ngIf="
+              funeralDetailsForm?.get('beneficiaryType.english')?.value ===
+                benefitConstants.OTHER_BILINGUAL_TEXT?.english && searchResult?.personId
+            "
+          >
+            <bnt-beneficiary-details-dc
+              [personalInfo]="searchResult"
+              (resetDetails)="resetBeneficiary()"
+            ></bnt-beneficiary-details-dc>
+          </div>
+        </ng-template>
+
+        <!-- TODO payment details, get gurdian and auth person -->
+        <div class="col-md-12 pt-5" id="selectedHeir" *ngIf="selectedHeir?.personId">
+          <bnt-payment-details-dc
+            *ngIf="payeeList && paymentMethodList"
+            #paymentDetails
+            [bankName]="bankName"
+            [showPaymentMethod]="true"
+            [isHeirAlive]="!selectedHeir.deathDate?.gregorian"
+            [guardianDetails]="guardianDetails"
+            [showGuardian]="selectedHeir.guardianPersonId"
+            [newBankForm]="true"
+            [showCard]="false"
+            [lang]="lang"
+            [isDraft]="isDraft"
+            [payeeList]="payeeList"
+            [nationalityList$]="nationalityList$"
+            [systemRunDate]="systemRunDate"
+            [paymentMethodList]="paymentMethodList"
+            [preselctdAttorney]="getPreselectedAuthPerson(selectedHeir?.attorneyDetails)"
+            [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+            [savedPayeType]="selectedHeir?.payeeType"
+            [listOfGuardians]="listOfGuardians"
+            [heirNationality]="selectedHeir?.nationality?.english"
+            [savedPayMethod]="selectedHeir?.paymentMode"
+            [guardianSource]="selectedHeir?.guardianSource"
+            [personId]="selectedHeir?.personId"
+            [parentForm]="parentForm"
+            [listYesNo]="listYesNo$ | async"
+            [isValidator]="isValidator"
+            [bankAccountList]="selectedHeir.bankAccount"
+            [showInfo]="false"
+            [hideSaveButton]="true"
+            (loadBankInfoForId)="getBankDetails($event)"
+            (getBankName)="getBank($event)"
+          >
+            <!-- (saveBank)="saveBankDetails($event)" -->
+          </bnt-payment-details-dc>
+        </div>
+        <div class="col-md-12 pt-5" *ngIf="searchResult?.personId">
+          <!-- [listOfGuardians]="listOfGuardians" -->
+
+          <bnt-payment-details-dc
+            *ngIf="payeeList && paymentMethodList"
+            #paymentDetails
+            [bankName]="bankName"
+            [showPaymentMethod]="true"
+            [hidePayeeType]="true"
+            [newBankForm]="true"
+            [showCard]="false"
+            [lang]="lang"
+            [isDraft]="isDraft"
+            [payeeList]="payeeList"
+            [nationalityList$]="nationalityList$"
+            [systemRunDate]="systemRunDate"
+            [paymentMethodList]="paymentMethodList"
+            [preselctdAttorney]="getPreselectedAuthPerson(searchResult?.attorneyDetails)"
+            [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+            [savedPayeType]="searchResult?.payeeType"
+            [heirNationality]="searchResult?.nationality?.english"
+            [savedPayMethod]="searchResult?.paymentMode"
+            [guardianSource]="searchResult?.guardianSource"
+            [personId]="searchResult?.personId"
+            [parentForm]="parentForm"
+            [listYesNo]="listYesNo$ | async"
+            [isValidator]="isValidator"
+            [bankAccountList]="searchResult.bankAccount"
+            [showInfo]="false"
+            [hideSaveButton]="true"
+            (loadBankInfoForId)="getBankDetails($event)"
+            (getBankName)="getBank($event)"
+          >
+            <!-- (saveBank)="saveBankDetails($event)"
+                        (loadBankInfoForId)="getBankDetails($event)"
+
+            -->
+          </bnt-payment-details-dc>
+        </div>
+        <!-- payment details-->
+
+        <div
+          class="col-md-12"
+          *ngIf="
+            funeralDetailsForm?.get('beneficiaryType.english')?.value ===
+              benefitConstants.OTHER_BILINGUAL_TEXT?.english && searchResult?.personId
+          "
+        >
+          <bnt-heir-contact-details-dc
+            #addressAndConactForm
+            idValue="heirContact"
+            [parentForm]="contactForm"
+            [contactDetails]="searchResult?.contactDetail"
+            [cityList]="cityList$ | async"
+            [countryList]="countryList$ | async"
+          >
+          </bnt-heir-contact-details-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-lg-12 uploaded-history-heading">
+    {{ 'CONTRIBUTOR.BULK-WAGE.UPLOADED-FILE-HISTORY' | translate }}
+  </div>
+</div>
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="table-responsive">
+      <div class="table-worklist">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">
+                {{ 'CONTRIBUTOR.BULK-WAGE.FILES-DETAILS' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'CONTRIBUTOR.BULK-WAGE.TOTAL-RECORDS' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'CONTRIBUTOR.BULK-WAGE.VALID-RECORDS' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'CONTRIBUTOR.BULK-WAGE.ERROR-RECORDS' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'CONTRIBUTOR.BULK-WAGE.DOWNLOAD-ERROR-RECORDS' | translate }}
+              </th>
+              <th scope="col" *ngIf="isPPAEst">
+                {{ 'CONTRIBUTOR.BULK-WAGE.DOWNLOAD-VALID-RECORDS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="history-content"
+              *ngFor="
+                let list of uploadHistoryList
+                  | paginate: { id: id, itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalSize };
+                let i = index
+              "
+            >
+              <td>
+                <div class="description-title">{{ list.fileName }}</div>
+                <div class="description-content">
+                  {{ 'CONTRIBUTOR.BULK-WAGE.UPLOAD-ON' | translate }}:
+                  {{ list.uploadDate?.gregorian | date: 'dd/MM/yyyy' }} |
+                  {{ 'CONTRIBUTOR.BULK-WAGE.FILE-SIZE' | translate }} :{{ list.fileSize }}kb
+                </div>
+              </td>
+              <td>{{ list.countOfSuccessful + list.countOfFailed }}</td>
+              <td [ngClass]="{ success: list.countOfSuccessful > 0 }">{{ list.countOfSuccessful }}</td>
+              <td [ngClass]="{ error: list.countOfFailed > 0 }">{{ list.countOfFailed }}</td>
+              <td>
+                <span
+                  *ngIf="list.countOfFailed > 0"
+                  (click)="fetchReport.emit({ requestId: list.requestId, isSuccessDownload: false })"
+                >
+                  <fa-icon [icon]="['fas', 'download']" class="icon"></fa-icon>
+                </span>
+              </td>
+              <td *ngIf="isPPAEst">
+                <span
+                  *ngIf="list.countOfSuccessful > 0"
+                  (click)="fetchReport.emit({ requestId: list.requestId, isSuccessDownload: true })"
+                >
+                  <fa-icon [icon]="['fas', 'download']" class="icon"></fa-icon>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--   Repen complication Main Heading  -->
+<div class="report-oh-frame content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REOPEN-COMPLICATION-TRANSACTION' | translate }}
+      </div>
+    </div>
+  </div>
+
+  <gosi-comments-dc *ngIf="routerData?.taskId && !isAppPrivate" [comments]="comment ? comment : []"></gosi-comments-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <gosi-progress-wizard-dc
+    [wizardItems]="reopenWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #reportComplicationWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="currentTab === 0">
+            <div class="row">
+              <div class="col-md-12">
+                <!--  Reporting complication  -->
+                <gosi-card-dc type="secondary">
+                  <div class="row" [formGroup]="reopenComplicationForm">
+                    <div class="col-lg-12">
+                      <div class="row">
+                        <div class="col-lg-6" formGroupName="reopenReason">
+                          <gosi-input-select-dc
+                            id="reopenReason"
+                            [label]="'OCCUPATIONAL-HAZARD.REASON-FOR-REOPENING' | translate"
+                            [control]="reopenComplicationForm.get('reopenReason')"
+                            [list]="reopenReason$ | async"
+                            (selectLov)="selectedReason($event)"
+                            [disabled]="disabled"
+                          >
+                          </gosi-input-select-dc>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-12" formGroupName="modifyComplicationIndicator" *ngIf="ShowToggle">
+                      <div class="d-flex bd-highlight">
+                        <div class="bd-highlight reopen-details">
+                          <span>{{ 'OCCUPATIONAL-HAZARD.REOPEN-COMPLICATION-DETAILS' | translate }}</span>
+                        </div>
+                        <gosi-input-toggle-dc
+                          id="modifyIndicator"
+                          [name]="'modified'"
+                          [control]="reopenComplicationForm.get('modifyComplicationIndicator')"
+                          (changeEvent)="modifyComplication($event)"
+                        >
+                        </gosi-input-toggle-dc>
+                      </div>
+                    </div>
+                  </div>
+                </gosi-card-dc>
+                <oh-report-complication-dc
+                  [isAddressAvailable]="isAddressPresent"
+                  (submit)="saveReopenComplicationDetails($event)"
+                  [assignedRole]="assignedRole"
+                  (showToggle)="showToggle($event)"
+                  (cancel)="cancelComplication()"
+                  (template)="showCancelTemplate()"
+                  [modifyIndicator]="modifyIndicator"
+                  [processType]="processType"
+                  [isContributor]="isContributor"
+                  [parentForm]="reportComplicationMainForm"
+                  [complicationDetails]="complicationDetails"
+                  [booleanList]="booleanList$ | async"
+                >
+                </oh-report-complication-dc>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 1">
+            <div class="row">
+              <div class="col-md-12 upload-document-section">
+                <oh-document-dc
+                  [transactionId]="injuryTransactionId"
+                  [businessKey]="complicationId"
+                  [requiredList]="documentLists"
+                  [documentList]="complicationDocumentList"
+                  [processType]="processType"
+                  [documents]="ReqdocumentLists"
+                  [isWorkflow]="isWorkflow"
+                  [isSelectedReasonOthers]="isSelectedReasonOthers"
+                  (submit)="submitDocuments($event)"
+                  (uploadFailed)="showMandatoryDocErrorMessage($event)"
+                  (documentFormDetails)="showFormValidation()"
+                  [isValidator1]="isValidator1"
+                  [isValidator2]="isValidator2"
+                  [assignedRole]="assignedRole"
+                  [taskId]="taskid"
+                  [processType]="processType"
+                  (previous)="previousForm()"
+                  (refresh)="refreshDocument($event)"
+                  [parentForm]="documentForm"
+                  (template)="showCancelTemplate()"
+                >
+                </oh-document-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <ng-template #cancelEngagementTemplate>
+                  <gosi-confirm-modal-dc
+                    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                    (onConfirm)="confirmCancel()"
+                    (onCancel)="decline()"
+                  >
+                  </gosi-confirm-modal-dc>
+                </ng-template>
+              </div>
+            </div>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>

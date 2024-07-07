@@ -1,0 +1,123 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="row">
+  <div class="col-lg-12">
+    <div class="search d-flex float-right">
+      <div class="search-component d-flex mx-0">
+        <gosi-search-dc
+          id="search-area"
+          [placeholder]="'BENEFITS.TRANSACTION-ID' | translate"
+          (search)="onSearchId($event)"
+          (keyup)="onSearchId($event.target.value)"
+        >
+        </gosi-search-dc>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-alert-dc> </gosi-alert-dc>
+          </div>
+        </div>
+        <gosi-filter-dc
+          (apply)="applyFilter()"
+          (scroll)="onScroll()"
+          (reset)="clearAllFiters()"
+          filterId="transHisFilterId"
+          [noScroll]="true"
+          #transactionFilterButton
+        >
+          <ng-container modalContent>
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-input-daterange-dc
+                  #dateRangePicker
+                  [label]="'BENEFITS.DATE-RANGE' | translate"
+                  [control]="transactionPeriodForm"
+                  [maxDate]="maxDate"
+                  [hideOptionalLabel]="true"
+                >
+                </gosi-input-daterange-dc>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-lg-12">
+                <label>{{ 'BENEFITS.STATUS' | translate }}</label>
+              </div>
+              <div class="col-lg-12">
+                <gosi-input-multi-checkbox-dc
+                  [options]="statusEvents"
+                  [control]="statusFilterForm"
+                  (check)="selectedStatusOptions = $event"
+                  #statusComponent
+                >
+                </gosi-input-multi-checkbox-dc>
+              </div>
+            </div>
+          </ng-container>
+        </gosi-filter-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="transaction-details">
+  <div class="row d-flex align-items-center">
+    <div class="col-md-12">
+      <div class="table-scroll table-responsive table-transactionDetails">
+        <table class="table table-borderless" *ngIf="!ifTransactionHistory">
+          <thead class="table-header">
+            <tr>
+              <th>
+                {{ 'BENEFITS.TRANSACTION-ID' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.INITIATED-DATE' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.TRANSACTION-TYPE' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let eachTransaction of transactions" class="data-row border-bottom">
+              <td>
+                <a (click)="goToTransactionDetails(eachTransaction)" id="transactionIdDetails">
+                  <u>{{ eachTransaction.transactionRefNo }}</u>
+                </a>
+              </td>
+              <td>
+                <div *ngIf="eachTransaction?.initiatedDate" class="d-block nin-text">
+                  {{ eachTransaction.initiatedDate | dateType }}
+                </div>
+              </td>
+              <td>
+                {{ eachTransaction?.transactionType | bilingualText }}
+              </td>
+
+              <td>
+                <gosi-status-badge-dc
+                  [label]="eachTransaction?.status | bilingualText"
+                  type="{{
+                    eachTransaction?.status.english === 'Inspection'
+                      ? 'info'
+                      : eachTransaction?.status.english == 'In Progress'
+                      ? 'warning'
+                      : eachTransaction?.status.english == 'Completed'
+                      ? 'success'
+                      : eachTransaction?.status.english === 'Rejected'
+                      ? 'danger'
+                      : eachTransaction?.status.english == 'Draft'
+                      ? 'warning'
+                      : ''
+                  }}"
+                ></gosi-status-badge-dc>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

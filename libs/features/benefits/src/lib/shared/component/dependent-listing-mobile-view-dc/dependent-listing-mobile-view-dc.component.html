@@ -1,0 +1,217 @@
+<!-- <div> -->
+<!-- <div class="card"> -->
+<ng-container *ngFor="let value of listOfValues; let i = index">
+  <div class="card overflow w-100" *ngIf="listOfValues && listOfValues.length">
+    <!-- <div class="col-md-6"> -->
+    <div class="d-flex flex-row justify-content-between">
+      <div>
+        <span class="dep-type px-1">{{ value.name | nameToString: true }}</span>
+        <span> ({{ value.relationship | bilingualText }})</span>
+      </div>
+      <div class="action-icon float-right" *ngIf="!value.showMandatoryDetails">
+        <fa-icon
+          size="lg"
+          [ngClass]="{
+            'd-none':
+              value.heirStatus?.english === status.DEAD &&
+              value.dependentSource === benefitValues.nic &&
+              value.actionType !== ActionType.MODIFY
+          }"
+          (click)="editButtonClick(i)"
+          class="pl-3 pencil-alt"
+          [icon]="['fas', 'pencil-alt']"
+        >
+        </fa-icon>
+        <!--Story 500972 delete button required for NIC/MOJ -->
+        <!--In modify screen, delete button not required for manually added from request screen -->
+        <fa-icon
+          *ngIf="value.actionType === ActionType.ADD"
+          (click)="deleteButtonClick(i)"
+          size="lg"
+          class="delete-icon"
+          [icon]="['far', 'trash-alt']"
+        >
+        </fa-icon>
+      </div>
+    </div>
+    <div class="d-block nin-text" *ngIf="value?.identity?.length > 0">
+      <span *ngIf="value?.identity[0]?.newNin">{{ 'BENEFITS.NIN-ID' | translate }} :</span>
+      <span *ngIf="value?.identity[0]?.iqamaNo">{{ 'BENEFITS.IQAMA-NUMBER' | translate }} :</span>
+      <span *ngIf="value?.identity[0]?.idType === 'GCCID'">{{ 'BENEFITS.GCCID' | translate }} :</span>
+      <span class="value"> {{ checkIfAgeOrId(value, 'id') }}</span>
+    </div>
+
+    <!-- </div> -->
+    <div class="row pt-3 col-md-12" *ngIf="!actionType">
+      <div *ngIf="value.showMandatoryDetails && !isModifyPage; else hasMandatoryDetailsOrModifyPage">
+        <fa-icon class="warning-icon" size="md" icon="exclamation-triangle"></fa-icon>
+        <a class="view-link" (click)="editButtonClick(i)">
+          <span>{{ 'BENEFITS.VALIDATE-EVENT-TEXT' | translate }}</span> </a
+        >&nbsp;
+        <!-- Delete button added as a part of Defect 486543 -->
+        <fa-icon (click)="deleteButtonClick(i)" size="lg" class="delete-icon" [icon]="['far', 'trash-alt']"> </fa-icon>
+      </div>
+      <ng-template #hasMandatoryDetailsOrModifyPage>
+        <div class="action-icon">
+          <!-- *ngIf="
+                  value.newlyAdded ||
+                  value.showGreenBorder ||
+                  (value.personId &&
+                    !value.showGreenBorder &&
+                    value.statusAfterValidation?.english === notEligibleText.english)
+                " -->
+          <fa-icon
+            *ngIf="value.statusAfterValidation"
+            [ngClass]="
+              value?.statusAfterValidation?.english === benefitValues?.eligible ||
+              value?.statusAfterValidation?.english === benefitValues?.eligibleBackdated
+                ? 'eligible-icon'
+                : 'warning-icon'
+            "
+            [icon]="
+              value?.statusAfterValidation?.english === benefitValues?.eligible ||
+              value?.statusAfterValidation?.english === benefitValues?.eligibleBackdated
+                ? 'check-circle'
+                : 'exclamation-triangle'
+            "
+            size="md"
+          ></fa-icon>
+          <span
+            [ngClass]="
+              value?.statusAfterValidation?.english === benefitValues?.eligible ||
+              value?.statusAfterValidation?.english === benefitValues?.eligibleBackdated
+                ? 'eligible-text'
+                : 'warning-text'
+            "
+            >{{ value.statusAfterValidation | bilingualText }}
+          </span>
+
+          <a
+            class="view-link"
+            *ngIf="
+              isModifyPage
+                ? value?.statusAfterValidation?.english === benefitValues?.noneligible && value?.validateApiResponse
+                : value?.statusAfterValidation?.english === benefitValues?.noneligible
+            "
+            routerLinkActive="active"
+            (click)="showIneligibilityReasons(value)"
+          >
+            <span>{{ 'BENEFITS.SHOW-REASONS' | translate }}</span>
+          </a>
+          <!--                  <fa-icon-->
+          <!--                    [ngClass]="[value.valid ? 'eligible-icon' : 'warning-icon']"-->
+          <!--                    icon="{{ value.valid ? 'check-circle' : 'exclamation-triangle' }}"-->
+          <!--                    size="md"-->
+          <!--                  ></fa-icon>-->
+          <!--                  &lt;!&ndash; <span class="eligible-text">{{ 'BENEFITS.ELIGIBLE' | translate }}</span> &ndash;&gt;-->
+          <!--                  <span [ngClass]="[value.valid ? 'eligible-text' : 'warning-text']" class=""-->
+          <!--                    >{{-->
+          <!--                      value.statusAfterValidation | bilingualText-->
+          <!--                    }}-->
+          <!--                  </span>-->
+
+          <!--                  <a-->
+          <!--                    class="view-link"-->
+          <!--                    *ngIf="!value.valid"-->
+          <!--                    routerLinkActive="active"-->
+          <!--                    (click)="showIneligibilityReasons(value)"-->
+          <!--                  >-->
+          <!--                    <span>{{ 'BENEFITS.SHOW-REASONS' | translate }}</span>-->
+          <!--                  </a>-->
+          <!-- <span class="eligible-text" *ngIf="isValidator">{{ 'BENEFITS.ELIGIBLE' | translate }} </span> -->
+        </div>
+      </ng-template>
+    </div>
+    <div class="pt-4" *ngIf="value.editable && !actionType">
+      <bnt-add-modify-dependent-dc
+        *ngIf="isModifyPage && !value.newlyAdded && value.actionType !== ActionType.ADD; else addDependent"
+        [lang]="lang"
+        [isValidator]="isValidator"
+        [addedEvent]="addedEvent"
+        [dependentDetails]="value"
+        [annuityResponse]="annuityResponse"
+        [benefitRequestId]="benefitRequestId"
+        [benefitStartDate]="benefitStartDate"
+        [validateApiResponse]="validateApiResponse"
+        [eligibilityStartDate]="eligibilityStartDate"
+        [parentForm]="parentForm"
+        [events]="events"
+        (getEvents)="getEvents.emit($event)"
+        (addEvent)="addEvent.emit($event)"
+        (cancelEdit)="editButtonClick(i)"
+        (saveDependent)="updateDependent($event)"
+        (validateDependent)="validateDependent($event)"
+      ></bnt-add-modify-dependent-dc>
+      <ng-template #addDependent>
+        <bnt-dependent-add-edit-dc
+          *ngIf="!value.nonSaudiDependentAdded; else nonSaudiAddDependent"
+          #addDependentChildComp
+          [events]="events"
+          [isModifyPage]="isModifyPage"
+          [systemRunDate]="systemRunDate"
+          [isLumpsum]="isLumpsum"
+          [contributorDetails]="contributorDetails"
+          [requestDateChangedByValidator]="requestDateChangedByValidator"
+          [update]="true"
+          [isValidator]="isValidator"
+          [validateApiResponse]="validateApiResponse"
+          [addedEvent]="addedEvent"
+          [lang]="lang"
+          [benefitRequestId]="benefitRequestId"
+          [eligibilityStartDate]="eligibilityStartDate"
+          [parentForm]="parentForm"
+          [benefitStartDate]="benefitStartDate"
+          [dependentDetails]="value"
+          [systemParameter]="systemParameter"
+          [annuityRelationShipList]="annuityRelationShip$ | async"
+          [maritalStatusList]="maritalStatus$ | async"
+          [heirStatusList]="heirStatus$ | async"
+          [heirStatusArr]="heirStatusArr"
+          [ageInNewLaw]="ageInNewLaw"
+          (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+          (saveDependent)="updateDependent($event)"
+          (validateDependent)="validateDependent($event)"
+          (reset)="reset()"
+          (cancelEdit)="editButtonClick(i)"
+          (addEvent)="addEventPopup($event)"
+        >
+        </bnt-dependent-add-edit-dc>
+        <ng-template #nonSaudiAddDependent>
+          <bnt-dependent-add-dc
+            [events]="events"
+            [isModifyPage]="isModifyPage"
+            [systemRunDate]="systemRunDate"
+            [isLumpsum]="isLumpsum"
+            [contributorDetails]="contributorDetails"
+            [update]="true"
+            [validateApiResponse]="validateApiResponse"
+            [addedEvent]="addedEvent"
+            [lang]="lang"
+            [eligibilityStartDate]="eligibilityStartDate"
+            [parentForm]="parentForm"
+            [benefitStartDate]="benefitStartDate"
+            [dependentDetails]="value"
+            [genderList]="genderList"
+            [systemParameter]="systemParameter"
+            [annuityRelationShipList]="annuityRelationShip$ | async"
+            [maritalStatusList]="maritalStatus$ | async"
+            [heirStatusList]="heirStatus$ | async"
+            [heirStatusArr]="heirStatusArr"
+            [ageInNewLaw]="ageInNewLaw"
+            [calcHijiriAgeInMonths]="calcHijiriAgeInMonths"
+            (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+            (saveDependent)="updateDependent($event)"
+            (validateDependent)="validateDependent($event)"
+            (reset)="reset()"
+            (cancelEdit)="editButtonClick(i)"
+            (addEvent)="addEventPopup($event)"
+            (getRelationshipListByGender)="getRelationshipListByGender.emit($event)"
+          >
+          </bnt-dependent-add-dc>
+        </ng-template>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>
+
+<!-- <div> -->

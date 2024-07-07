@@ -1,0 +1,85 @@
+<div class="content">
+  <frm-main-content-dc [documents]="documents" [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc *ngIf="isFirstScheme" [heading]="'CONTRIBUTOR.ENTER-RPA-FIRST-SCHEME-POPUP-HEAD' | translate"> </frm-main-heading-dc>
+      <frm-main-heading-dc *ngIf="!isFirstScheme" [heading]="'CONTRIBUTOR.ENTER-RPA-LAST-SCHEME-POPUP-HEAD' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <cnt-enter-rpa-details-dc></cnt-enter-rpa-details-dc>
+
+      <cnt-enter-rpa-engagement-details-dc 
+        [isFirstScheme]="isFirstScheme" 
+        [engagementDetails]="engagementDetails">
+      </cnt-enter-rpa-engagement-details-dc>
+
+      <div class="section"></div>
+
+      <div id="contentArea" *ngIf="lastSchemeForm">
+          <div class="col-md-6">
+            <gosi-input-radio-dc
+              id="agreed"
+              name="agreed"
+              [label]="'CONTRIBUTOR.DATA-SOURCE-COMPLETED'"
+              [control]="validatorForm.get('agree')"
+              [list]="booleanList"
+              (select)="selectedbooleanList($event)"
+            >
+            </gosi-input-radio-dc>
+          </div>
+      </div>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [disableApprove]="!isAggreed"
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        [showApprove]="true"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="confirmCancel()"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="validatorForm.valid ? showModal(rejectTemplate) : checkFormValid()"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!------------------------  Modals ----------------------------->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleEInspectionActions(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{
+      isFirstScheme
+        ? ('CONTRIBUTOR.ENTER-RPA-FIRST-SCHEME' | translate)
+        : ('CONTRIBUTOR.ENTER-RPA-LAST-SCHEME' | translate)
+    }}"
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-RETURN-VALIDATOR'"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="decline()"
+    (returnEvent)="handleEInspectionActions(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{
+      isFirstScheme
+        ? ('CONTRIBUTOR.ENTER-RPA-FIRST-SCHEME' | translate)
+        : ('CONTRIBUTOR.ENTER-RPA-LAST-SCHEME' | translate)
+    }}"
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-REJECTION-CNT'"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="decline()"
+    (rejectEvent)="handleEInspectionActions(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>

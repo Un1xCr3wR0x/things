@@ -1,0 +1,239 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row dependent-text">
+  <div class="col-md-3 col-lg-3">
+    <gosi-label-dc
+      id="nationalityField"
+      [value]="searchPersonData?.nationality || dependentDetails?.nationality | bilingualText"
+      label="{{ 'BENEFITS.NATIONALITY' | translate }}"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-md-3">
+    <gosi-label-dc [label]="idLabel | translate" [value]="idValue"> </gosi-label-dc>
+  </div>
+  <div class="col-md-3">
+    <gosi-label-dc
+      [label]="'BENEFITS.BIRTH-DATE' | translate"
+      [control]="searchPersonData?.dob || dependentDetails?.birthDate | dateType"
+    >
+    </gosi-label-dc>
+  </div>
+</div>
+<div class="row dependent-text pb-5" *ngIf="!update">
+  <div class="col-md-3">
+    <gosi-button-dc type="secondary" (submit)="resetSearch()">
+      {{ 'BENEFITS.RESET' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+
+<!-- Arabic name -->
+<div class="row justify-content-md-center">
+  <div class="col-sm-12 col-md-12 col-lg-3">
+    <gosi-input-text-dc
+      id="arabicFirstName"
+      [label]="'BENEFITS.NAME-IN-ARABIC-TEXT' | translate"
+      [placeholder]="'BENEFITS.FIRST-NAME' | translate"
+      [control]="personDetailsForm.get('name.arabic.firstName')"
+      [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+    >
+    </gosi-input-text-dc>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-3">
+    <gosi-input-text-dc
+      id="arabicSecondName"
+      [ignoreLabel]="true"
+      [placeholder]="'BENEFITS.SECOND-NAME' | translate"
+      [control]="personDetailsForm.get('name.arabic.secondName')"
+      [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+    >
+    </gosi-input-text-dc>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-3">
+    <gosi-input-text-dc
+      id="arabicThirdName"
+      [ignoreLabel]="true"
+      [placeholder]="'BENEFITS.THIRD-NAME' | translate"
+      [control]="personDetailsForm.get('name.arabic.thirdName')"
+      [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+    >
+    </gosi-input-text-dc>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-3">
+    <gosi-input-text-dc
+      id="arabicFamilyName"
+      [ignoreLabel]="true"
+      [placeholder]="'BENEFITS.FAMILY-NAME' | translate"
+      [control]="personDetailsForm.get('name.arabic.familyName')"
+      [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+    >
+    </gosi-input-text-dc>
+  </div>
+</div>
+<!-- English name -->
+<div class="row">
+  <div class="col-sm-12 col-md-12 col-lg-3">
+    <gosi-input-text-dc
+      id="authEnglishName"
+      [label]="'BENEFITS.NAME-IN-ENGLISH' | translate"
+      [control]="personDetailsForm.get('name.english.name')"
+    >
+    </gosi-input-text-dc>
+  </div>
+</div>
+<!-- Gender -->
+<div class="row no-gutters">
+  <gosi-input-radio-dc
+    id="genderVal"
+    [label]="'BENEFITS.GENDER' | translate"
+    [control]="personDetailsForm.get('gender')"
+    [list]="genderList"
+    (select)="selectGender()"
+  >
+  </gosi-input-radio-dc>
+</div>
+
+<div class="row dependent-text">
+  <!-- <ng-container *ngIf="!isAlive && deathStatusDisplay">
+    <div class="col-md-6 statusDiv mb-5">
+      <span class="statusLabel">{{ 'BENEFITS.STATUS' | translate }}</span>
+      <span class="statusValue">{{ 'BENEFITS.DEAD' | translate }}</span>
+    </div>
+    <div class="col-md-6 statusDiv mb-5">
+      <span class="statusLabel">{{ 'BENEFITS.DEATH_DATE' | translate }}</span>
+      <span class="statusValue">{{ dependentDetails.deathDate?.gregorian | date: 'dd/MM/yyyy' }} </span>
+    </div>
+  </ng-container> -->
+
+  <div class="col-md-6">
+    <gosi-input-select-dc
+      [label]="'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate"
+      [list]="annuityRelationShipList"
+      [control]="dependentForm?.get('relationship')"
+      (selectLov)="selectRelationShipForDependent($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <ng-container *ngIf="dependentForm.get('checkBoxForAlive')">
+    <div class="col-md-12">
+      <gosi-input-checkbox-dc
+        id="checkBoxAlive"
+        [label]="'BENEFITS.DEPENDENT-ALIVE'"
+        (select)="checkAlive()"
+        [control]="dependentForm?.get('checkBoxForAlive')"
+        [lessPadding]="false"
+        [noSpacing]="true"
+      >
+      </gosi-input-checkbox-dc>
+    </div>
+    <!--shows only if above checkbox selected-->
+    <div class="col-md-6" *ngIf="dependentForm?.get('deathDate')">
+      <gosi-input-date-dc
+        id="deathDate"
+        label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+        [hideOptionalLabel]="true"
+        [maxDate]="maxDate"
+        [control]="dependentForm?.get('deathDate')?.get('gregorian')"
+        (changeEvent)="deathDateSelected()"
+      >
+      </gosi-input-date-dc>
+    </div>
+  </ng-container>
+  <div class="col-md-6" *ngIf="isAlive && dependentForm?.get('maritalStatus')">
+    <gosi-input-select-dc
+      [label]="'BENEFITS.MARITAL-STATUS' | translate"
+      [list]="maritalStatusList"
+      [control]="dependentForm?.get('maritalStatus')"
+      (selectLov)="selectMaritalStatus($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-md-6" *ngIf="!isAlive && dependentForm?.get('maritalStatus')">
+    <gosi-input-select-dc
+      [label]="'BENEFITS.MARITAL-STATUS-DEATH' | translate"
+      [list]="maritalStatusList"
+      [disabled]="true"
+      [control]="dependentForm?.get('maritalStatus')"
+      (selectLov)="selectMaritalStatus($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-md-6" *ngIf="dependentForm?.get('maritalStatusDate')">
+    <gosi-input-date-dc
+      id="maritalStatusDate"
+      label="{{ 'BENEFITS.MARITAL-STATUS-DATE' | translate }}"
+      [hideOptionalLabel]="true"
+      [disabled]="
+        dependentDetails?.maritalStatusDate?.gregorian &&
+        dependentDetails.maritalStatus?.english === dependentForm?.get('maritalStatus.english')?.value &&
+        !dependentDetails.maritalStatusDateUpdatedFromUi
+      "
+      [control]="dependentForm?.get('maritalStatusDate')?.get('gregorian')"
+      (changeEvent)="maritalStatusDateChanged()"
+      [maxDate]="depHeirDeathDate ? depHeirDeathDate.toDate() : currentDate"
+    >
+    </gosi-input-date-dc>
+  </div>
+  <!--eventErrorWithoutEventCategory-->
+  <ng-container *ngIf="eventErrorWithoutEventCategory && eventErrorWithoutEventCategory?.length">
+    <div class="col-md-12" *ngFor="let validatedEvent of eventErrorWithoutEventCategory">
+      <gosi-alert-dc [bilingualMessage]="validatedEvent.message" type="warning" [dismissible]="true"> </gosi-alert-dc>
+    </div>
+  </ng-container>
+  <!--end eventErrorWithoutEventCategory-->
+  <!-- questions -->
+  <ng-container *ngIf="questionsForm">
+    <div class="col-md-12" *ngFor="let question of questions; index as k">
+      <bnt-heir-add-question-dc
+        [qnControl]="questionsForm?.at(k)"
+        [lang]="lang"
+        [benefitType]="benefitType"
+        [pensionEligibilityStartDate]="eligibilityStartDateInDateFormat"
+        [addedEvent]="addedEvent"
+        [question]="question"
+        [sex]="dependentDetails?.sex"
+        [systemRunDate]="systemRunDate"
+        [maritalStatusDate]="dependentForm?.get('maritalStatusDate.gregorian')?.value"
+        [maritalStatus]="dependentForm?.get('maritalStatus')?.value | bilingualText"
+        [requestDate]="parentForm?.get('requestDate.gregorian')?.value"
+        (changeToggle)="changeToggleForQuestion(question, $event, questionsForm?.at(k))"
+        (addEvent)="addEventPopup($event)"
+      ></bnt-heir-add-question-dc>
+    </div>
+  </ng-container>
+  <div class="col-md-12">
+    <gosi-alert-dc
+      *ngIf="depHeirDeadBeforeEligibility"
+      [message]="
+        'BENEFITS.DEP-DEAD-BEFORE-ELIGIBILITY'
+          | translate: { pensionEligibilityStartDate: eligibilityStartDateInDateFormat.toDate() | date: 'dd/MM/yyyy' }
+      "
+      type="danger"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </div>
+
+  <div class="col-md-12 d-flex justify-content-center mb-5">
+    <div class="col-auto">
+      <gosi-button-dc id="cancel" [type]="'secondary'" [isFullWidth]="isSmallScreen" (submit)="cancel()">
+        {{ 'BENEFITS.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="col-auto">
+      <gosi-button-dc
+        id="save"
+        [type]="'primary'"
+        [disabled]="depHeirDeadBeforeEligibility"
+        [isFullWidth]="isSmallScreen"
+        (submit)="save(update)"
+      >
+        {{ 'BENEFITS.SAVE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>

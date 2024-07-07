@@ -1,0 +1,147 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc [type]="typeString" [noBorder]="noBorderFlag">
+  <div *ngIf ="!isLateFeeViolation" class="heading-font">{{ 'BILLING.LATE-FEES-WAVIER-DETAILS' | translate }}</div>
+  <div *ngIf ="isLateFeeViolation" class="heading-waiver-details">{{ 'BILLING.WAIVER-DETAILS' | translate }}</div>
+  <div class="row info">
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="penaltyPercentage"
+        [control]="waivedPenaltyPercentage"
+        [label]="'BILLING.WAIVED-PENALITY-PERCETANGES' | translate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="penaltyAmount"
+        [label]="'BILLING.PENALTY-WAVIER-AMOUNT' | translate"
+        [currencyTo]="wavierDetails?.eligibleWaiveOffAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf ="isLateFeeViolation">
+      <gosi-label-dc
+        id="waiverViolationsPercentage"
+        [control]="waivedViolationPercentage"
+        [label]="'BILLING.WAIVED-VIOLATIONS-PERCENTAGE' | translate"
+      >
+      </gosi-label-dc>
+    </div>
+
+    <div class="col-lg-3" *ngIf ="isLateFeeViolation">
+      <gosi-currency-label-dc
+        id="violationsWaiverAmount"
+        [label]="'BILLING.VIOLATION-WAIVER-AMOUNT' | translate"
+        [currencyTo]="wavierDetails?.violationsWaiverAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+
+    <div class="col-lg-3" *ngIf ="isLateFeeViolation">
+        <gosi-currency-label-dc
+          id="totalWaiverAmount"
+          [label]="'BILLING.TOTAL-WAIVER-AMOUNT' | translate"
+          [currencyTo]="wavierDetails?.totalWaiverAmount"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+    <div class="col-lg-3"  *ngIf ="!isLateFeeViolation && !isValidator">
+      <gosi-currency-label-dc
+        id="paymentAmount"
+        [label]="'BILLING.REQUIRED-PAYMENT-AMOUNT' | translate"
+        [currencyTo]="wavierDetails?.terms?.amountToBePaid"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf ="isLateFeeViolation && !isValidator">
+      <gosi-currency-label-dc
+        id="paymentAmount"
+        [label]="'BILLING.REQUIRED-PAYMENT-AMOUNT' | translate"
+        [currencyTo]="wavierDetails?.requiredPaymentAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf ="isLateFeeViolation && isValidator">
+      <gosi-currency-label-dc
+        id="paymentAmount"
+        [label]="'BILLING.REQUIRED-PAYMENT-AMOUNT' | translate"
+        [currencyTo]="wavierDetails?.requiredPayment"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="isLateFeeViolation && !hideGracePeriod &&!isError">
+      <gosi-label-dc
+        id="previousIndicator"
+        [value]="'BILLING.GRACE-DAYS' | translate: { days: gracePeriod }"
+        [label]="'BILLING.GRACE-PERIOD' | translate"
+      >
+      </gosi-label-dc>
+    </div>
+    
+    <div class="col-lg-3"*ngIf="isError">
+      <gosi-label-dc
+        id="previousIndicator"      
+        [label]="'BILLING.GRACE-PERIOD' | translate"
+      >
+      </gosi-label-dc>
+    </div> 
+   
+    <div class="row grace-margin">
+      <div id="extendedGracePeriodLink" class="show-details" *ngIf="!extendedGrace && isAppPrivate">
+        <a class="details-link" (click)="showModal(extendGracePeriod, 'md')">{{
+          'BILLING.EXTEND-GRACE-PERIOD' | translate
+        }}</a>
+      </div>
+    </div>
+  </div>
+
+  <ng-container>
+    <div *ngIf="(extendedGrace || (!csrFlag && isAppPrivate)) && !isExtraAdded && isAppPrivate">
+      <div class="row reason-heading">
+        <div class="col-lg-3">
+          {{ 'BILLING.REASON-FOR-EXTENSION' | translate }}
+        </div>
+      </div>
+      <div *ngIf="!csrFlag || setgrace">
+        <div class="row reason">
+          {{ extendedReason }}
+        </div>
+      </div>
+      <div *ngIf="!csrFlag">
+        <div *ngIf="!setgrace" class="row reason">
+          {{ reasonForExtension ? reasonForExtension : ('BILLING.NOT-AVAILABLE' | translate) }}
+        </div>
+      </div>
+      <div id="modifyGracePeriodLink" class="row show-details reason">
+        <a class="details-link" (click)="showModal(extendGracePeriod, 'md')">{{
+          'BILLING.MODIFY-GRACE-PERIOD' | translate
+        }}</a>
+      </div>
+    </div>
+  </ng-container>
+</gosi-card-dc>
+<!-- Modals -->
+<ng-template #extendGracePeriod>
+  <blg-penality-grace-period-extended-dc
+    (gracePeriods)="setgracePeriods($event)"
+    (extendedFlag)="setextendedFlag($event)"
+    (isCanceled)="setisCanceled($event)"
+    [reason]="extendedReason"
+    [addedGrace]="addedGrace"
+    [exceptionalGracePeriod]="gracePeriod"
+    [wavierDetails]="wavierDetails"
+    [csrFlag]="csrFlag"
+    [extendedGracePeriod]="extendedGracePeriod"
+    [reasonForExtension]="newReasonForExtension"
+  ></blg-penality-grace-period-extended-dc>
+</ng-template>

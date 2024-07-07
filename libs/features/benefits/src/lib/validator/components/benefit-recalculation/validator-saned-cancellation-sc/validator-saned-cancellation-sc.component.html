@@ -1,0 +1,237 @@
+<frm-main-content-dc [documents]="[]" [comments]="transactionRefData">
+  <div id="mainHeading" class="main-heading">
+    <frm-main-heading-dc [heading]="lang === 'en' ? payload?.titleEnglish : payload?.titleArabic">
+    </frm-main-heading-dc>
+  </div>
+  <div id="entityDetails" class="entityMessage">
+    <ng-container *ngIf="recalculationInfoMessages && recalculationInfoMessages.length">
+      <gosi-alert-dc [alert]="recalculationAlertMessages"> </gosi-alert-dc>
+    </ng-container>
+  </div>
+  <div id="contentArea">
+    <!--Contributor details-->
+    <frm-content-heading-dc
+      *ngIf="benefitSanedDetails"
+      icon="user"
+      heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+      [canEdit]="false"
+    >
+    </frm-content-heading-dc>
+    <bnt-validator-adjustment-contributor-dc
+      *ngIf="benefitSanedDetails"
+      [personDetails]="benefitSanedDetails"
+      (onContributorIdClicked)="viewContributorInfo()"
+    >
+    </bnt-validator-adjustment-contributor-dc>
+    <!--Benefit Details-->
+    <div class="row custom-margin">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="Benefits"
+          [isSvg]="true"
+          [canEdit]="false"
+          heading="{{ 'ADJUSTMENT.BENEFIT-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <bnt-saned-benefit-dc
+          [sanedRecalculationDetails]="sanedRecalculationDetails"
+          [lang]="lang"
+          (onCalculationBtnClicked)="howToCalculate($event)"
+          (onViewPaymentHistoryClicked)="
+            viewPaymentHistory($event, { english: 'Unemployment Insurance', arabic: 'التعطل عن العمل (ساند)' })
+          "
+        ></bnt-saned-benefit-dc>
+      </div>
+    </div>
+    <!--Modification Details-->
+    <div class="row custom-margin">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="file-alt"
+          [canEdit]="false"
+          heading="{{ 'ADJUSTMENT.MODIFICATION-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <bnt-recalculation-wage-dc
+          [benefitRecalculationDetails]="sanedRecalculationDetails"
+          [lang]="lang"
+          (onTransactionClicked)="viewChangeEngagement($event)"
+        ></bnt-recalculation-wage-dc>
+      </div>
+    </div>
+
+    <!--Adjustment details-->
+    <div class="row custom-margin">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="money-bill"
+          [canEdit]="false"
+          heading="{{ 'ADJUSTMENT.PAYMENT-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <bnt-saned-adjustment-dc
+          [checkForm]="payForm"
+          [sanedRecalculationDetails]="sanedRecalculationDetails"
+          [lang]="lang"
+          [disableDirectPayment]="payload?.assignedRole === 'FC Approver'"
+          (onPreviousAdjustmentsClicked)="viewMaintainAdjustment(benefitConstants.BENEFITS)"
+        ></bnt-saned-adjustment-dc>
+      </div>
+    </div>
+  </div>
+</frm-main-content-dc>
+<!--Buttons-->
+<div id="actionArea">
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <div class="action-request">
+        <div class="btn-section float-right">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            id="sanedApprove"
+            type="primary"
+            [disabled]="recalculationInfoMessages && recalculationInfoMessages.length > 0"
+            (submit)="approveTransaction(approveSanedTemplate)"
+          >
+            {{ 'BENEFITS.APPROVE' | translate }}
+          </gosi-button-dc>
+         </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'FC Approver'">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            type="secondary"
+            id="sanedReturn"
+            (submit)="showModal(returnSanedTemplate)"
+          >
+            {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+        <div class="btn-section float-right d-none" *ngIf="payload?.assignedRole === 'Validator1'">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            [type]="'secondary'"
+            name="options"
+            [popover]="optionsModal"
+            placement="top"
+          >
+            {{ 'BENEFITS.MORE-OPTIONS' | translate }}<span class="mr-2"></span
+            ><fa-icon [icon]="['fas', 'ellipsis-v']"></fa-icon>
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <!--<div
+          class="btn-section float-right"
+          *ngIf="payload?.assignedRole === 'Validator1' && sanedRecalculationDetails?.hasOverlappingEngagements"
+        >
+          <gosi-button-dc
+            type="secondary"
+            id="sanedRequestInspection"
+            (click)="requestInspection(requestInspectionTemplate)"
+          >
+            {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+          </gosi-button-dc>
+        </div>-->
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'Validator1'">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            type="secondary"
+            id="sanedReportCalculation"
+            (submit)="showModal(sanedReportTemplate)"
+          >
+            {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <div class="btn-section float-left">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            id="sanedCancel"
+            type="secondary"
+            (submit)="showCancelTemplate(cancelSanedTemplate)"
+          >
+            {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Approve Template-->
+<ng-template #approveSanedTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'PAYMENT.APPROVE' | translate }} - {{ 'BENEFITS.BENEFIT-RECALCULATION_ENGAGEMENT-CHANGE' | translate }}"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (approveEvent)="approvePaymentSanedInspection(retirementForm)"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+
+<!--Cancel Template-->
+<ng-template #cancelSanedTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="commonModalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--Report Calculation Issue Template-->
+<ng-template #sanedReportTemplate>
+  <bnt-report-recalculation-template-dc
+    *ngIf="retirementForm"
+    heading="{{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}"
+    [parentForm]="retirementForm"
+    [isCommentsMandatory]="true"
+    [infoMessage]="'BENEFITS.INCORRECT-CALC-BENEFIT' | translate: { id: referenceNo }"
+    (submitEvent)="raiseItsmTicket()"
+    (cancelEvent)="commonModalRef.hide()"
+  >
+  </bnt-report-recalculation-template-dc>
+</ng-template>
+<!-- Return Template -->
+<ng-template #returnSanedTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.BENEFIT-RECALCULATION_ENGAGEMENT-CHANGE' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-FC-RETURN-VALIDATOR'"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (returnEvent)="confirmReturn(retirementForm)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!-- More Actions -->
+<ng-template #optionsModal>
+  <!--<button
+    id="requestInspectionModalBtn"
+    type="button"
+    class="d-flex btn text-left more-action-button"
+    (click)="requestInspection(requestInspectionTemplate)"
+  >
+    {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+  </button>-->
+  <button
+    id="sanedReportModalBtn"
+    type="button"
+    class="d-flex btn text-left more-action-button"
+    (click)="showModal(sanedReportTemplate)"
+  >
+    {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+  </button>
+</ng-template>

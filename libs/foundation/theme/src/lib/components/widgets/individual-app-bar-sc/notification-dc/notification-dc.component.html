@@ -1,0 +1,58 @@
+<div class="notification-wrapper dropdown dropdown-notification" dropdown placement="bottom right">
+  <a href="#" class="notification-link" aria-haspopup="true" aria-expanded="false" dropdownToggle (click)="(false)">
+    <fa-icon icon="bell" size="lg"></fa-icon>
+    <span
+      *ngIf="notificationCount?.unViewedCount"
+      class="unviewed-count badge badge-pill badge-default badge-danger badge-default badge-up badge-glow"
+      >{{ notificationCount?.unViewedCount }}</span
+    >
+  </a>
+  <ul class="notification-dropdown dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="simple-dropdown">
+    <li class="dropdown-menu-header" *ngIf="notificationCount?.totalCount">
+      <h6 class="dropdown-header m-0">
+        <span class="grey darken-2">{{ 'THEME.NOTIFICATION' | translate }}({{ notificationCount?.totalCount }}) </span>
+      </h6>
+    </li>
+    <li class="scrollable-container notification-list w-100">
+      <a *ngFor="let notification of notifications" (click)="navigateAll()">
+        <div class="notification-item">
+          <div class="notification-left align-self-center">
+            <i class="far fa-edit icon-bg-circle bg-cyan"></i>
+          </div>
+          <div class="notification-body">
+            <h6 class="notification-heading">
+              {{ notification.title | bilingualText }}
+            </h6>
+
+            <p
+              (click)="stopBubbling($event)"
+              class="notification-text"
+              *ngIf="language === languageEnumValue.ENGLISH"
+              [innerHTML]="getText(notification.body.english)"
+            ></p>
+            <p
+              (click)="stopBubbling($event)"
+              class="notification-text"
+              *ngIf="language === languageEnumValue.ARABIC"
+              [innerHTML]="getText(notification.body.arabic)"
+            ></p>
+            <p class="notification-date" *ngIf="notification?.timestamp?.gregorian">
+              {{
+                (notification.timestamp.gregorian | timeDifference).key
+                  | translate: (notification.timestamp.gregorian | timeDifference)
+              }}
+            </p>
+          </div>
+        </div>
+      </a>
+    </li>
+    <li class="dropdown-menu-footer" *ngIf="notificationCount?.totalCount > 0">
+      <a class="dropdown-header dropdown-footer text-center" (click)="navigateAll()">{{
+        'THEME.VIEW-ALL-NOTIFICATIONS' | translate
+      }}</a>
+    </li>
+    <li class="dropdown-menu-footer" *ngIf="notificationCount?.totalCount <= 0">
+      <span class="dropdown-header text-muted text-center">{{ 'THEME.NO-NOTIFICATIONS-AVAILABLE' | translate }}</span>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,65 @@
+<div>
+  <div class="row">
+    <div class="col-lg-12 benefit-heading">
+      {{ 'BENEFITS.RETIREMENT-BENEFIT' | translate }} - {{ 'BENEFITS.MODIFY-BENEFIT-TYPE' | translate }}
+    </div>
+  </div>
+  <div>
+    <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="benefitWizards" #applyBenefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div *ngIf="currentTab === 0">
+    <bnt-benefit-type-dc
+      *ngIf="currentBenefits"
+      [currentBenefits]="currentBenefits"
+      [tableHeadingAndParams]="tableHeadingAndParams"
+      [listOfDependents]="listOfDependents"
+      [searchResult]="searchResult"
+      [systemRunDate]="systemRunDate"
+      [systemParameter]="systemParameter"
+      [annuityRelationShip$]="annuityRelationShip$"
+      [maritalStatus$]="maritalStatus$"
+      [heirStatus$]="heirStatus$"
+      [heirStatusArr]="heirStatusArr"
+      [lang]="lang"
+      (onAddDependentClicked)="validate($event)"
+      (onRemoveDependent)="delete($event)"
+      (onBenefitTypeSave)="saveBenefitType($event)"
+      (onBenefitTypeCancelled)="showModal(cancelBenefitTypeTemplate)"
+    ></bnt-benefit-type-dc>
+  </div>
+  <div *ngIf="currentTab === 1">
+    <bnt-benefit-recalculation-details-dc
+      [benefitType]="benefitType"
+      [benefitRecalculationDetails]="benefitRecalculationDetails"
+      [bankNameList]="bankNameList"
+      [lang]="lang"
+      (onPaymentDetailsSave)="savePaymentDetails()"
+      (onIbanChanged)="getBankName($event)"
+      (onBankDetailsCancelled)="showModal(cancelBenefitTypeTemplate)"
+      (onPreviousBtnClicked)="previousTab()"
+    >
+    </bnt-benefit-recalculation-details-dc>
+  </div>
+  <div *ngIf="currentTab === 2">
+    <bnt-document-dc
+      [businessKey]="benefitResponse?.benefitRequestId"
+      [requestTransactionId]="pensionTransactionId"
+      [referenceNo]="benefitResponse?.referenceNo"
+      [documentList]="requiredDocs"
+      [parentForm]="documentForm"
+      (uploadSuccess)="submitTransaction($event)"
+      (cancelDoc)="showModal(cancelBenefitTypeTemplate)"
+      (previous)="previousTab()"
+    ></bnt-document-dc>
+  </div>
+</div>
+<!--Cancel Template-->
+<ng-template #cancelBenefitTypeTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onConfirm)="cancelModify()"
+    (onCancel)="commonModalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

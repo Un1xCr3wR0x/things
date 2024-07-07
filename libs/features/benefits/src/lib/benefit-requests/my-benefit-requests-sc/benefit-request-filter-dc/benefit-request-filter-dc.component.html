@@ -1,0 +1,71 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<!-- Search -->
+<gosi-search-dc
+  #searchComponent
+  class="pr-4"
+  id="search-area"
+  [placeholder]="'BENEFITS.NATIONAL-ID-IQAMA' | translate"
+  (search)="onSearchKey($event)"
+  (keyup)="onSearchKey($event.target.value)"
+></gosi-search-dc>
+
+<!-- Filter -->
+<gosi-filter-dc
+  class="pr-4"
+  (scroll)="onScroll()"
+  (apply)="applyFilter()"
+  (reset)="clearAllFiters()"
+  [noScroll]="true"
+  #filterbutton
+  filterId="benefitRequestFilter"
+>
+  <ng-container modalContent>
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-input-daterange-dc
+          #dateRangePicker
+          [label]="'BENEFITS.DATE-RANGE' | translate"
+          [control]="requestDateFilterForm"
+          [maxDate]="maxdate"
+          [hideOptionalLabel]="true"
+        >
+        </gosi-input-daterange-dc>
+      </div>
+    </div>
+
+    <ng-container *ngIf="benefitGroup === BenefitGroup.Annuities">
+      <hr />
+      <!-- benefit type filtering is only required for annuity benefit -->
+      <div class="row">
+        <div class="col-lg-12">
+          <label>{{ 'BENEFITS.BENEFIT-TYPE' | translate }}</label>
+        </div>
+        <div class="col-lg-12">
+          <gosi-input-multi-checkbox-dc
+            #statusCheck
+            [options]="benefitTypes"
+            [control]="benefitTypeFilterForm"
+            (check)="selectedBenefitOptions = $event"
+          >
+          </gosi-input-multi-checkbox-dc>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</gosi-filter-dc>
+
+<!-- Sort -->
+<div class="custom-seperator"></div>
+<gosi-sort-dc
+  #sortComponent
+  class="pl-4"
+  id="benefitRequestSort"
+  [list]="requestSort | async"
+  [hidePlaceholder]="false"
+  [initialDirection]="direction === 'ASCENDING' ? 'ASC' : 'DESC'"
+  (direction)="sortOrder($event)"
+  (sortItemSelected)="sortList()"
+></gosi-sort-dc>

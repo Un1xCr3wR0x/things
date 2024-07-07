@@ -1,0 +1,186 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <div [formGroup]="qnControl"> -->
+
+<div
+  *ngIf="question?.key && question?.key !== eventsOnly && question?.key !== controlsOnly"
+  class="align-items-center d-flex justify-content-between dotted-line px-4 toggle-toggle"
+  [tooltip]="
+    (question.disabled && question?.key === questionTypes.DISABLED) ?
+    (
+      (isHeir ? 'BENEFITS.VAL-CANNOT-ADD-HEIR' : 'BENEFITS.VAL-CANNOT-ADD-DEP') | translate
+     ) : null"
+  placement="top right"
+>
+  <label class="label-color pr-2">
+    {{
+    (lang === 'ar' && sex?.english === genderEnum.FEMALE && question.arabicLabelForFemale
+        ? question.arabicLabelForFemale
+        : question.label
+    )
+      | translate
+      : {
+        reason: reasonForbenefits,
+        missingOrDeathDate: missingOrDeathDate | dateType,
+        requestDate: requestDate | date: 'dd/MM/yyyy',
+        maritalStatusDate: maritalStatusDate | date: 'dd/MM/yyyy',
+        maritalStatus: maritalStatus,
+        widowOrDivorceStatus: widowOrDivorceStatus,
+        pensionEligibilityStartDate: pensionEligibilityStartDate | date: 'dd/MM/yyyy',
+        currentDate: systemRunDate | dateType
+      }
+    }}
+    <fa-icon
+      class="gray-circle"
+      *ngIf="question?.isQuesInfoRequired"
+      [icon]="['fas', 'info-circle']"
+      [placement]="'top'"
+      [tooltip]="question.quesInfo | translate"
+    ></fa-icon>
+  </label>
+
+  <!-- <ng-template #toolTipTemplate>{{ question.quesInfo | translate }}</ng-template> -->
+
+  <gosi-input-toggle-dc
+    id="question.key"
+    (changeEvent)="onToggle($event)"
+    [control]="qnControl?.get(question.key)"
+    [disabled]="question.disabled"
+  ></gosi-input-toggle-dc>
+</div>
+<gosi-alert-dc
+  *ngIf="question?.infoMessage"
+  message="{{ question.infoMessage | translate: { reason: reasonForbenefits } }}"
+  type="info"
+  [dismissible]="false"
+>
+</gosi-alert-dc>
+
+<!--Input controls-->
+<!--form array to be implemented-->
+<div class="row" *ngIf="question?.key === controlsOnly || (question?.key && qnControl?.get(question.key)?.value)">
+  <ng-container *ngFor="let control of question.inputControls; let i = index">
+    <ng-container *ngIf="!control.placeBelowEventInHtml && inputControls.at(i)" [ngSwitch]="control.controlType">
+      <div class="col-6" *ngSwitchCase="inputControlType.TEXT">
+        <gosi-input-text-dc
+          id="{{ 'text' + control.key }}"
+          [label]="control.label | translate: { missingOrDeathDate: missingOrDeathDate | dateType }"
+          [control]="inputControls.at(i).get(control.key)"
+          [disabled]="control.disabled"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-6" *ngSwitchCase="inputControlType.DATE">
+        <gosi-input-date-dc
+          id="{{ 'date' + control.key }}"
+          [label]="control.label | translate"
+          [hideOptionalLabel]="true"
+          [control]="inputControls.at(i).get(control.key).get('gregorian')"
+          [maxDate]="control?.maxDate"
+          [minDate]="control?.minDate"
+          [disabled]="control.disabled"
+        >
+        </gosi-input-date-dc>
+        <!-- [systemRunDate]="control?.maxNotificationDate" -->
+      </div>
+      <div class="col-6" *ngSwitchCase="inputControlType.DROPDOWN">
+        <!-- TODO: Change control and list -->
+        <gosi-input-select-dc
+          [label]="control.label | translate"
+          id="{{ 'dropdown' + control.key }}"
+          [control]="inputControls.at(i).get(control.key)"
+          [list]="question.dropDownList"
+          [placeholder]="control.label | translate"
+          [disabled]="control.disabled"
+          (selectLov)="selectDropdownValue($event, control.key, i)"
+        ></gosi-input-select-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- Events controls-->
+<!-- Events without question is handled-->
+<bnt-heir-add-event-dc
+  *ngIf="
+    question?.eventsCanbeAdded &&
+    question?.key !== controlsOnly &&
+    ((question?.key === eventsOnly && (question?.events?.length || question.showAddeventButton)) ||
+      (question?.key !== eventsOnly &&
+        question?.key &&
+        qnControl?.get(question.key)?.value === question.addEventForAnswer))
+  "
+  [qnControl]="qnControl"
+  [questionObject]="question"
+  [addedEvent]="addedEvent"
+  [isHeir]="isHeir"
+  [isModify]="isModify"
+  [hideErrorMessage]="hideErrorMessage"
+  [isValidator]="isValidator"
+  [isHeirLumpsum]="isHeirLumpsum"
+  [eligibilityStartDateInDateFormat]="eligibilityStartDateInDateFormat"
+  [heading]="question.getEventHeading(showEventsLabelOnly)"
+  [infoMessage]="eventInfo"
+  [lang]="lang"
+  (addEvent)="addEventPopup()"
+  (deleteEvent)="deleteEventEmit()"
+  (openEligibilityPopup)="openEligibility()"
+></bnt-heir-add-event-dc>
+<!-- || 'BENEFITS.HEADING-MARRIED'-->
+<!-- [infoMessage]="showHeirInfo ? question.getEventInfoMessage() : question.getEventInfoDep()" -->
+
+<!-- <gosi-input-date-dc
+  *ngIf="parentForm?.get('notificationDate')"
+  id="'notificationDate'"
+  [label]="'BENEFITS.ANNUAL-NOTIFICATION-DATE-STUDENT' | translate"
+  [hideOptionalLabel]="true"
+  [control]="parentForm?.get('notificationDate')?.get('gregorian')"
+
+>
+</gosi-input-date-dc> -->
+<div class="row" *ngIf="question?.key === controlsOnly || (question?.key && qnControl?.get(question.key)?.value)">
+  <ng-container *ngFor="let control of question.inputControls; let i = index">
+    <ng-container
+      *ngIf="control.placeBelowEventInHtml && inputControls.at(i) && inputControls.at(i).get(control.key)"
+      [ngSwitch]="control.controlType"
+    >
+      <div class="col-6" *ngSwitchCase="inputControlType.TEXT">
+        <gosi-input-text-dc
+          id="{{ 'text-below' + control.key }}"
+          [label]="control.label | translate: { missingOrDeathDate: missingOrDeathDate | dateType }"
+          [control]="inputControls.at(i).get(control.key)"
+          [disabled]="control.disabled"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-6" *ngSwitchCase="inputControlType.DATE">
+        <gosi-input-date-dc
+          id="{{ 'date-below' + control.key }}"
+          [label]="control.label | translate"
+          [hideOptionalLabel]="true"
+          [control]="inputControls.at(i).get(control.key)?.get('gregorian')"
+          [maxDate]="control?.maxDate"
+          [minDate]="control?.minDate"
+          [disabled]="control.disabled"
+        >
+        </gosi-input-date-dc>
+        <!-- [systemRunDate]="control?.maxNotificationDate" -->
+      </div>
+      <div class="col-6" *ngSwitchCase="inputControlType.DROPDOWN">
+        <!-- TODO: Change control and list -->
+        <gosi-input-select-dc
+          [label]="control.label | translate"
+          id="{{ 'dropdown-below' + control.key }}"
+          [control]="inputControls.at(i).get(control.key)"
+          [list]="question.dropDownList"
+          [placeholder]="control.label | translate"
+          [disabled]="control.disabled"
+          (selectLov)="selectDropdownValue($event, control.key, i)"
+        ></gosi-input-select-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

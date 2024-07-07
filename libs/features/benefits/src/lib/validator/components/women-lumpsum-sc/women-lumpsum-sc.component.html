@@ -1,0 +1,178 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <ng-container>
+    <frm-main-heading-dc [heading]="'BENEFITS.REQ-WOMAN-LUMPSUM-BENEFIT' | translate"></frm-main-heading-dc>
+  </ng-container>
+
+  <frm-main-content-dc
+    [canEdit]="docsCanEdit"
+    [documents]="documentList"
+    [showComments]="showComments"
+    [comments]="transactionRefData"
+    (onEdit)="navigateToEdit()"
+  >
+    <div id="contentArea">
+      <div class="row">
+        <div class="col-md-12">
+          <bnt-annuity-contributor-details-dc
+            *ngIf="annuityBenefitDetails"
+            [isIndividualApp]="isIndividualApp"
+            [annuityBenefitDetails]="annuityBenefitDetails"
+            [personNameEnglish]="personNameEnglish"
+            [personNameArabic]="personNameArabic"
+            [benefitType]="benefitType"
+            [validatorCanEdit]="validatorCanEdit"
+            (getDepHistory)="getDependentHistory($event)"
+            [dependentHistory]="dependentHistory"
+            (navigateToEdit)="reDirectUsersToApplyScreens()"
+            (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+          ></bnt-annuity-contributor-details-dc>
+        </div>
+        <div class="col-md-12">
+          <bnt-ui-validator-bank-details-dc
+            *ngIf="bankDetails"
+            [bankDetails]="bankDetails"
+          ></bnt-ui-validator-bank-details-dc>
+        </div>
+        <div class="col-md-12">
+          <bnt-woman-contributor-details-dc
+            *ngIf="benefitCalculationDetails"
+            [benefitCalculationDetails]="benefitCalculationDetails"
+            [benefitType]="benefitType"
+            [lang]="lang"
+            (navigateToInjury)="navigateToInjury($event)"
+            (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+          >
+          </bnt-woman-contributor-details-dc>
+        </div>
+      </div>
+    </div>
+
+    <div id="actionArea">
+      <div class="row">
+        <div class="col-lg-12 form-action">
+          <div class="btn-section float-right">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="approve"
+              [disabled]="disableApprove"
+              type="primary"
+              (click)="approveTransaction(approveTemplate)"
+            >
+              {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+
+          <ng-container>
+            <div class="btn-section float-right" *ngIf="canReject">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                type="danger"
+                id="reject"
+                [disabled]="disableApprove"
+                (click)="rejectTransaction(rejectTemplate)"
+              >
+                {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+
+            <div class="btn-section float-right" *ngIf="canReturn">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                type="secondary"
+                id="return"
+                (submit)="returnTransaction(returnTemplate)"
+              >
+                {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+            <!--<div class="btn-section float-right" *ngIf="routerData.assignedRole === rolesEnum.VALIDATOR_1">
+              <gosi-button-dc type="secondary" id="lumpsumRequestInspection" (click)="requestInspection(requestInspectionTemplate)">
+                {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+              >
+            </div>-->
+          </ng-container>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              [disabled]="disableApprove"
+              (submit)="showCancelTemplate(cancelEngagementTemplate)"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="'BENEFITS.CONFIRM_WOMEN_LUMPSUM_HEADING'"
+    [isCommentsMandatory]="approveComments"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveWomenLumpsum()"
+    [parentForm]="requestWomenForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    [heading]="'BENEFITS.REJECT-WOMAN-CONFIRM-HEADING'"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    (cancelEvent)="hideModal()"
+    [parentForm]="requestWomenForm"
+    (rejectEvent)="confirmRejectWomenLumpsum()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Reject template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    [heading]="'BENEFITS.RETURN-WOMAN-CONFIRM-HEADING'"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="requestWomenForm"
+    (returnEvent)="returnWomenLumpsum()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!----Request Inspection---->
+<ng-template #requestInspectionTemplate>
+  <bnt-inspection-request-dc
+    *ngIf="selectedInspection"
+    [heading]="'BENEFITS.REQUEST-INSPECTION'"
+    (cancelEvent)="commonModalRef.hide()"
+    (submitEvent)="submitRequestInspection(requestWomenForm, selectedInspection)"
+    [parentForm]="requestWomenForm"
+    [inspectionList$]="inspectionList"
+    [inspectionSelected]="selectedInspection"
+  >
+  </bnt-inspection-request-dc>
+</ng-template>

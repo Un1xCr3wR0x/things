@@ -1,0 +1,140 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row" *ngIf="history && history?.miscPaymentHistoryList.length > 0; else noItem">
+  <div class="col-md-12" *ngFor="let eachPaymentHistory of history?.miscPaymentHistoryList; let i = index">
+    <pmt-timeline-dc [isFirstItem]="i === 0">
+      <div class="row" timeline-date>
+        <div class="col-md-12 flag-timeline">
+          <span class="flag-date">{{ eachPaymentHistory?.paidDate | dateType }}</span>
+        </div>
+      </div>
+      <div class="row" timeline-content>
+        <div class="col-md-12">
+          <accordion class="active-payment-container pl-1 pr-4">
+            <accordion-group class="accordion-group-class mb-3 pb-2">
+              <div accordion-heading class="accordion-heading-text pl-2 pr-3">
+                <div class="amount">
+                  {{ eachPaymentHistory?.paidAmount | number: '1.0-2' }} {{ 'BENEFITS.SR' | translate }}
+                </div>
+                <div class="sub-text">
+                  {{ 'PAYMENT.ADJUSTMENT-AMOUNT' | translate }}
+                </div>
+              </div>
+              <div class="header-wrapper ml-auto" accordion-heading>
+                <!-- [ngClass]="lang === 'en' ? 'ml-auto' : 'mr-auto'" -->
+                <div class="row px-3">
+                  <gosi-status-badge-dc
+                    [label]="eachPaymentHistory?.paymentStatus | bilingualText"
+                    type="{{
+                      eachPaymentHistory?.paymentStatus?.english === 'Paid' ||
+                      eachPaymentHistory?.paymentStatus?.english === 'Initiated' ||
+                      eachPaymentHistory?.paymentStatus?.english === 'Paid Up'
+                        ? 'success'
+                        : eachPaymentHistory?.paymentStatus?.english === 'Returned Payment' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'Returned Payment' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'Payment in progress' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'Benefit Returned' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'Returned' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'Failed'
+                        ? 'danger'
+                        : eachPaymentHistory?.paymentStatus?.english === 'Payment On Hold' ||
+                          eachPaymentHistory?.paymentStatus?.english === 'On Hold'
+                        ? 'warning'
+                        : eachPaymentHistory?.paymentStatus?.english === 'payment Returned'
+                        ? 'secondary'
+                        : ''
+                    }}"
+                  >
+                  </gosi-status-badge-dc>
+                  <span class="arrow-up col-md-2">
+                    <fa-icon icon="angle-up" size="2x"></fa-icon>
+                  </span>
+                  <span class="arrow-down ml-auto col-md-2" accordion-heading>
+                    <fa-icon icon="angle-down" size="2x"></fa-icon>
+                  </span>
+                </div>
+              </div>
+              <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                <div class="row">
+                  <!-- <div class="col-lg-12"> -->
+                  <gosi-label-dc
+                    class="col-lg-4"
+                    [isBackgroundWhite]="true"
+                    label="BENEFITS.PAYMENT-METHOD"
+                    [value]="eachPaymentHistory?.paymentMethod | bilingualText"
+                  >
+                  </gosi-label-dc>
+                  <gosi-label-dc
+                    class="col-lg-4 ltr"
+                    [isBackgroundWhite]="true"
+                    label="BENEFITS.IBAN-NUMBER"
+                    [value]="eachPaymentHistory?.iban"
+                  >
+                  </gosi-label-dc>
+                  <gosi-label-dc
+                    class="col-lg-4"
+                    [isBackgroundWhite]="true"
+                    label="BENEFITS.BANK-NAME"
+                    [value]="eachPaymentHistory?.bankName | bilingualText"
+                  >
+                  </gosi-label-dc>
+
+                  <gosi-label-dc
+                    class="col-lg-4"
+                    [isBackgroundWhite]="true"
+                    label="BENEFITS.PAYMENT-REFERENCE-NUMBER"
+                    [value]="eachPaymentHistory?.paymentRefNo"
+                  >
+                  </gosi-label-dc>
+                  <!-- </div> -->
+                </div>
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="table-scroll table-responsive history-table">
+                      <table class="table table-borderless rounded">
+                        <thead class="table-header">
+                          <tr>
+                            <th>{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}</th>
+                            <th>
+                              {{ 'ADJUSTMENT.BENEFIT-TYPE' | translate }}
+                            </th>
+                            <th>{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate }}</th>
+                            <th>{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT-LBL' | translate }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container *ngFor="let adjustment of eachPaymentHistory?.adjustmentDetails; let i = index">
+                            <tr class="data-row border-bottom">
+                              <td>
+                                {{ adjustment?.adjustmentId }}
+                              </td>
+                              <td>
+                                {{ adjustment?.benefitType | bilingualText }}
+                              </td>
+                              <td>
+                                {{ adjustment?.adjustmentType | bilingualText }}
+                              </td>
+                              <td>
+                                {{ adjustment?.adjustmentAmount | number: '1.0-2' }}
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </accordion-group>
+          </accordion>
+        </div>
+      </div>
+    </pmt-timeline-dc>
+  </div>
+</div>
+<ng-template #noItem>
+  <span class="dropdown-item no-items">
+    {{ 'THEME.NO-ITEMS-FOUND' | translate }}
+  </span>
+</ng-template>

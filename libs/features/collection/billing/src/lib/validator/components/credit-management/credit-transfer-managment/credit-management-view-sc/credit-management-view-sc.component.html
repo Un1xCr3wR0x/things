@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="col-lg-12" *ngIf="isShow">
+  <gosi-alert-dc type="info" [message]="'BILLING.VALIDATOR-MSG-MCI'"> </gosi-alert-dc>
+</div>
+<div class="col-lg-12" *ngIf="isReopenClosingInProgress">
+  <gosi-alert-dc type="info" [message]="'BILLING.REOPEN-PROGRESS'"> </gosi-alert-dc>
+</div>
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documents" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.TRANSFER-CREDIT-BALANCE' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc
+          icon="building"
+          heading="BILLING.ESTABLISHMENT-DETAILS"
+          [canEdit]="editFlag && !isReopenClosingInProgress"
+          (onEdit)="navigateToEditTransfer()"
+        >
+        </frm-content-heading-dc>
+        <blg-credit-establishment-balance-dc
+          [establishmentDet]="establishmentDetails"
+          [editFlag]="editFlag"
+          [creditEstDetails]="creditEstDetails"
+          [currentBalanceList]="currentBalanceList"
+          [creditAvailableBalance]="creditAvailableBalance"
+        >
+        </blg-credit-establishment-balance-dc>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="canReject"
+          [isReturn]="false"
+          [disableReturn]="isEdit"
+          [disableApprove]="isEditApprove"
+          (approveEvent)="approveCreditTransferTransaction(approveTemplates)"
+          (rejectEvent)="rejectCreditTransferTransaction(rejectTemplates)"
+          (returnEvent)="returnCreditTransferTransaction(returnTemplates)"
+          (cancelEvent)="showModals(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      message="BILLING.INFO-CANCEL"
+      (onConfirm)="confirmCreditTransferCancel()"
+      (onCancel)="decline()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplates>
+    <frm-approve-template-dc
+      [parentForm]="creditManagementForm"
+      (approveEvent)="confirmCreditTransferApprove()"
+      (cancelEvent)="hideModal()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #returnTemplates>
+    <frm-return-template-dc
+      [parentForm]="creditManagementForm"
+      [heading]="returnHeading"
+      (returnEvent)="confirmCreditTransferReturn()"
+      (cancelEvent)="hideModal()"
+      [warningMessage]="
+        isGOL
+          ? isFcReturn
+            ? 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+            : 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO'
+          : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+      "
+      [returnReasonList$]="returnReasonList"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplates>
+    <frm-reject-template-dc
+      [parentForm]="creditManagementForm"
+      [heading]="rejectHeading"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+      (rejectEvent)="confirmCreditTransferReject()"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+</div>

@@ -1,0 +1,174 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!--eventErrorWithoutEventCategory-->
+<ng-container *ngIf="eventErrorWithoutEventCategory && eventErrorWithoutEventCategory?.length">
+  <div class="col-md-12" *ngFor="let validatedEvent of eventErrorWithoutEventCategory">
+    <gosi-alert-dc [bilingualMessage]="validatedEvent.message" type="warning" [dismissible]="true"></gosi-alert-dc>
+  </div>
+</ng-container>
+<ng-container *ngIf="questionsForm">
+  <div *ngFor="let question of questions; index as k" class="col-12">
+    <bnt-heir-add-question-dc
+      (addEvent)="addEventPopup($event, true)"
+      (changeToggle)="changeToggleForQuestion(question, $event, questionsForm?.at(k))"
+      (openEligibilityPopup)="openEligibilityPopup()"
+      (deleteEvent)="disableVerify = false"
+      [isModify]="true"
+      [isHeir]="isHeir"
+      [addedEvent]="addedEvent"
+      [benefitType]="benefitType"
+      [isValidator]="isValidator"
+      [lang]="lang"
+      [qnControl]="questionsForm?.at(k)"
+      [question]="question"
+      [requestDate]="parentForm?.get('requestDate.gregorian')?.value"
+      [sex]="dependentDetails?.sex"
+      [systemRunDate]="systemRunDate"
+      [showEventsLabelOnly]="true"
+    ></bnt-heir-add-question-dc>
+  </div>
+</ng-container>
+
+<div class="col-12">
+  <gosi-alert-dc
+    *ngIf="validateApiResponse && validateApiResponse?.valid"
+    [dismissible]="false"
+    [message]="'BENEFITS.IS-ELIGIBLE' | translate"
+    class="documents-alert"
+    type="info"
+  >
+  </gosi-alert-dc>
+</div>
+<div *ngIf="!validateApiResponse?.valid" class="col-md-12 d-flex justify-content-center mb-5">
+  <!--  <div class="col-auto">-->
+  <!--    <gosi-button-dc (click)="cancel()" [isFullWidth]="isSmallScreen" [type]="'secondary'" id="cancel-verify">-->
+  <!--      {{ 'BENEFITS.CANCEL' | translate }}-->
+  <!--    </gosi-button-dc>-->
+  <!--  </div>-->
+  <div class="col-auto">
+    <gosi-button-dc
+      (click)="verify()"
+      [disabled]="disableVerify"
+      [isFullWidth]="isSmallScreen"
+      [type]="'primary'"
+      id="verify"
+    >
+      {{ 'BENEFITS.VERIFY' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+
+<!--surplus -->
+<gosi-alert-dc
+  *ngIf="validateApiResponse && validateApiResponse?.surplus"
+  [dismissible]="false"
+  [details]="[]"
+  class="documents-alert"
+  type="info"
+>
+  <div actOnAlert>
+    {{
+      'BENEFITS.SURPLUS-MESSAGE'
+        | translate
+          : {
+              reason: getContributorStatus(reasonForBenefit) | bilingualText,
+              missingOrDeathDate: reasonForBenefit?.eventDate | dateType
+            }
+    }}
+    <a id="view-ineligible" (click)="openEligibilityPopup()">{{ 'BENEFITS.LEARN-MORE' | translate }}</a>
+  </div>
+</gosi-alert-dc>
+<!--payment details -->
+
+<div
+  class="col-md-12"
+  *ngIf="
+    eligibilityStatusAfterValidation?.english === dependentHeirConstants.eligibleString ||
+    eligibilityStatusAfterValidation?.english === dependentHeirConstants.eligibleForBackdatedString
+  "
+>
+  <!--current payment details-->
+
+  <bnt-current-payment-details-dc
+    [benefitPaymentDetails]="benefitPaymentDetails"
+    [inEditMode]="false"
+    [removePadding]="true"
+  ></bnt-current-payment-details-dc>
+  <!--current payment details-->
+
+  <!--new payment details-->
+  <!-- for ineligible heirs payment section not required (Defect: 453477) -->
+  <bnt-payment-details-dc
+    *ngIf="payeeList && paymentMethodList"
+    #paymentDetails
+    (clearSuccessMessage)="clearSuccessMessage()"
+    (getBankName)="getBank($event)"
+    (getContactDetailsForAuthPerson)="getContactDetailsForAuthPerson($event)"
+    (loadBankInfoForId)="getBankDetails($event)"
+    (searchForGuardian)="searchForGuardian($event)"
+    (showAddContactWizard)="showAddContact($event)"
+    (getAuthPerson)="getAuthPerson($event)"
+    (getGuardian)="getGuardian($event)"
+    [addHeir]="isHeir"
+    [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+    [bankAccountList]="dependentDetails.bankAccount || bankDetails"
+    [bankDetails]="dependentDetails.bankAccount"
+    [bankName]="bankName"
+    [guardianDetails]="guardianDetails"
+    [guardianSource]="dependentDetails.guardianSource"
+    [heirNationality]="dependentDetails.nationality?.english"
+    [hideSaveButton]="true"
+    [isHeirAlive]="isAlive"
+    [isHeirDisabled]="isHeirDisabled"
+    [isValidator]="isValidator"
+    [lang]="lang"
+    [heading]="'BENEFITS.NEW-PAYMENT-DETAILS'"
+    [listOfGuardians]="listOfGuardians"
+    [listYesNo]="listYesNo$ | async"
+    [nationalityList$]="nationalityList$"
+    [newBankForm]="true"
+    [parentForm]="parentForm"
+    [payeeList]="payeeList"
+    [paymentMethodList]="paymentMethodList"
+    [personId]="dependentDetails.personId"
+    [personStatus]="personStatus"
+    [preselctdAttorney]="getPreselectedAuthPerson(dependentDetails.attorneyDetails)"
+    [savedPayMethod]="dependentDetails.paymentMode"
+    [savedPayeType]="dependentDetails.payeeType"
+    [showCardForBank]="false"
+    [showCard]="false"
+    [showGuardian]="showGuardian"
+    [showInfo]="false"
+    [showPaymentMethod]="true"
+    [systemRunDate]="systemRunDate"
+    [authorizedPersonId]="authorizedPersonId"
+  >
+    <!-- (saveBank)="saveBankDetails($event)" -->
+  </bnt-payment-details-dc>
+  <!--new payment details-->
+</div>
+
+<!--payment details-->
+
+<div
+  class="col-md-12 d-flex justify-content-center mb-5"
+  *ngIf="validateApiResponse && validateApiResponse?.validEvent"
+>
+  <div class="col-auto">
+    <gosi-button-dc (submit)="cancel()" [isFullWidth]="isSmallScreen" [type]="'secondary'" id="cancel">
+      {{ 'BENEFITS.CANCEL' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="col-auto">
+    <gosi-button-dc
+      (submit)="!disableSave ? save() : ''"
+      [disabled]="disableSave"
+      [isFullWidth]="isSmallScreen"
+      [type]="'primary'"
+      id="save"
+    >
+      {{ 'BENEFITS.SAVE' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>

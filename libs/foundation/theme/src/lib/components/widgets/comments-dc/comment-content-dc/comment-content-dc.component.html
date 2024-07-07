@@ -1,0 +1,75 @@
+<div class="heading" *ngIf="comment">
+  <span class="user-name">{{ comment.userName | bilingualText | titlecase }}</span>
+  <span *ngIf="comment.role" class="role-name role-name-heading"
+    >({{ comment.role | bilingualText | titlecase }})
+  </span>
+  <span
+    class="display-date"
+    *ngIf="comment.createdDate && (comment.createdDate.gregorian | timeDifference) !== undefined"
+  >
+    {{
+      (comment.createdDate.gregorian | timeDifference).key | translate: (comment.createdDate.gregorian | timeDifference)
+    }}
+  </span>
+  <div class="role-name" *ngIf="showAction">
+    <div class="reason">
+      <gosi-card-status-dc
+        *ngIf="!reimbPendingReason && !reimbRejectionReason"
+        [type]="
+          comment.transactionStepStatus == 'Return' || comment.returnReason
+            ? 'warning'
+            : comment.transactionStepStatus === 'Submit Clarification'
+            ? 'info'
+            : comment.rejectionReason
+            ? 'danger'
+            : ''
+        "
+        value="{{ reasonTag | translate | uppercase }}"
+      ></gosi-card-status-dc>
+      <span
+        [ngClass]="
+          reasonComment != '' && !reimbPendingReason && !reimbRejectionReason
+            ? 'reason-text-border reason-text'
+            : 'reason-text-reimb'
+        "
+      >
+        {{ reasonComment }}
+      </span>
+    </div>
+  </div>
+</div>
+<ng-container *ngIf="showComments">
+  <div class="mt-2 mb-2 d-flex flex-row">
+    <ng-container *ngIf="comment?.serviceId > 0">
+      <ng-container *ngFor="let item of comment.serviceId; let i = index">
+        <span class="sid"> {{ 'THEME.SID' | translate }} {{ item }} </span>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="comment?.allowanceId > 0">
+      <ng-container *ngFor="let item of comment.allowanceId; let i = index">
+        <span class="sid"> {{ 'THEME.SID' | translate }} {{ item }} </span>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-container>
+<div class="comment-section" *ngIf="comment.comments != null && (showActionComments || !showAction)">
+  {{ comment.comments | limitTo: limit }}
+  <span *ngIf="comment.comments.length > limitvalue" class="read-more">
+    <a (click)="showMore(comment.comments)">
+      {{ showMoreText | translate }}
+      <fa-icon [icon]="['fas', isAngleDown ? 'caret-down' : 'caret-up']"></fa-icon> </a
+  ></span>
+</div>
+<div class="comment-section" *ngIf="comment.bilingualComments != null && comment.bilingualComments.length > 0">
+  <span class="reason-text"> {{ 'THEME.REASONS' | translate }}</span>
+  <ul class="bilinqual-comments">
+    <li *ngFor="let bilingualComments of comment.bilingualComments | slice: 0:currentBillingLimit">
+      {{ bilingualComments | bilingualText }}
+    </li>
+  </ul>
+  <span *ngIf="comment.bilingualComments.length > BilligLimit">
+    <a (click)="showMoreBilligList()">
+      {{ showMoreText | translate }}
+    </a></span
+  >
+</div>

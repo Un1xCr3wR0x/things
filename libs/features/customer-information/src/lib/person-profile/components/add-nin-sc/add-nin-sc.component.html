@@ -1,0 +1,243 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+
+  <gosi-alert-sc></gosi-alert-sc>
+  
+  <!-- Heading -->
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="header-value">
+        {{ 'CUSTOMER-INFORMATION.ADD-OR-MODIFY-NIN' | translate }}
+      </div>
+      </div>
+      </div>
+  <div class="row mt-4" *ngIf="currentTab === 0">
+    <div class="col-lg-12">
+      <div class="row no-gutters banner">
+        <div class="col-lg-4 name" *ngIf="lang == 'en'">
+          <gosi-label-dc id="contributorName" [value]="englishName" [label]="'CUSTOMER-INFORMATION.NAME' | translate"> </gosi-label-dc>
+        </div>
+        <div class="col-lg-4 name" *ngIf="lang == 'ar'">
+          <gosi-label-dc id="contributorName" [value]="personName" [label]="'CUSTOMER-INFORMATION.NAME' | translate"> </gosi-label-dc>
+        </div>
+        <div class="col-lg-4 name">
+          <gosi-label-dc id="sinNo" [value]="nationality | bilingualText" [label]="'CUSTOMER-INFORMATION.NATIONALITY' | translate"> </gosi-label-dc>
+        </div>
+        <div class="col-lg-4 name">
+          <gosi-label-dc id="sinNo" [value]="gender | bilingualText" [label]="'CUSTOMER-INFORMATION.GENDER' | translate"> </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <gosi-progress-wizard-dc [wizardItems]="wizardItems" (clickWizard)="selectWizard($event)" #changePersonalWizard>
+  </gosi-progress-wizard-dc>
+  <ng-container *ngIf="currentTab==0">
+    <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.PERSONAL-DETAILS' | translate">
+      <div class="row ">
+        <div class="col-lg-6">
+          <gosi-input-number-dc [label]="'CUSTOMER-INFORMATION.NIN' | translate"
+          [control]="ninModifyForm.get('nin')"
+          [maxLength]="ninMaxLength"
+            >
+          </gosi-input-number-dc>
+        </div>
+        <div class="col-lg-6">
+          <gosi-input-date-dc id="birthDate"
+            [label]="'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate"
+            [control]="ninModifyForm?.get('dateOfBirth').get('gregorian')"
+            [maxDate]="currentDate"
+            ></gosi-input-date-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="float-left verify-btn">
+            <gosi-button-dc id="verify" [disabled]="isVerified" (submit)="verifyNin()" type="primary">{{
+              'CUSTOMER-INFORMATION.VERIFY' | translate
+            }}</gosi-button-dc>
+          </div>
+      </div>
+      <!-- <gosi-alert-sc></gosi-alert-sc> -->
+      <div class="row" *ngIf="isVerified">
+      <div class="col-md-12 alert-style">
+        <gosi-alert-dc
+          message="{{
+            'CUSTOMER-INFORMATION.ADD-NIN-INFO' | translate
+          }}"
+          type="info"
+          [dismissible]="false"
+          class="documents-alert"
+        >
+        </gosi-alert-dc>
+      </div>
+      </div>
+      <div class="col-md-12" *ngIf="isVerified">
+        <div class="wage-block">
+    
+          <div class="wage-card">
+    
+            <table class="table-dd table-responsive">
+              <table>
+                <tr>
+                  <th></th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.CURRENT-DETAILS-INSYSTEM' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.NEW-DETAILS-FROM-NIC' | translate}}</th>
+    
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.NATIONALITY' | translate}}</th>
+                  <td class="data-row">{{ personalDetailsCurrentDto.nationality | bilingualText }}</td>
+                  <td class="data-row">{{ personalDetailsFromNicDto.nationality | bilingualText }}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.NATIONAL-ID' | translate}}</th>
+                  <td class="data-column">{{ personalDetailsCurrentDto.identifier }}</td>
+                  <td class="data-column">{{ personalDetailsFromNicDto.identifier }}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.NAME' | translate}}</th>
+                  <td class="data-row">{{ personalDetailsCurrentDto.nameEng }}</td>
+                  <td class="data-row">{{ personalDetailsFromNicDto.nameEng }}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.NAME-ARABIC' | translate}}</th>
+                  <td class="data-column">{{ personalDetailsCurrentDto.nameArb }}</td>
+                  <td class="data-column">{{ personalDetailsFromNicDto.nameArb }}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.GENDER' | translate}}</th>
+                  <td class="data-row">{{ personalDetailsCurrentDto.gender | bilingualText }}</td>
+                  <td class="data-row">{{ personalDetailsFromNicDto.gender | bilingualText }}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate}}</th>
+                  <td class="data-column">{{ personalDetailsCurrentDto.dob?.gregorian | gosiDate}}</td>
+                  <td class="data-column">{{ personalDetailsFromNicDto.dob?.gregorian  | gosiDate}}</td>
+    
+                </tr>
+                <tr>
+                  <th scope="row">{{'CUSTOMER-INFORMATION.DATE-OF-BIRTH-HIJIRI' | translate}}</th>
+                  <td class="data-row">{{ personalDetailsCurrentDto.dob?.hijiri | gosiDate }}</td>
+                  <td class="data-row">{{ personalDetailsFromNicDto.dob?.hijiri | gosiDate }}</td>
+    
+                </tr>
+              </table>
+            </table>
+          </div>
+    
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  <ng-container *ngIf="currentTab==0 && isVerified && simisDocDetails?.microFinches[0]?.contributorId">
+    <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.SIMIS-DOC-DETAILS' | translate">
+      <div class="col-md-12">
+        <div class="wage-block-simis">
+    
+          <div class="wage-card-simis">
+            <div class="table-container">
+    
+            <table class="table-dd table-responsive">
+              <table>
+                <tr>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.SIN' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.BOX-NUMBER' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-NUMBER' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-ROW' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.MICROFICHE-COLUMN' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.COVER-CODE' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.TRANSACTION-CODE' | translate}}</th>
+                  <th scope="col">{{'CUSTOMER-INFORMATION.TRANSACTION-DATE' | translate}}</th>
+    
+    
+                </tr>
+                <tr *ngFor="let item of simisDocDetails?.microFinches">
+                  <td class="data-rows">{{ item?.sin }}</td>
+                  <td class="data-rows">{{ item?.boxNumber }}</td>
+                  <td class="data-rows">{{ item?.microFincheNumber }}</td>
+                  <td class="data-rows">{{ item?.microFincheRow }}</td>
+                  <td class="data-rows">{{ item?.microfincheColumn }}</td>
+                  <td class="data-rows">{{ item?.coverCode }}</td>
+                  <td class="data-rows">{{ item?.transactionCode }}</td>
+                  <td class="data-rows">{{ item?.transactionDate | gosiDate }}</td>
+    
+                </tr>
+              </table>
+            </table>
+            </div>
+          </div>
+    
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  <div class="row" *ngIf="currentTab === 0">
+    <div class="col-md-12 form-action">
+      <div class="complaint-value">
+        <div class="btn-section float-left">
+                <gosi-button-dc id="modifycancel" type="secondary" (submit)="showCancelTemplate(confirmid)">
+                  {{ 'CUSTOMER-INFORMATION.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc id="submit" [disabled]="isSubmit" (submit)="saveDetails()" type="primary">
+            {{ 'CUSTOMER-INFORMATION.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+        <div *ngIf="currentTab === 1" class="row">
+            <div class="col-md-12">
+              <!-- document details section -->
+              <cim-documents-dc
+                [uuid]="uuid"
+                [documents]="documents"
+                [businessKey]="registrationNo"
+                [transactionId]="documentTransactionId"
+                [showHeading]="false"
+                [referenceNo]="referenceNo"
+                [noPadding]="true"
+                [noMarginBottom]="true"
+                [negativeMobileMargin]="false"
+                [parentForm]="parentForm"
+                (refreshDocument)="refreshDocument($event)"
+                (onUploadDocument)="setUuid($event)"
+                (onDeleteDocument)="deleteUuid($event)"
+              >
+              </cim-documents-dc>
+        
+              <div class="row form-action">
+                <div class="col-lg-12">
+                    <div class="btn-section float-left">
+                        <gosi-button-dc id="modifycancel" type="secondary" (submit)="showCancelTemplate(confirmid)">
+                          {{ 'CUSTOMER-INFORMATION.CANCEL' | translate }}</gosi-button-dc
+                        >
+                      </div>
+                      <div class="btn-section float-left btn-margin">
+                        <gosi-button-dc id="previousback" type="secondary" (submit)="navigateToPreviousTab()">
+                          {{ 'CUSTOMER-INFORMATION.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+                        >
+                      </div>
+                  <div class="btn-section float-right submit-btn">
+                    <gosi-button-dc id="finalsave" type="primary" (submit)="submitDetails()">
+                      {{ 'CUSTOMER-INFORMATION.SUBMIT' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+   
+<!-- Confirmation Modal-->
+<ng-template #confirmid>
+    <gosi-confirm-modal-dc message="CUSTOMER-INFORMATION.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  

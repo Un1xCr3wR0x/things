@@ -1,0 +1,104 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<!-- <div class="col-auto text-right pt-3 mr-4">
+  <fa-icon id="closeIcon" class="text-secondary custom-pointer" icon="times" (click)="closeModal()"> </fa-icon>
+</div> -->
+
+<gosi-modal-dc [modalHeader]="'BENEFITS.ADD-EVENT' | translate" [needCloseButton]="true" (closeModal)="closeModal()">
+  <div class="row" modalContent>
+    <div class="col-lg-12 col-md-12 col-sm-12">
+      <gosi-input-select-dc
+        id="selectedEventType"
+        [label]="'BENEFITS.EVENT-TYPE' | translate"
+        [control]="eventForm.get('eventType')"
+        [arrayList]="_eventTypeList"
+        (select)="selectedEventType($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12">
+      <!--Check if max/min date validation required in every scenario-->
+      <gosi-input-date-dc
+        id="eventStartDate"
+        [label]="'BENEFITS.DATE-OF-EVENT' | translate"
+        [control]="eventForm.get('eventStartDate')?.get('gregorian')"
+        [maxDate]="maxDate"
+        [minDate]="minDate"
+      >
+      </gosi-input-date-dc>
+    </div>
+
+    <!-- *ngIf="eventForm.get('eventType')?.value?.english==='Wage change'" -->
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="eventForm?.get('wage') && isEventValid()">
+      <gosi-input-text-dc [label]="'BENEFITS.WAGE-SAR' | translate" [control]="eventForm?.get('wage')">
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="showWageChangeError">
+      <gosi-alert-dc
+        message="{{ 'BENEFITS.WAGE-INFO' | translate: { retirementAge: systemParameter.RETIREMENT_AGE } }}"
+        type="info"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="eventDateAfterDeathError">
+      <gosi-alert-dc
+        message="{{
+          'BENEFITS.EVENT-AFTER-DEATH-MISSING'
+            | translate
+              : {
+                  contirbutorDeathOrMissing: lang === 'en' ? deathBilingual.english : deathBilingual.arabic,
+                  missingOrDeathDate: contributorDetails?.deathDate | dateType
+                }
+        }}"
+        type="danger"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="!isEventValid()">
+      <gosi-alert-dc
+        message="{{
+          'BENEFITS.EMPLOYMENT-EVENT-WARNING'
+            | translate
+              : {
+                  eligibilityDate: eventAddedFor?.benefitEligibilityDate | dateType
+                }
+        }}"
+        type="danger"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="this.alert?.details.length">
+      <gosi-alert-dc [details]="alert?.details" type="danger" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+  </div>
+  <div class="d-flex justify-content-between" modalAction>
+    <div>
+      <gosi-button-dc
+        id="cancelButton"
+        [isFullWidth]="isSmallScreen"
+        [ngClass]="!isSmallScreen ? 'float-left' : ''"
+        type="secondary"
+        (submit)="closeModal()"
+      >
+        {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div>
+      <gosi-button-dc
+        id="addButton"
+        [isFullWidth]="isSmallScreen"
+        [ngClass]="!isSmallScreen ? 'float-right' : ''"
+        type="primary"
+        (submit)="addEvent()"
+        [disabled]="!isEventValid()"
+      >
+        {{ 'BENEFITS.ADD' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>

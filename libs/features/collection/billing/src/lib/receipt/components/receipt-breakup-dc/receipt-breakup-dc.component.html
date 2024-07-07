@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="establishment || receipt">
+  <div class="receipt-header-portion no-gutters mb-4">
+    <div class="col-lg-3 pr-3 align-rec-no">
+      <div class="arrow-space border-right">
+        <a (click)="navigateBack()">
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'ar'"
+            [icon]="['far', 'arrow-alt-circle-right']"
+            size="2x"
+          ></fa-icon>
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'en'"
+            [icon]="['far', 'arrow-alt-circle-left']"
+            size="2x"
+          ></fa-icon>
+        </a>
+      </div>
+      <div class="header">{{ 'BILLING.RECEIPT-NUMBER' | translate }} : {{ receiptNumber }}</div>
+    </div>
+    <div class="header col-lg-4">
+      <span *ngIf="receipt" class="status statusMargin" [ngClass]="statusStyle">{{
+        receipt.status | bilingualText | uppercase
+      }}</span>
+    </div>
+    <div class="header" *ngIf="isMofReceiptFlag">{{ 'BILLING.ESTABLISHMENT-TYPE' | translate }} : {{ establishmentType }} </div>
+    <div *ngIf="!cancelBtnDisableTemp">
+      <div
+        class="col-lg-4 d-flex justify-content-end"
+        *ngIf="isApproved && isAppPrivate && !isMofReceiptFlag && isRegistered && isBranchRegistered && !isCancelled && !isCancelledPvWaiting && !isApprovalInProgress && !isReceiptRejected"
+      >
+        <span class="cancel-btn-margin" *gosiShow="accessRoles">
+          <gosi-button-dc
+            id="cancelReceipt"
+            size="md"
+            type="secondary"
+            [outlineOnly]="true"
+            (submit)="navigateToCancelReceipt()"
+            >{{ 'BILLING.CANCEL-RECEIPT' | translate }}
+          </gosi-button-dc
+          >
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="row info no-gutters" *ngIf="!isMofReceiptFlag">
+    <div class="col-lg-12">
+      <blg-establishment-banner-dc
+        [establishment]="establishment"
+        [gccFlag]="gccFlag"
+        [currencyDetails]="currencyDetails"
+        [receipt]="receipt"
+      ></blg-establishment-banner-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <blg-receipt-details-dc
+        [isMofReceiptFlag]="isMofReceiptFlag"
+        [receipt]="receipt"
+        [establishment]="establishment"
+        [currencyDetails]="currencyDetails"
+        [currency]="currency"
+        [gccFlag]="gccFlag"
+        [documents]="documents"
+        (mofAllocationBreakupDetails)="getMofAllocationBreakupDetails()"
+      ></blg-receipt-details-dc>
+    </div>
+  </div>
+</ng-container>

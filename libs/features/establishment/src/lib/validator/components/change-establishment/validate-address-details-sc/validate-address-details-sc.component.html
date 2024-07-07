@@ -1,0 +1,109 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc name="addressDetails" [establishment]="establishment">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          [heading]="'ESTABLISHMENT.EST-ADDRESS-DETAILS-AFTER-CHANGES' | translate"
+          (onEdit)="changeEstablishmentService.navigateToEditAddressDetails()"
+        ></frm-content-heading-dc>
+        <frm-address-dc
+          isViewOnly="true"
+          [hasAddressDetailsLabel]="false"
+          [addressDetails]="
+            establishmentToValidate.contactDetails && establishmentToValidate.contactDetails.addresses
+              ? establishmentToValidate.contactDetails.addresses
+              : []
+          "
+          [hasOverseasAddress]="isOverseasAddressChanged"
+          [hasPOAddress]="isPoxAddressChanged"
+          [hasNationalAddress]="isNationalAddressChanged"
+          [currentMailingAddress]="establishmentToValidate.contactDetails?.currentMailingAddress"
+        >
+        </frm-address-dc>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(addressDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(addressDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(addressDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="addressDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-ADDRESS'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(addressDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="addressDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-ADDRESS'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(addressDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="addressDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(addressDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

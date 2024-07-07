@@ -1,0 +1,230 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row">
+  <div class="col-md-6">
+    <gosi-input-select-dc
+      id="requestedBy"
+      [label]="'ADJUSTMENT.REQUESTED-BY'"
+      [placeholder]="'ADJUSTMENT.REQUESTED-BY' | translate"
+      [list]="requestByList"
+      [control]="continousDeductionForm?.get('requestedBy')"
+      (select)="fetchAdjustmentReason($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+
+  <div *ngIf="showCaseFiledsFlag" class="col-lg-6">
+    <gosi-input-number-dc
+      id="caseNumber"
+      name="caseNumber"
+      [label]="'ADJUSTMENT.CASE-NUMBER'"
+      [placeholder]="'ADJUSTMENT.CASE-NUMBER' | translate"
+      [control]="continousDeductionForm.get('caseNumber')"
+    >
+    </gosi-input-number-dc>
+  </div>
+  <div *ngIf="showCaseFiledsFlag" class="col-lg-6">
+    <gosi-input-date-dc
+      id="caseDate"
+      [label]="'ADJUSTMENT.CASE-DATE' | translate | titlecase"
+      [control]="continousDeductionForm.get('caseDate').get('gregorian')"
+      [maxDate]="maxDate"
+    >
+    </gosi-input-date-dc>
+  </div>
+  <div *ngIf="showCityFlag" class="col-lg-6">
+    <gosi-input-select-dc
+      id="city"
+      [label]="'ADJUSTMENT.CITY'"
+      [placeholder]="'ADJUSTMENT.CITY' | translate"
+      [list]="cityList"
+      [control]="continousDeductionForm?.get('city')"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-md-12" *ngIf="showBasicBenefitWarning">
+    <gosi-alert-dc
+      [noPadding]="true"
+      [message]="'ADJUSTMENT.BASIC-AMOUNT-WARNING' | translate: { amount: minBasicBenefitAmount }"
+      [dismissible]="false"
+      type="warning"
+    ></gosi-alert-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <gosi-input-radio-dc
+      [label]="'ADJUSTMENT.CONTINOUS-DEDUCTION' | translate"
+      id="continousDeduction"
+      name="continousDeduction"
+      [list]="continousDeduction"
+      [control]="continousDeductionForm.get('continuousDeduction')"
+      [noMargin]="true"
+      (select)="onSelectCountinuesDeductionType(true)"
+    >
+    </gosi-input-radio-dc>
+  </div>
+  <div
+    class="col-md-6"
+    *ngIf="continousDeductionForm.get('continuousDeduction').get('english').value === CountinuesTypeNo"
+  >
+    <gosi-input-currency-dc
+      id="adjustmentAmount"
+      name="adjustmentAmount"
+      [label]="'ADJUSTMENT.ADJUSTMENT-AMOUNT-LBL'"
+      [placeholder]="'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate"
+      [control]="continousDeductionForm.get('adjustmentAmount')"
+      [noMargin]="true"
+      [hideOptionalLabel]="true"
+      [separatorLimit]="separatorLimit"
+      (blur)="deductionTypeChange(selectedDeductionType)"
+    >
+    </gosi-input-currency-dc>
+  </div>
+</div>
+<!-- Select contionous deduction as yes -->
+
+<ng-container *ngIf="continousDeductionForm.get('continuousDeduction').get('english').value === CountinuesTypeNo">
+  <div class="monthly-deduction-font">{{ 'ADJUSTMENT.PROVIDE-MONTHLY-DEDUCTION' | translate }}</div>
+  <div>
+    <div class="d-inline-block pay-type">
+      <div class="pay-method-toggler d-flex">
+        <div
+          class="column-left pay-text"
+          [ngClass]="{
+            'pay-type-selected': selectedDeductionType === deductionTypeAmount,
+            'pay-type-unselected': selectedDeductionType === deductionTypePercentage
+          }"
+          (click)="deductionTypeChange(deductionTypeAmount, true)"
+        >
+          {{ 'ADJUSTMENT.AMOUNT' | translate }}
+        </div>
+        <div
+          class="column-right pay-text"
+          [ngClass]="{
+            'pay-type-selected': selectedDeductionType === deductionTypePercentage,
+            'pay-type-unselected': selectedDeductionType === deductionTypeAmount
+          }"
+          (click)="deductionTypeChange(deductionTypePercentage, true)"
+        >
+          {{ 'ADJUSTMENT.PERCENTAGE' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="selectedDeductionType === deductionTypePercentage">
+    <div class="row">
+      <div class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE'"
+          id="monthyDeductionPercentage"
+          name="monthyDeductionPercentage"
+          [placeholder]="'ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE' | translate"
+          [control]="continousDeductionForm.get('adjustmentPercentage')"
+          [list]="percentageList"
+          (select)="findDeductionAmount()"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6">
+        <gosi-input-text-dc
+          #monthlyDeductionPercentageAmount
+          id="monthlyDeductionPercentageAmount"
+          name="monthlyDeductionPercentageAmount"
+          [label]="'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT'"
+          [placeholder]="'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate"
+          [control]="continousDeductionForm.get('monthlyDeductionPercentageAmount')"
+          [readOnly]="true"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-12" *ngIf="showDeductionpercentageWarning">
+        <gosi-alert-dc
+          [noPadding]="true"
+          [message]="'ADJUSTMENT.DEDUCTION-WARNING' | translate: { percentage: warningPercentage }"
+          [dismissible]="false"
+          type="warning"
+        ></gosi-alert-dc>
+      </div>
+      <div class="col-md-6" [hidden]="!(adjustmentReasonList?.items?.length > 0)">
+        <gosi-input-select-dc
+          id="adjustmentReason"
+          [control]="continousDeductionForm.get('adjustmentReason')"
+          [label]="'ADJUSTMENT.ADJUSTMENT-REASONS'"
+          [placeholder]="'ADJUSTMENT.ADJUSTMENT-REASONS' | translate"
+          [list]="adjustmentReasonList"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-container
+  *ngIf="
+    continousDeductionForm.get('continuousDeduction').get('english').value === CountinuesTypeYes ||
+    selectedDeductionType === deductionTypeAmount
+  "
+>
+  <div class="row">
+    <div class="col-md-6">
+      <gosi-input-currency-dc
+        #monthyDeductionAmount
+        id="monthyDeduction"
+        name="monthyDeduction"
+        [label]="'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT'"
+        [placeholder]="'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate"
+        [control]="continousDeductionForm.get('monthlyDeductionAmount')"
+        [hideOptionalLabel]="true"
+        [separatorLimit]="separatorLimit"
+        (blur)="checkDeductionWarning()"
+      >
+      </gosi-input-currency-dc>
+    </div>
+
+    <div class="col-md-6" *ngIf="adjustmentReasonList">
+      <gosi-input-select-dc
+        id="adjustmentReason"
+        [label]="'ADJUSTMENT.ADJUSTMENT-REASONS'"
+        [placeholder]="'ADJUSTMENT.ADJUSTMENT-REASONS' | translate"
+        [list]="adjustmentReasonList"
+        [control]="continousDeductionForm.get('adjustmentReason')"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-md-12" *ngIf="showDeductionpercentageWarning">
+      <gosi-alert-dc
+        [noPadding]="true"
+        [message]="'ADJUSTMENT.DEDUCTION-WARNING' | translate: { percentage: warningPercentage }"
+        [dismissible]="false"
+        type="warning"
+      ></gosi-alert-dc>
+    </div>
+  </div>
+</ng-container>
+
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-input-text-area-dc
+      id="notes"
+      name="notes"
+      [label]="'ADJUSTMENT.NOTES'"
+      [placeholder]="'ADJUSTMENT.NOTES' | translate"
+      [control]="continousDeductionForm.get('notes')"
+    >
+    </gosi-input-text-area-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 d-flex">
+    <gosi-input-checkbox-dc
+      id="declaration"
+      name="declaration"
+      [label]="'ADJUSTMENT.PUT-ADJUSTMENT' | translate"
+      [control]="continousDeductionForm.get('holdAdjustment')"
+      (select)="holdAdjustmentChange($event)"
+    >
+    </gosi-input-checkbox-dc>
+  </div>
+</div>

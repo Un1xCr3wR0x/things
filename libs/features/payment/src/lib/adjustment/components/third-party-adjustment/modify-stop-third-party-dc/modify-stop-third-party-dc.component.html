@@ -1,0 +1,242 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row no-gutters custom-container border-line px-4 py-4">
+  <div class="col-md-12 custom-heading heading-style mb-3">
+    {{
+      enableReactivate && !adjustment?.isStop
+        ? ('ADJUSTMENT.REACTIVATE-ADJUSTMENT' | translate)
+        : ('ADJUSTMENT.MODIFY-HOLD-STOP-ADJUSTMENT' | translate)
+    }}
+  </div>
+  <!--Toggle tab-->
+  <div class="col-md-12" *ngIf="enableReactivate === false || (enableReactivate && adjustment?.isStop)">
+    <div class="d-inline-block adjustment-type">
+      <div class="adjustment-method-toggler">
+        <div
+          class="column-left text-style"
+          [ngClass]="{
+            'adj-type-selected': showModifyLabels,
+            'adj-type-unselected': !showModifyLabels
+          }"
+          (click)="changeStatus(modifyConstant)"
+        >
+          {{ 'ADJUSTMENT.MODIFY-ADJUSTMENT' | translate }}
+        </div>
+        <div
+          class="column-middle text-style"
+          [ngClass]="{
+            'adj-type-selected': showHoldLabels,
+            'adj-type-unselected': !showHoldLabels
+          }"
+          (click)="changeStatus(holdConstant)"
+        >
+          {{ 'ADJUSTMENT.HOLD-ADJUSTMENT' | translate }}
+        </div>
+        <div
+          class="column-right text-style"
+          [ngClass]="{
+            'adj-type-selected': showStopLabels,
+            'adj-type-unselected': !showStopLabels
+          }"
+          (click)="changeStatus(stopConstant)"
+        >
+          {{ 'ADJUSTMENT.STOP-ADJUSTMENT' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <!-- ------------Payment Details ----------------->
+    <div class="row">
+      <div class="col-md-4">
+        <gosi-label-dc
+          id="benType"
+          [label]="'ADJUSTMENT.BENEFIT-TYPE' | translate"
+          [value]="adjustment?.benefitType | bilingualText"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-currency-label-dc
+          id="benAmount"
+          label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="adjustment?.benefitAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-currency-label-dc
+          id="benAmount"
+          label="{{ 'ADJUSTMENT.BASIC-BENEFIT-AMOUNT' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="selectedBenefit?.basicBenefitAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div *ngIf="selectedBenefit?.dependentComponentAmount" class="col-md-4">
+        <gosi-currency-label-dc
+          id="dependentAmount"
+          label="{{ 'ADJUSTMENT.DEPENDENT-ALLOWANCE' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="selectedBenefit?.dependentComponentAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div *ngIf="!adjustment?.continuousDeduction" class="col-md-4">
+        <gosi-currency-label-dc
+          id="adjBalance"
+          label="{{ 'ADJUSTMENT.BALANCE-AMOUNT' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="adjustment?.adjustmentBalance"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-md-4">
+        <gosi-label-dc
+          id="requestedBy"
+          [label]="'ADJUSTMENT.REQUESTED-BY' | translate"
+          [value]="adjustment?.requestedBy | bilingualText"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <!-- Displaying if we select modifying toggle -->
+    <div class="row">
+      <div *ngIf="showModifyLabels && isadjustmentPercentage === false" class="col-md-6">
+        <gosi-input-currency-dc
+          #monthyDeductionAmount
+          id="monthyDeduction"
+          name="monthyDeduction"
+          [label]="'ADJUSTMENT.NEW-MONTHLY-DEDUCTION-SAR' | translate"
+          [placeholder]="'ADJUSTMENT.NEW-MONTHLY-DEDUCTION-SAR' | translate"
+          [control]="maintainTpaForm.get('newMonthlyDeductionAmount')"
+          [hideOptionalLabel]="true"
+          [separatorLimit]="separatorLimit"
+          (blur)="checkDeductionWarning()"
+        >
+        </gosi-input-currency-dc>
+        <div class="row ml-1">
+          <div *ngIf="showDeductionpercentageWarning">
+            <gosi-alert-dc
+              [noPadding]="true"
+              [message]="'ADJUSTMENT.DEDUCTION-WARNING' | translate: { percentage: warningPercentage }"
+              [dismissible]="false"
+              type="warning"
+            >
+            </gosi-alert-dc>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="showModifyLabels && isadjustmentPercentage" class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'ADJUSTMENT.NEW-DEBIT-PERCENTAGE'"
+          id="debitPercentage"
+          name="debitPercentage"
+          [placeholder]="'ADJUSTMENT.NEW-DEBIT-PERCENTAGE' | translate"
+          [control]="maintainTpaForm.get('newDebitPercentage')"
+          [list]="percentageList"
+          (select)="findDeductionAmount()"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div *ngIf="showModifyLabels && isadjustmentPercentage" class="col-md-6">
+        <gosi-input-text-dc
+          #monthyDeductionPercentAmount
+          id="monthyDeductionPercentAmount"
+          name="monthyDeduction"
+          [readOnly]="true"
+          [label]="'ADJUSTMENT.NEW-MONTHLY-DEDUCTION-SAR' | translate"
+          [placeholder]="'ADJUSTMENT.NEW-MONTHLY-DEDUCTION-SAR' | translate"
+          [control]="maintainTpaForm.get('newMonthlyDeductionAmount')"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div *ngIf="showModifyLabels && isadjustmentPercentage && showDeductionpercentageWarning" class="col-md-12">
+        <gosi-alert-dc
+          [noPadding]="true"
+          [message]="'ADJUSTMENT.DEDUCTION-WARNING' | translate: { percentage: warningPercentage }"
+          [dismissible]="false"
+          type="warning"
+        ></gosi-alert-dc>
+      </div>
+      <!-- Displaying if we select stopping toggle -->
+      <div *ngIf="showStopLabels" class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'ADJUSTMENT.REASON-FOR-STOPPING'"
+          id="reasonForStopping"
+          name="reasonForStopping"
+          [placeholder]="'ADJUSTMENT.REASON-FOR-STOPPING' | translate"
+          [list]="reasonForStopping"
+          [control]="maintainTpaForm.get('reasonForStopping')"
+          (select)="onReasonSelect($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <!-- Displaying if we select holding toggle -->
+      <div *ngIf="showHoldLabels" class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'ADJUSTMENT.REASON-FOR-HOLDING'"
+          id="reasonForHolding"
+          name="reasonForHolding"
+          [placeholder]="'ADJUSTMENT.REASON-FOR-HOLDING' | translate"
+          [list]="reasonForHolding"
+          [control]="maintainTpaForm.get('reasonForHolding')"
+          (select)="onReasonSelect($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <!-- Displaying if we select reactivating button -->
+      <div *ngIf="enableReactivate && !adjustment?.isStop" class="col-md-6">
+        <gosi-input-select-dc
+          [label]="'ADJUSTMENT.REACTIVATING-REASON'"
+          id="reasonForReactivating"
+          name="reasonForReactivating"
+          [placeholder]="'ADJUSTMENT.REACTIVATING-REASON' | translate"
+          [list]="reasonForReactivating"
+          [control]="maintainTpaForm.get('reasonForReactivating')"
+          (select)="onReasonSelect($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <!-- Displaying if we select reason as other -->
+      <div *ngIf="showOther" class="col-md-6">
+        <gosi-input-text-dc
+          [label]="'ADJUSTMENT.OTHER-REASON'"
+          id="otherReason"
+          name="otherReason"
+          [placeholder]="'ADJUSTMENT.OTHER-REASON' | translate"
+          [control]="maintainTpaForm.get('otherReason')"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </div>
+
+    <!--notes-->
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-input-text-area-dc
+          id="notes"
+          name="notes"
+          [label]="'ADJUSTMENT.NOTES'"
+          [placeholder]="'ADJUSTMENT.NOTES' | translate"
+          [control]="maintainTpaForm.get('notes')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="d-flex justify-content-between btn-section">
+      <gosi-button-dc id="cancelButton" type="secondary" (submit)="showModal(cancelTemplateModal)">
+        {{ 'ADJUSTMENT.CANCEL' | translate }}</gosi-button-dc
+      >
+      <gosi-button-dc id="submit" type="primary" [disabled]="!maintainTpaForm.valid" (submit)="submit()">
+        {{ 'ADJUSTMENT.SAVE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplateModal>
+  <gosi-confirm-modal-dc [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="cancelPage()" (onCancel)="modalRef.hide()">
+  </gosi-confirm-modal-dc>
+</ng-template>

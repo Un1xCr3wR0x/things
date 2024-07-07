@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <ng-container *ngIf="!isUserLoggedIn; else userView">
+    <div class="row search-contributor-wrapper">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <ng-container>
+              <div [formGroup]="verifyPersonForm">
+                <div class="row justify-content-center">
+                  <div class="col-lg-4" *ngIf="searchRequired">
+                    <gosi-input-number-dc
+                      name="registrationNo"
+                      id="registrationNo"
+                      [label]="'CUSTOMER-INFORMATION.REGISTRATION-NUMBER' | translate"
+                      [control]="verifyPersonForm.get('registrationNo')"
+                      [hideOptionalLabel]="true"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-4">
+                    <gosi-input-number-dc
+                      name="socialInsuranceNo"
+                      id="socialInsuranceNo"
+                      [label]="'CUSTOMER-INFORMATION.SIN' | translate"
+                      [control]="verifyPersonForm.get('socialInsuranceNo')"
+                      [maxLength]="maxLength.SIN"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-2 pt-4 mt-3">
+                    <gosi-button-dc type="primary" id="search" (submit)="searchContributor()">
+                      {{ 'CUSTOMER-INFORMATION.SEARCH' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                </div>
+                <div class="row justify-content-center"></div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #userView>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <ng-container>
+              <div [formGroup]="verifyPersonForm">
+                <div class="row">
+                  <div class="col-lg-6" *ngIf="nationalityList">
+                    <gosi-input-select-dc
+                      name="nationality"
+                      [label]="'CUSTOMER-INFORMATION.NATIONALITY' | translate"
+                      (select)="selectIdType($event)"
+                      id="nationality"
+                      [list]="nationalityList | async"
+                      [control]="verifyPersonForm.get('nationality')"
+                    >
+                    </gosi-input-select-dc>
+                  </div>
+                  <div class="col-lg-6" *ngIf="saudiNationality">
+                    <gosi-input-number-dc
+                      name="newNin"
+                      id="ninNumber"
+                      [label]="'CUSTOMER-INFORMATION.NIN' | translate"
+                      [control]="verifyPersonForm.get('newNin')"
+                      [maxLength]="ninLength"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-6" *ngIf="gccNationality">
+                    <gosi-input-number-dc
+                      [name]="'nationalId'"
+                      id="gccNationalid"
+                      (blur)="fieldRequired()"
+                      [label]="'CUSTOMER-INFORMATION.GCC-ID' | translate"
+                      [control]="verifyPersonForm.get('id')"
+                      [maxLength]="getGccIdLength()"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-6" *ngIf="others || gccNationality">
+                    <gosi-input-number-dc
+                      name="iqama"
+                      id="iqamaNumber"
+                      [label]="'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate"
+                      [control]="verifyPersonForm.get('iqama')"
+                      (blur)="fieldRequired()"
+                      [maxLength]="iqamaLength"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-6" *ngIf="others || gccNationality">
+                    <gosi-input-number-dc
+                      name="borderNo"
+                      id="borderNumber"
+                      [label]="'CUSTOMER-INFORMATION.BORDER-NUMBER' | translate"
+                      [control]="verifyPersonForm.get('borderNo')"
+                      (blur)="fieldRequired()"
+                      [maxLength]="iqamaLength"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-6" *ngIf="gccNationality">
+                    <gosi-input-text-dc
+                      name="passport"
+                      (blur)="fieldRequired()"
+                      id="passportNumber"
+                      [label]="'CUSTOMER-INFORMATION.PASSPORT-NO' | translate"
+                      [control]="verifyPersonForm.get('passport')"
+                      [maxLength]="passportNoMax"
+                    >
+                    </gosi-input-text-dc>
+                  </div>
+
+                  <div class="col-lg-6" formGroupName="birthDate">
+                    <gosi-input-date-dc
+                      name="birthDate"
+                      id="personDOB"
+                      [label]="'CUSTOMER-INFORMATION.BIRTH-DATE' | translate"
+                      [control]="verifyPersonForm.get('birthDate').get('gregorian')"
+                      [maxDate]="currentDate"
+                    >
+                    </gosi-input-date-dc>
+                  </div>
+                </div>
+                <div class="row justify-content-center">
+                  <div>
+                    <gosi-button-dc
+                      [disabled]="verifyPersonForm.invalid"
+                      type="primary"
+                      id="search"
+                      (submit)="verifyPerson()"
+                    >
+                      {{ 'CUSTOMER-INFORMATION.SEARCH' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>

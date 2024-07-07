@@ -1,0 +1,111 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="employee-list">
+    <div class="employee-list-heading d-flex flex-wrap">
+      <div class="employee-role">{{ heading | translate }} ({{ employees ? employees.length : 0 }})</div>
+      <div class="add-employee">
+        <gosi-button-dc
+          *ngIf="isWorkflow"
+          class="wrapper-gosi-button-dc"
+          id="buttonTop"
+          type="primary"
+          [size]="'sm'"
+          routerLink="{{ addScreenLink }}"
+          [show]="showButton"
+        >
+          <fa-icon [icon]="actionIcon" class="pl-0 pr-2" *ngIf="actionIcon"></fa-icon>{{ actionLabel | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          *ngIf="!isWorkflow"
+          class="wrapper-gosi-button-dc"
+          id="buttonTop"
+          type="primary"
+          [size]="'sm'"
+          (click)="disableButton? undefined : displayModalDetails()"
+          [show]="showButton"
+          [disabled]="disableButton"
+          [tooltip]="buttonTooltip | translate"
+        >
+          <fa-icon [icon]="actionIcon" class="pl-0 pr-2" *ngIf="actionIcon"></fa-icon>{{ actionLabel | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div
+      class="employee"
+      [ngClass]="{ 'gosi-scrollbar max-admin-height mb-2': showLoadMore }"
+      *ngIf="employees && employees.length > 0"
+    >
+      <div class="employee-details row flex-nowrap no-gutters" *ngFor="let controlPerson of filteredEmployees">
+        <div class="employee-pic col-auto">
+          <ng-container *ngIf="!controlPerson.isParty && controlPerson.sex && controlPerson.sex.english === femaleGender">
+            <img alt="documentName" src="assets/icons/female.svg" />
+          </ng-container>
+          <ng-container
+            *ngIf="
+              (!controlPerson.isParty && controlPerson.sex && controlPerson.sex.english === maleGender) ||
+              controlPerson.sex === null
+            "
+          >
+            <img alt="documentName" src="assets/icons/man.svg" />
+          </ng-container>
+          <ng-container *ngIf="controlPerson.isParty">
+            <img alt="documentName" src="assets/icons/establishment.svg" />
+          </ng-container>
+        </div>
+        <div *ngIf="!controlPerson.isParty" class="employee-identifier col-10">
+          <div class="employee-name">
+            {{ controlPerson.name | nameToString: true }}
+          </div>
+          <div class="employee-role" *ngIf="showRole">
+            <span [tooltip]="controlPerson.role | bilingualText">{{ controlPerson.role | bilingualText }}</span>
+          </div>
+          <div class="employee-identity" *ngIf="showId">
+            {{ controlPerson.commonId.idType | translate }} :
+            <ng-container *ngIf="controlPerson.commonId.id; else noValueTemplate">
+              {{ controlPerson.commonId.id }}
+            </ng-container>
+          </div>
+        </div>
+        <div *ngIf="controlPerson.isParty" class="employee-identifier col-10">
+          <div class="employee-name">
+            {{ controlPerson.partyName }}
+          </div>
+          <div class="employee-identity" *ngIf="showId">
+            {{ 'ESTABLISHMENT.PARTY-ID' | translate }} :
+            <ng-container *ngIf="controlPerson.partyId; else noValueTemplate">
+              {{ controlPerson.partyId }}
+            </ng-container>
+          </div>
+        </div>
+        <fa-icon *ngIf="showMoreOptions" class="more-options" icon="ellipsis-v"></fa-icon>
+      </div>
+    </div>
+    <ng-container *ngIf="employees && employees.length > initalNoOfEmployees && !showLoadMore">
+      <a class="float-right show-link mt-4" *ngIf="!showAll; else viewLess" (click)="viewAll(true)">
+        {{ 'ESTABLISHMENT.VIEW-ALL' | translate }}
+      </a>
+    </ng-container>
+    <ng-template #viewLess>
+      <a class="float-right show-link mt-4" (click)="viewAll(false)">
+        {{ 'ESTABLISHMENT.VIEW-LESS' | translate }}
+      </a>
+    </ng-template>
+    <div class="pl-4 pr-4" *ngIf="showLoadMore">
+      <gosi-loadmore-dc
+        class="employee-load-more"
+        (loadMore)="loadMoreEmployee($event)"
+        [pageSize]="initalNoOfEmployees"
+        [totalCount]="employees.length"
+        [currentPage]="currentPage"
+      ></gosi-loadmore-dc>
+    </div>
+  </div>
+
+  <ng-template #noValueTemplate>
+    <span class="null-value">
+      {{ 'THEME.NOT-AVAILABLE' | translate }}
+    </span>
+  </ng-template>

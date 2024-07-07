@@ -1,0 +1,154 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc
+  type="secondary"
+  *ngIf="hasAtleastOneAdjustment || isLumpsum"
+  [heading]="
+    isValidator || isTransactionScreen || heirActionType === HeirStatus.RESTART ? '' : (topHeading | translate)
+  "
+  [showCard]="false"
+  class="d-block pt-4"
+>
+  <div class="d-flex flex-row justify-content-between pb-3">
+    <frm-content-heading-dc
+      *ngIf="(isValidator || isTransactionScreen) && !isLumpsum"
+      icon="money-bill"
+      [canEdit]="false"
+      heading="{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}"
+    >
+    </frm-content-heading-dc>
+    <div *ngIf="heirActionType === HeirStatus.RESTART" class="annuity-type">
+      {{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}
+    </div>
+    <div *ngIf="heirActionType === HeirStatus.RESTART || isRestartBenefit">
+      <div class="d-flex flex-row justify-content-end">
+        <gosi-button-dc
+          [size]="isSmallScreen ? 'sm' : 'md'"
+          class="calculation-button"
+          type="secondary"
+          [outlineOnly]="true"
+          (click)="showModal(calculationDetails)"
+        >
+          {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc
+          [size]="isSmallScreen ? 'sm' : 'md'"
+          type="secondary"
+          [outlineOnly]="true"
+          (click)="showModal(moreDetails)"
+        >
+          {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+  <div class="row w-100">
+    <div class="col-lg-12 col-md-12 col-sm-12 w-100" *ngFor="let eachHeir of heirBenefitDetails; let i = index">
+      <gosi-accordion-dc
+        *ngIf="eachHeir.adjustmentCalculationDetails?.adjustmentDetails?.length || isLumpsum"
+        [closeOthers]="true"
+        [id]="'heir-adjustment-' + i"
+        [isPrimaryColor]="false"
+        (isOpenChange)="getTpaAdjustments($event, eachHeir.personId)"
+        class="modify-accordion"
+      >
+        <div header>
+          <div class="heading-wrapper">
+            <div class="row align-items-center d-flex justify-content-between">
+              <div class="accordion-heading-type col-auto">
+                <!-- To display name in arabic in case english name null -->
+                {{
+                  eachHeir?.name?.english === null || eachHeir?.name?.english?.trim() === ''
+                    ? eachHeir?.name?.arabic
+                    : (eachHeir?.name | bilingualText)
+                }}
+                ({{ eachHeir?.relationship | bilingualText }})
+
+                <!-- {{ (eachHeir?.name | bilingualText) || '-' }} ({{ eachHeir?.relationship | bilingualText }}) -->
+              </div>
+              <div class="status ml-auto d-flex" *ngIf="approveScreen">
+                {{ 'BENEFITS.AMOUNT_ONLY' | translate }} :
+                {{
+                  (isHeirLumpsum(benefitType)
+                    ? eachHeir?.benefitAmount
+                    : eachHeir?.adjustmentCalculationDetails?.totalAdjustmentAmount
+                  ) | number: '1.2-2'
+                }}{{ 'BENEFITS.SR' | translate }}
+              </div>
+              <div class="col-auto d-flex justify-content-end mr-0">
+                <span class="arrow-up">
+                  <fa-icon icon="angle-up" size="lg"></fa-icon>
+                </span>
+                <span class="arrow-down">
+                  <fa-icon icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div body>
+          <!--only for benefit apply screen-->
+          <gosi-input-radio-dc
+            *ngIf="
+              !approveScreen &&
+              heirAdjustmentForm.at(i).get('deductionPercentage.english') &&
+              heirActionType !== HeirStatus.RESTART &&
+              deductionPlanList
+            "
+            id="deductionPlan"
+            name="deductionPlan"
+            [label]="'BENEFITS.DEBIT-PERCENTAGE-FOR-CONTRIBUTIOR-ADJUSTMENTS'"
+            [control]="heirAdjustmentForm.at(i).get('deductionPercentage')"
+            [list]="deductionPlanList"
+            (select)="selectdeductionPlanMethod($event)"
+            [disabled]="deductionPlanSelectionDisable"
+          >
+          </gosi-input-radio-dc>
+          <bnt-adjustment-detail-dc
+            [showCard]="false"
+            [adjustmentCalculationDetails]="eachHeir?.adjustmentCalculationDetails"
+            [lang]="lang"
+          >
+          </bnt-adjustment-detail-dc>
+          <bnt-net-payment-details-dc
+            *ngIf="approveScreen && heirActionType !== HeirStatus.RESTART && heirActionType !== HeirStatus.HOLD"
+            [adjustmentDetails]="getAdjustments(eachHeir.personId)"
+            [samaVerified]="samaVerified"
+            [requestType]="requestType"
+            [benefitType]="benefitType"
+            [adjustmentCalculationDetails]="eachHeir?.adjustmentCalculationDetails"
+            [annuityBenefitDetails]="annuityBenefitDetails"
+            [heirBenefitDetails]="eachHeir"
+            [isValidator]="isValidator || isTransactionScreen"
+            [disableDirectPayment]="isTransactionScreen"
+            [isHeirAdjustment]="true"
+            [isActive]="isActive"
+            [holdMessage]="'BENEFITS.ADJUSTMENT-THIRD-PARTY-HOLD-HEIR'"
+            [parentForm]="heirAdjustmentForm.at(i)"
+            [isLumpsum]="isLumpsum"
+            [showActionButtons]="!isIndividualApp"
+            (navigateToAdjustmentDetails)="viewAdjustmentDetails(eachHeir)"
+            (navigateToPrevAdjustment)="viewPrevAdjustment(eachHeir)"
+            (onViewPaymentHistory)="onViewPaymentDetails($event)"
+          >
+          </bnt-net-payment-details-dc>
+        </div>
+      </gosi-accordion-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc [benefitDetails]="benefitCalculation" (close)="hideModal()"></bnt-amw-view-dc>
+</ng-template>
+<ng-template #moreDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculation"
+    [averageMonthlyWagePeriods]="benefitCalculation?.averageMonthlyWagePeriods"
+    [isLumpsum]="isLumpsum"
+    [lang]="lang"
+  ></bnt-annuity-calculation-details-dc>
+</ng-template>

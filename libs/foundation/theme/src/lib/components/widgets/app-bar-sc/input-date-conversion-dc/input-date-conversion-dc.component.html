@@ -1,0 +1,908 @@
+<gosi-modal-popover-dc
+  [adaptivePosition]="false"
+  id="poppopContentup-area"
+  [btnOpen]="isOpen"
+  [isExpand]="isExpand"
+  [stayFixedOnScreenChange]="true"
+  [disallowHeightExpansion]="false"
+>
+  <ng-container modalContent>
+    <div class="d-flex">
+      <div class="left-content" [ngClass]="isExpand ? 'col-md-7' : ''">
+        <div class="row">
+          <div class="col-lg-8 date-head mb-2">
+            {{ 'THEME.DATE-HELPER' | translate }}
+          </div>
+          <div
+            *ngIf="!isExpand && converter"
+            type="button"
+            [ngClass]="lang == 'en' ? 'close-helper' : 'close-helper-arabic'"
+          >
+            <span *ngIf="!isExpand && isShowCard"> <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon> </span>
+            <span *ngIf="isExpand && (isShowCard || isShowDaysCard)">
+              <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon>
+            </span>
+
+            <fa-icon icon="times" (click)="onHide()" class="ml-3"></fa-icon>
+          </div>
+          <div
+            *ngIf="!isExpand && days"
+            type="button"
+            [ngClass]="lang == 'en' ? 'close-helper' : 'close-helper-arabic'"
+          >
+            <span *ngIf="!isExpand && isShowDaysCard">
+              <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon>
+            </span>
+            <span *ngIf="isExpand && (isShowCard || isShowDaysCard)">
+              <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon>
+            </span>
+
+            <fa-icon icon="times" (click)="onHide()" class="ml-3"></fa-icon>
+          </div>
+
+          <div class="row tabset-wrapper" *ngIf="tabs.length > 1">
+            <div
+              class="col-md-6 class-tab"
+              *ngFor="let tab of tabs; let i = index"
+              [ngClass]="selectedId === tab.id ? 'selected' : ''"
+              (click)="selectTab(tab.id)"
+            >
+              <span class="pt-2">
+                <div
+                  [ngClass]="selectedId === tab.id ? 'selected-tab' : 'tab-value'"
+                  class="secondMenu justify-content-center"
+                >
+                  <!-- <fa-icon class="icon-wrapper" [icon]="tab.icon" size="lg"></fa-icon> -->
+                  {{ 'THEME.' + tab.label | translate }}
+                </div>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="converter" [ngClass]="lang == 'en' ? 'card-margin' : 'card-margin-arabic'">
+          <gosi-card-dc type="secondary">
+            <div style="margin-bottom: 1rem; margin-top: -2rem; margin-left: -1.2rem">
+              {{ 'THEME.FROM-DATE' | translate }}
+            </div>
+            <div class="d-flex">
+              <div [ngClass]="lang == 'en' ? 'view-mode' : 'view-mode-arabic'">
+                <div class="view-mode-toggler">
+                  <div
+                    class="column-left view-text"
+                    [ngClass]="{
+                      'view-mode-selected': viewMode == 'converter',
+                      'view-mode-unselected': viewMode == 'days'
+                    }"
+                    (click)="durationViewChange('converter')"
+                  >
+                    {{ 'THEME.HIJRI' | translate }}
+                  </div>
+
+                  <div
+                    class="column-right view-text"
+                    [ngClass]="{
+                      'view-mode-selected': viewMode == 'days',
+                      'view-mode-unselected': viewMode == 'converter'
+                    }"
+                    (click)="durationViewChange('days')"
+                  >
+                    {{ 'THEME.GREGORIAN' | translate }}
+                  </div>
+                </div>
+              </div>
+              <span
+                *ngIf="!hirijiFrom"
+                style="margin-top: -3rem"
+                [ngClass]="lang == 'en' ? 'date-custom-greg' : 'date-custom-greg-ar'"
+              >
+                <gosi-input-date-dc
+                  #fromdate
+                  id="fromdate"
+                  [label]=""
+                  [control]="dropDownForm.get('fromDate').get('gregorian')"
+                  [ignoreLabel]="true"
+                  [directionChange]="false"
+                  [minDate]="minGreDate"
+                  [maxDate]="maxDateGreg"
+                >
+                </gosi-input-date-dc
+              ></span>
+              <span
+                *ngIf="hirijiFrom"
+                style="margin-top: -3rem"
+                [ngClass]="lang == 'en' ? 'date-custom' : 'date-custom-arabic'"
+              >
+                <gosi-input-hijiri-dc
+                  id="dateHijiri"
+                  [label]=""
+                  [control]="dropDownForm.get('fromDate').get('hijiri')"
+                  [ignoreLabel]="true"
+                  [minDate]="minDateHij"
+                  [maxDate]="maxDateHij"
+                  [isDateConversion]="true"
+                  [placeholder]="lang == 'en' ? 'DD/MM/YYYY' : 'DD/MM/YYYY'"
+                >
+                </gosi-input-hijiri-dc>
+              </span>
+            </div>
+
+            <div style="margin-bottom: 1rem; margin-top: -1.5rem; margin-left: -1.2rem">
+              {{ 'THEME.TO-DATE' | translate }} ({{ 'THEME.OPTIONAL' | translate }})
+            </div>
+            <div class="d-flex" style="margin-bottom: -1.7rem">
+              <div [ngClass]="lang == 'en' ? 'view-mode' : 'view-mode-arabic'">
+                <div class="view-mode-toggler">
+                  <div
+                    class="column-left view-text"
+                    [ngClass]="{
+                      'view-mode-selected': viewModeTo == 'hijiri',
+                      'view-mode-unselected': viewModeTo == 'gregorian'
+                    }"
+                    (click)="toDateViewChange('hijiri')"
+                  >
+                    {{ 'THEME.HIJRI' | translate }}
+                  </div>
+
+                  <div
+                    class="column-right view-text"
+                    [ngClass]="{
+                      'view-mode-selected': viewModeTo == 'gregorian',
+                      'view-mode-unselected': viewModeTo == 'hijiri'
+                    }"
+                    (click)="toDateViewChange('gregorian')"
+                  >
+                    {{ 'THEME.GREGORIAN' | translate }}
+                  </div>
+                </div>
+              </div>
+              <span
+                *ngIf="!hijiriTo"
+                style="margin-top: -3rem"
+                [ngClass]="lang == 'en' ? 'date-custom-greg' : 'date-custom-greg-ar'"
+              >
+                <gosi-input-date-dc
+                  #fromdate
+                  id="fromdate"
+                  [label]=""
+                  [control]="dropDownForm.get('toDate').get('gregorian')"
+                  [ignoreLabel]="true"
+                  [minDate]="minGreDate"
+                  [directionChange]="false"
+                  [maxDate]="maxDateGreg"
+                >
+                </gosi-input-date-dc
+              ></span>
+              <span
+                *ngIf="hijiriTo"
+                style="margin-top: -3rem"
+                class="hijiri-custom"
+                [ngClass]="lang == 'en' ? 'date-custom' : 'date-custom-arabic'"
+              >
+                <gosi-input-hijiri-dc
+                  id="date"
+                  [label]=""
+                  [control]="dropDownForm.get('toDate').get('hijiri2')"
+                  [ignoreLabel]="true"
+                  [minDate]="minDateHij"
+                  [maxDate]="maxDateHij"
+                  [isDateConversion]="true"
+                  [placeholder]="lang == 'en' ? 'DD/MM/YYYY' : 'DD/MM/YYYY'"
+                >
+                </gosi-input-hijiri-dc>
+              </span>
+            </div>
+            <div style="margin-top: -1rem; margin-bottom: -2rem; margin-left: -1.2rem">
+              {{ 'THEME.NOTE' | translate }}({{ 'THEME.OPTIONAL' | translate }})
+            </div>
+            <div [ngClass]="lang == 'en' ? 'notes-input' : 'notes-input-arabic'">
+              <gosi-input-text-dc
+                id="id"
+                [control]="dropDownForm.get('notes.english')"
+                [placeholder]="'THEME.NOTE' | translate"
+                [ignoreLabel]="true"
+              >
+              </gosi-input-text-dc>
+            </div>
+            <div>
+              <div [ngClass]="lang == 'en' ? 'convert-button' : 'convert-button-arabic'">
+                <gosi-button-dc
+                  id="calculate"
+                  [size]="'lg'"
+                  [isFullWidth]="true"
+                  type="primary"
+                  [disabled]="
+                    dropDownForm.get('fromDate').get('gregorian').invalid &&
+                    dropDownForm.get('fromDate').get('hijiri').invalid
+                  "
+                  (click)="
+                    dropDownForm.get('fromDate').get('gregorian').invalid &&
+                    dropDownForm.get('fromDate').get('hijiri').invalid
+                      ? null
+                      : onSubmit()
+                  "
+                >
+                  {{ 'THEME.CONVERT-BUTTON' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </gosi-card-dc>
+          <div *ngIf="isShowCard">
+            <div *ngIf="!isExpand" class="d-flex mb-2 justify-content-between">
+              <span class="recent"> {{ 'THEME.RECENT-CONVERSION' | translate }}</span>
+              <span [ngClass]="lang == 'en' ? 'clear-all' : 'clear-arabic'" (click)="clearAll()">
+                {{ 'THEME.CLEARALL' | translate }}</span
+              >
+            </div>
+            <div *ngIf="!isExpand" class="new-table">
+              <table class="table">
+                <tbody class="heading-style-mobile">
+                  <tr>
+                    <td class="main-head" colspan="2">
+                      <div class="name">{{ conversionList[currentIndex]?.notes?.english }}</div>
+                      <div [ngClass]="lang == 'en' ? 'times-button' : 'times-button-arabic'">
+                        <fa-icon icon="times" class="ml-3" (click)="close(currentIndex)"></fa-icon>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="head-back" style="width: 33%">{{ 'THEME.HIJIRI' | translate }}</td>
+                    <td class="value-back" [style.width.px]="500">
+                      <span
+                        class="copy"
+                        (click)="copyTo(hijiriDateFormat(conversionList[currentIndex]?.fromDate?.hijiri))"
+                        [tooltip]="tolTemplate"
+                      >
+                        {{ hijiriDateFormat(conversionList[currentIndex]?.fromDate?.hijiri) }}</span
+                      >
+                      <span *ngIf="conversionList[currentIndex]?.dayofWeek == 0">-></span>
+                      <span
+                        class="copy"
+                        (click)="copyTo(hijiriDateFormat(conversionList[currentIndex]?.toDate?.hijiri))"
+                        [tooltip]="tolTemplate"
+                        *ngIf="conversionList[currentIndex]?.dayofWeek == 0"
+                        >{{ hijiriDateFormat(conversionList[currentIndex]?.toDate?.hijiri) }}</span
+                      >
+                      <span *ngIf="conversionList[currentIndex]?.dayofWeek == 0">
+                        <br />
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ conversionList[currentIndex]?.hijiriDiff?.month }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            lang == 'ar' &&
+                            !(
+                              conversionList[currentIndex]?.hijiriDiff?.month === 1 ||
+                              conversionList[currentIndex]?.hijiriDiff?.month === 2
+                            )
+                          "
+                        >
+                          {{ conversionList[currentIndex]?.hijiriDiff?.month }}
+                        </ng-container>
+
+                        <span>
+                          {{
+                            conversionList[currentIndex]?.hijiriDiff?.month === 1
+                              ? ('THEME.MONTH-ONE' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.month === 2
+                              ? ('THEME.MONTH-TWO' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.month >= 3 &&
+                                conversionList[currentIndex]?.hijiriDiff?.month <= 10
+                              ? ('THEME.MONTH-THREE' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.month >= 11 &&
+                                conversionList[currentIndex]?.hijiriDiff?.month <= 1000
+                              ? ('THEME.MONTH-ELEVEN' | translate)
+                              : ('THEME.MONTH-ELEVEN' | translate)
+                          }}
+                        </span>
+                        {{ 'THEME.AND' | translate }}
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ conversionList[currentIndex]?.hijiriDiff?.day }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            lang == 'ar' &&
+                            !(
+                              conversionList[currentIndex]?.hijiriDiff?.day === 1 ||
+                              conversionList[currentIndex]?.hijiriDiff?.day === 2
+                            )
+                          "
+                        >
+                          {{ conversionList[currentIndex]?.hijiriDiff?.day }}
+                        </ng-container>
+                        <span>
+                          {{
+                            conversionList[currentIndex]?.hijiriDiff?.day === 1
+                              ? ('THEME.DAY-ONE' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.day === 2
+                              ? ('THEME.DAY-TWO' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.day >= 3 &&
+                                conversionList[currentIndex]?.hijiriDiff?.day <= 10
+                              ? ('THEME.DAY-THREE' | translate)
+                              : conversionList[currentIndex]?.hijiriDiff?.day >= 11 &&
+                                conversionList[currentIndex]?.hijiriDiff?.day <= 31
+                              ? ('THEME.DAY-ELEVEN' | translate)
+                              : ('THEME.DAY-ELEVEN' | translate)
+                          }}
+                        </span>
+                      </span>
+                      <div *ngIf="conversionList[currentIndex]?.dayofWeek != 0">
+                        {{ conversionList[currentIndex]?.weekDayName | translate }}
+                        {{ conversionList[currentIndex]?.hijiriValue | bilingualText }}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="head-back" style="width: 30%">{{ 'THEME.GREGORIAN' | translate }}</td>
+                    <td class="value-back" style="width: 50%">
+                      <span
+                        class="copy"
+                        (click)="copyTo(gregorianDateFormat(conversionList[currentIndex]?.fromDate?.gregorian))"
+                        [tooltip]="tolTemplate"
+                        >{{ gregorianDateFormat(conversionList[currentIndex]?.fromDate?.gregorian) }}</span
+                      >
+                      <span *ngIf="conversionList[currentIndex]?.dayofWeek == 0">-></span>
+                      <span
+                        class="copy"
+                        (click)="copyTo(gregorianDateFormat(conversionList[currentIndex]?.toDate?.gregorian))"
+                        [tooltip]="tolTemplate"
+                        *ngIf="conversionList[currentIndex]?.dayofWeek == 0"
+                        >{{ gregorianDateFormat(conversionList[currentIndex]?.toDate?.gregorian) }}</span
+                      >
+                      <span *ngIf="conversionList[currentIndex]?.dayofWeek == 0">
+                        <br />
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ conversionList[currentIndex]?.gregorianDiff?.month }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            lang == 'ar' &&
+                            !(
+                              conversionList[currentIndex]?.gregorianDiff?.month === 1 ||
+                              conversionList[currentIndex]?.gregorianDiff?.month === 2
+                            )
+                          "
+                        >
+                          {{ conversionList[currentIndex]?.gregorianDiff?.month }}
+                        </ng-container>
+                        <span>
+                          {{
+                            conversionList[currentIndex]?.gregorianDiff?.month === 1
+                              ? ('THEME.MONTH-ONE' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.month === 2
+                              ? ('THEME.MONTH-TWO' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.month >= 3 &&
+                                conversionList[currentIndex]?.gregorianDiff?.month <= 10
+                              ? ('THEME.MONTH-THREE' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.month >= 11 &&
+                                conversionList[currentIndex]?.gregorianDiff?.month <= 1000
+                              ? ('THEME.MONTH-ELEVEN' | translate)
+                              : ('THEME.MONTH-ELEVEN' | translate)
+                          }}
+                        </span>
+                        {{ 'THEME.AND' | translate }}
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ conversionList[currentIndex]?.gregorianDiff?.day }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            lang == 'ar' &&
+                            !(
+                              conversionList[currentIndex]?.gregorianDiff?.day === 1 ||
+                              conversionList[currentIndex]?.gregorianDiff?.day === 2
+                            )
+                          "
+                        >
+                          {{ conversionList[currentIndex]?.gregorianDiff?.day }}
+                        </ng-container>
+                        <span>
+                          {{
+                            conversionList[currentIndex]?.gregorianDiff?.day === 1
+                              ? ('THEME.DAY-ONE' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.day === 2
+                              ? ('THEME.DAY-TWO' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.day >= 3 &&
+                                conversionList[currentIndex]?.gregorianDiff?.day <= 10
+                              ? ('THEME.DAY-THREE' | translate)
+                              : conversionList[currentIndex]?.gregorianDiff?.day >= 11 &&
+                                conversionList[currentIndex]?.gregorianDiff?.day <= 31
+                              ? ('THEME.DAY-ELEVEN' | translate)
+                              : ('THEME.DAY-ELEVEN' | translate)
+                          }}
+                        </span>
+                      </span>
+
+                      <div *ngIf="conversionList[currentIndex]?.dayofWeek != 0">
+                        {{ conversionList[currentIndex]?.weekDayName | translate }}
+                        {{ conversionList[currentIndex]?.gregValue | bilingualText }}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="conversionList[currentIndex]?.gregorianDiff != null">
+                    <td class="head-back" style="width: 30%">{{ 'THEME.TOTAL-DAYS' | translate }}</td>
+                    <td class="value-back" style="width: 50%">
+                      {{ conversionList[currentIndex]?.totalDays }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="d-flex" style="justify-content: center">
+                <div class="angle-left" *ngIf="currentIndex == 0">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-left' : 'angle-right'"
+                    class="icon-size-first"
+                    size="1x"
+                  ></fa-icon>
+                </div>
+                <div class="angle-left" *ngIf="currentIndex > 0">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-left' : 'angle-right'"
+                    class="icon-size"
+                    size="1x"
+                    (click)="onLeftCLick()"
+                  ></fa-icon>
+                </div>
+                <div class="angle-right ml-2" *ngIf="currentIndex < conversionList?.length - 1">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-right' : 'angle-left'"
+                    class="icon-size"
+                    size="1x"
+                    (click)="onRightCLick()"
+                  ></fa-icon>
+                </div>
+                <div class="angle-right ml-2" *ngIf="currentIndex == conversionList?.length - 1">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-right' : 'angle-left'"
+                    class="icon-size-right"
+                    size="1x"
+                  ></fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="days" [ngClass]="lang == 'en' ? 'card-margin' : 'card-margin-arabic'">
+          <gosi-card-dc type="secondary">
+            <div style="margin-bottom: 1rem; margin-top: -2rem">{{ 'THEME.DATE' | translate }}</div>
+            <div [ngClass]="lang == 'en' ? 'view-mode-dm' : 'view-mode-dm-arabic'">
+              <div class="view-mode-toggler-dm" [ngClass]="!isExpand ? 'view-mode-toggler-dm' : 'toggler-dm'">
+                <div
+                  class="column-left view-text-dm"
+                  [ngClass]="{
+                    'view-mode-selected-dm': viewModeDate == 'converter',
+                    'view-mode-unselected-dm': viewModeDate == 'days'
+                  }"
+                  (click)="dateViewChange('converter')"
+                >
+                  {{ 'THEME.HIJRI' | translate }}
+                </div>
+
+                <div
+                  class="column-right view-text-dm"
+                  [ngClass]="{
+                    'view-mode-selected-dm': viewModeDate == 'days',
+                    'view-mode-unselected-dm': viewModeDate == 'converter'
+                  }"
+                  (click)="dateViewChange('days')"
+                >
+                  {{ 'THEME.GREGORIAN' | translate }}
+                </div>
+              </div>
+            </div>
+            <div class="d-flex" *ngIf="viewModeDate == 'converter'">
+              <div
+                [ngClass]="
+                  lang == 'en' && !isExpand
+                    ? 'billPeriodMonth'
+                    : lang == 'ar' && !isExpand
+                    ? 'billPeriodMonth-arabic'
+                    : lang == 'en' && isExpand
+                    ? 'billPeriod'
+                    : lang == 'ar' && isExpand
+                    ? 'billPeriod-arabic'
+                    : 'billPeriod'
+                "
+              >
+                <gosi-input-select-dc
+                  [list]="monthList"
+                  [control]="billPeriodFormMonth"
+                  [hideClear]="true"
+                  [noPadding]="true"
+                  (select)="selectedMonth($event)"
+                >
+                </gosi-input-select-dc>
+              </div>
+              <div class="billPeriodYear">
+                <gosi-input-select-dc
+                  [list]="yearList"
+                  [control]="billPeriodFormYear"
+                  [hideClear]="true"
+                  [noPadding]="true"
+                  [inputAttrs]="{ maxlength: '4' }"
+                  (select)="selectedYear($event)"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+            <div class="d-flex" *ngIf="viewModeDate == 'days'">
+              <div
+                [ngClass]="
+                  lang == 'en' && !isExpand
+                    ? 'billPeriodMonth'
+                    : lang == 'ar' && !isExpand
+                    ? 'billPeriodMonth-arabic'
+                    : lang == 'en' && isExpand
+                    ? 'billPeriod'
+                    : lang == 'ar' && isExpand
+                    ? 'billPeriod-arabic'
+                    : 'billPeriod'
+                "
+              >
+                <gosi-input-select-dc
+                  [list]="gregMonthList"
+                  [control]="greMonthForm"
+                  [hideClear]="true"
+                  [noPadding]="true"
+                  (select)="selectedMonthGreg($event)"
+                >
+                </gosi-input-select-dc>
+              </div>
+              <div class="billPeriodYear">
+                <gosi-input-select-dc
+                  [list]="gregYearList"
+                  [control]="greYearForm"
+                  [hideClear]="true"
+                  [noPadding]="true"
+                  [inputAttrs]="{ maxlength: '4' }"
+                  (select)="selectedYear($event)"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+            <div
+              [ngClass]="
+                lang == 'en' && isExpand
+                  ? 'calculate-button'
+                  : lang == 'ar' && isExpand
+                  ? 'calculate-button-arabic'
+                  : !isExpand
+                  ? 'cal-button'
+                  : 'cal-button'
+              "
+            >
+              <gosi-button-dc
+                id="calculates"
+                [size]="'lg'"
+                [isFullWidth]="true"
+                [disabled]="
+                  (greMonthForm.invalid || greYearForm.invalid) &&
+                  (billPeriodFormMonth.invalid || billPeriodFormYear.invalid)
+                "
+                type="primary"
+                (click)="
+                  (greMonthForm.invalid || greYearForm.invalid) &&
+                  (billPeriodFormMonth.invalid || billPeriodFormYear.invalid)
+                    ? null
+                    : calculate()
+                "
+                >{{ 'THEME.CALCULATE-BUTTON' | translate }}</gosi-button-dc
+              >
+            </div>
+          </gosi-card-dc>
+          <div *ngIf="isShowDaysCard">
+            <div *ngIf="!isExpand" class="d-flex mb-2 justify-content-between">
+              <span class="recent">{{ 'THEME.RECENT-CONVERSION' | translate }}</span>
+              <span [ngClass]="lang == 'en' ? 'clear-all' : 'clear-arabic'" (click)="clearAllDays()">
+                {{ 'THEME.CLEARALL' | translate }}</span
+              >
+            </div>
+            <div *ngIf="!isExpand">
+              <table class="table" *ngIf="isShowDaysCard">
+                <tbody class="heading-style-mobile">
+                  <tr>
+                    <td class="head-back" style="width: 50%">
+                      {{ monthsValueList[currentIndexDay]?.month | bilingualText }}<br />
+                      {{ monthsValueList[currentIndexDay]?.year }}
+                    </td>
+                    <td class="value-back" style="width: 50%; padding-top: 1.5rem">
+                      <span> {{ conversionDaysList[currentIndexDay]?.day }} {{ 'THEME.DAY-ELEVEN' | translate }} </span>
+                      <span [ngClass]="lang == 'en' ? 'times-close' : 'times-close-arabic'">
+                        <fa-icon icon="times" (click)="closeDays(currentIndexDay)" class="ml-4"></fa-icon>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="d-flex" style="justify-content: center">
+                <div class="angle-left" *ngIf="currentIndexDay == 0">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-left' : 'angle-right'"
+                    class="icon-size-first"
+                    size="1x"
+                  ></fa-icon>
+                </div>
+                <div class="angle-left" *ngIf="currentIndexDay > 0">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-left' : 'angle-right'"
+                    class="icon-size"
+                    size="1x"
+                    (click)="onLeftCLickDays()"
+                  ></fa-icon>
+                </div>
+                <div class="angle-right ml-2" *ngIf="currentIndexDay < conversionDaysList?.length - 1">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-right' : 'angle-left'"
+                    class="icon-size"
+                    size="1x"
+                    (click)="onRightCLickDays()"
+                  ></fa-icon>
+                </div>
+                <div class="angle-right ml-2" *ngIf="currentIndexDay == conversionDaysList?.length - 1">
+                  <fa-icon
+                    [icon]="lang == 'en' ? 'angle-right' : 'angle-left'"
+                    class="icon-size-right"
+                    size="1x"
+                  ></fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right-content col-md-5" *ngIf="isExpand" [ngClass]="lang == 'en' ? 'right-margin' : 'left-margin'">
+        <div *ngIf="isShowCard && converter">
+          <div class="d-flex mb-2">
+            <div
+              [ngClass]="[
+                lang == 'en' ? 'options' : 'options-arabic',
+                lang == 'en' ? 'close-helper' : 'close-helper-arabic'
+              ]"
+              *ngIf="isExpand"
+              type="button"
+            >
+              <span *ngIf="!isExpand"> <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon> </span>
+              <span *ngIf="isExpand"> <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon> </span>
+
+              <fa-icon icon="times" (click)="onHide()" class="ml-3"></fa-icon>
+            </div>
+          </div>
+
+          <div *ngIf="isExpand" class="d-flex mb-2 mt-5 justify-content-between">
+            <span class="recent">{{ 'THEME.RECENT-CONVERSION' | translate }}</span>
+            <span [ngClass]="lang == 'en' ? 'clear' : 'clear-all-arabic'" (click)="clearAll()">
+              {{ 'THEME.CLEARALL' | translate }}</span
+            >
+          </div>
+          <div class="first-table">
+            <table class="table">
+              <tbody class="heading-style-mobile" *ngFor="let list of conversionList; let i = index">
+                <div style="margin-top: 15px">
+                  <tr>
+                    <td class="main-head" colspan="2" style="position: relative">
+                      <div class="name">{{ list.notes?.english }}</div>
+                      <div [ngClass]="lang == 'en' ? 'close-button' : 'close-button-arabic'">
+                        <fa-icon icon="times" (click)="close(i)" class="ml-3"></fa-icon>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="head-back-hijri" style="width: 30%">{{ 'THEME.HIJIRI' | translate }}</td>
+                    <td class="value-back" style="width: 57%">
+                      <span
+                        class="copy"
+                        (click)="copyTo(hijiriDateFormat(list?.fromDate?.hijiri))"
+                        [tooltip]="tolTemplate"
+                        >{{ hijiriDateFormat(list.fromDate?.hijiri) }}</span
+                      ><span *ngIf="list?.dayofWeek == 0">-></span>
+                      <span
+                        class="copy"
+                        (click)="copyTo(hijiriDateFormat(list?.toDate?.hijiri))"
+                        [tooltip]="tolTemplate"
+                        *ngIf="list?.dayofWeek == 0"
+                        >{{ hijiriDateFormat(list?.toDate?.hijiri) }}</span
+                      >
+                      <span *ngIf="list?.dayofWeek == 0">
+                        <br />
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ list?.hijiriDiff?.month }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="lang == 'ar' && !(list?.hijiriDiff?.month === 1 || list?.hijiriDiff?.month === 2)"
+                        >
+                          {{ list?.hijiriDiff?.month }}
+                        </ng-container>
+                        <span>
+                          {{
+                            list?.hijiriDiff?.month === 1
+                              ? ('THEME.MONTH-ONE' | translate)
+                              : list?.hijiriDiff?.month === 2
+                              ? ('THEME.MONTH-TWO' | translate)
+                              : list?.hijiriDiff?.month >= 3 && list?.hijiriDiff?.month <= 10
+                              ? ('THEME.MONTH-THREE' | translate)
+                              : list?.hijiriDiff?.month >= 11 && list?.hijiriDiff?.month <= 1000
+                              ? ('THEME.MONTH-ELEVEN' | translate)
+                              : ('THEME.MONTH-ELEVEN' | translate)
+                          }}
+                        </span>
+                        {{ 'THEME.AND' | translate }}
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ list?.hijiriDiff?.day }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="lang == 'ar' && !(list?.hijiriDiff?.day === 1 || list?.hijiriDiff?.day === 2)"
+                        >
+                          {{ list?.hijiriDiff?.day }}
+                        </ng-container>
+                        <span>
+                          {{
+                            list?.hijiriDiff?.day === 1
+                              ? ('THEME.DAY-ONE' | translate)
+                              : list?.hijiriDiff?.day === 2
+                              ? ('THEME.DAY-TWO' | translate)
+                              : list?.hijiriDiff?.day >= 3 && list?.hijiriDiff?.day <= 10
+                              ? ('THEME.DAY-THREE' | translate)
+                              : list?.hijiriDiff?.day >= 11 && list?.hijiriDiff?.day <= 31
+                              ? ('THEME.DAY-ELEVEN' | translate)
+                              : ('THEME.DAY-ELEVEN' | translate)
+                          }}
+                        </span>
+                      </span>
+                      <div *ngIf="list.dayofWeek != 0">
+                        {{ list?.weekDayName | translate }} {{ list?.hijiriValue | bilingualText }}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="head-back" style="width: 30%">{{ 'THEME.GREGORIAN' | translate }}</td>
+                    <td class="value-back" style="width: 57%">
+                      <span
+                        class="copy"
+                        (click)="copyTo(gregorianDateFormat(list?.fromDate?.gregorian))"
+                        [tooltip]="tolTemplate"
+                      >
+                        {{ gregorianDateFormat(list?.fromDate?.gregorian) }}</span
+                      >
+                      <span *ngIf="list?.dayofWeek == 0">-></span>
+                      <span
+                        class="copy"
+                        (click)="copyTo(gregorianDateFormat(list?.toDate?.gregorian))"
+                        [tooltip]="tolTemplate"
+                        *ngIf="list?.dayofWeek == 0"
+                        >{{ gregorianDateFormat(list?.toDate?.gregorian) }}</span
+                      >
+                      <span *ngIf="list?.dayofWeek == 0">
+                        <br />
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ list.gregorianDiff?.month }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="lang == 'ar' && !(list.gregorianDiff?.month === 1 || list.gregorianDiff?.month === 2)"
+                        >
+                          {{ list.gregorianDiff?.month }}
+                        </ng-container>
+                        <span>
+                          {{
+                            list.gregorianDiff?.month === 1
+                              ? ('THEME.MONTH-ONE' | translate)
+                              : list.gregorianDiff?.month === 2
+                              ? ('THEME.MONTH-TWO' | translate)
+                              : list.gregorianDiff?.month >= 3 && list.gregorianDiff?.month <= 10
+                              ? ('THEME.MONTH-THREE' | translate)
+                              : list.gregorianDiff?.month >= 11 && list.gregorianDiff?.month <= 1000
+                              ? ('THEME.MONTH-ELEVEN' | translate)
+                              : ('THEME.MONTH-ELEVEN' | translate)
+                          }}
+                        </span>
+                        {{ 'THEME.AND' | translate }}
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ list.gregorianDiff?.day }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="lang == 'ar' && !(list.gregorianDiff?.day === 1 || list.gregorianDiff?.day === 2)"
+                        >
+                          {{ list.gregorianDiff?.day }}
+                        </ng-container>
+                        <span>
+                          {{
+                            list.gregorianDiff?.day === 1
+                              ? ('THEME.DAY-ONE' | translate)
+                              : list.gregorianDiff?.day === 2
+                              ? ('THEME.DAY-TWO' | translate)
+                              : list.gregorianDiff?.day >= 3 && list.gregorianDiff?.day <= 10
+                              ? ('THEME.DAY-THREE' | translate)
+                              : list.gregorianDiff?.day >= 11 && list.gregorianDiff?.day <= 31
+                              ? ('THEME.DAY-ELEVEN' | translate)
+                              : ('THEME.DAY-ELEVEN' | translate)
+                          }}
+                        </span>
+                      </span>
+
+                      <div *ngIf="list.dayofWeek != 0">
+                        {{ list.weekDayName | translate }} {{ list?.gregValue | bilingualText }}
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="list.gregorianDiff != null">
+                    <td class="head-back" style="width: 30%">{{ 'THEME.TOTAL-DAYS' | translate }}</td>
+                    <td class="value-back" style="width: 50%">
+                      {{ list.totalDays }}
+                    </td>
+                  </tr>
+                </div>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="isShowDaysCard && days">
+          <div class="d-flex mb-2">
+            <div
+              type="button"
+              [ngClass]="[
+                lang == 'en' ? 'options' : 'options-arabic',
+                lang == 'en' ? 'close-helper' : 'close-helper-arabic'
+              ]"
+              *ngIf="isExpand"
+              type="button"
+            >
+              <span *ngIf="!isExpand && (!isShowDaysCard || !isShowCard)">
+                <fa-icon icon="expand-alt" (click)="onExpand()"></fa-icon>
+              </span>
+              <span *ngIf="isExpand"> <fa-icon icon="compress-alt" (click)="onCompress()"></fa-icon> </span>
+
+              <fa-icon icon="times" (click)="onHide()" class="ml-3"></fa-icon>
+            </div>
+          </div>
+
+          <div *ngIf="isExpand" class="d-flex mb-2 mt-5 justify-content-between">
+            <span class="recent">{{ 'THEME.RECENT-CONVERSION' | translate }}</span>
+            <span [ngClass]="lang == 'en' ? 'clear' : 'clear-all-arabic'" (click)="clearAllDays()">{{
+              'THEME.CLEARALL' | translate
+            }}</span>
+          </div>
+          <div class="second-table">
+            <table class="table">
+              <tbody class="heading-style-mobile">
+                <tr *ngFor="let month of monthsValueList; let i = index">
+                  <div style="margin-top: 15px">
+                    <td class="head-back" style="width: 10rem">
+                      {{ month.month | bilingualText }}<br />
+                      {{ month.year }}
+                    </td>
+                    <td class="value-back" style="width: 50%; padding-top: 1.5rem">
+                      <span>
+                        <ng-container *ngIf="lang == 'en'">
+                          {{ conversionDaysList[i]?.day }}
+                        </ng-container>
+                        <ng-container
+                          *ngIf="
+                            lang == 'ar' && !(conversionDaysList[i]?.day === 1 || conversionDaysList[i]?.day === 2)
+                          "
+                        >
+                          {{ conversionDaysList[i]?.day }}
+                        </ng-container>
+                        {{ 'THEME.DAY-ELEVEN' | translate }}
+                      </span>
+                      <span [ngClass]="lang == 'en' ? 'times-close' : 'times-close-arabic'">
+                        <fa-icon icon="times" (click)="closeDays(i)" class="ml-4"></fa-icon>
+                      </span>
+                    </td>
+                  </div>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #tolTemplate>
+    <ng-container>
+      <div d-flex flex-row>
+        {{ 'THEME.CLICK-COPY' | translate }}
+      </div>
+    </ng-container>
+  </ng-template>
+</gosi-modal-popover-dc>

@@ -1,0 +1,75 @@
+<!-- 
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!-- header part -->
+<div class="content">
+  <est-heading-dc (backEvent)="cancelLateFee()" shouldPrompt="true" [canNavigate]="false">
+    {{ 'ESTABLISHMENT.MODIFY-LATE-FEE' | translate }}
+  </est-heading-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc [establishment]="establishmentProfile" heading="ESTABLISHMENT.EST-BASIC-DETAILS">
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+
+  <gosi-card-dc heading="{{ 'ESTABLISHMENT.LATE-FEE-DETAILS' | translate }}" type="secondary">
+    <div class="row">
+      <div class="col-md-6" *ngIf="changeLateFeeForm">
+        <gosi-input-radio-dc
+          id="lateFeeIndicator"
+          name="lateFee"
+          label="ESTABLISHMENT.IS-LATE-FEE-APPLICABLE"
+          [control]="changeLateFeeForm.get('lateFeeIndicator')"
+          [list]="yesOrNoList"
+        >
+        </gosi-input-radio-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <est-documents-dc
+    [uuid]="uuid"
+    [documents]="documents$ | async"
+    [businessKey]="establishmentToChange?.registrationNo"
+    [transactionId]="documentTransactionId"
+    [referenceNo]="referenceNo"
+    (refreshDocument)="refreshDoc($event)"
+  >
+  </est-documents-dc>
+  <!-- Comment Section -->
+  <gosi-card-dc type="secondary" *ngIf="changeLateFeeForm" [paddingBottom]="true">
+    <gosi-input-text-area-dc
+      label="ESTABLISHMENT.COMMENTS"
+      id="comments"
+      name="comments"
+      [maxLength]="commentsMaxLength"
+      [control]="changeLateFeeForm?.get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </gosi-card-dc>
+  <est-footer-buttons-dc
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="submitTransaction()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

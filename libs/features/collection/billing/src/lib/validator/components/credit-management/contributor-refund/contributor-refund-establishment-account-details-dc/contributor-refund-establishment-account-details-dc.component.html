@@ -1,0 +1,183 @@
+<!-- establishment details -->
+<ng-container *ngIf="estDetails">
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentName"
+          [control]="estDetails.name.english === null ? estDetails.name.arabic : (estDetails.name | bilingualText)"
+          label="BILLING.ESTABLISHMENT-NAME"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc id="establishmentType" [control]="estDetails?.registrationNo" label="BILLING.REGISTRATION-NO">
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" [control]="estDetails?.status" label="BILLING.STATUS"> </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="backdatedTermination?.creditBalanceOnSubmit !== backdatedTermination?.creditBalance">
+        <gosi-currency-label-dc
+          id="creditBalance"
+          [label]="'BILLING.CREDIT-BALANCE-SAR' | translate"
+          [labelsuffix]="'BILLING.AT-THE-TIME-OF-SUBMISSION' | translate"
+          [currencyTo]="backdatedTermination?.creditBalanceOnSubmit.toString()"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="backdatedTermination?.creditBalanceOnSubmit === backdatedTermination?.creditBalance">
+        <gosi-currency-label-dc
+          id="creditBalance"
+          [label]="'BILLING.CREDIT-BALANCE' | translate"
+          [currencyTo]="backdatedTermination?.creditBalance.toString()"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="backdatedTermination?.creditBalanceOnSubmit !== backdatedTermination?.creditBalance">
+      <div class="col-lg-6">
+        <gosi-currency-label-dc
+          id="creditBalance"
+          [label]="'BILLING.CREDIT-BALANCE' | translate"
+          [currencyTo]="backdatedTermination?.creditBalance.toString()"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-6"></div>
+    </div>
+  </div>
+</ng-container>
+<!-- end of establishment details -->
+<!-- contributor details -->
+<ng-container>
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-12">
+        <frm-content-heading-dc
+          icon="user"
+          heading="BILLING.CONTRIBUTOR-DETAILS"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToCsrPage()"
+        >
+        </frm-content-heading-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="lang === 'en'">
+        <gosi-label-dc
+          id="contributorName"
+          [control]="contributorDetails?.person?.name?.english.name"
+          [label]="'BILLING.CONTRIBUTOR-NAME'"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="lang === 'ar'">
+        <gosi-label-dc id="contributorName" [control]="arabicName" [label]="'BILLING.CONTRIBUTOR-NAME'">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="nationalId"
+          [control]="contributorDetails?.person?.identity[0]?.newNin"
+          label="BILLING.ID-NATIONAL"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="dob"
+          [control]="contributorDetails?.person?.birthDate.gregorian | date: 'dd/MM/yyyy'"
+          label="BILLING.DOB"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" value="{{ contributorStatus | translate }}" label="BILLING.STATUS"> </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<!-- end of contributor details -->
+<!-- refund contributor amount details -->
+<div class="sub-content-item">
+  <div class="row">
+    <div class="col-lg-12 sub-heading">
+      {{ 'BILLING.BACKDATED-TERMINATION-TRANSACTIONS-DETAILS' | translate }}
+    </div>
+    <div class="col-lg-12 pl-4 validator-table">
+      <table class="table">
+        <thead class="thead-light">
+          <tr>
+            <th>{{ 'BILLING.BACKDATED-TERMINATION-PERIOD' | translate }}</th>
+            <th>{{ 'BILLING.TRANSACTION-DATE' | translate }}</th>
+            <th>
+              {{ 'BILLING.CONTRIBUTOR-SHARE' | translate }}
+              <span class="currency-lbl">({{ 'BILLING.SAR' | translate }}) </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let item of backdatedTermination?.terminatedContributions; let i = index">
+            <tr>
+              <td calss="date-margin">
+                {{ item?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+                <fa-icon class="value-clr" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                <fa-icon class="value-clr" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                {{ item?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+              </td>
+              <td>{{ item?.transactionDate?.gregorian | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                {{ item?.contributorShare }}
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr>
+            <td></td>
+            <td class="total-amt">{{ 'BILLING.TOTAL-REFUNDABLE-AMOUNT' | translate }}</td>
+            <td class="total-amt-value">
+              {{ totalAmount | number: '1.2-2' }}
+              <span class="currency-lbl">{{ 'BILLING.SAR' | translate }} </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- end of refund contributor amount details -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="sub-heading">{{ 'BILLING.CONTRIBUTOR-ACCOUNT-DETAILS' | translate }}</div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-6">
+    <gosi-label-dc
+      id="transferMode"
+      [label]="'BILLING.PAYMENT-METHOD'"
+      [value]="backdatedTermination?.transferMode | bilingualText"
+    >
+    </gosi-label-dc>
+  </div>
+</div>
+
+<div class="row" *ngIf="backdatedTermination?.transferMode.english === 'Bank Transfer'">
+  <div class="col-lg-6">
+    <gosi-label-dc id="contributorIBAN" [label]="'BILLING.CONTRIBUTOR-IBAN'" [value]="vicAccountNumber">
+    </gosi-label-dc>
+  </div>
+  <div class="col-lg-6">
+    <gosi-label-dc id="bankName" [label]="'BILLING.BANK-NAME'" [value]="vicBankNameDetail | bilingualText">
+    </gosi-label-dc>
+  </div>
+</div>

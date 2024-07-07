@@ -1,0 +1,244 @@
+<div *ngIf="modalFlag"class="content">
+    <div class="row heading-margin">
+        <a (click)="navigateBackToHome()" class="icon-seprator">
+            <fa-icon class="back-icon"
+                [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']" size="2x">
+            </fa-icon>
+        </a>
+        <span class="header"> {{ 'BILLING.VIOLATION-LATE-FEE-WAIVER' | translate }}</span>
+    </div>
+    <ng-container *ngIf="isError">
+      <gosi-alert-sc></gosi-alert-sc>
+    </ng-container>
+    <div class="mt-4">
+        <gosi-card-dc type="secondary">
+            <blg-waiver-establishment-info-dc 
+                [establishmentDetails]="establishmentDetails">
+            </blg-waiver-establishment-info-dc>
+        </gosi-card-dc>
+
+        <gosi-card-dc type="secondary">
+            <blg-waiver-account-details-dc 
+                [wavierDetails]="wavierDetails" 
+                [parentForm]="wavierPenalityMainForm"
+                [isLateFeeViolation]="isLateFeeViolation">             
+            </blg-waiver-account-details-dc>
+
+        </gosi-card-dc>
+            <blg-penalty-waiver-details-dc
+                [wavierDetails]="wavierDetails"
+                [isLateFeeViolation]="isLateFeeViolation"
+                [isValidator]="isValidator"
+                [parentForm]="wavierPenalityMainForm"
+                [csrFlag]="csrFlag"
+                [isError]="isError">
+            </blg-penalty-waiver-details-dc>
+            <gosi-card-dc type="secondary">
+             <blg-waiver-document-upload-dc
+                (doc)="refreshDocuments($event, true)"
+                [documents]="documents"
+                [isScan]="isAppPrivate"
+                [parentForm]="wavierPenalityMainForm"
+                [csrFlag]="csrFlag"
+                [isValidator]="isValidator"
+                [transactionId]="documentTransactionId"
+                [businessKey]="idNumber"
+                [referenceNumber]="referenceNumber"
+                [uuid]="uuid"
+            ></blg-waiver-document-upload-dc>
+        </gosi-card-dc>
+
+        <gosi-card-dc type="secondary" *ngIf="!isAppPrivate">
+            <ng-container>
+                <div class="position-style">
+                  <blg-waiver-terms-condition-dc
+                    [isResponse]="isResponse"
+                    [wavierDetails]="wavierDetails"
+                    [parentForm]="wavierPenalityMainForm"
+                    [isLateFeeViolation]="isLateFeeViolation"
+                    (download)="downloadTrainingDocument()"
+                    [hideSubmit]="hideSubmit"
+                    (checkBox)="checkBox()"
+   
+                   ></blg-waiver-terms-condition-dc>
+                  
+                </div>
+              </ng-container>
+            </gosi-card-dc>
+            <div class="row form-action">
+                <div class="col-lg-12">
+                  <div class="float-right btn-section">
+                    <div *ngIf="!isAppPrivate">
+                      <gosi-button-dc
+                        id="primaryButton"
+                        type="primary"
+                        [disabled]="hideSubmit || disableSubmit"
+                        (submit)=" submitPenaltyWaiverDetails(termsConditionTemplate, 'md')"
+                       >
+                        {{ gracePeriodFlag ? ('BILLING.APPROVE' | translate) : ('BILLING.SUBMIT' | translate) }}
+                    </gosi-button-dc>
+                    </div>
+                    <div *ngIf="isAppPrivate">
+                      <gosi-button-dc
+                        id="primaryButton"
+                        type="primary"                     
+                        (submit)="submitPenaltyWaiverDetails()"
+                       >
+                        {{ gracePeriodFlag ? ('BILLING.APPROVE' | translate) : ('BILLING.SUBMIT' | translate) }}
+                    </gosi-button-dc>
+                    </div>
+                    </div>
+        <div class="float-left btn-section">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="showModal(cancelTemplate, 'md')">
+              {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          </div>
+        </div>
+          <ng-template #cancelTemplate>
+            <gosi-confirm-modal-dc [message]="'BILLING.INFO-CANCEL'" (onConfirm)="navigateBack()" (onCancel)="hideModal()">
+            </gosi-confirm-modal-dc>
+          </ng-template>
+          <ng-template #termsConditionTemplate>
+            <ng-container>
+                <blg-confirm-modal-dc>
+                  <div card-body class="mt-3">
+                    {{ 'BILLING.PLEASE-ACCEPT-TERMS-CONDITION' | translate }}
+                  </div>
+                  <div card-footer class="row pb-3 align-self-center">
+                    <div class="btn-section">
+                      <gosi-button-dc id="cancelBtn" type="secondary" (submit)="modalRef.hide()" size="sm">
+                        {{ 'BILLING.OK' | translate }}
+                      </gosi-button-dc>
+                    </div>
+                  </div>
+                </blg-confirm-modal-dc>
+              </ng-container>
+              </ng-template>
+        </div>
+        </div>
+        <ng-template #tranactionAllowed>
+            <ng-container>
+              <gosi-modal-dc>
+                <div modalContent>
+                  <div class="confirmation-popup">
+                    <div class="row">
+                        <div class="confirm-heading col-lg-12">
+                          {{ 'BILLING.NOT-ALLOWED-TRANSACTION' | translate }}
+                        </div>
+                      </div>
+                      <div class="row confirm-reason">
+                        {{ 'BILLING.TRANSACTION-NOT-PROCESSING-REASON' | translate }}
+                      </div>
+                      <div *ngIf="warningMessageListOne" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageOne"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>  
+                      <div *ngIf="warningMessageListTwo" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageTwo"
+                          type="warning"
+                          [dismissible]="false"
+                          class="successMessage"
+                          noPadding="true"
+                        >
+                        </gosi-alert-dc>
+                      </div>               
+                      <div *ngIf="warningMessageListFive" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageFive"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListSeven" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageSix"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListEight" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageSeven"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListNine" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageEight"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListTen" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageNine"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListEleven" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageTen"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                      <div *ngIf="warningMessageListThirteen" class="col-lg-12">
+                        <gosi-alert-dc
+                          [bilingualMessage]="warningMessageEleven"
+                          type="warning"
+                          class="successMessage"
+                          noPadding="true"
+                          [dismissible]="false"
+                        >
+                        </gosi-alert-dc>
+                      </div>
+                    </div>
+                    </div>
+                    <div modalAction>
+                        <div class="row">
+                          <div class="form-action col-md-12">
+                            <div class="btn-section float-right">
+                              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="cancelPopup()">
+                                {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+                              >
+                            </div>
+                            <div class="btn-section float-left">
+                              <gosi-button-dc id="confirm" type="secondary" [size]="'md'" (submit)="navigateToMyTranscation()">
+                                {{ 'BILLING.VIEW-TRANSACTION-HISTORY' | translate }}</gosi-button-dc
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </gosi-modal-dc>
+                    </ng-container>
+                    </ng-template>
+    

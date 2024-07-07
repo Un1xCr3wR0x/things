@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc
+  type="secondary"
+  [heading]="(isScan ? 'ESTABLISHMENT.SCAN-DOCUMENT' : 'ESTABLISHMENT.UPLOAD-DOCUMENT') | translate"
+  [paddingBottom]="true"
+>
+  <div class="row">
+    <gosi-alert-dc
+      [noPadding]="true"
+      [dismissible]="false"
+      class="col-md-12 mb-3"
+      [message]="(isScan ? 'CORE.ERROR.DOCUMENT-SCAN' : 'CORE.ERROR.DOCUMENT-UPLOAD') | translate"
+      type="info"
+    ></gosi-alert-dc>
+    <div class="col-sm-12 col-md-12">
+      <ng-container *ngIf="documentList">
+        <ng-container *ngFor="let item of documentList; let i = index">
+          <gosi-input-file-sc
+            [index]="i"
+            [isScan]="isScan"
+            [document]="item"
+            [businessKey]="registrationNumber"
+            [transactionId]="regEstablishment"
+            [referenceNo]="referenceNo"
+            (refresh)="refreshDocument($event)"
+          ></gosi-input-file-sc>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+  <gosi-input-text-area-dc
+    class="comments-section"
+    label="ESTABLISHMENT.COMMENTS"
+    id="comments"
+    name="comments"
+    [control]="commentsForm.get('comments')"
+    [maxLength]="commentsMaxlength"
+  ></gosi-input-text-area-dc>
+</gosi-card-dc>
+
+<est-footer-buttons-dc
+  cancelId="cancel"
+  previousId="previousSection"
+  primaryId="submit"
+  primaryLabel="ESTABLISHMENT.SUBMIT"
+  (cancel)="popUp(draftTemplate)"
+  (submit)="saveDocuments()"
+  (previous)="previousSection()"
+></est-footer-buttons-dc>
+
+<ng-template #draftTemplate>
+  <est-draft-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="decline()"
+    (onCancel)="confirmCancel()"
+  ></est-draft-popup-dc>
+</ng-template>

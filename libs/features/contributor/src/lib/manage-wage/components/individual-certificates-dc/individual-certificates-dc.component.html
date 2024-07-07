@@ -1,0 +1,67 @@
+<gosi-card-dc [type]="'secondary'" [noBorder]="false" [ngClass]="'card-value'" [noPadding]="true">
+  <div class="d-flex flex-column">
+    <div class="roboto-medium">
+      {{ certificateTitle }}
+    </div>
+    <img src="{{ certificateIcon }}" alt="{{ alt }}" class="image-certificate" />
+
+    <ng-container *ngIf="!isGenerateClicked || errorFlag">
+      <!-- For Annuity Value certificate or any other future Bilingual Certificate -->
+      <ng-container *ngIf="bilingualVersion">
+        <gosi-button-dc type="primary" class="btn-cascaded" (click)="generateCertificate()">
+          {{ 'CONTRIBUTOR.CERTIFICATE.GENERATE-AR' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc type="primary" class="btn-cascaded second" (click)="generateCertificate('en')">
+          {{ 'CONTRIBUTOR.CERTIFICATE.GENERATE-EN' | translate }}
+        </gosi-button-dc>
+      </ng-container>
+
+      <!-- For certificates the come in one language -->
+      <gosi-button-dc *gosiShow="!bilingualVersion" type="primary" class="btn-class" (click)="generateCertificate()">
+        {{ 'CONTRIBUTOR.CERTIFICATE.GENERATE' | translate }}
+      </gosi-button-dc>
+    </ng-container>
+    <!-- Show after clicking on Generate button -->
+    <ng-container *ngIf="isGenerateClicked && !downloadableLink && !errorFlag">
+      <ng-container *ngTemplateOutlet="generatingCert"></ng-container>
+    </ng-container>
+    <!-- Show if the API returned a successful response (certificate file) -->
+    <ng-container *ngIf="downloadableLink">
+      <div class="roboto-medium green">
+        <fa-icon [icon]="['fas', 'check-circle']" class="font-awesome-15"></fa-icon>
+        {{ 'CONTRIBUTOR.CERTIFICATE.SUCCESS-GENERATION' | translate }}
+      </div>
+      <div class="roboto-small">
+        {{ 'CONTRIBUTOR.CERTIFICATE.COPY-MESSAGE' | translate }}
+        <ng-continer *ngIf="lang === 'en'; else arRedirection">
+          <a href="https://www.gosi.gov.sa/GOSIOnline/Verify_e-Certificate?locale=en_US" class="link" target="_blank">
+            {{ 'CONTRIBUTOR.CERTIFICATE.VALIDATION-MESSAGE' | translate }}
+          </a>
+        </ng-continer>
+        <ng-template #arRedirection>
+          <a href="https://www.gosi.gov.sa/GOSIOnline/Verify_e-Certificate?locale=ar_SA" class="link" target="_blank">
+            {{ 'CONTRIBUTOR.CERTIFICATE.VALIDATION-MESSAGE' | translate }}
+          </a>
+        </ng-template>
+        <div class="bold">
+          {{ ('CONTRIBUTOR.CERTIFICATE.CERTIFICATE-NUMBER' | translate) + certificateNumber }}
+        </div>
+      </div>
+      <gosi-button-dc type="primary" size="md" class="btn-class download" (click)="downloadCertificate()">
+        {{ 'CONTRIBUTOR.CERTIFICATE.DOWNLOAD' | translate }}
+      </gosi-button-dc>
+    </ng-container>
+  </div>
+</gosi-card-dc>
+
+<ng-template #generatingCert>
+  <fa-icon
+    [icon]="['fas', 'spinner']"
+    [spin]="true"
+    [pulse]="true"
+    style="display: block; align-self: center; margin-top: 50px"
+  ></fa-icon>
+  <div class="roboto-normal">
+    {{ 'CONTRIBUTOR.CERTIFICATE.GENERATING' | translate }}
+  </div>
+</ng-template>

@@ -1,0 +1,124 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="transaction?.transactionId === 300346 || transaction?.transactionId === 300393">
+  <!-- Violation Details -->
+  <div class="row">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.VIOLATIONS-DETAILS' | translate }}">
+        <vol-transaction-violation-details-dc
+          [violationData]="violationDetails"
+          [isCancelEngagement]="isCancelEngagement"
+          [isModifyTerminationDate]="isModifyTerminationDate"
+          [isModifyJoiningDate]="isModifyJoiningDate"
+          [isaddEngagement]="isaddEngagement"
+          [isIncorrectWage]="isIncorrectWage"
+          [isIncorrectReason]="isIncorrectReason"
+          [transactionId]="transaction?.transactionId"
+          [isTransactionCompleted]="isTransactionCompleted"
+          [isReportViolationTransaction]="isReportViolationTransaction"
+          [lang]="lang"
+          (navigateToValidatorTxn)="navigateToFoValidatorTxnTracking($event)"
+          (profileNavigation)="violationProfileNavigation($event)"
+        >
+        </vol-transaction-violation-details-dc>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Establishment Details -->
+  <div class="row">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.ESTABLISHMENT-DETAILS' | translate }}">
+        <vol-transaction-establishment-details-dc
+          [violationData]="violationDetails"
+          [transactionId]="transaction?.transactionId"
+          [isReportViolationTransaction]="isReportViolationTransaction"
+          (navigateToEst)="navigateToEstablishmentProfile($event)"
+          (viewPreviousViolation)="viewPreviousViolation()"
+        ></vol-transaction-establishment-details-dc>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Inspection Details -->
+  <div
+    class="row"
+    *ngIf="
+      violationDetails?.inspectionInfo?.channel?.english === channelRased ||
+      violationDetails?.inspectionInfo?.channel?.english === channelE_Inspection ||
+      violationDetails?.inspectionInfo?.channel?.english === channelHrsd ||
+      (isReportViolationTransaction && violationDetails?.discoveredAfterInspection?.english === booleanYes)
+    "
+  >
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.INSPECTION-DETAILS' | translate }}">
+        <vol-transaction-inspection-details-dc
+          [transactionDetails]="violationDetails"
+          [isRaiseVioFoVcm]="isReportViolationTransaction"
+        ></vol-transaction-inspection-details-dc>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Contributor Details -->
+  <div class="row" *ngIf="violationDetails?.contributors.length > 0; else noContributors">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.CONTRIBUTOR-DETAILS' | translate }}">
+        <vol-transaction-contributor-details-dc
+          [violationData]="violationDetails"
+          [isCancelEngagement]="isCancelEngagement"
+          [isModifyTerminationDate]="isModifyTerminationDate"
+          [isModifyJoiningDate]="isModifyJoiningDate"
+          [isaddEngagement]="isaddEngagement"
+          [isIncorrectWage]="isIncorrectWage"
+          [isIncorrectReason]="isIncorrectReason"
+          [isWrongBenefits]="isWrongBenefits"
+          [isViolatingProvision]="isViolatingProvision"
+          [isReportViolationTransaction]="isReportViolationTransaction"
+          [transactionId]="transaction?.transactionId"
+          [isTransactionCompleted]="isTransactionCompleted"
+          [lang]="lang"
+          (navigateToContributorProfile)="navigateToContributorProfile($event)"
+          (navigateToTrasactionTracking)="navigateToTnxTracker($event)"
+        ></vol-transaction-contributor-details-dc>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Penalty calculation Details -->
+  <div class="row" *ngIf="transaction?.transactionId === foVcmTxn && isTransactionCompleted">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.PENALITY-CALCULATION-DETAILS' | translate }}">
+        <vol-committee-decision-details-dc
+          [violationData]="violationDetails"
+          [isCancelEngagement]="isCancelEngagement"
+          [isIncorrectWage]="isIncorrectWage"
+          [isViolatingProvision]="isViolatingProvision"
+          [isReportViolationTransaction]="isReportViolationTransaction"
+          [isAutoApprovedViolation]="isAutoApprovedViolation"
+          [isKashefViolation]="isKashefViolation"
+          (penalityDetails)="getPenaltyDetails($event)"
+          (excludeContributor)="navigateToExcludeContributorPage($event)"
+        ></vol-committee-decision-details-dc>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Documents section -->
+  <div class="row" *ngIf="isReportViolationTransaction || isRasedInspection || e_Inspection">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+  <ng-template #noContributors>
+    <div class="row no-contributors">
+      <div class="col-sm-12 col-md-12 col-g-6">
+        <gosi-alert-dc
+          [bilingualMessage]="'VIOLATIONS.NO-CONTRIBUTORS-ADDED' | translate"
+          type="info"
+          [dismissible]="false"
+          [noPadding]="false"
+        >
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

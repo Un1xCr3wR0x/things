@@ -1,0 +1,117 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="disableIconReopen ? false : canEdit" (onEdit)="navigateToEdit()">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.CANCEL-CON.CANCEL-ENGAGEMENT' | translate"
+        [badge]="hasInspectionCompleted ? ('CONTRIBUTOR.INSPECTION-PERFORMED' | translate | uppercase) : ''"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="cancellationDetails?.formSubmissionDate?.gregorian"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+
+      <!-- alter message on establishment reopened closing in progress -->
+      <div id="contentArea" class="row" *ngIf="disableIconReopen">
+        <div class="col-lg-12 mt-4">
+          <gosi-alert-dc
+            [message]=" 'CONTRIBUTOR.EST-REOPEN' "
+            type="info"
+            [dismissible]="false"
+            [noPadding]="true"
+          >
+          </gosi-alert-dc>
+        </div>
+      </div>
+
+      <div class="content-item" *ngIf="contributor">
+        <!-- Personal Details Section -->
+        <cnt-contributor-personal-details-dc
+          [contributor]="contributor"
+          [age]="age"
+          [canEdit]="false"
+          [isBeneficiary]="isBeneficiary"
+        >
+        </cnt-contributor-personal-details-dc>
+      </div>
+
+      <!-- Cancellation details. -->
+      <div class="content-item" *ngIf="cancellationDetails">
+        <frm-content-heading-dc
+          icon="cancel-con"
+          [isSvg]="true"
+          heading="CONTRIBUTOR.CANCEL-CON.CANCELLATION-DETAILS"
+          [canEdit]="disableIconReopen ? false : canEdit"
+          (onEdit)="navigateToEdit()"
+        >
+        </frm-content-heading-dc>
+
+        <cnt-view-cancellation-details-dc
+          [establishment]="establishment"
+          [cancellationDetails]="cancellationDetails"
+        ></cnt-view-cancellation-details-dc>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [showApprove]="true"
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        [showRequestInspection]="canRequestInspection && !establishment?.ppaEstablishment"
+        [isReInspection]="hasInspectionCompleted"
+        (requestInspection)="checkForActiveInspection()"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+        [disableApprove]="isBillBatch"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (approveEvent)="handleWorkflowEvents(0)"
+    (cancelEvent)="hideModal()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    heading="CONTRIBUTOR.CANCEL-CON.REJECT-CANCEL-ENGAGEMENT"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [parentForm]="validatorForm"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    heading="CONTRIBUTOR.CANCEL-CON.RETURN-CANCEL-ENGAGEMENT"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+    [parentForm]="validatorForm"
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

@@ -1,0 +1,26 @@
+export enum FilterKeyEnum {
+  STARTDATE = 'startDate',
+  ENDDATE = 'endDate',
+  STATUS = 'status',
+  PERIOD = 'period',
+  NATIONALITY = 'nationality',
+  ROLES = 'roles',
+  PAYEE_TYPE = 'payeeType',
+  PAYMENT_STATUS = 'paymentStatus',
+  LEGAL_ENITY = 'legalEntity',
+  LOCATION = 'location',
+  REASON = 'reason',
+  APPLIED_BY = 'initiatedBy',
+  BENEFITE_TYPE = 'benefitType',
+  REQUESTED_BY = 'requestedBy',
+  CHANNEL = 'channel',
+  LASTACTIONDATE = 'lastactiondate',
+  PENALTYAMOUNT = 'penaltyAmount',
+  PAIDAMOUNT = 'paidAmount',
+  JOINING_DATE='joiningDate',
+  LEAVING_DATE='leavingDate',
+  GENDER='gender',
+  TOTAL_WAGE_RANGE='totalWageRange',
+  OCCUPATION= 'Occupation'
+
+}

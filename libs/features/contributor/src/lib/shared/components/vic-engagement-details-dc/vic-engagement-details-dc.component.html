@@ -1,0 +1,520 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+-->
+<gosi-card-dc type="secondary" [heading]="'CONTRIBUTOR.ADD-VIC.REGISTRATION' | translate" [noHeadingMargin]="true">
+  <div class="row mt-4">
+    <ng-container *ngIf="isRegisterVic">
+      <div class="col-lg-6 col-md-6" *ngIf="purposeOfRegList && !purposeOfRegList?.pensionReformEligible">
+        <gosi-input-date-dc
+          id="dateOfRegistration"
+          [label]="'CONTRIBUTOR.ADD-VIC.FORM-SUBMISSION-DATE' | translate"
+          [maxDate]="maxDate"
+          [minDate]="minDate"
+          [disabled]="isEditMode"
+          (changeEvent)="changeOnDate()"
+          (blur)="changeOnDate()"
+          [control]="engagementDateForm?.get('dateOfRegistration')?.get('gregorian')"
+        ></gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6 col-md-6" *ngIf="purposeOfRegList && !purposeOfRegList?.pensionReformEligible">
+        <gosi-input-date-dc
+          id="dateOfReflection"
+          [label]="'CONTRIBUTOR.ADD-VIC.JOINING-DATE' | translate"
+          [value]="labelDate"
+          [control]="engagementDateForm.get('dateOfReflection').get('gregorian')"
+          [maxDate]="maxDate"
+          [minDate]="minDate"
+          [disabled]="purposeOfRegList && !purposeOfRegList?.pensionReformEligible"
+          (changeEvent)="selectJoinDate()"
+        ></gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6 col-md-6" *ngIf="purposeOfRegList && purposeOfRegList?.registrationPurpose.length > 0">
+        <gosi-input-select-dc
+          id="purposeRegistration"
+          [label]="'CONTRIBUTOR.ADD-VIC.PURPOSE-OF-REGISTRATION'"
+          [control]="engagementForm.get('purposeOfRegistration')"
+          [lookup]="purposeOfRegList?.registrationPurpose"
+          [disabled]="!canEdit || isUpdateWage"
+          (select)="handlePurposeOfRegistrationChange($event)"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6 col-md-6" *ngIf="purposeOfRegList && purposeOfRegList?.pensionReformEligible">
+        <gosi-input-date-dc
+          id="dateOfReflection"
+          [label]="'CONTRIBUTOR.ADD-VIC.JOINING-DATE' | translate"
+          [value]="labelDate"
+          [control]="engagementDateForm.get('dateOfReflection').get('gregorian')"
+          [maxDate]="maxDate"
+          [minDate]="minDate"
+          [disabled]="purposeOfRegList && !purposeOfRegList?.pensionReformEligible"
+          (changeEvent)="selectJoinDate()"
+        ></gosi-input-date-dc>
+      </div>
+    </ng-container>
+
+    <div class="col-lg-6 col-md-6" *ngIf="!isRegisterVic">
+      <gosi-input-select-dc
+        id="purposeRegistration"
+        [label]="'CONTRIBUTOR.ADD-VIC.PURPOSE-OF-REGISTRATION'"
+        [control]="engagementForm.get('purposeOfRegistration')"
+        [lookup]="purposeOfRegistrationList"
+        [disabled]="!canEdit || isUpdateWage"
+        (select)="handlePurposeOfRegistrationChange($event)"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6 col-md-6" *ngIf="showOccupation">
+      <gosi-input-select-dc
+        id="occupation"
+        [label]="'CONTRIBUTOR.OCCUPATION'"
+        [list]="occupationList"
+        [control]="engagementForm.get('occupation')"
+        [disabled]="!canEdit || disableOccupation"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+  <div class="row establishment-info" *ngIf="showEstOwnerinfo">
+    <div class="col-lg-6 info">
+      <fa-icon [icon]="['fas', 'info-circle']" class="info-icon"></fa-icon>
+      <div class="col-auto px-2 info-text">{{ 'CONTRIBUTOR.ADD-VIC.ESTABLISHMENT-OWNER-INFO' | translate }}</div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<div *ngIf="(purposeOfRegList && purposeOfRegList?.pensionReformEligible) || updateVicPREligible" class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="row justify-content-between">
+        <h4 class="card-heading wage ml-3">
+          {{ 'CONTRIBUTOR.WAGE.WAGE-DETAILS' | translate }}
+        </h4>
+      </div>
+      <div class="card-body mb-4">
+        <div [formGroup]="engagementWageAddForm" *ngIf="isEngagementWageAddFormVisible">
+          <div *ngIf="mandatoryAlert">
+            <gosi-alert-dc
+              message="CORE.ERROR.MANDATORY-FIELDS"
+              type="danger"
+              [dismissible]="true"
+              (closed)="mandatoryAlert = false"
+            ></gosi-alert-dc>
+          </div>
+          <div *ngIf="wageSavedAlert">
+            <gosi-alert-dc
+              message="CONTRIBUTOR.ERR-ADD-ENGAGEMENT"
+              type="danger"
+              [dismissible]="true"
+              (closed)="wageSavedAlert = false"
+            ></gosi-alert-dc>
+          </div>
+          <div class="wage-details-border p-2">
+            <div class="row pl-lg-3 row justify-content-between mb-5">
+              <div [ngClass]="engagementWageDetails.length > 0 ? 'col-lg-5' : 'col-lg-6'" *ngIf="isRegisterVic">
+                <div>
+                  <div>
+                    <gosi-input-month-dc
+                      class="min-width-seven"
+                      id="startDate"
+                      [minDate]="minDate"
+                      [maxDate]="maxDate"
+                      [control]="engagementWageAddForm.get('startDate').get('gregorian')"
+                      [label]="'CONTRIBUTOR.WAGE-START-MONTH' | translate"
+                      [readOnly]="true"
+                      [disabled]="true"
+                    >
+                    </gosi-input-month-dc>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="!isRegisterVic" [ngClass]="engagementWageDetails.length > 0 ? 'col-lg-5' : 'col-lg-6'">
+                <gosi-input-date-dc
+                  class="min-width-seven"
+                  id="applicableFromDate"
+                  [control]="engagementWageAddForm.get('applicableFromDate').get('gregorian')"
+                  [label]="'CONTRIBUTOR.WAGE.APPLICABLE-FROM' | translate"
+                  [readOnly]="true"
+                  [disabled]="true"
+                >
+                </gosi-input-date-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="wage-section">
+                  <div>
+                    <gosi-input-currency-dc
+                      id="basicWage"
+                      (blur)="onBlur(engagementWageAddForm)"
+                      (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                      [label]="'CONTRIBUTOR.BASIC-WAGE' | translate"
+                      [control]="engagementWageAddForm.get('wage').get('basicWage')"
+                      [separatorLimit]="wageSeparatorLimit"
+                    >
+                    </gosi-input-currency-dc>
+                  </div>
+                  <span class="align-self-center faw-icons">
+                    <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                  </span>
+                  <div>
+                    <gosi-input-currency-dc
+                      id="hra"
+                      (blur)="onBlur(engagementWageAddForm)"
+                      (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                      [label]="'CONTRIBUTOR.HOUSING' | translate"
+                      [placeholder]="'CONTRIBUTOR.HOUSING' | translate"
+                      [control]="engagementWageAddForm.get('wage').get('housingBenefit')"
+                      [disabled]="true"
+                      [hideOptionalLabel]="true"
+                      [separatorLimit]="wageSeparatorLimit"
+                    >
+                    </gosi-input-currency-dc>
+                  </div>
+                  <span class="align-self-center faw-icons">
+                    <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                  </span>
+                  <div>
+                    <gosi-input-currency-dc
+                      id="commission"
+                      (blur)="onBlur(engagementWageAddForm)"
+                      (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                      [label]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                      [placeholder]="'CONTRIBUTOR.COMMISSIONS' | translate"
+                      [control]="engagementWageAddForm.get('wage').get('commission')"
+                      [hideOptionalLabel]="true"
+                      [disabled]="true"
+                      [separatorLimit]="wageSeparatorLimit"
+                    >
+                    </gosi-input-currency-dc>
+                  </div>
+                  <span class="align-self-center faw-icons">
+                    <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                  </span>
+                  <div>
+                    <gosi-input-currency-dc
+                      id="otherAllowance"
+                      (blur)="onBlur(engagementWageAddForm)"
+                      (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+                      [label]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                      [placeholder]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+                      [control]="engagementWageAddForm.get('wage').get('otherAllowance')"
+                      [hideOptionalLabel]="true"
+                      [disabled]="true"
+                      [separatorLimit]="wageSeparatorLimit"
+                    >
+                    </gosi-input-currency-dc>
+                  </div>
+                  <span class="align-self-center faw-icons">
+                    <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+                  </span>
+                  <div>
+                    <gosi-input-currency-dc
+                      id="totalWage"
+                      [control]="engagementWageAddForm.get('wage').get('totalWage')"
+                      [label]="'CONTRIBUTOR.TOTAL-WAGE' | translate"
+                      [disabled]="true"
+                      (blur)="onBlur(engagementWageAddForm)"
+                    >
+                    </gosi-input-currency-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="this.isRegisterVic">
+              <!-- for update vic, eligible for PR, we need to show open wage details section without save btn -->
+              <div class="row justify-content-center align-items-center" *ngIf="!isUpdate">
+                <div class="col-auto">
+                  <gosi-button-dc type="outline-primary" id="addnewperiod" (submit)="addWagePeriod()" size="md">
+                    <span class="pr-1 pl-1">
+                      <fa-icon [icon]="['fas', 'business-time']"></fa-icon>
+                    </span>
+                    {{ 'CONTRIBUTOR.WAGE-DETAILS' | translate }}
+                  </gosi-button-dc>
+                </div>
+              </div>
+              <div class="row justify-content-center" *ngIf="isUpdate">
+                <div class="col-auto">
+                  <gosi-button-dc type="outline-secondary" id="canceledit" size="md" (submit)="cancelWageEdit()">
+                    {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+                  >
+                </div>
+                <div class="col-auto">
+                  <gosi-button-dc type="outline-primary" id="updatewage" size="md" (submit)="updateWageDetails()">
+                    {{ 'CONTRIBUTOR.SAVE' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- View age details -->
+        <div class="row">
+          <div
+            class="col-md-12 table-responsive"
+            *ngIf="engagementWageDetails.length > 0 && !isEngagementWageAddFormVisible"
+          >
+            <div>
+              <gosi-alert-dc></gosi-alert-dc>
+            </div>
+            <table class="table table-wage row_separate">
+              <thead>
+                <tr>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+                  </th>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+                  </th>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+                  </th>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+                  </th>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+                  </th>
+                  <th class="text-left" scope="col">
+                    {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+                  </th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let wageDetail of engagementWageDetails; let i = index; last as isLast; first as isFirst"
+                  style="height: 4rem"
+                >
+                  <ng-container *ngIf="!wageDetail.canEdit">
+                    <td class="engagementPeriod">
+                      <span *ngIf="wageDetail.startDate.entryFormat == typeGregorian">
+                        {{ wageDetail.startDate.gregorian | date: 'MMM yyyy' }}
+                      </span>
+                      <span class="ml-1 faw-icons">
+                        <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                        <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+                      </span>
+                      <span class="ml-1">
+                        <span *ngIf="!wageDetail?.endDate?.gregorian">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                      </span>
+                      <span
+                        *ngIf="
+                          !isFirst &&
+                          wageDetail?.endDate?.gregorian &&
+                          wageDetail.startDate.entryFormat == typeGregorian
+                        "
+                      >
+                        {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                      </span>
+                      <span
+                        *ngIf="
+                          isFirst && wageDetail?.endDate?.gregorian && wageDetail.endDate.entryFormat == typeGregorian
+                        "
+                      >
+                        {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                      </span>
+                    </td>
+
+                    <td>{{ wageDetail.wage.basicWage | number }}</td>
+                    <td>
+                      {{
+                        (wageDetail.wage.housingBenefit | number) === '0'
+                          ? '-'
+                          : (wageDetail.wage.housingBenefit | number)
+                      }}
+                    </td>
+                    <td>
+                      {{ (wageDetail.wage.commission | number) === '0' ? '-' : (wageDetail.wage.commission | number) }}
+                    </td>
+                    <td>
+                      {{
+                        (wageDetail.wage.otherAllowance | number) === '0'
+                          ? '-'
+                          : (wageDetail.wage.otherAllowance | number)
+                      }}
+                    </td>
+                    <td>{{ wageDetail.wage.totalWage | number }}</td>
+                    <td>
+                      <div>
+                        <a id="'edit' + i" class="delete-icon" (click)="editWagePeriod(wageDetail, i)">
+                          <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                        </a>
+                      </div>
+                    </td>
+                    <td>
+                      <div>
+                        <a id="{{ 'delete' + i }}" class="delete-icon" (click)="removeWagePeriod(i)" *ngIf="isFirst">
+                          <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                        </a>
+                      </div>
+                    </td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- End of View age details -->
+      </div>
+    </div>
+  </div>
+</div>
+<gosi-card-dc
+  *ngIf="!purposeOfRegList?.pensionReformEligible && !updateVicPREligible"
+  type="primary"
+  [mobileMarginRight]="true"
+  [heading]="'CONTRIBUTOR.ADD-VIC.WAGE-SELECTION' | translate"
+  [noHeadingMargin]="true"
+>
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <gosi-input-wage-select-dc
+        id="vicWage"
+        [label]="'CONTRIBUTOR.ADD-VIC.WAGE'"
+        [wageCategories]="wageCategories"
+        [control]="wageSearchForm.get('search')"
+        [disableAll]="!canEdit || disableWage"
+        [wageDecreaseInfo]="
+          isUpdateWage
+            ? ('CONTRIBUTOR.VIC-WAGE-UPDATE.LOWER-WAGE-INFO' | translate)
+            : engagementForm.get('purposeOfRegistration.english').value?.includes('Annuity Upgrading') ||
+              engagementForm.get('purposeOfRegistration.english').value?.includes('Annuity Eligibility')
+            ? ('CONTRIBUTOR.ADD-VIC.WAGE-DECREASE-INFO' | translate: engagementForm.get('purposeOfRegistration').value)
+            : hasCurrentYearVicEngagement
+            ? ('CONTRIBUTOR.ADD-VIC.DIFFERENT-WAGE-WITHIN-YEAR-INFO' | translate)
+            : ''
+        "
+        [wageIncreaseInfo]="
+          isUpdateWage
+            ? ('CONTRIBUTOR.VIC-WAGE-UPDATE.HIGHER-WAGE-INFO' | translate)
+            : hasCurrentYearVicEngagement
+            ? ('CONTRIBUTOR.ADD-VIC.DIFFERENT-WAGE-WITHIN-YEAR-INFO' | translate)
+            : ('CONTRIBUTOR.ADD-VIC.WAGE-INCREASE-INFO' | translate: { percent: incrementPercent })
+        "
+        [currentWageInfo]="isUpdateWage ? ('CONTRIBUTOR.VIC-WAGE-UPDATE.CURRENT-WAGE-INFO' | translate) : ''"
+        (onSelect)="handleWageSelection($event)"
+        (showWarning)="showWarningMessage()"
+      ></gosi-input-wage-select-dc>
+    </div>
+    <div class="col-lg-6 wage-section">
+      <div class="row mx-2">
+        <div class="col-lg-12 px-0" *ngIf="!isEditMode && wageApplicableOn">
+          <gosi-alert-dc
+            [type]="hasWageDecreased ? 'warning' : 'info'"
+            [message]="
+              isUpdateWage && hasWageDecreased
+                ? 'CONTRIBUTOR.VIC-WAGE-UPDATE.WAGE-DECREASE-INFO'
+                : 'CONTRIBUTOR.VIC-WAGE-UPDATE.WAGE-UPDATE-INFO'
+            "
+            [messageParam]="{ date: wageApplicableOn }"
+            [dismissible]="false"
+            [noPadding]="true"
+          ></gosi-alert-dc>
+        </div>
+        <ng-container *ngIf="selectedWage">
+          <div class="col-lg-12 px-0 section-heading">
+            {{ 'CONTRIBUTOR.ADD-VIC.YOU-HAVE-SELECTED' | translate }}
+          </div>
+          <div class="col-lg-12 px-0 border-top border-bottom">
+            <div class="row mt-4">
+              <div class="col-md-12 col-lg-5 mb-4">
+                <div class="d-flex">
+                  <div class="">
+                    <img src="assets/images/invoice-dollar.svg" alt="invoice-dollar" />
+                  </div>
+                  <div>
+                    <div class="d-flex flex-column px-2">
+                      <div class="title">
+                        {{ 'CONTRIBUTOR.ADD-VIC.WAGE' | translate | uppercase }}
+                      </div>
+                      <div class="value">
+                        {{ selectedWage.wage }} <span class="sub-value">{{ 'CONTRIBUTOR.WAGE.SAR' | translate }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12 col-lg-7 mb-4">
+                <div class="d-flex">
+                  <div class="">
+                    <img src="assets/images/list-ul.svg" alt="list-ul" />
+                  </div>
+                  <div>
+                    <div class="d-flex flex-column px-2">
+                      <div class="title">
+                        {{ 'CONTRIBUTOR.ADD-VIC.MONTHLY-CONTRIBUTION-AMOUNT' | translate | uppercase }}
+                      </div>
+                      <div class="value">
+                        {{ selectedWage.contributionAmount }}
+                        <span class="sub-value">{{ 'CONTRIBUTOR.WAGE.SAR' | translate }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12 col-lg-5 mb-4">
+                <div class="d-flex">
+                  <div class="">
+                    <img src="assets/images/hand-holding-usd.svg" alt="hand-holding-usd" />
+                  </div>
+                  <div>
+                    <div class="d-flex flex-column px-2">
+                      <div class="title">
+                        {{ 'CONTRIBUTOR.ADD-VIC.WAGE-CATEGORY' | translate | uppercase }}
+                      </div>
+                      <div class="value">
+                        {{ selectedWage.incomeCategory }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12 col-lg-7 mb-4">
+                <div class="d-flex">
+                  <div class="">
+                    <img src="assets/images/calendar-day.svg" alt="calendar-day" />
+                  </div>
+                  <div>
+                    <div class="d-flex flex-column px-2">
+                      <div class="title">
+                        {{
+                          isUpdateWage
+                            ? ('CONTRIBUTOR.ADD-VIC.WAGE-CATEGORY-APPLICABLE-ON' | translate | uppercase)
+                            : ('CONTRIBUTOR.ADD-VIC.PAYEMENT-DUE-DATE' | translate | uppercase)
+                        }}
+                      </div>
+                      <div class="value">
+                        {{ isUpdateWage ? (wageList?.wageApplicableOn?.gregorian | gosiDate) : (dueDate | gosiDate) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<cnt-action-area-dc
+  *ngIf="appToken !== 'INDIVIDUAL_APP'"
+  primaryButtonLabel="CONTRIBUTOR.SAVE-AND-NEXT"
+  [showPreviousSection]="showPreviousSection"
+  (previous)="previous.emit()"
+  (submit)="saveEngagementDetails()"
+  (cancel)="cancelTransaction.emit()"
+></cnt-action-area-dc>
+<cnt-action-area-dc
+  *ngIf="appToken === 'INDIVIDUAL_APP'"
+  primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+  [showPreviousSection]="showPreviousSection"
+  (previous)="previous.emit()"
+  (submit)="saveEngagementDetails()"
+  (cancel)="cancelTransaction.emit()"
+></cnt-action-area-dc>

@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="sub-header">
+  {{ 'BILLING.LATE-FEES-WAVIER-DETAILS' | translate }}
+</div>
+<div class="row row-padding">
+  <div class="col-lg-5" id="dateRange">
+    <gosi-input-daterange-dc
+      #dateRangePicker
+      [label]="'BILLING.PERIOD-OF-WAIVER' | translate"
+      [monthPickerPlaceholder]="'BILLING.PERIOD-OF-WAIVER' | translate"
+      [control]="parentForm.get('selectedPeriod')"
+      [monthPicker]="true"
+      [hideOptionalLabel]="true"
+      id="dateRange"
+    ></gosi-input-daterange-dc>
+    <ng-container *ngIf="searchOption === 'registration' || searchOption === 'SIN'">
+      <div class="info-icon-padding mainStyle" *ngIf="waiverPeriodPenaltyAmount !== null && !isEventDateFlag">
+        <fa-icon [icon]="['fas', 'info-circle']"></fa-icon>
+        <span>
+          {{ 'BILLING.AMOUNT-APPLICABLE' | translate }}
+          <b>({{ waiverPeriodPenaltyAmount | number: '1.2-2' }}</b>
+          {{ 'BILLING.SAR' | translate }})</span
+        >
+      </div>
+    </ng-container>
+  </div>
+  <div class="col-lg-2"></div>
+  <div class="col-lg-5" *ngIf="!waiverOtherReason">
+    <gosi-label-dc
+      id="penaltyWaiverReason"
+      [control]="lang === 'en' ? penaltyWaiverReason?.english : penaltyWaiverReason?.arabic"
+      [label]="'BILLING.WAIVER-REASON' | translate"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-lg-5" *ngIf="waiverOtherReason">
+    <gosi-label-dc
+      id="penaltyWaiverReason"
+      [control]="penaltyWaiverOtherReason"
+      [label]="'BILLING.WAIVER-REASON' | translate"
+    >
+    </gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="isEventDateFlag && eventDateList?.eventDateInfo.length > 0">
+  <div class="col-lg-12">
+    <blg-update-event-date-dc
+      [parentForm]="parentForm"
+      [eventDateList]="eventDateList"
+      [dataOnEditMode]="dataOnEditMode"
+      (eventDateDetails)="eventDateDetails($event)"
+    ></blg-update-event-date-dc>
+  </div>
+</div>
+<div class="row" *ngIf="!isEventDateFlag">
+  <div class="col-lg-5">
+    <div>
+      <gosi-input-number-dc
+        id="waiverpercentage"
+        [control]="parentForm?.get('waiveOffEligible')"
+        [label]="'BILLING.WAIVED-PENALITY-PERCETANGES' | translate"
+        [maxLength]="3"
+      >
+      </gosi-input-number-dc>
+    </div>
+  </div>
+  <div class="col-lg-2"></div>
+  <div class="col-lg-5" *ngIf="searchOption === 'registration' || searchOption === 'SIN'">
+    <gosi-currency-label-dc
+      id="penaltyAmount"
+      [label]="'BILLING.PENALTY-AMOUNT-ELIGIBLE' | translate"
+      [currencyTo]="eligiblePenaltyAmt"
+      [countryCodeFrom]="'BILLING.SAR' | translate"
+    >
+    </gosi-currency-label-dc>
+  </div>
+</div>
+<gosi-alert-dc
+  *ngIf="!isVic"
+  message="BILLING.BULK-EXCEPTIONAL-INFO-OVERLAP"
+  type="info"
+  [dismissible]="true"
+  [noPadding]="true"
+>
+</gosi-alert-dc>
+<gosi-alert-dc
+  *ngIf="isVic"
+  message="BILLING.BULK-EXCEPTIONAL-VIC-INFO-OVERLAP"
+  type="info"
+  [dismissible]="true"
+  [noPadding]="true"
+>
+</gosi-alert-dc>

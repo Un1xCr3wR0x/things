@@ -1,0 +1,193 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <gosi-alert-dc></gosi-alert-dc>
+  <gosi-card-dc
+  *ngIf="transactionSummary.transactionTraceId"
+  id="txnSummary"
+  type="primary"
+  [heading]="'COMPLAINTS.' + summaryHeading | translate"
+  [canEdit]="canEdit"
+  (edit)="editPriority()"
+  [lessPadding]="lessPadding"
+>
+  <div class="row">
+    <div class="col-lg-3" *ngIf="transactionSummary.transactionTraceId">
+      <gosi-label-dc
+        [id]="'txnName'"
+        [value]="transactionSummary.transactionTraceId"
+        [label]="typeLabel ? ('COMPLAINTS.NUMBER.' + typeLabel | translate) : ('COMPLAINTS.TRANSACTION-ID' | translate)"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="isAppPublic">
+      <gosi-label-dc
+        [id]="'txnName'"
+        [value]="'COMPLAINTS.' + transactionCategory | translate"
+        [label]="'COMPLAINTS.TRANSACTION-CATEGORY' | translate"
+      ></gosi-label-dc>
+    </div>
+    <ng-container *ngIf="isTypeLabel">
+      <div class="col-lg-3">
+        <gosi-label-dc
+          [id]="'txnType'"
+          [value]="transactionSummary.type | bilingualText"
+          [label]="'COMPLAINTS.' + typeLabel | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="!isAppPublic">
+        <gosi-label-dc
+          [id]="'txnSubType'"
+          [value]="transactionSummary.subtype | bilingualText"
+          [label]="'COMPLAINTS.' + subTypeLabel | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="isAppPublic && transactionSummary?.type?.english == 'Follow up Request'">
+        <gosi-label-dc
+          [id]="'txnSubType'"
+          [value]="transactionSummary.transactionRefNo"
+          [label]="'Transaction Id'"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="isAppPublic && transactionSummary?.type?.english != 'Follow up Request'">
+        <gosi-label-dc
+          [id]="'txnSubType'"
+          [value]="transactionSummary.subtype | bilingualText"
+          [label]="'COMPLAINTS.' + subTypeLabel | translate"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-lg-3" *ngIf="transactionSummary.status">
+      <gosi-label-dc
+        [id]="'txnStatus'"
+        [value]="transactionSummary.status | bilingualText"
+        [label]="'COMPLAINTS.STATUS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="transactionSummary && transactionSummary.description && isSuggestion">
+      <gosi-label-dc
+        [id]="'complainDetails'"
+        [value]="transactionSummary.description"
+        [label]="'COMPLAINTS.SUGGESTION-DETAILS' | translate"
+      ></gosi-label-dc>
+    </div>
+    <!-- Defect 558079: UAT Regression |Track Request- For CRM transactions we should
+      not show the priority in transaction details Help -->
+    <!-- PRIORITY not needed to be shown for ind App -->
+    <div
+      class="col-lg-3 highlight"
+      *ngIf="
+        !isSuggestion &&
+        transactionSummary.priority &&
+        transactionSummary.priority.english &&
+        !isIndividualApp &&
+        !isAppPublic
+      "
+    >
+      <gosi-label-dc
+        [id]="'txnPriority'"
+        [value]="transactionSummary.priority | bilingualText"
+        [label]="'COMPLAINTS.PRIORITY' | translate"
+      ></gosi-label-dc>
+    </div>
+
+    <div class="col-lg-3" dir="ltr" *ngIf="!isSuggestion && transactionSummary.createdDate">
+      <gosi-label-dc
+        [id]="'complaintDate'"
+        [value]="transactionSummary.createdDate.gregorian | gosiDate"
+        [label]="'COMPLAINTS.' + dateLabel | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-3" dir="ltr" *ngIf="!isSuggestion && transactionSummary.createdDate && isAppPublic">
+      <gosi-label-dc
+        [id]="'complaintTime'"
+        [value]="transactionSummary.createdDate.gregorian | date: 'hh/mm':'GMT'"
+        [label]="'COMPLAINTS.' + timeLabel | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-3 highlight" dir="ltr" *ngIf="transactionSummary.entryChannel && !isAppPublic">
+      <gosi-label-dc
+        [id]="'entryChannel'"
+        [value]="transactionSummary.entryChannel | bilingualText"
+        [label]="'COMPLAINTS.CHANNEL' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div
+    class="row incident-number-section"
+    *ngIf="ticketHistory?.length > 0 && category !== categoryEnumValue.APPEAL && category !== categoryEnumValue.PLEA"
+  >
+    <div class="col-lg-12">
+      <label class="label-color">
+        {{
+          'COMPLAINTS.' + (ticketHistory?.length > 1 ? 'SAEDNI-INCIDENT-NUMBERS' : 'SAEDNI-INCIDENT-NUMBER') | translate
+        }}
+      </label>
+      <div class="row no-gutters">
+        <div class="incident-badge" *ngFor="let ticket of currentTicketHistory">
+          <gosi-button-dc [outlineOnly]="true" (submit)="onNavigateToSaedni(ticket.srNumber)" size="sm">{{
+            ticket.srNumber
+          }}</gosi-button-dc>
+        </div>
+        <a
+          class="d-flex align-self-center more-label"
+          (click)="currentTicketHistory = ticketHistory"
+          *ngIf="currentTicketHistory?.length !== ticketHistory?.length"
+          >+{{ ticketHistory?.length - 2 }}<u class="px-1">{{ 'COMPLAINTS.COUNT-MORE' | translate }}</u></a
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!isSuggestion && transactionSummary.description">
+    <div class="col-lg-12">
+      <gosi-label-dc
+        [id]="'complainDetails'"
+        [value]="transactionSummary.description"
+        [label]="'COMPLAINTS.' + detailLabel | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc *ngIf="IsReopenTransaction" type="secondary">
+  <div class="row" [formGroup]="commentForm">
+    <div class="col-lg-12">
+      <gosi-input-text-area-dc id="comments" [label]="'COMPLAINTS.COMMENTS' | translate " [control]="commentForm.get('comments')">
+      </gosi-input-text-area-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <ces-complaint-file-upload-dc
+        [documents]="uploadDocuments"
+        [transactionId]="transactionId"
+        [businessKey]="transactionSummary.transactionTraceId"
+        (add)="getRequiredDocuments()"
+        [isScan]="false"
+        [uuid]="uuid"
+        (refresh)="refreshDocument($event)"
+        (remove)="removeDocuments($event)"
+        [disableAutoDoc]="true"
+      >
+      </ces-complaint-file-upload-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<div class="row" *ngIf="IsReopenTransaction">
+  <div class="col-lg-12 form-action">
+    <div class="float-right btn-section">
+      <gosi-button-dc id="submit" (click)="onSubmit()" type="primary">
+        {{ 'COMPLAINTS.SUBMIT' | translate }}</gosi-button-dc>
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelTemplate)">
+        {{ 'COMPLAINTS.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="COMPLAINTS.INFO-CANCEL" (onConfirm)="confirmGeneralCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

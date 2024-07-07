@@ -1,0 +1,182 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="heading-font">
+  {{
+    vicExceptionalFlag && csvUploadFlag !== 'csvUploadVic'
+      ? ('BILLING.VIC-SEGMENT' | translate)
+      : entityFlag
+      ? ('BILLING.SEGMENTATION-CRITERION' | translate)
+      : csvUploadFlag === 'csvUploadVic'
+      ? ('BILLING.CONTRIBUTOR-DETAILS' | translate)
+      : csvUploadFlag === 'csvUploadEst'
+      ? ('BILLING.ESTABLISHMENT-DETAILS' | translate)
+      : ('BILLING.ESTABLISHMENT-SEGMENT' | translate)
+  }}
+</div>
+<div class="info">
+  <div class="row top-style">
+    <div
+      class="col-lg-3"
+      *ngIf="!vicExceptionalFlag && !entityFlag && csvUploadFlag !== 'csvUploadEst' && csvUploadFlag !== 'csvUploadVic'"
+    >
+      <gosi-label-dc
+        id="establishmentSegment"
+        label="BILLING.SEGMENT-TERM"
+        [value]="establishmentSegment | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-lg-3"
+      *ngIf="vicExceptionalFlag && csvUploadFlag !== 'csvUploadEst' && csvUploadFlag !== 'csvUploadVic'"
+    >
+      <gosi-label-dc
+        id="establishmentSegment"
+        label="BILLING.SEGMENT-TERM"
+        [value]="establishmentSegment | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4" *ngIf="entityFlag && csvUploadFlag !== 'csvUploadEst' && csvUploadFlag !== 'csvUploadVic'">
+      <gosi-label-dc
+        id="establishmentSegment"
+        label="BILLING.SEGMENTATION-CRITERION"
+        [value]="establishmentSegment | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+
+    <ng-container
+      *ngIf="
+        establishmentSegment?.english !== 'All' && csvUploadFlag !== 'csvUploadEst' && csvUploadFlag !== 'csvUploadVic'
+      "
+    >
+      <div class="col-lg-3" *ngIf="listItemEnglish">
+        <div id="segmnetMultiselect" class="form-group form-label fc-margin">
+          <label class="label-color no-margin">
+            <span *ngIf="lang === 'en'">{{ establishmentSegment?.english }}</span>
+            <span *ngIf="lang === 'ar'">{{ establishmentSegment?.arabic }}</span>
+          </label>
+          <div class="label-value">
+            <span *ngIf="lang === 'en'">{{ listItemEnglish }} </span>
+            <span *ngIf="lang === 'ar'">{{ listItemArabic }} </span>
+            <span *ngIf="segmentFlagValue">
+              <a class="link-color" (click)="showSegmentDetModel(segmentListView, 'md')"
+                >+ {{ segmentlistLengthValue }} {{ 'BILLING.MORE' | translate }}</a
+              ></span
+            >
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="csvUploadFlag === 'csvUploadEst' || csvUploadFlag === 'csvUploadVic'">
+      <div class="col-lg-3" *ngIf="csvDataList">
+        <div id="segmnetMultiselect" class="form-group form-label fc-margin">
+          <label class="label-color no-margin">
+            <span *ngIf="csvUploadFlag === 'csvUploadEst'">{{ 'BILLING.REGISTRATION-NUMBER' | translate }}</span>
+            <span *ngIf="csvUploadFlag === 'csvUploadVic'">{{ 'BILLING.CONTRIBUTOR-NUMBER' | translate }}</span>
+          </label>
+          <div class="label-value">
+            <span>{{ regNumberList }} </span>
+            <span *ngIf="segmentFlagValue">
+              <a class="link-color" (click)="showSegmentDetModel(regNumberListView, 'md')"
+                >+ {{ segmentlistLengthValue }} {{ 'BILLING.MORE' | translate }}</a
+              ></span
+            >
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <div
+      [ngClass]="{
+        'col-lg-4 ': entityFlag,
+        'col-lg-3 ': !entityFlag
+      }"
+      *ngIf="!vicExceptionalFlag && csvUploadFlag !== 'csvUploadEst'"
+    >
+      <div>
+        <gosi-label-dc
+          id="noOfEst"
+          label="BILLING.TOTAL-NO-ESTABLISHMEHT"
+          [value]="bulkpenaltyCount?.establishmentCount"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div
+      [ngClass]="{
+        'col-lg-4 ': entityFlag,
+        'col-lg-3 ': !entityFlag
+      }"
+      *ngIf="csvUploadFlag === 'csvUploadEst'"
+    >
+      <gosi-label-dc id="noOfEst" label="BILLING.TOTAL-NO-ESTABLISHMEHT" [value]="csvDataList?.length"> </gosi-label-dc>
+    </div>
+    <div
+      [ngClass]="{
+        'col-lg-4 ': entityFlag,
+        'col-lg-3 ': !entityFlag
+      }"
+      *ngIf="(vicExceptionalFlag || entityFlag) && csvUploadFlag !== 'csvUploadVic'"
+    >
+      <div>
+        <gosi-label-dc id="noOfcontr" label="BILLING.TOTAL-NO-CONTRIBUTOR" [value]="bulkpenaltyCount?.vicCount">
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div
+      [ngClass]="{
+        'col-lg-4 ': entityFlag,
+        'col-lg-3 ': !entityFlag
+      }"
+      *ngIf="csvUploadFlag === 'csvUploadVic'"
+    >
+      <gosi-label-dc id="noOfcontr" label="BILLING.TOTAL-NO-CONTRIBUTOR" [value]="csvDataList?.length"> </gosi-label-dc>
+    </div>
+  </div>
+</div>
+<!-- Modals -->
+<ng-template #segmentListView>
+  <div class="model-margin">
+    <blg-segment-list-details-dc
+      [establishmentSegment]="establishmentSegment"
+      [establishmentSegmentMultiSelect]="establishmentSegmentMultiSelect"
+      (cancel)="confirmCancel()"
+    >
+    </blg-segment-list-details-dc>
+  </div>
+</ng-template>
+
+<ng-template #regNumberListView>
+  <div class="model-margin">
+    <div class="scroll">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th>
+              <span *ngIf="csvUploadFlag === 'csvUploadEst'">{{ 'BILLING.REGISTRATION-NUMBER' | translate }}</span>
+              <span *ngIf="csvUploadFlag === 'csvUploadVic'">{{ 'BILLING.CONTRIBUTOR-NUMBER' | translate }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let item of csvDataList; let i = index">
+            <tr class="border-bottom">
+              <td>
+                <span>{{ item }}</span>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-padding">
+      <gosi-button-dc id="confirmBtn" class="float-right" type="secondary" size="md" (submit)="confirmCancel()">
+        {{ 'BILLING.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>

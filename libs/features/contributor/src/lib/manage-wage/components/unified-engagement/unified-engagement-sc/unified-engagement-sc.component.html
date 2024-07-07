@@ -1,0 +1,212 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div>
+  <!-- Current engagement details-->
+  <gosi-alert-dc [bilingualMessage]="message"  type="success" [dismissible]="false" [noPadding]="true" *ngIf="flag">
+    <a
+      actOnAlert
+      (click)="routeTotransactionHistory()"
+      id="view-ineligible"
+      class="alert-vic"
+      routerLinkActive="active"
+    >{{ 'CONTRIBUTOR.TRACK-REQUEST' | translate }}</a>
+  </gosi-alert-dc>
+  <div class="row">
+    <div class="col-12">
+      <ng-container *ngIf="activeEngagements?.length > 0; else empty">
+        <ng-container *ngFor="let engagement of activeEngagements | slice: 0:1; let i = index">
+          <cnt-engagement-detail-dc
+            [engagement]="engagement"
+            [index]="i"
+            [showUnifiedHeader]="
+              activeEngagements?.length > 1 ||
+              (activeEngagements?.length === 1 && engagement.engagementType === typeRegular)
+            "
+            (wageEdit)="navigateToUpdateCurrentWage($event)"
+            [userRoles]="userRoles"
+            [isPREligible]="isPREligible"
+          ></cnt-engagement-detail-dc>
+        </ng-container>
+
+        <!-- for showing bill summary card -->
+        <ng-container *ngIf="showBillSummary">
+          <div class="row">
+            <div class="col-lg-12 header">
+              {{ 'CUSTOMER-INFORMATION.BILL-SUMMARY' | translate }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <cnt-vic-bill-balance-dc
+                [billBalanceDetails]="billDetails"
+                [personId]="sinNumber"
+                [lang]="lang"
+                (navgiateBack)="navgiateBack()"
+                (unPaidAmountValue)="calculateDebitAmount($event)"
+              >
+              </cnt-vic-bill-balance-dc>
+              <!-- <cim-bill-details-dc [isBillNumber]="isBillNumber" [billNumber]="billNumber"
+                [totalCreditBalance]="totalCreditBalance" [billBalanceDetail]="billBalanceDetail" [unBillAmount]="unBillAmount"
+                [exchangeRate]="exchangeRate" [currencyType]="currencyType"></cim-bill-details-dc> -->
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Collpasible section incase of more than one active engagements -->
+        <ng-container *ngIf="activeEngagements?.length > 1">
+          <div id="moreEngagements" [collapse]="isCollapsed" [isAnimated]="true">
+            <ng-container *ngFor="let engagement of activeEngagements | slice: 1; let i = index">
+              <cnt-engagement-detail-dc
+                [engagement]="engagement"
+                [index]="i"
+                [showUnifiedHeader]="true"
+                (wageEdit)="navigateToUpdateCurrentWage($event, true)"
+                [isIndividualProfile]="isIndividualProfile"
+                [isPREligible]="isPREligible"
+              >
+              </cnt-engagement-detail-dc>
+            </ng-container>
+          </div>
+          <div
+            class="show-more"
+            (click)="isCollapsed = !isCollapsed"
+            [attr.aria-expanded]="!isCollapsed"
+            aria-controls="moreEngagements"
+          >
+            <div class="show-more-button">
+              {{
+                isCollapsed
+                  ? ('CONTRIBUTOR.SHOW-OTHER-ACTIVE-ENGAGEMENTS' | translate)
+                  : ('CONTRIBUTOR.HIDE-OTHER-ACTIVE-ENGAGEMENTS' | translate)
+              }}
+              <fa-icon *ngIf="isCollapsed" icon="angle-down" class="show-more-icon"></fa-icon>
+              <fa-icon *ngIf="!isCollapsed" icon="angle-up" class="show-more-icon"></fa-icon>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+      <ng-template #empty>
+        <cnt-engagement-detail-dc></cnt-engagement-detail-dc>
+        <div class="col-md-12 pt-4" *ngIf="isVic && isIndividualProfile">
+          <div class="row">
+            <div class="col-lg-12 header">
+              {{ 'CUSTOMER-INFORMATION.BILL-SUMMARY' | translate }}
+            </div>
+          </div>
+          <cnt-vic-bill-balance-dc
+            [billBalanceDetails]="billDetails"
+            [personId]="sinNumber"
+            [lang]="lang"
+            (navgiateBack)="navgiateBack()"
+            (unPaidAmountValue)="calculateDebitAmount($event)"
+          ></cnt-vic-bill-balance-dc>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+  <!-- individual app -->
+
+  <!-- Overall engagement history -->
+  <div class="row">
+    <div class="col-12">
+      <div class="pt-4" *ngIf="overallEngagements?.length > 0 || (overallEngagements?.length == 0 && filterChecked)">
+        <ng-container *ngIf="isIndividualProfile">
+          <div class="row">
+            <div class="col-lg-6">
+              <cnt-wage-content-heading-dc
+                displayIcon="briefcase"
+                headingLabel="CONTRIBUTOR.WAGE.OVERALL-ENGAGEMENT-DETAILS"
+                [canEdit]="false"
+              >
+              </cnt-wage-content-heading-dc>
+            </div>
+            <div class="col-lg-6 col-md-12 d-flex flex-row-reverse p-3" *ngIf="isNin">
+                <cnt-dropdown-dc
+                [list]="dropDownList" 
+                class="btn-option"
+                [isBtn]="true"
+                (selectedItem)="handleSelectOption($event)"
+                >
+                <span class="d-flex"> {{ 'CONTRIBUTOR.BTN-OPTIONS' | translate }}
+                  <fa-icon class="dropdown-icon mx-2" icon="ellipsis-v"></fa-icon></span>
+                </cnt-dropdown-dc>
+              
+              <cnt-engagement-filter-dc
+                class="ml-5"
+                [employerList]="employerList$ | async"
+                [occupationList]="occupationList$ | async"
+                (engagementFilterValues)="engagementFilterValues($event)"
+              >
+              </cnt-engagement-filter-dc>
+              <div class="my-2">
+                <a class="file-download" (click)="onExcelEngagementsList()">
+                  <fa-icon
+                    class="file-pdf"
+                    size="lg"
+                    [icon]="['far', 'file-excel']"
+                    [tooltip]="excelTemplate"
+                  ></fa-icon>
+                </a>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <cnt-overall-engagement-history-dc
+          [contributorData]="contributor"
+          [isABSHERregistered]="isAbsherVerified"
+          [isNin]="isNin"
+          [currentUserRoles]="userRoles"
+          [engagementList]="overallEngagements"
+          [isUnifiedProfile]="true"
+          [paginationId]="paginationId"
+          [isPREligible]="isPREligible"
+          [isIndividualProfile]="isIndividualProfile"
+          [currentPage]="pageDetails.currentPage"
+          (edit)="navigateToSelectedOptions($event)"
+          [occupationList]="occupationList$ | async"
+          [employerList]="employerList$ | async"
+          [showAbsherTemplate]="showAbsherTemplate"
+          [unPaid]="unPaid"
+          (navigateToBillDash)="navigateToBillDashboard()"
+          [isPREligible]="isPREligible"
+        >
+        </cnt-overall-engagement-history-dc>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <gosi-pagination-dc
+        *ngIf="overallEngagements?.length > 4"
+        [totalSize]="overallEngagements?.length"
+        [pageDetails]="pageDetails"
+        [paginationId]="paginationId"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="paginateEngagements($event)"
+      ></gosi-pagination-dc>
+    </div>
+    <div class="col-12" *ngIf="overallEngagements?.length == 0">
+      <div class="no-active-engmt">
+        <img src="assets/images/case.svg" alt="no engagements" />
+        <div class="p-5">{{ 'CONTRIBUTOR.NO-ENGAGEMENTS-AVAILABLE' | translate }}</div>
+      </div>
+    </div>
+  </div>
+  <ng-template #excelTemplate>
+    <ng-container>
+      <div>
+        {{ 'CONTRIBUTOR.EXCEL-DOWNLOAD-ENGAGEMENT-MESSAGE' | translate }}
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #cancelRpaAggregation>
+    <cnt-cancel-rpa-popup-dc
+      [cancelEngagment]="cancelEngagment"
+      [rpaDetails]="rpaDetails"
+      [cancelReasonList]="cancelReasonList"
+      (hideModal)="hideModal()"
+      (confirmModel)="submitCancel($event)"
+    ></cnt-cancel-rpa-popup-dc>
+  </ng-template>
+</div>

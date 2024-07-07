@@ -1,0 +1,253 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <mb-assessment-content-dc
+    [canEdit]="false"
+    [documents]="documents ? documents : []"
+    [comments]="comment ? comment : []"
+    (collapse)="onCollapse($event)"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc *ngIf="!isScheduleReminder" [heading]="'MEDICAL-BOARD.ADD-VISITING-DOCTOR' | translate">
+      </frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="isScheduleReminder"
+        [heading]="'MEDICAL-BOARD.REMINDER-TO-SCHEDULE-MB-APPOINTMENT' | translate"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <!-- <gosi-alert-sc></gosi-alert-sc> -->
+      <mb-heir-disability-assessment-details-dc
+        *ngIf="heirDisabilityAssessment || dependentDisabilityAssessment"
+        [contributor]="contributorDetails"
+        [personalInformation]="personalInformation"
+        [injury]="injury"
+        [collapseView]="collapseView"
+        (onOHClicked)="viewInjuryHistory()"
+        [previousDisabilityDetails]="previousDisabilityDetails"
+        [activeBenefitDetails]="activeBenefitDetails"
+        [heirDisabilityAssessment]="heirDisabilityAssessment"
+      >
+      </mb-heir-disability-assessment-details-dc>
+
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+      <br />
+      <!-- To Do  contributor  details  -->
+      <mb-contributor-visiting-details-dc
+        [contributor]="contributorDetails"
+        [injury]="injury"
+        [collapseView]="collapseView"
+        (onOHClicked)="viewInjuryHistory()"
+        [previousDisabilityDetails]="previousDisabilityDetails"
+        [heirDisabilityAssessment]="heirDisabilityAssessment || dependentDisabilityAssessment"
+        [activeBenefitDetails]="activeBenefitDetails"
+        (previousDisability)="navigateToPreviousAssessment($event)"
+      ></mb-contributor-visiting-details-dc>
+
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+      <br />
+      <!-- For only early reassessment 307130 feature  -->
+      <!-- <ng-container *ngIf="isEarlyReassessment">
+        <div class="row">
+          <div class="col-md-12">
+            <frm-content-heading-dc
+              icon="user-injured"
+              heading="OCCUPATIONAL-HAZARD.DISABILITY-DETAILS"
+              [canEdit]="false"
+            >
+            </frm-content-heading-dc>
+            <div class="row">
+              <div class="col-md-6 col-sm-6">
+                <gosi-label-dc
+                  id="reson"
+                  label="OCCUPATIONAL-HAZARD.EARLY-REASSESSMENT-REASON"
+                  [value]="disabilityDetails?.reasonEarly | bilingualText"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-md-6 col-sm-6">
+                <gosi-label-dc
+                  id="comments "
+                  label="OCCUPATIONAL-HAZARD.COMMENTS"
+                  [value]="disabilityDetails?.commentsEarly"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-12">
+                <gosi-label-dc
+                  id="description"
+                  [value]="disabilityDetails?.descriptionEarly"
+                  label="OCCUPATIONAL-HAZARD.EARLY-REASSESSMENT-DESCRIPTION"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </ng-container> -->
+      <!-- To Do Visiting Doctor Specialty  details  -->
+      <mb-visiting-doctor-specialty-dc
+        *ngIf="disabilityDetails"
+        [disabilityDetails]="disabilityDetails"
+        [registrationNo]="registrationNo"
+        [isReassessment]="isReassessment"
+        [isScheduleReminder]="isScheduleReminder"
+        [isNoReturn]="isNoReturn"
+        [parentForm]="parentForm"
+        [isVdRequired]="isVdRequired"
+        [modifiedDisability]="modifiedDisability"
+        (selectedVd)="selectedVd($event)"
+      ></mb-visiting-doctor-specialty-dc>
+
+      <!-- <gosi-ui-assessment-appeal-dc
+        *ngIf="isAppeal"
+        [assessmentDetails]="disabilityDetails"
+      ></gosi-ui-assessment-appeal-dc> -->
+
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+      <!-- *ngIf="selectedVistingDr; else addbutton" -->
+      <ng-container *ngIf="(!isNoReturn || isVdRequired) && !isScheduleReminder">
+        <div *ngIf="selectedVistingDr; then vistingdetails; else addbutton"></div>
+        <ng-template #vistingdetails>
+          <ng-container>
+            <frm-content-heading-dc
+              icon="stethoscope"
+              heading="MEDICAL-BOARD.VISITING-DOCTOR-DETAILS"
+              [canEdit]="true"
+              (onEdit)="addVisitingDoctor(visitingDoctorModal)"
+            >
+            </frm-content-heading-dc>
+          </ng-container>
+          <mb-mbo-visiting-doctor-details-dc [selectedVistingDr]="selectedVistingDr" [isMboAssessment]="true">
+          </mb-mbo-visiting-doctor-details-dc>
+        </ng-template>
+        <ng-template #addbutton>
+          <ng-container>
+            <frm-content-heading-dc
+              icon="stethoscope"
+              heading="MEDICAL-BOARD.VISITING-DOCTOR-DETAILS"
+              [canEdit]="false"
+            >
+            </frm-content-heading-dc>
+          </ng-container>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-button-dc
+                id="addVisitingDoctor"
+                type="primary"
+                size="md"
+                (click)="addVisitingDoctor(visitingDoctorModal)"
+              >
+                {{ 'MEDICAL-BOARD.ADD-VISITING-DOCTOR' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </ng-template>
+      </ng-container>
+      <!-- To Do Visiting Doctor details  -->
+      <!-- Appeal Details -->
+      <div class="appeal" *ngIf="isAppeal">
+        <gosi-ui-assessment-appeal-dc [assessmentDetails]="disabilityDetails"></gosi-ui-assessment-appeal-dc>
+      </div>
+
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+      <br />
+      <!-- To Do assessment schedule details  -->
+
+      <mb-assessment-schedule-details-dc
+        *ngIf="fieldOfficeList$ && (selectedVistingDr || isScheduleReminder) && disabilityDetails"
+        [locationList]="fieldOfficeList$ | async"
+        [availableArray]="availableArray"
+        [unavailableArray]="unavailableArray"
+        (dateChange)="onDateChange($event)"
+        (eventChange)="onEventChange($event)"
+        (locationChange)="getLocation($event)"
+        [individualSession]="individualSessionEvents"
+        [fullyFilled]="fullyFilled"
+        [sessionTimeList]="sessionTimeList"
+        [isDisabled]="isDisabled"
+        [noSessions]="noSessions"
+        (setTime)="BindAssessmentTime($event)"
+        [parentForm]="parentForm"
+        [isReassessment]="isReassessment"
+        [disabilityDetails]="disabilityDetails"
+      ></mb-assessment-schedule-details-dc>
+      <!-- [assessmentList]="sessionTimeList" -->
+      <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+    </div>
+  </mb-assessment-content-dc>
+
+  <div id="actionArea">
+    <div class="row">
+      <div class="col-lg-12 form-action">
+        <div class="reopen-details">
+          <div class="btn-section float-right">
+            <gosi-button-dc [id]="'approve'" [type]="'primary'" (click)="showApprovalModal(approveTemplate)">
+              {{
+                (isScheduleReminder ? 'MEDICAL-BOARD.ASSIGN' : 'OCCUPATIONAL-HAZARD.SUBMIT') | translate
+              }}</gosi-button-dc
+            >
+          </div>
+          <div *ngIf="!isScheduleReminder && !isNoReturn && !modifiedDisability" class="btn-section float-right">
+            <gosi-button-dc [id]="'return'" [type]="'secondary'" (click)="showModal(returnTemplate)">
+              {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="btn-section float-left">
+            <gosi-button-dc [id]="'cancel'" [type]="'secondary'" (click)="showModal(cancelTemplate)">
+              {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #visitingDoctorModal>
+  <mb-visiting-doctor-list-dc
+    [regionList]="region$ | async"
+    [locationList]="fieldOfficeList$ | async"
+    [specialtyList]="specialtyList"
+    [limit]="sessionRequest?.limit"
+    [doctorList]="filteredMember"
+    [totalResponse]="totalItems"
+    [itemsPerPage]="itemsPerPage"
+    (add)="onAddDoctor($event)"
+    (filter)="onFilterValue($event)"
+    (cancel)="hideModal()"
+    (navigate)="navigateToProfile($event)"
+    (paginate)="onLimit($event)"
+    (search)="onSearchMember($event)"
+  >
+  </mb-visiting-doctor-list-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList$"
+    heading="{{ 'MEDICAL-BOARD.RETURN' | translate }} "
+    [parentForm]="validatorMemberForm"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="confirmReturn(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorMemberForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="isScheduleReminder ? assign() : approve()"
+  ></frm-approve-template-dc>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'MEDICAL-BOARD.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

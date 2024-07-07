@@ -1,0 +1,397 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-modal-dc
+  [modalHeader]="(isRecalculation ? 'BENEFITS.HOW-IS-IT-CALC' : 'BENEFITS.BENEFIT-CALC-DETAILS') | translate"
+>
+  <!-- Toggle only For Recalculation -->
+  <div class="float-right" modalSubHeading>
+    <div class="d-inline-block calc-type" *ngIf="isRecalculation">
+      <div class="calc-method-toggler">
+        <div
+          class="column-left calc-text"
+          [ngClass]="{
+            'calc-type-selected': calcType == 'newBenefit',
+            'calc-type-unselected ': calcType == 'currentBenefit'
+          }"
+          (click)="calcTypeChange('newBenefit')"
+        >
+          {{ 'BENEFITS.NEW-BENEFIT' | translate }}
+        </div>
+        <div
+          class="column-right calc-text"
+          [ngClass]="{
+            'calc-type-selected': calcType == 'currentBenefit',
+            'calc-type-unselected ': calcType == 'newBenefit'
+          }"
+          (click)="calcTypeChange('currentBenefit')"
+        >
+          {{ 'BENEFITS.CURRENT-BENEFIT' | translate }}
+        </div>
+      </div>
+    </div>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <fa-icon icon="times"></fa-icon>
+    </button>
+  </div>
+  <div class="row" modalContent>
+    <!-- Default view for New Benefit Toggle -->
+    <div class="col-md-12">
+      <table class="table table-borderless table-responsive rounded">
+        <thead>
+        <tr>
+          <th class="period">
+            {{ 'BENEFITS.PERIOD' | translate }}
+          </th>
+          <th style="text-align: center" class="lawtype">
+            {{ 'BENEFITS.LAW-TYPE' | translate }}
+          </th>
+          <th class="cont-months">
+            {{ 'BENEFITS.CONTRIBUTION-MONTHS' | translate }}
+          </th>
+          <ng-container *ngIf="isLumpsum && isPensionReform();else nonReformHeading">
+            <th class="cont-months">
+              {{ 'BENEFITS.BENEFIT-CALCULATION-TYPE' | translate }}
+            </th>
+            <th class="cont-months">
+              {{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-AMOUNT' | translate }}
+            </th>
+          </ng-container>
+
+          <ng-template #nonReformHeading>
+            <th class="amw-type">
+              {{ 'BENEFITS.AMW-TYPE' | translate }}
+            </th>
+            <th style="text-align: center" class="average">
+              {{ (isRecalculation ? 'BENEFITS.AMW' : 'BENEFITS.AVERAGE-MONTHLY-WAGE') | translate }}
+              <span class="sar-table-head-fontsize"> ({{ 'BENEFITS.SR' | translate }})</span>
+            </th>
+          </ng-template>
+
+          <th style="text-align: center" class="benefit-amt" *ngIf="(!isLumpsum || isRecalculation) && !isRequestSanedPensionReform()">
+            {{ (isRecalculation && !isSaned ? 'BENEFITS.BENEFIT-AMOUNT' : 'BENEFITS.PENSION-AMOUNT') | translate
+            }}<span class="sar-table-head-fontsize"> ({{ 'BENEFITS.SR' | translate }})</span>
+          </th>
+          <th style="text-align: center" class="benefit-amt1"
+              *ngIf="!isPensionReform() && !isLumpsum && !isSaned && !isRecalculation">
+            {{ 'BENEFITS.TOTAL-AMOUNT' | translate
+            }}<span class="sar-table-head-fontsize"> ({{ 'BENEFITS.SR' | translate }})</span>
+          </th>
+        </tr>
+        </thead>
+        <ng-container *ngIf="calcType === 'newBenefit'">
+          <tbody *ngFor="let monthlyWage of averageMonthlyWagePeriods; let i = index" class="calc-details-body">
+          <tr class="data-row">
+            <td class="period0">
+              {{ monthlyWage.period | bilingualText }}
+              <div class="padding-common justify-content-between d-flex">
+                  <span *ngIf="monthlyWage.startDate && monthlyWage.endDate">
+                    {{ monthlyWage.startDate | dateType }}
+                    <fa-icon *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    {{ monthlyWage.endDate | dateType }}
+                  </span>
+              </div>
+            </td>
+            <td class="padding0">
+              <table style="margin: auto; width: 100%">
+                <!-- for pension reform  -->
+                <ng-container *ngIf="isPensionReform() && !isRpa(monthlyWage.period) ; else nonReform">
+                    <tr>
+                      <td class="border-right1">{{ 'BENEFITS.PENSION-REFORM-LAW' | translate }}</td>
+                    </tr>
+                </ng-container>
+
+                <!-- pen reform ends here -->
+                <ng-template #nonReform>
+                  <!-- if old  -->
+                  <tr>
+                    <td class="border-inner">{{ 'BENEFITS.OLD' | translate }}</td>
+                  </tr>
+                  <tr>
+                    <td class="border-right1">{{ 'BENEFITS.NEW' | translate }}</td>
+                  </tr>
+                  <!-- old ends here -->
+                </ng-template>
+              </table>
+            </td>
+            <td class="padding0">
+              <table style="margin: auto; width: 100%; text-align: right">
+                <ng-container *ngIf="isPensionReform() && !isRpa(monthlyWage.period); else nonReformMonths">
+                  <tr>
+                    <td class="border-right1">{{ monthlyWage?.contributionMonths }}</td>
+                  </tr>
+                </ng-container>
+
+                <!-- pen reform ends here -->
+                <ng-template #nonReformMonths>
+                  <!-- if old screen -->
+                  <tr>
+                    <td class="border-inner">{{ monthlyWage.noOfOldLawMonths }}</td>
+                  </tr>
+                  <tr>
+                    <td class="border-right1">{{ monthlyWage.noOfNewLawMonths }}</td>
+                  </tr>
+                  <!-- old ends here -->
+                </ng-template>
+              </table>
+            </td>
+            <td>{{ monthlyWage.amwType | bilingualText }}</td>
+            <td class="border-right0"
+                style="text-align: right">{{ monthlyWage.averageMonthlyWage | number: '1.2-2' }}</td>
+            <!-- <td class="padding0">
+            <table style="margin: auto; width: 100%; text-align: right">
+              <tr>
+                <td class="border-inner">{{ monthlyWage.averageMonthlyWage }}</td>
+              </tr>
+              <tr>
+                <td class="border-right0">{{ monthlyWage.averageMonthlyWage }}</td>
+              </tr>
+            </table>
+          </td> -->
+            <!-- Defect 485724 !isLumpsum condition check in proper table parameters and alignment fix -->
+            <ng-container *ngIf="!isLumpsum && isPensionReform() && !isRpa(monthlyWage.period) && !isRequestSanedPensionReform();else nonReformPensionAmount">
+              <td class="text-right">
+                {{ monthlyWage.benefitAmount | number: '1.2-2' }}
+              </td>
+            </ng-container>
+            <ng-template #nonReformPensionAmount>
+              <div *ngIf="(!isLumpsum || isRecalculation) && !isRequestSanedPensionReform()">
+              <td class="padding0">
+                <table style="margin: auto; width: 100%; text-align: right">
+                  <tr>
+                    <td class="border-inner">{{ monthlyWage.benefitAmountInOldLaw | number: '1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="border-right1">{{ monthlyWage.benefitAmountInNewLaw | number: '1.2-2' }}</td>
+                  </tr>
+                </table>
+              </td>
+            </div>
+            </ng-template>
+            <td *ngIf="!isPensionReform() && !isLumpsum && !isSaned && !isRecalculation" class="border-inner"
+                style="text-align: right">
+              {{ monthlyWage.benefitAmount | number: '1.2-2' }}
+            </td>
+            <!-- <td *ngIf="isRecalculation" class="border-inner" style="text-align: center">
+              {{ monthlyWage.benefitAmount }}
+            </td> -->
+            <!-- <td style="text-align: right" *ngIf="!isLumpsum">
+            {{ monthlyWage.benefitAmount | number: '1.2-2' }}
+          </td> -->
+          </tr>
+          <tr class="total-value" id="avg-monthly-wage-period" *ngIf="i === averageMonthlyWagePeriods.length - 1">
+            <td class="wage-value">
+              {{ !isLumpsum ? ('BENEFITS.TOTAL' | translate) : ('BENEFITS.FINAL' | translate) }}
+            </td>
+            <td class="calc"></td>
+            <td class="calc" style="text-align: right">
+              {{ benefitCalculationDetails?.totalContributionMonths }}
+            </td>
+            <td class="calc"></td>
+            <td class="calc" style="text-align: right">
+              <!--              {{ averageMonthlyTotal | number: '1.2-2' }}-->
+              {{ benefitCalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }}
+            </td>
+            <!-- Defect 485724 !isLumpsum condition check in proper table parameters and alignment fix -->
+            <td class="calc text-right" *ngIf="!isLumpsum && !isRecalculation && !isRequestSanedPensionReform()">
+              {{isPensionReform() ? (getTotalBenefitAmount(averageMonthlyWagePeriods) | number: '1.2-2') : ''}}
+            </td>
+            <td *ngIf="(!isLumpsum && !isSaned && !isPensionReform()) || isRecalculation" class="border-inner"
+                style="text-align: right">
+              <!--              {{ benefitCalculationDetails.totalBenefitAmount | number: '1.2-2' }}-->
+              {{ getTotalBenefitAmount(averageMonthlyWagePeriods) | number: '1.2-2' }}
+            </td>
+          </tr>
+          </tbody>
+        </ng-container>
+        <ng-container *ngIf="calcType === 'currentBenefit' && isRecalculation">
+          <tbody *ngFor="let monthlyWage of oldAverageMonthlyWagePeriods; let i = index" class="calc-details-body">
+          <tr class="data-row">
+            <td class="period0">
+              {{ monthlyWage.period | bilingualText }}
+              <div class="padding-common justify-content-between d-flex">
+                  <span *ngIf="monthlyWage.startDate && monthlyWage.endDate">
+                    {{ monthlyWage.startDate | dateType }}
+                    <fa-icon *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    {{ monthlyWage.endDate | dateType }}
+                  </span>
+              </div>
+            </td>
+            <td class="padding0">
+              <table style="margin: auto; width: 100%">
+                <tr>
+                  <td class="border-inner">{{ 'BENEFITS.OLD' | translate }}</td>
+                </tr>
+                <tr>
+                  <td class="border-right1">{{ 'BENEFITS.NEW' | translate }}</td>
+                </tr>
+              </table>
+            </td>
+            <td class="padding0">
+              <table style="margin: auto; width: 100%; text-align: right">
+                <tr>
+                  <td class="border-inner">{{ monthlyWage.noOfOldLawMonths }}</td>
+                </tr>
+                <tr>
+                  <td class="border-right1">{{ monthlyWage.noOfNewLawMonths }}</td>
+                </tr>
+              </table>
+            </td>
+            <td>{{ monthlyWage.amwType | bilingualText }}</td>
+            <td class="border-right0">{{ monthlyWage.averageMonthlyWage }}</td>
+            <!-- Defect 485724 !isLumpsum condition check in proper table parameters and alignment fix -->
+            <!-- <td *ngIf="isRecalculation" class="border-inner" style="text-align: center">
+              {{ monthlyWage.benefitAmount }}
+            </td> -->
+            <td class="padding0" *ngIf="isRecalculation">
+              <table style="margin: auto; width: 100%; text-align: right">
+                <tr>
+                  <td class="border-inner">{{ monthlyWage.benefitAmountInOldLaw | number: '1.2-2' }}</td>
+                </tr>
+                <tr>
+                  <td class="border-right1">{{ monthlyWage.benefitAmountInNewLaw | number: '1.2-2' }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr
+            class="total-value"
+            id="old-avg-monthly-wage-period"
+            *ngIf="i === oldAverageMonthlyWagePeriods.length - 1"
+          >
+            <td class="wage-value">
+              {{ !isLumpsum ? ('BENEFITS.TOTAL' | translate) : ('BENEFITS.FINAL' | translate) }}
+            </td>
+            <td class="calc"></td>
+            <td class="calc" style="text-align: right">
+              <!-- {{ getFinalContributionMonths(oldAverageMonthlyWagePeriods) }} -->
+              {{
+              isSaned
+                ? benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.totalUIContributionMonths
+                : benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.totalContributionMonths
+              }}
+            </td>
+            <td class="calc"></td>
+            <td class="calc" style="text-align: right">
+              <!--              {{ averageMonthlyTotal | number: '1.2-2' }}-->
+              <!-- {{ getFinalAMW(oldAverageMonthlyWagePeriods) | number: '1.2-2' }} -->
+              {{
+              isSaned
+                ? (benefitRecalculationDetails?.reCalculation?.beforeRecalculation
+                  ?.finalAverageMonthlyContributoryWage | number: '1.2-2')
+                : (benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.amw | number: '1.2-2')
+              }}
+            </td>
+            <!-- Defect 485724 !isLumpsum condition check in proper table parameters and alignment fix -->
+            <td class="calc" *ngIf="!isLumpsum && !isRecalculation"></td>
+            <td *ngIf="(!isLumpsum && !isSaned) || isRecalculation" class="border-inner" style="text-align: right">
+              {{ getTotalBenefitAmount(oldAverageMonthlyWagePeriods) | number: '1.2-2' }}
+            </td>
+          </tr>
+          </tbody>
+        </ng-container>
+      </table>
+    </div>
+    <!-- For Current Benefit Toggle -->
+    <!-- <div class="col-md-12" *ngIf="calcType === 'currentBenefit' && isRecalculation">
+
+    </div> -->
+    <div class="row annuity-type pt-3 col-md-12">
+      <div
+        *ngIf="!isLumpsum && !isSaned && (averageMonthlyWagePeriods || oldAverageMonthlyWagePeriods)"
+        class="col-sm-4 col-md-4 col-lg-4"
+      >
+        <gosi-label-dc
+          id="benefitAmount"
+          value="{{
+            calcType === 'newBenefit' && isPensionReform() ?
+              (getTotalNonRpaBenefitAmount(averageMonthlyWagePeriods) | number: '1.2-2') :
+              calcType === 'newBenefit' ?
+              (getTotalPensionAmountOld(averageMonthlyWagePeriods) | number: '1.2-2') :
+              (getTotalPensionAmountOld(oldAverageMonthlyWagePeriods) | number: '1.2-2')
+          }} {{ 'BENEFITS.SR' | translate }}"
+          label="{{ (isPensionReform() ? 'BENEFITS.PENSION-AMOUNT-PENSION-REFORM' : 'BENEFITS.PENSION-AMOUNT-OLD-LAW') | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        *ngIf="!isPensionReform() && !isLumpsum && !isSaned && (averageMonthlyWagePeriods || oldAverageMonthlyWagePeriods)"
+        class="col-sm-4 col-md-4 col-lg-4"
+      >
+        <gosi-label-dc
+          id="benefitAmountNewLaw"
+          value="{{
+            calcType === 'newBenefit'
+              ? (getTotalPensionAmountNew(averageMonthlyWagePeriods) | number: '1.2-2')
+              : (getTotalPensionAmountNew(oldAverageMonthlyWagePeriods) | number: '1.2-2')
+          }} {{ 'BENEFITS.SR' | translate }}"
+          label="{{ 'BENEFITS.PENSION-AMOUNT-NEW-LAW' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-4 col-md-4 col-lg-4"
+        *ngIf="numberOfRpaPeriods >0 && isPensionReform() && !isSaned && !isRecalculation && averageMonthlyWagePeriods"
+      >
+        <gosi-label-dc
+          id="rpaAmount"
+          value="{{ getTotalRpaBenefitAmount(averageMonthlyWagePeriods) | number: '1.2-2' }} {{
+            'BENEFITS.SR' | translate
+          }}"
+          label="{{ 'BENEFITS.RPA-AMOUNT-PENSION-REFORM' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-4 col-md-4 col-lg-4"
+        *ngIf="benefitCalculationDetails?.calculatedBenefitAmount && !isSaned && !isRecalculation"
+      >
+        <gosi-label-dc
+          id="benefitAmountCalculated"
+          value="{{ benefitCalculationDetails?.calculatedBenefitAmount | number: '1.2-2' }} {{
+            'BENEFITS.SR' | translate
+          }}"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-4 col-md-4 col-lg-4"
+        *ngIf="
+          calcType === 'newBenefit' &&
+          benefitRecalculationDetails?.reCalculation?.afterRecalculation?.basicBenefitAmount &&
+          !isSaned &&
+          isRecalculation
+        "
+      >
+        <gosi-label-dc
+          id="benefitAmountBasicNew"
+          value="{{
+            benefitRecalculationDetails?.reCalculation?.afterRecalculation?.basicBenefitAmount | number: '1.2-2'
+          }} {{ 'BENEFITS.SR' | translate }}"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-4 col-md-4 col-lg-4"
+        *ngIf="
+          calcType === 'currentBenefit' &&
+          benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.basicBenefitAmount &&
+          !isSaned &&
+          isRecalculation
+        "
+      >
+        <gosi-label-dc
+          id="benefitAmountBasicCalculated"
+          value="{{
+            benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.basicBenefitAmount | number: '1.2-2'
+          }} {{ 'BENEFITS.SR' | translate }}"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div class="col-md-12 closebutton">
+      <gosi-button-dc modalAction id="closeBtn" class="d-flex close-content" type="secondary" (submit)="closeModal()">
+        {{ 'BENEFITS.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</gosi-modal-dc>

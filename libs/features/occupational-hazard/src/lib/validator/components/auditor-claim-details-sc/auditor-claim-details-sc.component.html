@@ -1,0 +1,234 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-lg-12 form-action">
+      <div class="mark-as-completed">
+        <div class="btn-section float-left main-heading">
+          {{ 'OCCUPATIONAL-HAZARD.AUDITOR.AUDIT-HEADER' | translate }}
+        </div>
+        <div class="btn-section float-right pl-2 pr-2" *ngIf="showMarkAsCompleted">
+          <gosi-button-dc id="batch" type="primary" size="sm" (submit)="showModal(commentTemplate, 'modal-lg')">{{
+            'OCCUPATIONAL-HAZARD.AUDITOR.MARK-COMPLETED' | translate
+          }}</gosi-button-dc>
+        </div>
+        <div class="btn-section float-right pl-2 pr-2" *ngIf="!showMarkAsCompleted">
+          <gosi-button-dc id="batch" type="primary" size="sm" (submit)="showModal(prohibitClaim, 'modal-lg')">{{
+            'OCCUPATIONAL-HAZARD.AUDITOR.MARK-COMPLETED' | translate
+          }}</gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Batch details section -->
+  <div class="row">
+    <div class="col-md-12">
+      <oh-batch-details-dc
+        [batchDetails]="batchDetails"
+        [auditorFlow]="true"
+        [templateView]="false"
+      ></oh-batch-details-dc>
+    </div>
+  </div>
+  <!-- Amount details section -->
+  <oh-batch-amount-details-dc [amountDetails]="batchDetails"></oh-batch-amount-details-dc>
+  <!-- Previod Batch section -->
+  <div class="row">
+    <div class="col-lg-12 form-action">
+      <div class="mark-as-completed">
+        <div class="btn-section float-left pl-2 pr-2">
+          <gosi-button-dc
+            id="batch"
+            type="secondary"
+            size="md"
+            [outlineOnly]="true"
+            (click)="invoiceDetails.previousInvoiceId ? batchModal(batchTemplate) : batchModal(emptyBatch)"
+            >{{ 'OCCUPATIONAL-HAZARD.AUDITOR.PREVIOUS-BATCH' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Claim Details-->
+  <oh-batch-list-dc
+    [invoiceDetails]="invoiceDetails"
+    [treatmentList]="treatmentDetails"
+    [hideAction]="hideAction"
+    [claimNo]="claimNo"
+    [rejectReasonList$]="rejectReasonList$"
+    [serviceTypeList$]="serviceTypeList$"
+    [contributor]="contributor"
+    [closeModal]="closeModal"
+    (getTreatmentServiceDetails)="fetchTreatmentDetails($event)"
+    (sortEvent)="getSortDetails($event)"
+    (requestEvent)="showModal(requestTemplate, 'modal-lg', $event)"
+    [claimSummaryDetails]="claimSummaryDetails"
+    [previousClaims]="previousClaims"
+    (claim)="fetchClaim($event)"
+    (rejectionForm)="rejectTreatment($event)"
+    (navigate)="navigateTo($event)"
+    (loadMore)="loadMore($event)"
+    (filterValues)="applyFilter($event)"
+    [comment]="commentList"
+    [documents]="documents"
+    [receiveClarification]="receiveClarification"
+    [referenceNo]="routerData.transactionId"
+  ></oh-batch-list-dc>
+</div>
+
+<!-- Templates -->
+<ng-template #batchTemplate>
+  <div class="row modal-style">
+    <oh-batch-details-dc [batchDetails]="previousBatchDetails" [auditorFlow]="true" [templateView]="true">
+    </oh-batch-details-dc>
+    <oh-batch-amount-details-dc [amountDetails]="previousBatchDetails" [templateView]="true">
+    </oh-batch-amount-details-dc>
+  </div>
+  <div class="d-flex justify-content-center close-button" modalAction>
+    <gosi-button-dc type="secondary" id="close" (submit)="closeBatch()">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+    >
+  </div>
+</ng-template>
+
+<ng-template #errorTemplate>
+  <div class="row message justify-content-center">
+    <gosi-modal-dc>
+      <div modalContent>
+        <gosi-alert-dc [message]="diseaseIdMessage | translate" type="info" [dismissible]="false" [noPadding]="true">
+        </gosi-alert-dc>
+      </div>
+      <div class="d-flex close-button justify-content-center" modalAction>
+        <gosi-button-dc id="close" type="secondary" (submit)="clear()">
+          {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+
+<ng-template #emptyBatch>
+  <div class="mt-5 text-center">
+    <p class="text-muted">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.PREVIOUS-BATCH-INFO' | translate | titlecase }}</p>
+  </div>
+  <div class="d-flex close-button justify-content-center">
+    <gosi-button-dc id="close" type="secondary" (submit)="clear()">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+    >
+  </div>
+</ng-template>
+
+<ng-template #commentTemplate>
+  <div class="mt-5 ml-3 mr-3">
+    <p class="main-heading">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.AUDIT-HEADER' | translate | titlecase }}</p>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          name="comments"
+          [label]="'CORE.COMMENTS' | translate"
+          [control]="comment"
+          [maxLength]="commentsMaxlength"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 form-action">
+        <div class="mark-as-completed">
+          <div class="btn-section float-left pl-2 pr-2">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="clear()">
+              {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-right pl-2 pr-2">
+            <gosi-button-dc id="submit" type="primary" (submit)="markAsCompleted()">
+              {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+<ng-template #requestTemplate>
+  <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate">
+    <div class="row" modalContent>
+      <div *ngIf="commentAlert" class="col-lg-12">
+        <gosi-alert-dc message="CORE.ERROR.MANDATORY-FIELDS" type="danger" [dismissible]="false"></gosi-alert-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="docAlert">
+        <gosi-alert-dc
+          message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+          type="warning"
+          [dismissible]="true"
+        ></gosi-alert-dc>
+      </div>
+      <div class="col-lg-12 mt-3 mb-3 ml-3">
+        <ng-container *ngFor="let item of selectedService; let i = index">
+          <span class="sid"> {{ 'THEME.SID' | translate }} {{ item.serviceId }} | {{ item.serviceDescription }} </span>
+        </ng-container>
+      </div>
+      <div class="col-md-12">
+        <gosi-input-multi-select-dropdown-dc
+          id="requestedDocuments"
+          [control]="reportAllowanceModal.get('document')"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          (selected)="receiveDocumentList($event)"
+          [list]="documentListLov"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          [name]="'rejectComments'"
+          label="OCCUPATIONAL-HAZARD.COMMENTS"
+          [maxLength]="maxLengthComments"
+          [control]="reportAllowanceModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right">
+        <gosi-button-dc id="confirmSubmitBtn" class="action-button" (submit)="requestTpa()" type="success">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelApproveBtn" (submit)="resetModalClaims()" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #prohibitClaim>
+  <div class="row justify-content-center mt-3 mb-3">
+    <gosi-modal-dc>
+      <div modalContent>
+        <gosi-alert-dc
+          message="OCCUPATIONAL-HAZARD.PROHIBIT-CLAIM"
+          type="danger"
+          [dismissible]="false"
+          [noPadding]="false"
+        >
+        </gosi-alert-dc>
+      </div>
+      <div class="d-flex justify-content-center m-4" modalAction>
+        <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

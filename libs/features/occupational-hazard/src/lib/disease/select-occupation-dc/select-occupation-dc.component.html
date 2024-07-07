@@ -1,0 +1,145 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-card-dc [heading]="'OCCUPATIONAL-HAZARD.DISEASE.CAUSES-OF-OCCUPATION' | translate" type="secondary">
+  <div *ngIf="engagementDetailsToSave.length > 0">
+    <ng-container #mainContainer>
+      <div class="row">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th>
+                {{ 'OCCUPATIONAL-HAZARD.ENGAGEMENT-OCCUPATION' | translate | titlecase }}
+              </th>
+              <th>
+                {{ 'OCCUPATIONAL-HAZARD.ESTABLISHMENTS' | translate | titlecase }}
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of engagementDetailsToDisplay; let i = index">
+              <tr class="table-row-not-expanded">
+                <td id="{{ 'occupaton' + i }}">
+                  {{ item.occupationName | bilingualText }}
+                </td>
+                <td id="{{ 'establishmentNameValue' + i }}">
+                  {{ item.establishmentName | bilingualText }}
+                </td>
+                <td (click)="expand(item)">
+                  <a *ngIf="isOccupation && !disableEst" class="edit-block" [id]="'edit' + i">
+                    <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                  </a>
+                </td>
+                <td>
+                  <a
+                    *ngIf="isOccupation && !disableEst"
+                    class="delete-block"
+                    [id]="'delete' + i"
+                    (click)="showModal(deleteOccupation)"
+                  >
+                    <fa-icon [icon]="['far', 'trash-alt']"></fa-icon>
+                  </a>
+                </td>
+                <ng-template #deleteOccupation>
+                  <gosi-confirm-modal-dc
+                    [message]="'OCCUPATIONAL-HAZARD.DISEASE.CONFIRM-DELETE' | translate"
+                    (onConfirm)="onDeleteOccupation(i)"
+                    (onCancel)="decline()"
+                  ></gosi-confirm-modal-dc>
+                </ng-template>
+              </tr>
+              <tr id="expanded-row">
+                <td *ngIf="item.isExpanded && showOccupationEditMode && !disableEst" class="full-width-td white-bg" [attr.colspan]="5">
+                  <oh-occupation-details-dc
+                    [occupationDetailsForm]="occupationDetailsForm"
+                    [occupationsList]="occupationsList"
+                    [isDisabled]="isDisabled"
+                    [disableEst]="disableEst"
+                    [occupationFormFlag]="occupationFormFlag"
+                    [textAreaVisible]="textAreaVisible"
+                    [noEngagementResults]="noEngagementResults"
+                    [noEngagementsLoaded]="noEngagementsLoaded"
+                    [occupationType]="occupationType"
+                    [isOccupationsLoaded]="isOccupationsLoaded"
+                    [engagementResults]="engagementResults"
+                    [occupationDetailsEdit]="occupationDetailsToEdit"
+                    [isOccupationSelected]="isOccupationSelected"
+                    [isOccupation]="isOccupation"
+                    [engagementOccupationDetails]="engagementOccupationDetails"
+                    [engagementDetailsToSave]="engagementDetailsToSave"
+                    (getEngagementDetails)="getEngagements($event)"
+                    (saveOccupation)="saveOccupationDetails()"
+                    (cancelSave)="cancel()"
+                    (showNewOccupation)="showTextArea($event)"
+                  >
+                  </oh-occupation-details-dc>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <div class="row map-block" *ngIf="!disableEst">
+      <div class="col-lg-12">
+        <div class="d-flex justify-content-center">
+          <gosi-button-dc [outlineOnly]="true" type="secondary" size="md" (click)="selectAnotherOccupation()">
+            {{ 'OCCUPATIONAL-HAZARD.DISEASE.SELECT-ANOTHER-OCCUPATION' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!showEstablishmentTable">
+    <div *ngIf="noOccupationResults && !showOccupation" class="row">
+      <div class="col-lg-12">
+        <div class="no-results">
+          {{ 'OCCUPATIONAL-HAZARD.DISEASE.NO-OCCUPATION-SELECTED' | translate }}
+        </div>
+      </div>
+      <div class="container" *ngIf="!disableEst">
+        <div *ngIf="!showOccupation && noOccupationResults">
+          <div class="col-md-12 d-flex justify-content-center mt-4 mb-4">
+            <gosi-button-dc id="selectOccupation"  [disabled]="disableEst" type="primary" (click)="selectAnotherOccupation()">
+              {{ 'OCCUPATIONAL-HAZARD.DISEASE.SELECT-OCCUPATION' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <oh-occupation-details-dc
+      *ngIf="showOccupation  && !disableEst"
+      [occupationDetailsForm]="occupationDetailsForm"
+      [occupationsList]="occupationsList"
+      [isDisabled]="isDisabled"
+      [occupationFormFlag]="occupationFormFlag"
+      [textAreaVisible]="textAreaVisible"
+      [noEngagementResults]="noEngagementResults"
+      [noEngagementsLoaded]="noEngagementsLoaded"
+      [occupationType]="occupationType"
+      [engagementResults]="engagementResults"
+      [occupationType]="occupationType"
+      [isOccupationsLoaded]="isOccupationsLoaded"
+      [isOccupationSelected]="isOccupationSelected"
+      [isOccupation]="isOccupation"
+      [engagementOccupationDetails]="engagementOccupationDetails"
+      [engagementDetailsToSave]="engagementDetailsToSave"
+      (getEngagementDetails)="getEngagements($event)"
+      (saveOccupation)="saveOccupationDetails()"
+      (showNewOccupation)="showTextArea($event)"
+      (cancelSave)="cancel()"
+    >
+    </oh-occupation-details-dc>
+  </div>
+  <ng-template #addExistingOccupation>
+    <gosi-confirm-modal-dc
+      [message]="'OCCUPATIONAL-HAZARD.DISEASE.OCCUPATION-EXISTING-CONFIRMATION' | translate"
+      (onConfirm)="onAddOccupation()"
+      (onCancel)="decline()"
+    ></gosi-confirm-modal-dc>
+  </ng-template>
+</gosi-card-dc>

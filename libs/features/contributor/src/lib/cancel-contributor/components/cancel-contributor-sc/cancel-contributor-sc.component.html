@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <!-- Heading -->
+  <cnt-header-section-dc
+    heading="CONTRIBUTOR.CANCEL-CON.CANCEL-ENGAGEMENT"
+    (goBack)="checkForChanges(cancelTemplate)"
+  ></cnt-header-section-dc>
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="contributor">
+    <div class="col-lg-12">
+      <cnt-contributor-banner-dc [contributor]="contributor"></cnt-contributor-banner-dc>
+    </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <div class="row mt-4" *ngIf="engagement || cancellationDetails">
+    <div class="col-12">
+      <cnt-cancel-engagement-details-dc
+        [leavingReasonList]="leavingReasonList$ | async"
+        [cancelReasonList]="cancelReasonList$ | async"
+        [engagement]="engagement"
+        [isPpa]="isPpa"
+        [cancellationDetails]="cancellationDetails"
+        [parentForm]="parentForm"
+        [isEditMode]="isEditMode"
+        (isWrongReg)="getDocIfWrongReg($event)"
+      >
+      </cnt-cancel-engagement-details-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="documents.length > 0">
+    <div class="col-12">
+      <cnt-document-upload-dc
+        [documentList]="documents"
+        [businessKey]="engagementId"
+        [transactionId]="transactionId"
+        [parentForm]="parentForm"
+        [referenceNo]="referenceNo"
+        [showDocuments]="true"
+        [showComments]="true"
+        [uuid]="uuid"
+        [customInfo]="
+          establishment?.gccEstablishment || establishment?.ppaEstablishment ? '' : 'CONTRIBUTOR.OPTIONAL-DOCUMENT-INFO'
+        "
+        (refresh)="refreshDocument($event)"
+      ></cnt-document-upload-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <cnt-action-area-dc
+        primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+        (submit)="submitTransaction()"
+        [disablePrimary]="apiTriggered"
+        (cancel)="checkForChanges(cancelTemplate)"
+      ></cnt-action-area-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="checkRevertRequired()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

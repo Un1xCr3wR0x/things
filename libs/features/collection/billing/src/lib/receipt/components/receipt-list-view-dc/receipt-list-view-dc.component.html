@@ -1,0 +1,243 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<ng-container *ngIf="receiptList">
+  <div class="row" *ngIf="!isReceiptSearch">
+    <div class="col-lg-4 col-md-12 header pb-3">
+      <a *ngIf="originFromPublicBillDashBoard" class="icon-seprator" (click)="navigateBackToBillDashBoard()">
+        <fa-icon
+          class="back-icon"
+          [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+      <span *ngIf="!isVicReceipt"
+        >{{
+          !isMofReceiptFlag
+            ? ('BILLING.ESTABLISHMENT-RECEIPTS' | translate)
+            : ('BILLING.MOF-PAYMENT-RECEIPTS' | translate)
+        }}
+        <span class="col-auto mr-auto sub-header">
+          {{ 'BILLING.RECEIPT-COUNT' | translate: { receiptCount: receiptList.noOfRecords } }}
+        </span>
+      </span>
+      <span *ngIf="isVicReceipt"
+        >{{ 'BILLING.VIC-RECEIPTS' | translate }}
+        <span class="col-auto mr-auto sub-header">
+          {{ 'BILLING.RECEIPT-COUNT' | translate: { receiptCount: receiptList.noOfRecords } }}
+        </span>
+      </span>
+    </div>
+    <div class="col-lg-8 col-md-12">
+      <div class="serch-sort-sec menu">
+        <div class="row d-flex flex-row full-width m-0">
+          <div class="col-lg-5 col-md-6 full-width option-align pl-0 pr-0" id="searchid">
+            <div class="option-align search-width">
+              <gosi-search-dc
+                [placeholder]="'BILLING.ENTER-RECEIPT-NUMBER' | translate"
+                (search)="onSearch($event)"
+                (keyup)="onKeyUp($event.target.value)"
+              ></gosi-search-dc>
+            </div>
+            <div class="pl-0 pr-0">
+              <blg-receipt-filter-dc
+                (filterValues)="filterReceipts($event)"
+                [receiptMode]="receiptModes | async"
+                [receiptStatus]="receiptStatus | async"
+                [isVicReceipt]="isVicReceipt"
+              >
+              </blg-receipt-filter-dc>
+            </div>
+          </div>
+
+          <div class="sort" id="searchid">
+            <gosi-sort-dc
+              [list]="receiptSortFields | async"
+              [initialDirection]="sortOrder"
+              (direction)="sortDirection($event)"
+              (sortItemSelected)="sortedItem($event)"
+            ></gosi-sort-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="receiptList.receiptDetailDto.length > 0; else noResult">
+    <div class="table-effect">
+      <div class="table-responsive">
+        <table class="table table-borderless">
+          <thead class="table-header">
+            <tr>
+              <th *ngIf="isReceiptSearch">{{ 'BILLING.ESTABLISHMENT' | translate }}</th>
+              <th>{{ 'BILLING.RECEIPT-NUMBER' | translate | titlecase }}</th>
+              <th>
+                {{ 'BILLING.RECEIPT-DATE' | translate | titlecase }}
+              </th>
+              <th>{{ 'BILLING.RECEIPT-MODE' | translate | titlecase }}</th>
+              <th *ngIf="!isMofReceiptFlag">
+                {{ 'BILLING.AMOUNT' | translate | titlecase }}
+                <span class="currencySize">({{ currentCurrencyLable | translate }})</span>
+              </th>
+              <th *ngIf="isMofReceiptFlag">
+                {{ 'BILLING.AMOUNT' | translate | titlecase }}
+                <span class="currencySize">({{ 'BILLING.SAR' | translate }})</span>
+              </th>
+              <th>
+                {{ 'BILLING.PAYMENT-REFERENCE-NUMBER' | translate | titlecase }}
+              </th>
+              <th *ngIf="isMofReceiptFlag">
+                {{ 'BILLING.ESTABLISHMENT-TYPE' | translate | titlecase }}
+              </th>
+              <th *ngIf="isReceiptSearch">{{ 'BILLING.CHEQUE-NUMBER' | translate }}</th>
+              <th>{{ 'BILLING.STATUS' | translate | titlecase }}</th>
+              <th *ngIf="!isReceiptSearch"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="
+                let receipt of receiptList.receiptDetailDto
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: receiptList.totalNoOfRecords
+                      };
+                let i = index
+              "
+            >
+              <tr class="border-bottom">
+                <td *ngIf="isReceiptSearch">
+                  <span>
+                    {{
+                    receipt.establishment.name.english
+                    ? receipt.establishment.name.english
+                    : receipt.establishment.name.arabic
+                    }}
+                  </span>
+                  <br/>
+                  <span>({{ 'BILLING.REGISTRATION-NO' | translate }}: {{ receipt.establishment.registrationNo }})</span>
+                </td>
+                <td id="parentReceiptNo{{ i }}">
+                  <a class="view-details" (click)="getReceipt(receipt.parentReceiptNo, receipt.establishment.registrationNo)">
+                    {{ receipt.parentReceiptNo }}
+                  </a>
+                </td>
+                <td>
+                  <span *ngIf="receipt.receiptDate?.entryFormat === 'HIJIRA'"> {{ receipt.receiptDate?.hijiri }}</span>
+                  <span *ngIf="receipt.receiptDate?.entryFormat !== 'HIJIRA'">
+                    {{ receipt.receiptDate?.gregorian | date: 'dd/MM/yyyy' }}</span
+                  >
+                </td>
+                <td>{{ receipt.receiptMode | bilingualText }}</td>
+                <td *ngIf="this.currentCurrency === 'KWD' || this.currentCurrency === 'OMR'
+                    || this.currentCurrency === 'BHD'">
+                  {{ receipt.amountReceived * exchangeValue | number: '1.2-3' }}
+                </td>
+                <td *ngIf="this.currentCurrency !== 'KWD' && this.currentCurrency !== 'OMR'
+                    && this.currentCurrency !== 'BHD'">
+                  {{ receipt.amountReceived * exchangeValue | number: '1.2-2' }}
+                </td>
+                <td *ngIf="receipt.receiptMode.english !== 'Sadad Network'">
+                  <ng-container *ngIf="receipt.referenceNo; else chequeNo">
+                    {{ receipt.referenceNo }}
+                  </ng-container>
+                  <ng-template #chequeNo>
+                    {{ 'BILLING.NA' | translate }}
+                  </ng-template>
+                </td>
+                <td *ngIf="receipt.receiptMode.english === 'Sadad Network'">
+                  <ng-container *ngIf="receipt.referenceNo; else chequeNo">
+                    {{ receipt.referenceNo }}
+                  </ng-container>
+                  <ng-template #chequeNo>
+                    {{ receipt.chequeNumber }}
+                  </ng-template>
+                </td>
+                <td *ngIf="isReceiptSearch && (receipt.receiptMode.english !== 'Personnel Cheque' && receipt.receiptMode.english !== 'Bankers Cheque')">
+                  {{
+                    'BILLING.NA' | translate
+                  }}
+                </td>
+                <td *ngIf="isReceiptSearch && (receipt.receiptMode.english === 'Personnel Cheque' || receipt.receiptMode.english === 'Bankers Cheque')">
+                  {{ receipt.chequeNumber }}
+                </td>
+                <td *ngIf="isMofReceiptFlag && receipt.mofIndicator === 'MOF_PAID_PPA'">{{'PPA' }}</td>
+                <td *ngIf="isMofReceiptFlag && receipt.mofIndicator === 'MOF_PAID_GOSI'">{{'GOSI' }}</td>
+                <td>{{ receipt.receiptStatus | bilingualText }}</td>
+                <td class="kebab-menu align-kebab">
+                  <div class="btn-group" dropdown container="body" placement="placement">
+                    <a
+                      id="button-basic"
+                      dropdownToggle
+                      class="view-details dropdown-toggle"
+                      aria-controls="dropdown-container"
+                    >
+                      <div class="kebab-icon"></div>
+                    </a>
+                    <ul
+                      id="dropdown-container"
+                      *dropdownMenu
+                      class="dropdown-menu"
+                      [ngClass]="lang === 'en' ? 'dropdown-menu-right' : ''"
+                      role="menu"
+                      aria-labelledby="button-container"
+                    >
+                      <li role="menuitem">
+                        <a class="dropdown-item" (click)="getReceipt(receipt?.parentReceiptNo, receipt?.establishment?.registrationNo)">{{
+                          'BILLING.VIEW-RECEIPT' | translate
+                        }}</a>
+                      </li>
+                      <ng-container *ngIf="receipt.receiptStatus.english === status && isMofReceiptFlag">
+                        <li role="menuitem">
+                          <a class="dropdown-item" (click)="routeToBreakup(receipt.parentReceiptNo)">{{
+                            'BILLING.ALLOCATION-BREAKUP' | translate
+                          }}</a>
+                        </li>
+                      </ng-container>
+
+                      <li role="menuitem" style="display: none">
+                        <a class="dropdown-item" (click)="printReceipt(receipt.parentReceiptNo)">{{
+                          'BILLING.PRINT-RECEIPT' | translate
+                        }}</a>
+                      </li>
+                      <li role="menuitem">
+                        <a class="dropdown-item" (click)="downloadReceipt(receipt.parentReceiptNo)">{{
+                          'BILLING.DOWNLOAD-RECEIPT' | translate
+                        }}</a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <ng-container>
+      <div>
+        <gosi-pagination-dc
+          *ngIf="receiptList.totalNoOfRecords > itemsPerPage"
+          [totalSize]="receiptList.totalNoOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          paginationId="paginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-template #noResult>
+    <div class="mt-5 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </ng-template>
+</ng-container>

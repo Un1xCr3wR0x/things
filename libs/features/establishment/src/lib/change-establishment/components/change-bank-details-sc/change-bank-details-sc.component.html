@@ -1,0 +1,151 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <!-- header part -->
+  <div class="row">
+  <div class="col-sm-12 col-md-6 col-lg-6">
+  <est-heading-dc [backLink]="routeToView" [canNavigate]="false" shouldPrompt="true" (backEvent)="cancelBankDetailsTransaction()">
+    {{ 'ESTABLISHMENT.EDIT-BANK-ACCOUNT-DETAILS' | translate }}
+  </est-heading-dc>
+  </div>
+  <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isGOL && isValidator">
+    <est-claim-assign-release-dc
+    [payload]="payload"
+    [isUnclaimed]="isUnclaimed"
+    [taskId]="taskId"
+    (assign)="assignClicked()"
+    (release)="releaseClicked()"
+    >
+    </est-claim-assign-release-dc>
+  </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc [establishment]="establishmentProfile" heading="ESTABLISHMENT.EST-BASIC-DETAILS">
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+  <gosi-card-dc
+    *ngIf="editBankDetailsForm"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.BANK-ACCOUNT-DETAILS' | translate }}"
+  >
+    <div class="row">
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-text-dc
+          id="iBanAccountNumber"
+          name="iBanAccountNumber"
+          [label]="'ESTABLISHMENT.IBAN-NUMBER' | translate"
+          [control]="editBankDetailsForm.get('ibanAccountNo')"
+          [maxLength]="minMaxLengthAccountNo"
+          gosiSpecialCharacterMask
+          [onlyAlphaNumerics]="true"
+          [removeSpecialCharacters]="true"
+        ></gosi-input-text-dc>
+      </div>
+      <div
+        class="col-md-6 col-sm-12"
+        *ngIf="
+          isGcc
+            ? editBankDetailsForm.get('ibanAccountNo').valid
+            : editBankDetailsForm?.get('bankName')?.get('english')?.value || !isIbanMapped
+        "
+      >
+        <gosi-input-select-dc
+          id="bankName"
+          (select)="bankChange()"
+          [name]="'bankName'"
+          [label]="'ESTABLISHMENT.BANK-NAME' | translate"
+          [control]="editBankDetailsForm.get('bankName')"
+          [list]="isGcc ? (bankNameList$ | async) : bankNameList"
+          [disabled]="
+            isGcc
+              ? !(editBankDetailsForm.get('ibanAccountNo').value && editBankDetailsForm.get('ibanAccountNo').valid)
+              : isIbanMapped
+          "
+        ></gosi-input-select-dc>
+      </div>
+    </div>
+    <div *ngIf="isEligibleForIbanValidation">
+      <div class="row">
+        <div>
+          <gosi-button-dc
+            id="verifyBtn"
+            class="btn"
+            type="primary"
+            [disabled]="isVerified || !editBankDetailsForm.get('bankName')?.get('english')?.value"
+            (submit)="verifyIban()"
+          >
+            {{ 'ESTABLISHMENT.VERIFY' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+      <span>
+        <gosi-alert-dc
+          #verifyAlert
+          [noPadding]="false"
+          [bilingualMessage]="verifyMessage"
+          [type]="verifyType"
+          [dismissible]="false"
+        ></gosi-alert-dc>
+      </span>
+      <br>
+      <div class="row">
+        <gosi-label-dc
+          class="col-md-4 col-sm-12"
+          *ngIf="showAccountStatus"
+          id="accountStatus"
+          label="{{ 'ESTABLISHMENT.BANK-ACCOUNT.STATUS' | translate }}"
+          [control]="accountStatus | translate"
+        ></gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <est-documents-dc
+    [uuid]="uuid"
+    [documents]="bankDetailsDocuments"
+    [businessKey]="registrationNo"
+    [transactionId]="documentTransactionId"
+    (refreshDocument)="bindDocContent($event)"
+    [referenceNo]="referenceNo"
+    *ngIf="!hideDocuments"
+  ></est-documents-dc>
+  <gosi-card-dc type="secondary" *ngIf="editBankDetailsForm && !hideDocuments" [paddingBottom]="true">
+    <gosi-input-text-area-dc
+      label="ESTABLISHMENT.COMMENTS"
+      id="comments"
+      name="comments"
+      [maxLength]="commentsMaxLength"
+      [control]="editBankDetailsForm.get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </gosi-card-dc>
+  <est-footer-buttons-dc *ngIf="showSaveButton"
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="updateBankDetails()"
+    (cancel)="showModal(cancelTemplate)"
+    [showPrimary]="isEligibleForIbanValidation ? isVerified && isActive : true"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

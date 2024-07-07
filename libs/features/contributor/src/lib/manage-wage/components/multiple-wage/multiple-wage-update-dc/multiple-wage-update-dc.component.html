@@ -1,0 +1,175 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- html for wage section in table-->
+<div class="row">
+  <!-- Occupation row-->
+  <div class="col-sm-12 col-md-8 col-lg-7" *ngIf="!isPPA">
+    <gosi-input-select-dc
+      [id]="'occupation' + index"
+      [label]="'CONTRIBUTOR.WAGE.OCCUPATION' | translate | uppercase"
+      [list]="occupationList"
+      [control]="updateWageForm.get('wageDetails').get('occupation')"
+      size="sm"
+      [disabled]="contributorWage.proactive || contributorWage.anyPendingRequest"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-sm-12 col-md-8 col-lg-7" *ngIf="isPPA">
+    <gosi-input-select-dc
+      class="min-width-300"
+      [id]="'jobClass' + index"
+      [control]="updateWageForm.get('wageDetails').get('jobClassName')"
+      [lookup]="lookUpDatas?.jobClassLov"
+      [label]="'CONTRIBUTOR.JOB-CLASS'"
+      [placeholder]="'CONTRIBUTOR.JOB-CLASS' | translate"
+      (selectLov)="selectJobClass($event)"
+      [disabled]="contributorWage.proactive || contributorWage.anyPendingRequest"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-sm-12 col-md-8 col-lg-7" *ngIf="isPPA">
+    <gosi-input-select-dc
+      class="min-width-300"
+      [id]="'rank' + index"
+      [control]="updateWageForm.get('wageDetails').get('jobRankName')"
+      [lookup]="lookUpDatas?.jobRankLov"
+      [label]="'CONTRIBUTOR.RANK'"
+      [placeholder]="'CONTRIBUTOR.RANK' | translate"
+      (selectLov)="selectJobRank($event)"
+      [disabled]="contributorWage.proactive || contributorWage.anyPendingRequest"
+    >
+    </gosi-input-select-dc>
+  </div>
+
+  <div class="col-sm-12 col-md-8 col-lg-7" *ngIf="isPPA">
+    <gosi-input-select-dc
+      class="min-width-300"
+      [id]="'grade' + index"
+      [control]="updateWageForm.get('wageDetails').get('jobGradeName')"
+      [lookup]="lookUpDatas?.jobGradeLov"
+      [label]="'CONTRIBUTOR.GRADE'"
+      [placeholder]="'CONTRIBUTOR.GRADE' | translate"
+      (selectLov)="selectJobGrade($event)"
+      [disabled]="contributorWage.proactive || contributorWage.anyPendingRequest"
+    >
+    </gosi-input-select-dc>
+  </div>
+  <div class="col-12">
+    <gosi-alert-dc
+      *ngIf="contributorWage.proactive"
+      message="CONTRIBUTOR.CHANGE-ENG-NON-SAUDI-INFO"
+      type="info"
+      [dismissible]="false"
+      [transparent]="true"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+  </div>
+</div>
+
+<!-- Wage details row-->
+<div class="row">
+  <div class="col-sm-12 col-md-12 col-lg-10">
+    <div class="wage-section">
+      <div class="row">
+        <div
+          class="col-12"
+          *ngIf="isPPA && updateWageForm.get('wageDetails').get('wage').get('basicWage').disabled === false"
+        >
+          <gosi-alert-dc [message]="'CONTRIBUTOR.WAGE-UPDATE-MSG'" type="info" [dismissible]="false"></gosi-alert-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-3">
+          <gosi-input-currency-dc
+            [id]="'basicWage' + index"
+            [label]="'CONTRIBUTOR.WAGE.BASIC-WAGE' | translate | uppercase"
+            [control]="updateWageForm.get('wageDetails').get('wage').get('basicWage')"
+            size="sm"
+            (blur)="onBlur()"
+            (totalWageCalc)="calculateTotalWage()"
+            [disabled]="
+              contributorWage.anyPendingRequest ||
+              updateWageForm.get('wageDetails').get('wage').get('basicWage').disabled
+            "
+            [separatorLimit]="wageSeparatorLimit"
+            [ngClass]="{ 'invalid-selection': contributorWage.message ? true : false }"
+          ></gosi-input-currency-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-3">
+          <gosi-input-currency-dc
+            [id]="'hra' + index"
+            [label]="'CONTRIBUTOR.WAGE.HRA' | translate | uppercase"
+            [control]="updateWageForm.get('wageDetails').get('wage').get('housingBenefit')"
+            size="sm"
+            (blur)="onBlur()"
+            (totalWageCalc)="calculateTotalWage()"
+            [disabled]="contributorWage.anyPendingRequest || isPPA"
+            [hideOptionalLabel]="true"
+            [separatorLimit]="wageSeparatorLimit"
+            [ngClass]="{ 'invalid-selection': contributorWage.message ? true : false }"
+          ></gosi-input-currency-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-3">
+          <gosi-input-currency-dc
+            [id]="'commissions' + index"
+            [label]="'CONTRIBUTOR.WAGE.COMMISSIONS' | translate | uppercase"
+            [control]="updateWageForm.get('wageDetails').get('wage').get('commission')"
+            size="sm"
+            (blur)="onBlur()"
+            (totalWageCalc)="calculateTotalWage()"
+            [disabled]="contributorWage.anyPendingRequest || isPPA"
+            [hideOptionalLabel]="true"
+            [separatorLimit]="wageSeparatorLimit"
+            [ngClass]="{ 'invalid-selection': contributorWage.message ? true : false }"
+          ></gosi-input-currency-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-3">
+          <gosi-input-currency-dc
+            [id]="'otherAllowance' + index"
+            [label]="'CONTRIBUTOR.WAGE.OTHER-ALLOWANCE' | translate | uppercase"
+            [control]="updateWageForm.get('wageDetails').get('wage').get('otherAllowance')"
+            size="sm"
+            (blur)="onBlur()"
+            (totalWageCalc)="calculateTotalWage()"
+            [disabled]="contributorWage.anyPendingRequest || isPPA"
+            [hideOptionalLabel]="true"
+            [separatorLimit]="wageSeparatorLimit"
+            [ngClass]="{ 'invalid-selection': contributorWage.message ? true : false }"
+          ></gosi-input-currency-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-2 total-wage">
+    <div class="total-heading">
+      {{ 'CONTRIBUTOR.WAGE.TOTAL-WAGE' | translate | uppercase }}
+    </div>
+    <div class="total-content">
+      {{ updateWageForm.get('wageDetails').get('wage').get('totalWage').value | number: '1.2-2' }}
+    </div>
+  </div>
+</div>
+
+<ng-template #wageDifferenceModal>
+  <div class="p-3">
+  <gosi-modal-dc>
+    <div class="row content-heading p-3" id="confirm-msg-align-right" *ngIf="wageDiff >= 50" modalContent>
+      {{ 'CONTRIBUTOR.WAGE.WAGE-UPDATE-CONFIRM-MSG' | translate }}
+    </div>
+    <div class="row content-heading p-3" id="confirm-msg-align-right" *ngIf="wageDiff <= -50"  modalContent>
+      {{ 'CONTRIBUTOR.WAGE.WAGE-UPDATE-DECREASE-CONFIRM-MSG' | translate }}
+    </div>
+    <div class="row d-flex justify-content-around mt-5" modalAction>
+      <div class="btn-section">
+        <button class="confirm-popup-btn btn-ripple btn-secondary sm-full-width" (click)="resetWage()">{{'CONTRIBUTOR.CANCEL' | translate }}</button>
+      </div>
+      <div class="btn-section">
+        <button class="confirm-popup-btn btn-ripple btn-secondary sm-full-width" (click)="confirmWageUpdate(true)">
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </button>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</div>
+</ng-template>

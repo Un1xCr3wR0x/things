@@ -1,0 +1,208 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- Heading-->
+<div class="custom-modal">
+  <gosi-modal-dc
+    [modalHeader]="'VIOLATIONS.PENALITY-CALCULATION-DETAILS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="hideModal()"
+  >
+    <div modalContent>
+      <div class="content penalty-details">
+        <!-- penalty Calculation Table  Details-->
+        <div class="row d-flex align-items-center">
+          <div class="col-md-12">
+            <div class="table-scroll table-responsive table-penalty">
+              <div
+                *ngFor="
+                  let items of penaltyInfoDetails[index].violatedContributors
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemsPerPage,
+                          totalItems: noOfRecords,
+                          currentPage: currentPage
+                        };
+                  let i = index;
+                  let odd = odd
+                "
+              >
+                <div class="mobile-view">
+                  <div
+                    class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                    [ngClass]="odd ? 'odd' : 'even'"
+                  >
+                    <div class="card-body align-items-center">
+                      <div class="first-row d-flex flex-row justify-content-between my-2">
+                        <div class="first-cell">
+                          <p class="title">
+                            {{
+                              items.contributorName.english === null
+                                ? items.contributorName.arabic
+                                : (items.contributorName | bilingualText)
+                            }}
+                          </p>
+
+                          <p class="sub-title">
+                            {{ 'VIOLATIONS.REPETETION-TIER' | translate }} :
+                            <span class="title-two"> {{ items?.repetitionTierType | bilingualText }} </span>
+                          </p>
+                          <p *ngIf="isCancelEngagement" class="sub-title">
+                            {{ 'VIOLATIONS.CONTRIBUTION-AMOUNT' | translate }}:
+                            <span class="title-two">{{ items?.contributionAmount | number: '1.2-2' }}</span>
+                          </p>
+                          <ng-template #penaltyDetails>
+                            <ng-container
+                              *ngTemplateOutlet="
+                                penalityCalculationTemplate;
+                                context: { equation: items?.penaltyCalculationEquation }
+                              "
+                            >
+                            </ng-container>
+                          </ng-template>
+                          <p class="sub-title">
+                            {{ 'VIOLATIONS.PENALTY-AMT' | translate }} :
+                            <span class="title-two"> {{ items.violationAmount | number: '1.2-2' }} </span>
+                            <span class="tooltip-hover">
+                              <fa-icon
+                                [icon]="['fas', 'info-circle']"
+                                class="info-icon"
+                                [tooltip]="penaltyDetails"
+                                placement="bottom"
+                              ></fa-icon>
+                            </span>
+                          </p>
+                          <p class="sub-title">
+                            {{ 'VIOLATIONS.TOTAL-PENALITY-AMOUNT' | translate }} :
+                            <span class="title-two"> {{ getAmount() | number: '1.2-2' }} </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="desktop-view">
+                <table class="table table-borderless">
+                  <thead class="thead-light">
+                    <tr>
+                      <th id="contributorName">
+                        {{ 'VIOLATIONS.CONTRIBUTOR' | translate }}
+                      </th>
+                      <th id="repetetionTier">
+                        <div>{{ 'VIOLATIONS.REPETETION-TIER' | translate }}</div>
+                      </th>
+                      <!-- contribution amount -->
+                      <th *ngIf="isCancelEngagement" id="contributionAmount">
+                        <div>{{ 'VIOLATIONS.CONTRIBUTION-AMOUNT' | translate }}</div>
+                      </th>
+                      <th id="penaltyAmount">
+                        {{ 'VIOLATIONS.PENALTY-AMT' | translate }}
+                        <!-- <span class="tooltip-hover">
+                          <fa-icon
+                            [icon]="['fas', 'info-circle']"
+                            class="info-icon"
+                            [tooltip]="penaltyDetails"
+                            placement="bottom"
+                          ></fa-icon>
+                        </span> -->
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="
+                        let items of penaltyInfoDetails[index].violatedContributors
+                          | paginate
+                            : {
+                                id: 'paginationId',
+                                itemsPerPage: itemsPerPage,
+                                totalItems: noOfRecords,
+                                currentPage: currentPage
+                              };
+                        let i = index
+                      "
+                      class="content history-contdent"
+                    >
+                      <td>
+                        {{
+                          items?.contributorName?.english === null
+                            ? items?.contributorName?.arabic
+                            : (items?.contributorName | bilingualText)
+                        }}
+                      </td>
+                      <td>
+                        {{ items?.repetitionTierType | bilingualText }}
+                      </td>
+                      <td *ngIf="isCancelEngagement">
+                        {{ items?.contributionAmount | number: '1.2-2' }}
+                      </td>
+                      <ng-template #penaltyDetails>
+                        <ng-container
+                          *ngTemplateOutlet="
+                            penalityCalculationTemplate;
+                            context: { equation: items?.penaltyCalculationEquation }
+                          "
+                        >
+                        </ng-container>
+                      </ng-template>
+                      <td>
+                        {{ items?.violationAmount | number: '1.2-2' }}
+                        <span class="tooltip-hover">
+                          <fa-icon
+                            [icon]="['fas', 'info-circle']"
+                            class="info-icon"
+                            [tooltip]="penaltyDetails"
+                            placement="{{ lang === 'en' ? 'left' : 'right' }}"
+                          ></fa-icon>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr class="row2">
+                      <td></td>
+                      <td></td>
+                      <td *ngIf="isCancelEngagement"></td>
+                      <td class="total-penalty-width">
+                        <div>
+                          {{ 'VIOLATIONS.TOTAL-PENALITY-AMOUNT' | translate }} : {{ getAmount() | number: '1.2-2' }}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-container>
+          <gosi-pagination-dc
+            *ngIf="noOfRecords > itemsPerPage"
+            [totalSize]="noOfRecords"
+            [itemsPerPage]="itemsPerPage"
+            [pageDetails]="pageDetails"
+            (pageChange)="selectPage($event)"
+            paginationId="paginationId"
+          ></gosi-pagination-dc>
+        </ng-container>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</div>
+<ng-template #penalityCalculationTemplate let-equation="equation">
+  <ng-container>
+    <div class="row penality-row1">{{ 'VIOLATIONS.PENALITY-CALCULATION' | translate }}</div>
+    <div class="penality-row-group">
+      <div class="row penality-row2">
+        {{ 'VIOLATIONS.VIOLATION-CLASS' | translate }} :
+        {{ penaltyInfoDetails[index].selectedViolationClass | bilingualText }}
+      </div>
+      <div class="row penality-row3 w-100">
+        {{ 'VIOLATIONS.PENALTY-AMT' | translate }} =
+        {{ equation | bilingualText }}
+      </div>
+    </div>
+  </ng-container>
+</ng-template>

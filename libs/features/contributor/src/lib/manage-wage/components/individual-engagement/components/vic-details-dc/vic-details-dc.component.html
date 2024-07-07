@@ -1,0 +1,229 @@
+<div class="row" *ngIf="isEligibileReqDate">
+  <div class="col-lg-12">
+    <gosi-alert-dc
+      message="{{
+        'CONTRIBUTOR.INFO-MESSAGE' | translate: { date: latestEngagementPeriod?.startDate?.gregorian | gosiDate }
+      }}"
+      type="info"
+    >
+    </gosi-alert-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 card-value">
+    <gosi-card-dc type="primary" [lessPadding]="true" [isHeading]="false" class="card-wrapper">
+      <div class="row pb-4">
+        <div class="card-heading col-lg-6">
+          {{ 'CONTRIBUTOR.VIC-DETAILS' | translate }}
+        </div>
+        <div class="col-lg-6 btn-values">
+          <gosi-button-dc
+            class="modify-btn"
+            *ngIf="vicEngagementDto?.purposeOfRegistration?.english !== 'Professional'"
+            (click)="navigateToModify()"
+            [disabled]="wageUpdateSuccess"
+            [loading]="wageUpdateSuccess"
+          >
+            {{ 'CONTRIBUTOR.MODIFY-WAGE' | translate }}
+          </gosi-button-dc>
+          <gosi-button-dc
+            class="modify-btn-oc"
+            *ngIf="vicEngagementDto?.purposeOfRegistration?.english === 'Professional'"
+            (click)="navigateToModify()"
+            [disabled]="wageUpdateSuccess"
+            [loading]="wageUpdateSuccess"
+          >
+            {{ 'CONTRIBUTOR.MODIFY-WAGE-AND-OCCUPATION' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.VIC-START-DATE' | translate }}
+          </div>
+          <div class="value-wrapper">
+            <div class="value">{{ joiningDate?.gregorian | gosiDate }}</div>
+          </div>
+          <!-- <div class="value-wrapper" *ngIf="isEligibileReqDate">
+            <div class="value">{{ startDate?.gregorian | gosiDate }}</div>
+          </div> -->
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.COVERAGE' | translate }}
+          </div>
+          <div class="value-wrapper" *ngIf="!isEligibileReqDate">
+            <ng-conatiner *ngFor="let cov of currentEngagementPeriod?.coverageTypes">
+              <div class="value">{{ cov | bilingualText }}</div>
+            </ng-conatiner>
+          </div>
+          <div class="value-wrapper" *ngIf="isEligibileReqDate">
+            <ng-conatiner *ngFor="let cov of engagementPeriod?.coverageTypes">
+              <div class="value">{{ cov | bilingualText }}</div>
+            </ng-conatiner>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.ADD-VIC.PURPOSE-OF-REGISTRATION' | translate }}
+          </div>
+          <div class="value-wrapper">
+            <div class="value">{{ vicEngagementDto?.purposeOfRegistration | bilingualText }}</div>
+          </div>
+        </div>
+        <div class="col-lg-4" *ngIf="vicEngagementDto?.purposeOfRegistration?.english === 'Professional'">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.OCCUPATION' | translate }}
+          </div>
+          <ng-container *ngIf="isEligibileReqDate">
+            <div class="value-wrapper" *ngIf="engagementPeriod?.occupation?.english">
+              <div class="value">{{ engagementPeriod?.occupation | bilingualText }}</div>
+            </div>
+            <div class="value-wrapper" *ngIf="!engagementPeriod?.occupation?.english">
+              <div class="null-value">{{ 'CUSTOMER-INFORMATION.NOT_AVAILABLE' | translate }}</div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!isEligibileReqDate">
+            <div class="value-wrapper" *ngIf="currentEngagementPeriod?.occupation?.english">
+              <div class="value">{{ currentEngagementPeriod?.occupation | bilingualText }}</div>
+            </div>
+            <div class="value-wrapper" *ngIf="!currentEngagementPeriod?.occupation?.english">
+              <div class="null-value">{{ 'CUSTOMER-INFORMATION.NOT_AVAILABLE' | translate }}</div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.ADD-VIC.WAGE-CATEGORY' | translate }}
+          </div>
+          <div class="value-wrapper" *ngIf="isEligibileReqDate">
+            <div class="value">{{ engagementPeriod?.wageCategory }}</div>
+          </div>
+          <div class="value-wrapper" *ngIf="!isEligibileReqDate">
+            <div class="value">{{ currentEngagementPeriod?.wageCategory }}</div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.WAGES' | translate }}
+          </div>
+          <div class="value-wrapper" *ngIf="isEligibileReqDate">
+            <div class="value">
+              {{ engagementPeriod?.monthlyContributoryWage | number: '1.2-2' }}
+              {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+            </div>
+          </div>
+          <div class="value-wrapper" *ngIf="!isEligibileReqDate">
+            <div class="value">
+              {{ currentEngagementPeriod?.monthlyContributoryWage | number: '1.2-2' }}
+              {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.ADD-VIC.CONTRIBUTION-AMOUNT' | translate }}
+          </div>
+          <ng-container *ngIf="isEligibileReqDate">
+            <div class="value-wrapper" *ngIf="engagementPeriod?.contributionAmount">
+              <div class="value">
+                {{ engagementPeriod?.contributionAmount | number: '1.2-2' }} {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+              </div>
+            </div>
+            <div class="value-wrapper" *ngIf="!engagementPeriod?.contributionAmount">
+              <div class="null-value">{{ 'CUSTOMER-INFORMATION.NOT_AVAILABLE' | translate }}</div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!isEligibileReqDate">
+            <div class="value-wrapper" *ngIf="currentEngagementPeriod?.contributionAmount">
+              <div class="value">
+                {{ currentEngagementPeriod?.contributionAmount | number: '1.2-2' }}
+                {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+              </div>
+            </div>
+            <div class="value-wrapper" *ngIf="!currentEngagementPeriod?.contributionAmount">
+              <div class="null-value">{{ 'CUSTOMER-INFORMATION.NOT_AVAILABLE' | translate }}</div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.PAID-MONTHS' | translate }}
+          </div>
+          <div class="value-wrapper" *ngIf="vicContributionDto?.totalContributionMonths">
+            <div class="value">
+              {{ vicContributionDto?.totalContributionMonths }} {{ 'DASHBOARD.MONTHS' | translate }}
+            </div>
+          </div>
+          <div class="value-wrapper" *ngIf="!vicContributionDto?.totalContributionMonths">
+            <div class="value">{{ 'DASHBOARD.ZERO-NUMERAL' | translate }} {{ 'DASHBOARD.MONTHS' | translate }}</div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="heading-wrapper">
+            {{ 'CONTRIBUTOR.TERMINATE-VIC.UNPAID-MONTHS' | translate }}
+          </div>
+          <div class="value-wrapper" *ngIf="vicContributionDto?.numberOfUnPaidMonths">
+            <div class="value">{{ vicContributionDto?.numberOfUnPaidMonths }} {{ 'DASHBOARD.MONTHS' | translate }}</div>
+          </div>
+          <div class="value-wrapper" *ngIf="!vicContributionDto?.numberOfUnPaidMonths">
+            <div class="value">{{ 'DASHBOARD.ZERO-NUMERAL' | translate }} {{ 'DASHBOARD.MONTHS' | translate }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="border-line" *ngIf="isEligibileReqDate">
+        <div class="row">
+          <div class="pt-4 pb-4 header">
+            <div class="card-heading">
+              {{ 'CONTRIBUTOR.NEW-WAGE-DETAILS' | translate }}
+            </div>
+          </div>
+          <div class="info-wrapper">
+            <div class="info-value">
+              <fa-icon class="grey-circle" icon="info-circle"></fa-icon>
+              <span class="info-label">
+                {{
+                  'CONTRIBUTOR.NEW-INFO-MESSAGE'
+                    | translate: { date: latestEngagementPeriod?.startDate?.gregorian | gosiDate }
+                }}</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="heading-wrapper">
+              {{ 'CONTRIBUTOR.NEW-WAGE-CATEGORY' | translate }}
+            </div>
+            <div class="value-wrapper">
+              <div class="value">{{ latestEngagementPeriod?.wageCategory }}</div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="heading-wrapper">
+              {{ 'CONTRIBUTOR.NEW-WAGE' | translate }}
+            </div>
+            <div class="value-wrapper">
+              <div class="value">
+                {{ latestEngagementPeriod?.monthlyContributoryWage | number: '1.2-2' }}
+                {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="heading-wrapper">
+              {{ 'CONTRIBUTOR.NEW-CONTRIBUTION-AMOUNT' | translate }}
+            </div>
+            <div class="value-wrapper">
+              <div class="value">
+                {{ latestEngagementPeriod?.contributionAmount | number: '1.2-2' }}
+                {{ 'CONTRIBUTOR.SAR-MONTH' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>

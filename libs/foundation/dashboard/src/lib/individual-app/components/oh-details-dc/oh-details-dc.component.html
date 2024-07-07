@@ -1,0 +1,185 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<span class="row badge" [ngClass]="type == 'vic' ? '' : 'badge-margin'">
+  <fa-icon class="icon" icon="user-injured"></fa-icon> {{ 'DASHBOARD.OCCUPATIONAL-HAZARDS' | translate | uppercase }}
+</span>
+<ng-container *ngIf="injuryHistoryList?.length > 0">
+  <div class="row" [ngClass]="injuryHistoryList?.length === 1 && isAppIndividual ? 'd-block' : 'oh-div'">
+    <ng-container *ngIf="injuryHistoryList?.length > 0">
+      <dsb-card-carousel-dc
+        [lang]="lang"
+        (onLeftClick)="onCarouselLeftClick()"
+        (onRightClick)="onCarouselRightClick()"
+        [showCarouselLeft]="showCarouselLeft"
+        [showCarouselRight]="showCarouselRight"
+        [isOH]="true"
+      >
+        <ng-container>
+          <div class="d-flex flex-row carousel-tray">
+            <div *ngFor="let injury of injuryHistoryCarouselList; let i = index">
+              <gosi-card-dc
+                type="primary"
+                [ngClass]="[
+                  injuryHistoryList?.length > 2
+                    ? 'card-sizing'
+                    : injuryHistoryList?.length === 2 && !isAppProfile
+                    ? 'name-value'
+                    : injuryHistoryList?.length === 2 && isAppProfile
+                    ? 'card-sizing'
+                    : injuryHistoryList?.length === 1 && isAppProfile
+                    ? 'singleCard'
+                    : isAppIndividual
+                    ? 'slide-value'
+                    : 'name-value'
+                ]"
+                (click)="navigateToOH(injury)"
+                [isShow]="showCarouselLeft"
+                [noMarginBottom]="true"
+              >
+                <div class="row">
+                  <div
+                    class="oh-response"
+                    [ngClass]="[injuryHistoryList?.length === 1 && !isAppProfile ? 'pt-3' : 'pt-0']"
+                  >
+                    <div class="flex flex-column col-auto">
+                      <div class="d-flex">
+                        <div class="response-header">{{ injury?.type | bilingualText }}</div>
+
+                        <div *ngIf="lang == 'en'" class="response-header font-weight-id">
+                          &nbsp;#{{ injury?.injuryId }}
+                        </div>
+                        <div *ngIf="lang == 'ar'" class="response-header font-weight-id">
+                          &nbsp;{{ injury?.injuryId }}#
+                        </div>
+                      </div>
+                      <div class="pt-2 pb-2">
+                        <div
+                          [ngClass]="[
+                            getColor(injury?.actualStatus),
+                            injury?.actualStatus.english == 'Closed without continuing treatment'
+                              ? 'injury-padding'
+                              : 'injury-status'
+                          ]"
+                          class="injury-status"
+                        >
+                          {{ injury?.actualStatus | bilingualText }}
+                        </div>
+                      </div>
+                      <div *ngIf="injury?.actualStatus.english != 'Pending'">
+                        <div class="text-value" *ngIf="injury?.trtmentStartDate?.gregorian">
+                          {{ 'DASHBOARD.TREATMENT-START-DATE' | translate }}:
+                          {{ injury?.trtmentStartDate?.gregorian | gosiDate }}
+                        </div>
+                        <div
+                          class="text-value"
+                          *ngIf="
+                            injury?.date?.gregorian &&
+                            !injury?.isComplication &&
+                            injury.status.english !== 'Pending' &&
+                            injury.status.english !== 'In Progress'
+                          "
+                        >
+                          {{ 'DASHBOARD.INJURY-DATE' | translate }}: {{ injury?.date?.gregorian | gosiDate }}
+                        </div>
+                        <div class="text-value" *ngIf="injury?.date?.gregorian && injury?.isComplication">
+                          {{ 'DASHBOARD.COMPLICATION-DATE' | translate }}: {{ injury?.date?.gregorian | gosiDate }}
+                        </div>
+                        <div class="text-value" *ngIf="injury?.date?.gregorian && injury?.isComplication">
+                          {{ 'DASHBOARD.INJURY-ID' | translate }}: {{ injury?.complicationsInjuryId }}
+                        </div>
+                        <div class="row" *ngIf="injury?.payableAmount">
+                          <div class="col-lg-12 d-flex flex-column pt-4">
+                            <div class="text-grayed">{{ 'DASHBOARD.TOTAL-ALLOWANCE-AMOUNT' | translate }}</div>
+                            <div class="wage-value">{{ injury?.payableAmount }} {{ 'DASHBOARD.SAR' | translate }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row pt-4" [ngClass]="!isAppProfile ? 'mt-n5' : ''">
+                  <div
+                    *ngIf="injury.status.english == 'Pending' || injury.status.english == 'In Progress'"
+                    class="text-value"
+                  >
+                    <gosi-alert-dc
+                      [message]="'DASHBOARD.WARNING-MSG' | translate"
+                      type="warning"
+                      [transparent]="true"
+                      [dismissible]="false"
+                    >
+                    </gosi-alert-dc>
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </div>
+          </div>
+        </ng-container>
+      </dsb-card-carousel-dc>
+    </ng-container>
+  </div>
+</ng-container>
+<ng-container *ngIf="injuryHistoryList?.length === 0">
+  <!-- <ng-template #noRecord> -->
+  <div *ngIf="!isAppProfile">
+    <div class="mt-4 ml-2 d-flex flex-column" [ngClass]="type == 'vic' ? '' : 'margin-no-hazard'">
+      <div class="text-style">{{ 'DASHBOARD.NO-OCCUPATIONAL-HAZARDS-MESSAGE' | translate }}</div>
+    </div>
+    <div
+      *ngIf="!isAppIndividual"
+      class="mt-1 ml-2 d-flex flex-column"
+      [ngClass]="type == 'vic' ? '' : 'margin-no-hazard'"
+    >
+      <div>{{ 'DASHBOARD.AWARENESS-MESSAGE' | translate }}</div>
+    </div>
+    <!-- REPORT-OH btn is not required in individual app -->
+    <!-- <div class="row">
+      <div class="col-lg-12 mt-4 pl-3">
+        <gosi-button-dc
+          [outlineOnly]="true"
+          [isTransparent]="true"
+          type="primary"
+          size="md"
+          class="btn-class"
+          (click)="navigateToReportOH()"
+        >
+          <span class="history-value">
+            {{ 'DASHBOARD.REPORT-OH' | translate }}
+          </span>
+        </gosi-button-dc>
+      </div>
+    </div> -->
+  </div>
+
+  <div *ngIf="isAppProfile">
+    <gosi-card-dc type="primary">
+      <div class="card-min-height">
+        <div class="d-flex flex-column margin-no-hazard">
+          <div class="text-style">{{ 'DASHBOARD.NO-OCCUPATIONAL-HAZARDS' | translate }}</div>
+        </div>
+        <div *gosiShow="roleValidation" class="row">
+          <div class="col-lg-12 mt-3 px-0">
+            <gosi-button-dc
+              [outlineOnly]="true"
+              [disabled]="hideButtonForPpa"
+              [isTransparent]="true"
+              type="primary"
+              size="md"
+              class="btn-class"
+              (click)="!hideButtonForPpa ? navigateToReportOH() : null"
+              >
+              <span class="history-value">
+                {{ 'DASHBOARD.REPORT-OH' | translate }}
+              </span>
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+  <!-- <div class="report" *ngIf="engagementDetails?.length >= 1"><gosi-button-dc [outlineOnly]="true" [isTransparent]="true" type="primary" size="md" (click)="navigateTo()"><span class="history-value"> {{ 'DASHBOARD.REPORT-OH' | translate }}</span></gosi-button-dc>  </div> -->
+  <!-- </ng-template> -->
+</ng-container>

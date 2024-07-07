@@ -1,0 +1,557 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <!-- heading -->
+  <div class="row">
+    <div class="col-lg-9 col-md-9 col-sm-9">
+      <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.SESSION-STATUS' | translate }}"> </gosi-main-heading-dc>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-3 status-button">
+      <gosi-button-dc
+        class="mb-2"
+        type="secondary"
+        size="sm"
+        id="actionsBtn"
+        placement="bottom"
+        (click)="navigateToSession()"
+      >
+        {{ 'MEDICAL-BOARD.VIEW-SESSION-CONFIGURATION' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-lg-12">
+      <gosi-card-dc type="secondary">
+        <div class="row">
+          <div class="col-lg-10">
+            <div class="custom-header">
+              {{ 'MEDICAL-BOARD.SESSION-STATUS' | translate }} -
+              {{ sessionMonth | translate: sessionDate }}
+              <span class="custom-spacing">|</span>
+              <span class="custom-span" style="width: 9%">
+                <span class="custom-span" dir="ltr" *ngIf="lang === 'en'">
+                  {{ sessionStatusDetails?.startTime }} {{ sessionStatusDetails?.startTimeAmOrPm | bilingualText }} -
+                  {{ sessionStatusDetails.endTime }} {{ sessionStatusDetails?.endTimeAmOrPm | bilingualText }}
+                </span>
+                <span class="custom-span" dir="rtl" *ngIf="lang === 'ar'">
+                  {{ sessionStatusDetails?.startTime }} {{ sessionStatusDetails?.startTimeAmOrPm | bilingualText }} -
+                  {{ sessionStatusDetails?.endTime }}{{ sessionStatusDetails?.endTimeAmOrPm | bilingualText }}
+                </span>
+              </span>
+              <span class="custom-spacing">|</span>
+              <span class="custom-span">
+                {{ sessionStatusDetails?.medicalBoardType | bilingualText }}
+              </span>
+              <span>
+                <gosi-status-badge-dc
+                  [type]="statusBadgeTypes(sessionStatusDetails?.status?.english)"
+                  [label]="sessionStatusDetails?.status | bilingualText"
+                ></gosi-status-badge-dc>
+              </span>
+              <span *ngIf="sessionStatusDetails?.status.english === 'Hold'" class="custom-span">
+                {{ 'MEDICAL-BOARD.HOLD-REASON-SESSION' | translate }}: {{ holdReason?.reason | bilingualText }}</span
+              >
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-2 col-sm-2 status-button">
+            <div>
+              <gosi-button-dc
+                class="mb-2"
+                type="secondary"
+                size="sm"
+                outsideClick="true"
+                id="actionsBtn"
+                [popover]="
+                  canHide || sessionPassedInRegular
+                    ? null
+                    : !isCancel && !isDisableMembers && !sessionStatusDetails.isParticipantInProgress && sessionStatusDetails.sessionModifiable
+                    ? buttonModal
+                    : null
+                "
+                placement="bottom"
+                *gosiShow="allowedMedicalOfficerRole"
+                [disabled]="canHide || sessionPassedInRegular ? true : isCancel || isDisableMembers"
+              >
+                {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+                <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </div>
+
+            <!-- <div *ngIf="canHide">
+              <gosi-button-dc
+                class="mb-2"
+                type="secondary"
+                size="sm"
+                outsideClick="true"
+                id="actionsBtn"
+                placement="bottom"
+                *gosiShow="allowedMedicalOfficerRole"
+                [disabled]="true"
+              >
+                {{ 'MEDICAL-BOARD.ACTIONS' | translate }}
+                <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </div> -->
+          </div>
+        </div>
+
+        <div class="row pt-0">
+          <div class="col-lg-12">
+            <mb-medical-board-tabset-dc
+              [medicalTab]="medicalTab"
+              [medicalTabItems]="medicalBoardTabs"
+              [sessionStatusDetails]="sessionStatusDetails"
+              (tabSelected)="onMedicalBoardToNewTab($event)"
+              [isSession]="true"
+            >
+            </mb-medical-board-tabset-dc>
+            <div class="border-value"></div>
+          </div>
+        </div>
+        <div class="tabset-container">
+          <ng-container *ngIf="medicalTab === 'MEDICAL-BOARD.MEMBERS'">
+            <!-- <div class="row" *ngIf="canHide">
+              <div class="col-lg-12">
+                <gosi-button-dc
+                  class="mb-2"
+                  type="secondary"
+                  size="sm"
+                  id="actionsBtns"
+                  outsideClick="true"
+                  *gosiShow="allowedMedicalOfficerRole"
+                  [disabled]="true"
+                  placement="bottom"
+                >
+                  {{ 'MEDICAL-BOARD.ADD-MEMBER' | translate }}
+                  <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+                </gosi-button-dc>
+              </div>
+            </div> -->
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-button-dc
+                  class="mb-2"
+                  type="secondary"
+                  size="sm"
+                  id="actionsBtns"
+                  outsideClick="true"
+                  *gosiShow="allowedMedicalOfficerRole"
+                  [popover]="
+                    canHide || sessionPassedInRegular
+                      ? null
+                      : !(isDisableMembers || (isNotOfficer && isSessionStarted))
+                      ? addParticipantModal
+                      : null
+                  "
+                  [disabled]="
+                    canHide || sessionPassedInRegular ? true : isDisableMembers || (isNotOfficer && isSessionStarted)
+                  "
+                  placement="bottom"
+                >
+                  {{ 'MEDICAL-BOARD.ADD-MEMBER' | translate }}
+                  <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+                </gosi-button-dc>
+              </div>
+            </div>
+            <mb-session-status-members-sc
+              [isAmb]="isAmb"
+              [sessionId]="sessionId"
+              [sessionStatusDetails]="sessionStatusDetails"
+              [mbManager]="mbManager"
+            >
+            </mb-session-status-members-sc>
+          </ng-container>
+          <ng-container *ngIf="medicalTab === 'MEDICAL-BOARD.PARTICIPANTS'">
+            <!-- <div class="row" *ngIf="canHide">
+              <div class="col-lg-12">
+                <gosi-button-dc
+                  class="mb-2"
+                  type="secondary"
+                  size="sm"
+                  outsideClick="true"
+                  id="actionsBtns"
+                  *gosiShow="allowedMedicalOfficerRole"
+                  [disabled]="true"
+                  placement="bottom"
+                >
+                  + {{ 'MEDICAL-BOARD.ADD-PARTICIPANTS' | translate }}
+                  <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+                </gosi-button-dc>
+              </div>
+            </div> -->
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-button-dc
+                  class="mb-2"
+                  type="secondary"
+                  size="sm"
+                  outsideClick="true"
+                  id="actionsBtns"
+                  [popover]="
+                    canHide || sessionPassedInRegular
+                      ? null
+                      : !(isDisableMembers || (isNotOfficer && isSessionStarted))
+                      ? addMembersModal
+                      : null
+                  "
+                  *gosiShow="allowedMedicalOfficerRole"
+                  [disabled]="
+                    canHide || sessionPassedInRegular ? true : isDisableMembers || (isNotOfficer && isSessionStarted)
+                  "
+                  placement="bottom"
+                >
+                  + {{ 'MEDICAL-BOARD.ADD-PARTICIPANTS' | translate }}
+                  <fa-icon class="action-btn" icon="ellipsis-v"></fa-icon>
+                </gosi-button-dc>
+              </div>
+            </div>
+            <mb-session-status-participants-sc
+              (replace)="setReplaceIndex($event)"
+              (onReplace)="navigateToBulkAddition(participantModal, 'replace')"
+              [sessionStatusDetails]="sessionStatusDetails"
+              [isDisablePartcipants]="isDisableMembers"
+              [mbManager]="mbManager"
+            >
+            </mb-session-status-participants-sc>
+          </ng-container>
+          <ng-container *ngIf="medicalTab === 'MEDICAL-BOARD.MEDICAL-BOARD-OFFICER'">
+            <div class="row" style="min-height: 40px"></div>
+            <div class="row">
+              <div class="col-md-6">
+                <gosi-label-dc
+                  id="name"
+                  label="{{ 'MEDICAL-BOARD.MEDICAL-BOARD-OFFICER-NAME' | translate }}"
+                  [value]="mboDetail?.name | bilingualText"
+                >
+                </gosi-label-dc>
+              </div>
+              <!-- <div class="col-md-4">
+                <gosi-label-dc
+                  id="nationalId"
+                  label="{{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }}"
+                  [value]="mboDetail?.officerId"
+                >
+                </gosi-label-dc>
+              </div> -->
+              <div class="col-md-6">
+                <gosi-label-dc
+                  id="location"
+                  label="{{ 'MEDICAL-BOARD.FIELD-OFFICE-LOCATION' | translate }}"
+                  [value]="mboDetail?.location | bilingualText"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <gosi-label-dc
+                  id="mobile"
+                  label="{{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}"
+                  [value]="mboDetail?.mobileNumber"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <gosi-button-dc
+                  type="primary"
+                  id="changeOfficer"
+                  size="md"
+                  [disabled]="isDisableMembers || sessionStatusDetails?.status?.english === 'Mbo trigger'"
+                  (submit)="changeOfficerTemplate(changeOfficerModal)"
+                >
+                  {{ 'MEDICAL-BOARD.CHANGE-OFFICER' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+</div>
+<!-- create session button Modal -->
+<ng-template #buttonModal>
+  <button
+    type="button"
+    id="hold"
+    *ngIf="!isHold"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showHoldModal(holdSessionModal)"
+  >
+    {{ 'MEDICAL-BOARD.HOLD-SESSION' | translate }}
+  </button>
+  <button
+    type="button"
+    id="unhold"
+    *ngIf="isHold"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showHoldModal(unholdSessionModal)"
+  >
+    {{ 'MEDICAL-BOARD.UNHOLD-SESSION' | translate }}
+  </button>
+  <button type="button" id="ad-hoc" class="d-flex btn text-left action-pop-btn" (click)="navigateToReschedule()">
+    {{ 'MEDICAL-BOARD.RESCHEDULE' | translate }}
+  </button>
+  <ng-container>
+    <button
+      type="button"
+      id="ad-hoc"
+      class="d-flex btn text-left action-pop-btn"
+      (click)="cancelSession(cancelSessionModal)"
+      [disabled]="sessionStatusDetails.isParticipantInProgress"
+    >
+      {{ 'MEDICAL-BOARD.CANCEL-SESSION' | translate }}
+    </button>
+  </ng-container>
+</ng-template>
+
+<!-- participant is in progress and disable reschedule and cancel button for this scenario -->
+<!-- <ng-template #participantProgress>
+  <button
+    type="button"
+    id="hold"
+    *ngIf="!isHold"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showHoldModal(holdSessionModal)"
+  >
+    {{ 'MEDICAL-BOARD.HOLD-SESSION' | translate }}
+  </button>
+  <button
+    type="button"
+    id="unhold"
+    *ngIf="isHold"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showHoldModal(unholdSessionModal)"
+  >
+    {{ 'MEDICAL-BOARD.UNHOLD-SESSION' | translate }}
+  </button>
+  <button type="button" id="ad-hoc" [disabled]="true" class="d-flex btn text-left action-pop-btn">
+    {{ 'MEDICAL-BOARD.RESCHEDULE' | translate }}
+  </button> -->
+  <!-- (click)="navigateToReschedule()" -->
+  <!-- <ng-container *ngIf="!isSessionStarted">
+    <button type="button" id="ad-hoc" class="d-flex btn text-left action-pop-btn" [disabled]="true">
+      {{ 'MEDICAL-BOARD.CANCEL-SESSION' | translate }} -->
+    <!-- </button> -->
+    <!-- (click)="cancelSession(cancelSessionModal)" -->
+  <!-- </ng-container>
+</ng-template> -->
+
+<ng-template #addMembersModal>
+  <div *ngIf="showErrorMsg">
+    <gosi-alert-dc [message]="'MEDICAL-BOARD.ADD-MEMBER-WARNING'" type="error" [dismissible]="false"> </gosi-alert-dc>
+  </div>
+  <span *ngIf="!showErrorMsg">
+    <button
+      type="button"
+      id="regular"
+      outsideClick="true"
+      class="d-flex btn text-left mb-2 action-pop-btn"
+      (click)="navigateToBulkAddition(participantModal, 'add')"
+    >
+      {{ 'MEDICAL-BOARD.BULK-ADDTION' | translate }}
+    </button>
+    <button
+      *ngIf="!isAmb"
+      type="button"
+      id="ad-hoc"
+      class="d-flex btn text-left action-pop-btn"
+      (click)="addByNinModalPopup()"
+    >
+      {{ 'MEDICAL-BOARD.ADD-BY-NIN' | translate }}
+    </button>
+  </span>
+</ng-template>
+<ng-template #addParticipantModal>
+  <button
+    type="button"
+    id="regular"
+    class="d-flex btn text-left mb-2 action-pop-btn"
+    (click)="showContractedDrModal(addContractedMember, false)"
+  >
+    {{ 'MEDICAL-BOARD.ADD-CONTRACTED-MEMBER' | translate }}
+  </button>
+  <button
+    *ngIf="!isAmb"
+    type="button"
+    id="ad-hoc"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="showContractedDrModal(addDoctorTemplate, true)"
+  >
+    {{ 'MEDICAL-BOARD.ADD-GOSI-DOCTORS' | translate }}
+  </button>
+</ng-template>
+
+<!--Cancel popup-->
+<ng-template #cancelSessionModal>
+  <mb-cancel-session-modal-dc
+    (cancelEvent)="hideCancelModal()"
+    [parentForm]="sessionStatusForm"
+    (actionEvent)="onCancelSession($event)"
+    [sessionDetails]="sessionStatusDetails"
+    [reasonForCancellationList]="reasonForCancellationList$ | async"
+  ></mb-cancel-session-modal-dc>
+</ng-template>
+<ng-template #addByNinModal>
+  <mb-add-participant-modal-dc
+    (cancelEvent)="hideModal()"
+    [isHold]="isHold"
+    [searchedParticipant]="searchedParticipant"
+    (search)="onSearchParticipants($event,'addByNinModal')"
+    [parentForm]="sessionStatusForm"
+    [allowedSpecialityList]="sessionStatusDetails.allowedSpecialityList"
+    [allowedParticipant]="sessionStatusDetails.allowedParticipantMap"
+    [officeLocation]="sessionStatusDetails.officeLocation"
+    [isSessionstatus]="isSessionstatus"
+    [type]="'status'"
+    (statusEvent)="addParticipants($event)"
+    [temp]="AddParticipantSlotBYNINTemplate"
+    (addByNINParticipant)="showAddParticipantBYNIN($event)"
+    [totalNoOfParticipantRecords]="totalNoOfParticipantRecords"
+    [maxParticipants]="maximumParticipants"
+    [addedParticipantsList]="sessionStatusDetails?.participantList"
+    [addParticipantsList]="participantsDetails"
+  >
+  </mb-add-participant-modal-dc>
+</ng-template>
+<ng-template #holdSessionModal>
+  <mb-hold-session-status-modal-dc
+    [reasonForHoldList]="holdReasonList$ | async"
+    (onConfirm)="confirmHold($event)"
+    [parentForm]="sessionStatusForm"
+    (onCancel)="cancelHold()"
+  ></mb-hold-session-status-modal-dc>
+</ng-template>
+<ng-template #unholdSessionModal>
+  <mb-unhold-session-modal-dc
+    [parentForm]="sessionStatusForm"
+    [reasonForHoldList]="unholdReasonList$ | async"
+    (onConfirm)="confirmUnHold($event)"
+    (onCancel)="cancelUnHold()"
+  >
+  </mb-unhold-session-modal-dc>
+</ng-template>
+<ng-template #participantModal>
+  <mb-add-participants-dc
+    (add)="addParticipants($event)"
+    [action]="action"
+    (cancel)="cancelAddParticipants()"
+    [addParticipantsList]="participantsDetails"
+    [isSessionstatus]="isSessionstatus"
+    [totalResponse]="totalParticipants"
+    [allowedParticipant]="sessionStatusDetails.allowedParticipantMap"
+    [allowedSpecialityList]="sessionStatusDetails.allowedSpecialityList"
+    [officeLocation]="sessionStatusDetails.officeLocation"
+    [medicalBoardType]="sessionStatusDetails.medicalBoardType"
+    [selectSpeciality]="sessionStatusDetails?.mbList[0]?.specialty"
+    [totalNoOfParticipantRecords]="totalNoOfParticipantRecords"
+    [maxParticipants]="maximumParticipants"
+    [temp]="AddParticipantSlotTemplate"
+    (showAddParticipant)="showAddParticipant($event)"
+    [addParticipants]="true"
+    [configurationType]="'status'"
+    (replace)="replaceParticipant($event)"
+    (search)="onSearchParticipants($event,'AddByBulk')"
+    (navigate)="navigateToParticipantProfile($event)"
+    [isHold]="isHold"
+    [assessmentTypeLists]="assessmentTypeLists$ | async"
+    [specialtyLists]="specialityList$ | async"
+    [locationLists]="locationList$ | async"
+    (filter)="onFilterValue($event)"
+    [addedParticipantsList]="sessionStatusDetails?.participantList"
+    (checkParticipantAvailability)="onCheckParticipantAvailbilty($event)"
+    [availableParticipantMsg]="availableParticipantMsg"
+    [showParticipantErrors]="showParticipantErrors"
+    [isAmb]="isAmb"
+    (selectPageNo)="getselectPageNo($event)"
+  >
+  </mb-add-participants-dc>
+</ng-template>
+<ng-template #addContractedMember>
+  <mb-add-contracted-members-dc
+    [addMembers]="true"
+    (add)="addContractedMembers($event)"
+    [contractedMembers]="contractedMembers"
+    [totalResponse]="totalResponse"
+    (cancel)="hideModal()"
+    [isAmb]="isAmb"
+    (navigate)="navigateToProfile($event)"
+    [isContractedMember]="true"
+    (paginate)="onLimit($event)"
+    [limit]="sessionRequest?.limit"
+    [specialityLists]="specialityList$ | async"
+    [fieldOfficeLists]="region$ | async"
+    (filter)="onFilterApply($event)"
+    (search)="onSearchMember($event)"
+    (checkAvailability)="onCheckAvailability($event)"
+    [showErrors]="showErrors"
+    [availableMsg]="availableMsg"
+  >
+  </mb-add-contracted-members-dc>
+</ng-template>
+<ng-template #addDoctorTemplate>
+  <mb-add-gosi-doctors-dc
+    #addDoctorList
+    (cancel)="hideModal()"
+    (select)="onLimit($event)"
+    [limitItem]="sessionRequest?.limit"
+    [gosiDoctors]="contractedMembers"
+    [totalRecords]="totalResponse"
+    [addDoctors]="true"
+    [fieldOfficeLists]="fieldOfficeList$ | async"
+    (add)="addContractedMembers($event)"
+    (onFilter)="onFilterApply($event)"
+    (navigate)="navigateToProfile($event)"
+    (search)="onSearchDoctors($event)"
+  >
+  </mb-add-gosi-doctors-dc>
+</ng-template>
+<ng-template #AddParticipantSlotTemplate>
+  <mb-add-participant-slot-dc
+    [heading]="'OCCUPATIONAL-HAZARD.SELECT-TIME'"
+    [sessionDate]="sessionDateParticipant"
+    [sessionParticipantList]="sessionParticipantList"
+    (setParticipantTime)="BindParticipantTime($event)"
+    (add)="addParticipantsbyMB($event)"
+    [addbulkParticipants]="addbulkParticipants"
+    (canceltime)="hideModal()"
+  ></mb-add-participant-slot-dc>
+</ng-template>
+
+<ng-template #AddParticipantSlotBYNINTemplate>
+  <mb-add-participanyby-nin-slot-dc
+    [heading]="'OCCUPATIONAL-HAZARD.SELECT-TIME'"
+    [sessionDate]="sessionDateParticipant"
+    [sessionParticipantList]="sessionParticipantList"
+    (setParticipantTime)="BindParticipantTime($event)"
+    (cancelEvent)="hideModal()"
+    (statusEvent)="addParticipantsbyMB($event)"
+    [searchedParticipant]="searchedParticipant"
+    (canceltime)="hideModal()"
+    [type]="'status'"
+  ></mb-add-participanyby-nin-slot-dc>
+</ng-template>
+
+<ng-template #changeOfficerModal>
+  <mb-mb-officer-modal-dc
+    *ngIf="mbOfficerList?.mbOfficerList"
+    [totalCount]="mbOfficerList?.count"
+    [mbOfficerList]="mbOfficerList"
+    (selectPageNo)="getselectPageNo($event)"
+    (cancelMbo)="cancelModal()"
+    (selectedMbo)="selectedMBO($event)"
+    (nationalId)="navigateMboProfile($event)"
+    (inputText)="searchAreaInput($event)"
+    [fieldOfficeLists]="locationList$ | async"
+    (filtered)="applyFilter($event)"
+    [primaryMBOfficer]="primaryMBOfficer"
+  ></mb-mb-officer-modal-dc>
+  <!-- [limit]="8" -->
+</ng-template>

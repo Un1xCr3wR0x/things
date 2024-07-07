@@ -1,0 +1,152 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="col-md-12 inactive-flags">
+  <div *ngIf="!(inActiveFlags.length === 0 && !(searchParam || flagFilters?.length > 0))">
+    <div class="row pb-4">
+      <div class="col-sm-12 d-flex flex-wrap justify-content-end">
+        <div class="d-flex">
+          <gosi-search-dc
+            [placeholder]="'ESTABLISHMENT.TRANSACTION-ID' | translate"
+            (search)="applySearhAndFilter($event, flagFilters, sortValue, sortDirection)"
+            [allowOnlyNumbers]="true"
+          >
+          </gosi-search-dc>
+          <est-flag-filter-dc
+            class="ml-4 filter"
+            [reasonList]="reasonList"
+            [creationTypeLovList]="creationTypeLovList"
+            [flagFilters]="flagFilters"
+            (apply)="applySearhAndFilter(searchParam, $event, sortValue, sortDirection)"
+            (reset)="applySearhAndFilter(searchParam, [], sortValue, sortDirection)"
+            #flagFilter
+          >
+          </est-flag-filter-dc>
+          <div class="seperator d-none d-md-block"></div>
+        </div>
+        <gosi-sort-dc
+          class="sort-dc"
+          [hidePlaceholder]="true"
+          [initialValue]="initialSortValue"
+          [initialDirection]="initialSortDirection"
+          [list]="sortFlagsLovList"
+          (sortItemSelected)="applySearhAndFilter(searchParam, flagFilters, $event, sortDirection)"
+          (direction)="applySearhAndFilter(searchParam, flagFilters, sortValue, $event)"
+        ></gosi-sort-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="flagFilters?.length > 0">
+      <div class="col-md-12 pb-4">
+        <gosi-applied-filters-dc
+          [filters]="flagFilters"
+          (clearFilter)="applySearhAndFilter(searchParam, $event, sortValue, sortDirection)"
+        ></gosi-applied-filters-dc>
+      </div>
+    </div>
+  </div>
+  <div class="row no-gutters search-result" *ngIf="searchParam">
+    <div class="col-sm-auto mb-4">
+      <est-search-result-dc [count]="inActiveFlags.length" [value]="searchParam"> </est-search-result-dc>
+    </div>
+  </div>
+
+  <div *ngIf="inActiveFlags.length > 0" class="row pb-4">
+    <div class="col-md-12" *ngFor="let flag of loadedFlags; let i = index">
+      <est-timeline-dc class="timeline" [isFirstItem]="i === 0" [isLastItem]="i === loadedFlags?.length - 1">
+        <div class="row justify-content-between" timeline-date>
+          <div class="flag-date col-auto pb-3 pb-md-0">
+            <div>
+              <span class="flag-date">{{ flag?.startDate?.gregorian | date: 'dd/MM/yyyy' }}</span>
+              <span class="pr-1 pl-2 arrow-icons">
+                <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+              </span>
+
+              <span class="pl-1 flag-date" *ngIf="flag?.endDate">{{
+                flag?.endDate?.gregorian | date: 'dd/MM/yyyy'
+              }}</span>
+              <span class="flag-endDate" *ngIf="!flag?.endDate"> {{ 'ESTABLISHMENT.ONWARDS' | translate }}</span>
+            </div>
+          </div>
+          <div class="col-auto icon-text">
+            <fa-icon class="icon-wrapper" icon="flag" size="md"></fa-icon>
+            <span class="flag-type">{{ flag.flagType | bilingualText }}</span>
+          </div>
+        </div>
+        <div class="row" timeline-content>
+          <div class="col-md-12 flag-timeline">
+            <accordion class="inactive-flags-container">
+              <accordion-group class="accordion-group-class">
+                <div accordion-heading class="row w-100 m-0">
+                  <div class="d-flex reason pt-3 col-auto">
+                    <gosi-label-dc [isBackgroundWhite]="true" label="ESTABLISHMENT.REASON" [control]="flag.flagReason">
+                    </gosi-label-dc>
+                  </div>
+                  <div class="d-flex header-wrapper ml-auto mr-4" accordion-heading>
+                    <div class="row">
+                      <span class="arrow-up col-md-2">
+                        <fa-icon icon="angle-up" size="2x"></fa-icon>
+                      </span>
+                      <span class="arrow-down ml-auto col-md-2" accordion-heading>
+                        <fa-icon icon="angle-down" size="2x"></fa-icon>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="row m-0">
+                  <gosi-label-dc
+                    class="col-md-12"
+                    [isBackgroundWhite]="true"
+                    label="ESTABLISHMENT.JUSTIFICATION"
+                    [control]="flag.justification"
+                  ></gosi-label-dc>
+                  <gosi-label-dc
+                    class="col-md-12 col-lg-auto"
+                    [isBackgroundWhite]="true"
+                    label="ESTABLISHMENT.APPLIED-BY"
+                    [control]="getFlagInitiatedBy(flag) | bilingualText"
+                  ></gosi-label-dc>
+                  <gosi-label-dc
+                    class="col-md-12 col-lg-auto"
+                    [isBackgroundWhite]="true"
+                    label="ESTABLISHMENT.TRANSACTION-ID"
+                    [value]="flag.referenceNo"
+                    (select)="onSelectInactiveTransactionIdDetails(flag.referenceNo)"
+                    [isLink]="true"
+                    size="sm"
+                  ></gosi-label-dc>
+                </div>
+              </accordion-group>
+            </accordion>
+          </div>
+        </div>
+      </est-timeline-dc>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="inActiveFlags.length === 0 && (searchParam || flagFilters?.length > 0)">
+    <div class="col-md-12 no-result">
+      <est-no-result-dc></est-no-result-dc>
+    </div>
+  </div>
+  <gosi-loadmore-dc
+    *ngIf="inActiveFlags.length > 0"
+    [pageSize]="pageSize"
+    [currentPage]="currentPage"
+    [totalCount]="inActiveFlags.length"
+    (loadMore)="loadMore($event)"
+  ></gosi-loadmore-dc>
+</div>
+
+<div class="row" *ngIf="inActiveFlags.length === 0 && !(searchParam || flagFilters?.length > 0)">
+  <div class="col-md-12 no-flags">
+    <div class="row">
+      <div class="col-md-12 flag-icon text-center">
+        <fa-icon [icon]="['fas', 'flag']" size="2x"></fa-icon>
+      </div>
+      <div class="col-md-12 flag-label pt-2 text-center">
+        {{ 'ESTABLISHMENT.NO-INACTIVE-FLAGS' | translate }}
+      </div>
+    </div>
+  </div>
+</div>

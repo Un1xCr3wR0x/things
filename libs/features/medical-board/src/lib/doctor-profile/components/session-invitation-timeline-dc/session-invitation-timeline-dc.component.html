@@ -1,0 +1,201 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="d-flex flex-wrap align-items-center justify-content-between heading-style">
+  <div class="d-flex justify-content-start">
+    <div class="heading">
+      <span class="count-label">{{ 'MEDICAL-BOARD.ALL-SESSIONS' | translate }}</span>
+      <ng-container *ngIf="sessionCount">
+        <span class="count px-1">{{ sessionCount }}</span>
+      </ng-container>
+    </div>
+  </div>
+  <div class="d-flex justify-content-end">
+    <gosi-search-dc
+      id="search-area"
+      [placeholder]="'MEDICAL-BOARD.SESSION-DATE-PLACEHOLDER' | translate"
+      class="pr-2 pl-2 search-value"
+      (search)="onsearchSessionId($event)"
+      (keyup)="onSearchEnable($event.target.value)"
+      [searchParam]="searchParams"
+      (reset)="resetSearch()"
+    >
+    </gosi-search-dc>
+    <mb-session-invitation-filter-dc
+      [locationList]="locationList"
+      (filter)="onFilter($event)"
+      [statusList]="statusList"
+    >
+      <!-- [specialtyList]="specialtyList"
+    [locationList]="locationList"
+    [regionList]="regionList" -->
+    </mb-session-invitation-filter-dc>
+  </div>
+</div>
+<div #allSessionWrapper class="main-wrapper mt-4 pr-2" *ngIf="allSessions">
+  <ul class="timeline">
+    <ng-container *ngFor="let sessions of allSessions; let i = index">
+      <li class="timeline-item">
+        <div class="timeline-badge"></div>
+        <span>
+          {{ sessions?.sessionDate.gregorian | gosiDate }}
+        </span>
+        <gosi-accordion-dc>
+          <div header>
+            <div class="heading-wrapper">
+              <div class="row align-items-center d-md-flex justify-content-between">
+                <div class="accordion-heading-type col-lg-8 col-auto">
+                  <span class="type-label">
+                    {{ 'MEDICAL-BOARD.SESSION-ID' | translate }}
+                  </span>
+                  <span *ngIf="sessions.sessionId; else nullValue" class="type-value">{{ sessions.sessionId }}</span>
+                </div>
+                <div class="status col-lg-3 d-none d-lg-flex justify-content-end">
+                  <ng-container *ngTemplateOutlet="statusTemplate"></ng-container>
+                </div>
+                <div class="col-lg-1 col-auto d-flex justify-content-end">
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+              </div>
+              <div class="row d-lg-none d-block pt-2">
+                <div class="col-12">
+                  <ng-container *ngTemplateOutlet="statusTemplate"></ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div body>
+            <div class="row">
+              <div class="accordion-heading-type col-md-4">
+                <span class="type-label">
+                  {{ 'MEDICAL-BOARD.SESSION-TIME' | translate }}
+                </span>
+                <ng-container *ngIf="sessions.sessionStartTime || sessions.sessionEndTime; else nullValue">
+                  <ng-container *ngIf="lang == 'en'; else arabic">
+                    <span class="sub-value" dir="ltr">
+                      {{ sessions?.sessionStartTime }} - {{ sessions?.sessionEndTime }}
+                    </span>
+                  </ng-container>
+                  <ng-template #arabic>
+                    <span class="sub-value-arabic" dir="rtl">
+                      {{ sessions?.sessionStartTime | periodToArabic }} -
+                      {{ sessions?.sessionEndTime | periodToArabic }}
+                    </span>
+                  </ng-template>
+                </ng-container>
+              </div>
+              <div class="accordion-heading-type col-md-4">
+                <span class="type-label">
+                  {{ 'MEDICAL-BOARD.FEE' | translate }}
+                </span>
+                <span *ngIf="sessions.contractFees; else nullValue" class="sub-value" dir="ltr"
+                  >{{ sessions.contractFees | currency: '':'' }} {{ 'MEDICAL-BOARD.SAR' | translate }}</span
+                >
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  [id]="'status'"
+                  [value]="sessions.paymentStatus | bilingualText"
+                  [label]="'MEDICAL-BOARD.PAYMENT-STATUS' | translate"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <gosi-label-dc
+                  [id]="'transactionId'"
+                  [value]="sessions.esignReferenceNumber"
+                  [label]="'MEDICAL-BOARD.TRANSACTION-ID' | translate"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  [id]="'channel'"
+                  [value]="sessions.channel | bilingualText"
+                  [label]="'MEDICAL-BOARD.SESSION-CHANNEL' | translate"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  [id]="'sessionType'"
+                  [value]="sessions.sessionType | bilingualText"
+                  [label]="'MEDICAL-BOARD.SESSION-TYPE' | translate"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <gosi-label-dc
+                  [id]="'fieldOffice'"
+                  [value]="sessions.fieldOffice | bilingualText"
+                  [label]="'MEDICAL-BOARD.FIELD-OFFICE' | translate"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <!-- commenting view session details btn for hold, as asked by BA, since this requirement is not known  -->
+            <!-- <div class="row" *ngIf="sessions.status?.english === 'Hold'; else withDrawTemplate"> -->
+            <!-- <div class="col-md-12">
+                <gosi-button-dc [outlineOnly]="true" type="secondary">
+                  {{ 'MEDICAL-BOARD.VIEW-SESSION-DETAILS' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div> -->
+            <!-- <ng-template #withDrawTemplate> -->
+            <div class="row" *ngIf="sessions?.status?.english === 'Scheduled'">
+              <div class="col-md-12" *gosiShow="allowedWithdrawAccess">
+                <gosi-button-dc
+                  [outlineOnly]="true"
+                  type="secondary"
+                  size="md"
+                  (submit)="onWithdraw(confirmTemplate, sessions)"
+                >
+                  {{ 'MEDICAL-BOARD.WITHDRAW-ACCEPTANCE' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+            <!-- [disabled]="sessions.isEnabled || sessions.status?.english === 'Cancel' ? true : false ||  sessions.status?.english === 'Attended'"> -->
+            <!-- </ng-template> -->
+          </div>
+        </gosi-accordion-dc>
+        <div *ngIf="i === allSessions.length - 1" class="timeline-badge"></div>
+      </li>
+      <ng-template #statusTemplate>
+        <gosi-status-badge-dc
+          [label]="
+            sessions.isEnabled && sessions?.noOfParticipants === 0
+              ? ('MEDICAL-BOARD.NOT-HELD' | translate)
+              : sessions.status
+          "
+          [type]="
+            sessions.isEnabled && sessions?.noOfParticipants === 0
+              ? statusBadgeTypes.INFO
+              : statusBadgeType(sessions.status)
+          "
+        >
+        </gosi-status-badge-dc>
+      </ng-template>
+    </ng-container>
+  </ul>
+</div>
+<div *ngIf="allSessions?.length === 0" class="no-result d-flex align-items-center justify-content-center">
+  <gosi-no-result-dc></gosi-no-result-dc>
+</div>
+<ng-template #nullValue>
+  <div class="null-value">—</div>
+</ng-template>
+<!--Confirm template-->
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'MEDICAL-BOARD.WITHDRAW-MESSAGE' | translate"
+    (onConfirm)="confirmEvent()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

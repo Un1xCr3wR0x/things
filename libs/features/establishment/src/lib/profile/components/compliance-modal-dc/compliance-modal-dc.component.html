@@ -1,0 +1,176 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="compliance-modal-wrapper pt-2 pb-2">
+  <gosi-modal-dc
+    size="lg"
+    [needCloseButton]="true"
+    (closeModal)="closeModal.emit()"
+    [modalHeader]="'ESTABLISHMENT.COMPLIANCE-REGULATION' | translate"
+  >
+    <div modalContent>
+      <div class="row mt-3 mb-3 align-items-center justify-content-center">
+        <div class="col-md-12 align-items-center">
+          <gosi-alert-dc
+            [noPadding]="true"
+            [message]="'ESTABLISHMENT.NON-COMPLAINT-MESSAGE'"
+            type="warning"
+            [dismissible]="false"
+          >
+          </gosi-alert-dc>
+        </div>
+      </div>
+      <!--Message to display when branch admins/super admins are logged in SIMIS-->
+      <!-- <ng-container *ngIf="inspectionDetails?.inspectionId === null">
+        <div class="row mt-3 mb-3 align-items-center justify-content-center">
+          <div class="col-md-12 align-items-center">
+            <gosi-alert-dc
+              [noPadding]="true"
+              [message]="'ESTABLISHMENT.NON-COMPLAINT-INFO-MESSAGE' | translate"
+              type="info"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+        </div>
+      </ng-container> -->
+      <!--Message to display when role admins are logged in-->
+      <ng-container *gosiShow="isRoleAdmin">
+        <div
+          class="row mt-3 mb-3 align-items-center justify-content-center"
+          *ngIf="inspectionDetails?.inspectionId !== null"
+        >
+          <div class="col-md-12 align-items-center">
+            <gosi-alert-dc
+              [noPadding]="true"
+              [message]="'ESTABLISHMENT.NON-COMPLAINT-INFO-MESSAGE-NEW' | translate"
+              type="info"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-label-dc control="{{ ohDetails?.currentOhRate + '%' }}" label="ESTABLISHMENT.CURRENT-OH-RATE">
+          </gosi-label-dc>
+        </div>
+        <div
+          class="col-md-6"
+          *ngIf="
+            ohDetails?.currentOhRate - ohDetails?.baseRate === deltaValue.get('medium') &&
+            inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+            !hasReinspectionDateExceded &&
+            inspectionDetails?.reInspectionDate?.gregorian
+          "
+        >
+          <gosi-label-dc
+            control="{{ inspectionDetails?.reInspectionDate?.gregorian | date: 'dd/MM/yyyy' }}"
+            label="ESTABLISHMENT.TENTATIVE-DATE"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div class="row pb-4" *gosiShow="createReinspectionAccessRoles; regNo: establishment?.registrationNo">
+        <div class="col-md-12">
+          <p
+            *ngIf="
+              ohDetails.currentOhRate - ohDetails.baseRate === deltaValue.get('medium') &&
+              inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+              !ohDetails?.disableReInspection
+            "
+          >
+            <!-- oh rate is 3 and within 90 days grace period   -->
+            {{ 'ESTABLISHMENT.REINSPECTION-AT-MID' | translate }}
+          </p>
+          <p
+            *ngIf="
+              ohDetails.currentOhRate - ohDetails.baseRate === deltaValue.get('medium') &&
+              inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+              ohDetails?.disableReInspection &&
+              !ohDetails?.sameMonthRequest
+            "
+          >
+            <!-- oh rate is 3 and 90 days grace period  over -->
+            {{ 'ESTABLISHMENT.REINSPECTION-AT-MID-BY-RASED' | translate }}
+          </p>
+          <p
+            *ngIf="
+              ohDetails.currentOhRate - ohDetails.baseRate === deltaValue.get('max') &&
+              inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+              !ohDetails?.disableReInspection
+            "
+          >
+            <!-- oh rate is 4 and reinspection is not yet initated by the admin -->
+            {{ 'ESTABLISHMENT.REINSPECTION-AT-MAX' | translate }}
+          </p>
+          <p
+            *ngIf="
+              inspectionDetails?.inspectionTypeInfo?.status === inspectionStatusInitiated &&
+              inspectionDetails?.origin === ameenReinspection &&
+              ohDetails?.disableReInspection &&
+              !ohDetails?.sameMonthRequest
+            "
+          >
+            <!--after reinspection initated by the admin where oh rate is 3 or 4-->
+            {{
+              'ESTABLISHMENT.AFTER-REINSPECTION-BY-ADMIN'
+                | translate: { requestDate: inspectionDetails?.inspectionRequestdate?.gregorian | date: 'dd/MM/yyyy' }
+            }}
+          </p>
+          <p
+            *ngIf="
+              inspectionDetails?.inspectionTypeInfo?.status === inspectionStatusInitiated &&
+              inspectionDetails?.origin === rasedReinspection &&
+              ohDetails?.disableReInspection &&
+              !ohDetails?.sameMonthRequest
+            "
+          >
+            <!--after reinspection initated by the RASED where oh rate is 3-->
+            {{
+              'ESTABLISHMENT.AFTER-REINSPECTION-BY-RASED'
+                | translate: { requestDate: inspectionDetails?.inspectionRequestdate?.gregorian | date: 'dd/MM/yyyy' }
+            }}
+          </p>
+          <p
+            *ngIf="
+              inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+              ohDetails?.disableReInspection &&
+              ohDetails?.sameMonthRequest
+            "
+          >
+            <!--same month request where oh rate is 3 or 4-->
+            {{ 'ESTABLISHMENT.SAME-MONTH-REQUEST' | translate }}
+          </p>
+          <p
+            *ngIf="
+              ohDetails.currentOhRate - ohDetails.baseRate === deltaValue.get('max') &&
+              inspectionDetails?.inspectionTypeInfo?.status !== inspectionStatusInitiated &&
+              ohDetails?.disableReInspection &&
+              ohDetails?.ohRateConsecutiveFour
+            "
+          >
+            <!--OH rate was at higher value twice perviously-->
+            {{
+              'ESTABLISHMENT.CONSEQUITVE-HIGHER-VALUE-REQUEST'
+                | translate: { endDate: ohDetails?.punishmentPeriodEndDate?.gregorian | date: 'dd/MM/yyyy' }
+            }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div modalAction *ngIf="!ohDetails?.disableReInspection && isRegistered">
+      <div class="row" *gosiShow="createReinspectionAccessRoles; regNo: establishment?.registrationNo">
+        <div class="col-md-12 text-center">
+          <gosi-button-dc id="confirmBtn" class="btn" type="primary" (submit)="submit()">
+            {{ buttonName | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</div>

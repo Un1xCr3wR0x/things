@@ -1,0 +1,88 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+  
+<ng-container #mainContainer>
+    <div class="row col-lg-12">
+    <table class="table table-borderless">
+        <thead class="thead-light">
+        <tr>
+            <th>
+            {{ 'OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME' | translate | titlecase }}
+            </th>
+            <th>
+            {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-REASON' | translate | titlecase }}
+            </th>
+            <th> {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-ID' | translate | titlecase }}</th>
+            <th> {{ 'OCCUPATIONAL-HAZARD.STATUS' | translate | titlecase }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <ng-container *ngFor="let item of injuredContributorList; let i = index">
+            <tr class="table-row-not-expanded">
+            <td *ngIf="item.person" style="width: 30%">
+                <span *ngIf="item?.person?.name?.english?.name !== null && lang === 'en'">
+                {{ item.person.name.english.name }}
+                </span>
+                <span *ngIf="(item.person.name.english.name == undefined && lang === 'en') || lang === 'ar'"
+                >{{ item.person.name.arabic.firstName }}
+                {{ item.person.name.arabic.secondName ? item.person.name.arabic.secondName : '' }}
+                {{ item.person.name.arabic.thirdName ? item.person.name.arabic.thirdName : '' }}
+                {{ item.person.name.arabic.familyName }}
+                </span>
+                <div *ngIf="item.person.identity[0] !== null" >
+                <div *ngIf="item.person.identity[0].idType === 'NIN'">
+                    <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                    <span class="link" (click)="navigateOnLinkClick(item)"> {{ item.person.identity[0].newNin }})</span>
+                </div>
+                <div *ngIf="item.person.identity[0].idType === 'PASSPORT'">
+                    <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                    <span class="link" (click)="navigateOnLinkClick(item)">
+                    {{ item.person.identity[0].passportNo }})
+                    </span>
+                </div>
+                <div *ngIf="item.person.identity[0].idType === 'IQAMA'">
+                    <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                    <span class="link" (click)="navigateOnLinkClick(item)"> {{ item.person.identity[0].iqamaNo }})</span>
+                </div>
+                <div *ngIf="item.person.identity[0].idType === 'BORDERNO'">
+                    <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                    <span class="link" (click)="navigateOnLinkClick(item)"> {{ item.person.identity[0].id }}) </span>
+                </div>
+                <div *ngIf="item.person.identity[0].idType === 'GCCID'">
+                    <span class="identity-heading"> ({{ 'BILLING.GCC-ID' | translate }}: </span>
+                    <span class="link" (click)="navigateOnLinkClick(item)"> {{ item.person.identity[0].id }}) </span>
+                </div>
+
+                </div>
+            </td>
+            <td style="width: 45%">
+                {{ item?.injuryReason | bilingualText }}
+            </td> 
+            <td style="width: 15%" (click)="navigateToInjuryDetails(item)">
+                <span class="link">{{ item?.injuryId  }}</span>
+            </td> 
+            <td style="width: 20%"> 
+                <span [ngClass]="
+                item.transactionStatus.english === 'Draft'
+                  ? 'status-draft'
+                  : item.transactionStatus.english === 'In Progress'
+                  ? 'status-inprogress'
+                  : item.transactionStatus.english === 'Completed'
+                  ? 'status-completed'
+                  : item.transactionStatus.english === 'Cancelled'
+                  ? 'status-cancelled':''
+              "> {{ item?.transactionStatus | bilingualText }}</span>
+           
+            </td> 
+        </tr>               
+        
+        </ng-container>
+        </tbody>
+    </table>
+    </div>
+</ng-container>      
+ 
+  
+  

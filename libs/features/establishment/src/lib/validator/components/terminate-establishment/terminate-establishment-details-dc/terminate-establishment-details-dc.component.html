@@ -1,0 +1,144 @@
+<!-- 
+ Copyright GOSI. All Rights Reserved.
+ This software is the proprietary information of GOSI.
+ Use is subject to license terms. -->
+
+<!-- Establishment closing Details-->
+<div *ngIf="closeEstablishmentDetails">
+  <div class="row">
+    <div class="col-md-12">
+      <frm-content-heading-dc
+        [isSvg]="true"
+        icon="establishment-closing"
+        heading="ESTABLISHMENT.EST-CLOSING-DETAILS"
+        [canEdit]="canEdit"
+        (onEdit)="navigateToTerminateEst()"
+      >
+      </frm-content-heading-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4" *ngIf="establishmentToValidate">
+      <gosi-label-dc
+        [date]="true"
+        [control]="establishmentToValidate?.terminationRequestDate?.gregorian"
+        label="ESTABLISHMENT.REQUEST-DATE"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-4 pr-0 pb-4">
+      <div class="row balance-amount pl-4">
+        {{ 'ESTABLISHMENT.BALANCE-AMT' | translate }}
+      </div>
+      <div class="row balance-amount pt-2 pl-4" *ngIf="balanceAmount !== undefined">
+        {{ balanceAmount | number: '1.2-2' }} {{ 'ESTABLISHMENT.SAR' | translate }}
+        <span class="amount-due pl-2" *ngIf="isDebit && balanceAmount !== 0"
+          >{{ 'ESTABLISHMENT.DUE' | translate }}
+        </span>
+        <span class="amount-due pl-2" *ngIf="!isDebit && balanceAmount !== 0"
+          >{{ 'ESTABLISHMENT.CREDIT' | translate }}
+        </span>
+      </div>
+    </div>
+    <div class="col-md-4 pr-0 pl-4 pb-4">
+      <a class="bill-details" (click)="viewBill.emit()" target="_blank">
+        {{ 'ESTABLISHMENT.VIEW-BILL' | translate }}
+      </a>
+    </div>
+    <div class="col-md-4" *ngIf="!isGcc">
+      <gosi-label-dc [control]="closeEstablishmentDetails?.paymentType" label="ESTABLISHMENT.PAYMENT-METHOD">
+      </gosi-label-dc>
+    </div>
+  </div>
+</div>
+
+<!--Bank details-->
+<div
+  *ngIf="
+    establishment?.establishmentAccount?.bankAccount?.ibanAccountNo &&
+    closeEstablishmentDetails?.paymentType?.english === bankPaymentMethod
+  "
+>
+  <div class="sub-content-item bank-details">
+    <div class="row">
+      <div class="col-md-12">
+        <frm-content-heading-dc icon="briefcase" heading="ESTABLISHMENT.BANK-DETAILS" [canEdit]="false">
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-8">
+            <gosi-label-dc
+              [control]="establishment?.establishmentAccount?.bankAccount?.ibanAccountNo"
+              label="ESTABLISHMENT.IBAN-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              [control]="establishment?.establishmentAccount?.bankAccount?.bankName"
+              label="ESTABLISHMENT.BANK-NAME"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="
+    (establishmentToValidate?.establishmentAccount?.bankAccount?.bankName?.english !==
+      establishment?.establishmentAccount?.bankAccount?.bankName?.english ||
+      establishmentToValidate?.establishmentAccount?.bankAccount?.ibanAccountNo !==
+        establishment?.establishmentAccount?.bankAccount?.ibanAccountNo) &&
+    closeEstablishmentDetails?.paymentType?.english === bankPaymentMethod
+  "
+>
+  <div class="sub-content-last-item bank-details">
+    <!--New Bank details-->
+    <div
+      class="row"
+      *ngIf="
+        establishmentToValidate?.establishmentAccount?.bankAccount?.ibanAccountNo ||
+        establishmentToValidate?.establishmentAccount?.bankAccount?.bankName?.english
+      "
+    >
+      <div class="col-md-12">
+        <frm-content-heading-dc
+          icon="briefcase"
+          heading="ESTABLISHMENT.EST-BANK-DETAILS-AFTER-CHANGES"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div
+            class="col-md-8"
+            *ngIf="
+              establishmentToValidate?.establishmentAccount?.bankAccount?.ibanAccountNo !==
+              establishment?.establishmentAccount?.bankAccount?.ibanAccountNo
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.establishmentAccount?.bankAccount?.ibanAccountNo"
+              label="ESTABLISHMENT.IBAN-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-4"
+            *ngIf="
+              establishmentToValidate?.establishmentAccount?.bankAccount?.bankName?.english !==
+              establishment?.establishmentAccount?.bankAccount?.bankName?.english
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.establishmentAccount?.bankAccount?.bankName"
+              label="ESTABLISHMENT.BANK-NAME"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

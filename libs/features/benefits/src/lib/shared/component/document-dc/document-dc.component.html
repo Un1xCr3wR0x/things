@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- Uploaded Document section-->
+
+<div class="row" [formGroup]="uploadDocumentForm" *ngIf="canUpload">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h4 class="card-heading">
+              {{ 'BENEFITS.UPLOAD-DOCUMENT' | translate }}
+            </h4>
+            <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info"> </gosi-alert-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-12">
+            <ng-container *ngIf="documentList?.length > 0">
+              <ng-container *ngFor="let item of documentList; let i = index">
+                <gosi-input-file-sc
+                  [index]="i"
+                  [document]="item"
+                  [businessKey]="businessKey"
+                  [referenceNo]="referenceNo"
+                  [transactionId]="requestTransactionId"
+                  (refresh)="refreshDocument($event)"
+                  (delete)="deleteDocument(item)"
+                  [isScan]="isAppPrivate"
+                  [uuid]="uuid"
+                ></gosi-input-file-sc>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Comments section -->
+<div class="row" *ngIf="isAppPrivate && !isRemove">
+  <div class="col-lg-12">
+    <gosi-input-text-area-dc id="comments" label="BENEFITS.COMMENTS" [control]="uploadDocumentForm.get('comments')">
+    </gosi-input-text-area-dc>
+  </div>
+</div>
+<div *ngIf="showActionsButtons" class="row form-action">
+  <div class="col-auto form-action-btn">
+    <gosi-button-dc
+      [ngClass]="isSmallScreen ? '' : 'float-left'"
+      [isFullWidth]="isSmallScreen"
+      id="cancelButton"
+      type="secondary"
+      (submit)="showCancelTemplate()"
+    >
+      {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+    >
+  </div>
+  <div class="col-auto form-action-btn" [ngClass]="!isSmallScreen ? 'float-right' : ''">
+    <gosi-button-dc
+      *ngIf="!isCommitment"
+      id="previous"
+      name="previousContributor"
+      [isFullWidth]="isSmallScreen"
+      type="secondary"
+      (submit)="previousSection()"
+    >
+      {{ 'BENEFITS.PRE-SECTION' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="ml-auto col-auto form-action-btn">
+    <gosi-button-dc
+      [ngClass]="!isSmallScreen ? 'float-right' : ''"
+      id="apply"
+      type="primary"
+      [disabled]="isDisabled"
+      [isFullWidth]="isSmallScreen"
+      (submit)="saveDocuments()"
+    >
+      {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="declineCancel()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

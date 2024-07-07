@@ -1,0 +1,363 @@
+<ces-customer-summary-dc
+  *ngIf="customerSummary"
+  [customerSummary]="customerSummary"
+  [hideCustomerInfoAppealTxn]="true"
+  [isPreviousTransaction]="false"
+></ces-customer-summary-dc>
+
+<ng-container *ngIf="appealDetails">
+  <gosi-card-dc type="primary" [lessPadding]="true" [heading]="'COMPLAINTS.APPEAL-SUMMARY' | translate">
+    <div class="row">
+      <div class="col-lg-4">
+        <gosi-label-dc
+          [id]="'transactionName'"
+          [value]="appealDetails.againstTitle | bilingualText"
+          [label]="'COMPLAINTS.TRANSACTION-NAME' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          [id]="'customerName'"
+          [value]="appealDetails.transactionRefNumber"
+          [label]="'COMPLAINTS.AGAINST-TRANSACTION-NUMBER' | translate"
+          [isLink]="appealDetails.againstTransactionId ? true : false"
+          (select)="navigateToTransaction()"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          [id]="'customerName'"
+          [value]="appealDetails.createdDate?.gregorian | gosiDate"
+          [label]="'COMPLAINTS.TRANSACTION-DATE' | translate"
+        ></gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- Decision Block -->
+  <gosi-card-dc
+    *ngIf="decisionDocument.length > 0 && transaction.status.english != 'In Progress'"
+    type="primary"
+    [lessPadding]="true"
+    [heading]="'COMPLAINTS.ORGANIZATION-DECISION' | translate"
+  >
+    <div class="decision-style">
+      {{
+        isAppealProgress
+          ? ('COMPLAINTS.APPEAL-PROGRESS' | translate)
+          : isAppealApproved
+          ? ('COMPLAINTS.APPROVED-BECAUSE' | translate)
+          : ('COMPLAINTS.REJECTED-BECAUSE' | translate)
+      }}
+    </div>
+    <div class="col-12">
+      <div class="document-container">
+        <gosi-input-file-sc
+          *ngFor="let document of decisionDocument; let i = index"
+          [document]="document"
+          [index]="i"
+          [isSequenceNo]="true"
+          [hideDeleteAction]="hideFileDelete"
+        ></gosi-input-file-sc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- This block is for general appeal details block => reason and attachments of the user -->
+  <gosi-card-dc type="primary" [lessPadding]="true" [heading]="'TRANSACTION-TRACING.APPEAL-DETAILS' | translate">
+    <div class="col-12">
+      <gosi-alert-dc *ngIf="employeeComment" [message]="employeeComment | slice: 8" [type]="'warning'"></gosi-alert-dc>
+    </div>
+    <div class="col-12">
+      <!-- This block is for view only in the track page are based on disabling the text-area-->
+      <gosi-input-text-area-dc
+        *ngIf="disabled"
+        [maxLength]="498"
+        gosiSpecialCharacterMask
+        [label]="'TRANSACTION-TRACING.APPEAL-REASON' | translate"
+        [mandatory]="true"
+        [value]="appealDetails?.reason"
+        id="appeal-description"
+        [removeExtraSpecialCharacters]="true"
+        [removeSpecialCharacters]="true"
+        [disabled]="disabled"
+      >
+      </gosi-input-text-area-dc>
+      <!-- This block is for the inbox page and show/hide are based on disabling the text-area, appealForm must be sent and not empty -->
+      <gosi-input-text-area-dc
+        *ngIf="!disabled"
+        [maxLength]="498"
+        gosiSpecialCharacterMask
+        [label]="'TRANSACTION-TRACING.APPEAL-REASON' | translate"
+        [control]="appealForm.get('reason')"
+        [value]="appealDetails?.reason"
+        id="appeal-description"
+        [removeExtraSpecialCharacters]="true"
+        [removeSpecialCharacters]="true"
+        [disabled]="disabled"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+    <div class="col-12">
+      <div class="document-container" *ngIf="documents && documents.length > 0">
+        <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info" [dismissible]="false" [noPadding]="true">
+        </gosi-alert-dc>
+
+        <gosi-input-file-sc
+          *ngFor="let document of documents; let i = index"
+          [document]="document"
+          [index]="i"
+          [isSequenceNo]="true"
+          [uuid]="uuid"
+          [transactionId]="stringTransactionId"
+          [byPassDeleteAPI]="true"
+          (delete)="deleteDocument(document)"
+          (uploadedEvent)="uploadEvent($event)"
+          [referenceNo]="transactionTraceId"
+          [noFilesError]="noFilesError"
+          [hideDeleteAction]="hideFileDelete"
+        ></gosi-input-file-sc>
+        <div class="d-flex justify-content-center" *ngIf="documents && documents.length < 5 && !disabled">
+          <gosi-button-dc
+            id="addDoc"
+            type="secondary"
+            [outlineOnly]="true"
+            [size]="'md'"
+            (submit)="addAnotherDocument()"
+            [disabled]="diabledUpload"
+          >
+            <fa-icon class="px-1" [icon]="['fas', 'plus']"></fa-icon>
+            {{ 'TRANSACTION-TRACING.ADD-DOCUMENT' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <gosi-ui-appeals-workflows-dc
+        [assignedRole]="currentRole"
+        [data]="appeal?.contributors[0]"
+      ></gosi-ui-appeals-workflows-dc>
+    </div>
+  </gosi-card-dc>
+</ng-container>
+
+<ng-container *ngIf="appealOnViolationDetails">
+  <!-- Appeal On Violation Summary Block -->
+  <gosi-card-dc type="primary" [lessPadding]="true" [heading]="'COMPLAINTS.APPEAL-SUMMARY' | translate">
+    <div class="row">
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <gosi-label-dc
+          id="appeal-violation"
+          [value]="violationDetails?.violationType | bilingualText"
+          [label]="'VIOLATIONS.APPEAL-ON-VIOLATION' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <gosi-label-dc
+          id="violation-number"
+          [value]="violationDetails?.violationId"
+          [label]="'VIOLATIONS.VIOLATION-NUMBER' | translate"
+          [isLink]="true"
+          (select)="navigateToTransaction()"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <gosi-label-dc
+          id="penalty"
+          [value]="violationDetails?.penaltyAmount"
+          [label]="'VIOLATIONS.PENALTY-AMOUNT' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <gosi-label-dc
+          id="establishment-name"
+          [value]="
+            violationDetails?.establishmentInfo?.name?.english == null
+              ? violationDetails?.establishmentInfo?.name?.arabic
+              : violationDetails?.establishmentInfo?.name?.english == null
+              ? '-'
+              : (violationDetails?.establishmentInfo?.name?.english | bilingualText)
+          "
+          [label]="'VIOLATIONS.APPEAL-ESTABLISHMENT-NAME' | translate"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <gosi-label-dc
+          id="registeration-number"
+          [value]="violationDetails?.establishmentInfo?.registrationNo"
+          [label]="'VIOLATIONS.CUSTOMER-REG-NO' | translate"
+        ></gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- Decision Block -->
+  <gosi-card-dc
+    *ngIf="decisionDocument.length > 0 && transaction.status.english != 'In Progress'"
+    type="primary"
+    [lessPadding]="true"
+    [heading]="'COMPLAINTS.ORGANIZATION-DECISION' | translate"
+  >
+    <div class="decision-style">
+      {{
+        isAppealProgress
+          ? ('COMPLAINTS.APPEAL-PROGRESS' | translate)
+          : isAppealApproved
+          ? ('COMPLAINTS.APPROVED-BECAUSE' | translate)
+          : ('COMPLAINTS.REJECTED-BECAUSE' | translate)
+      }}
+    </div>
+    <div class="col-12">
+      <div class="document-container">
+        <gosi-input-file-sc
+          *ngFor="let document of decisionDocument; let i = index"
+          [document]="document"
+          [index]="i"
+          [isSequenceNo]="true"
+          [hideDeleteAction]="hideFileDelete"
+        ></gosi-input-file-sc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- Appeal On Violation Details Block -->
+
+  <div class="row" *ngIf="violContributorList">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.APPEAL-IN-DETAIL' | translate }}">
+        <div class="row bg-light border rounded py-3 mx-2">
+          <div class="col-12">
+            <div class="row">
+              <div class="col-4">
+                <p>{{ 'TRANSACTION-TRACING.CONTRIBUTOR-NAME' | translate | titlecase }}</p>
+              </div>
+              <div class="col-4">
+                <p>{{ 'TRANSACTION-TRACING.CONTRIBUTOR-ID' | translate | titlecase }}</p>
+              </div>
+              <div class="col-3">
+                <p>{{ 'VIOLATIONS.PENALTY-AMOUNT' | translate | titlecase }}</p>
+              </div>
+              <div class="col-1"></div>
+            </div>
+            <accordion *ngFor="let contributor of violContributorList; let i = index">
+              <accordion-group
+                id="{{ i }}"
+                class="accordion-group-class cz-accordion-group"
+                (isOpenChange)="selectPanel($event, i + 1, contributor?.contributorId)"
+                [isOpen]="accordionPanel === i + 1"
+              >
+                <div class="col-lg-12 row text-dark px-1" accordion-heading>
+                  <div class="col-4">
+                    <p>
+                      {{
+                        violContributorList[i]?.contributorName.english == null ||
+                        violContributorList[i]?.contributorName.english.trim() === ''
+                          ? violContributorList[i]?.contributorName.arabic
+                          : (violContributorList[i]?.contributorName | bilingualText)
+                      }}
+                    </p>
+                  </div>
+                  <div class="col-4">
+                    {{ violContributorList[i]?.nationalId }}
+                  </div>
+                  <div class="col-3">
+                    <p>{{ violContributorList[i]?.penaltyAmount }}</p>
+                  </div>
+                  <div class="col-1">
+                    <span class="angle-down" accordion-heading>
+                      <fa-icon icon="angle-down" size="lg"></fa-icon>
+                    </span>
+                  </div>
+                </div>
+                <div class="row-detail row card-container mt-3">
+                  <div class="col-12">
+                    <gosi-input-text-area-dc
+                      [label]="'VIOLATIONS.APPEAL-OPINION' | translate"
+                      [mandatory]="true"
+                      [value]="violContributorList[i]?.reason"
+                      id="appeal-description"
+                      [removeSpecialCharacters]="true"
+                      [disabled]="true"
+                    >
+                    </gosi-input-text-area-dc>
+                    <div class="row">
+                      <div
+                        class="col-lg-4 col-md-6 col-sm-12 hori-align"
+                        *ngFor="let document of violContributorList[i]?.documents; let i = index"
+                      >
+                        <gosi-document-view-dc [document]="document"></gosi-document-view-dc>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-container *ngIf="isPrivate">
+                    <div class="col-12">
+                      <h3 class="form-label mb-4">
+                        {{ 'COMPLAINTS.AUTHORIZED-OPINION' | translate }}
+                      </h3>
+                      <form [formGroup]="appealDecisionForm">
+                        <!-- Reviewer Decision -->
+                        <gosi-input-text-dc
+                          id="reviewerDecision"
+                          name="reviewerDecision"
+                          [label]="'COMPLAINTS.SEARCH' | translate"
+                          [disabled]="true"
+                          [hideOptionalLabel]="true"
+                          [control]="appealDecisionForm.get('reviewerDecision')"
+                        >
+                        </gosi-input-text-dc>
+                        <!-- Legal Auditor Decision -->
+                        <gosi-input-text-dc
+                          id="auditorDecision"
+                          name="auditorDecision"
+                          [label]="'COMPLAINTS.CAUSATION' | translate"
+                          [disabled]="true"
+                          [hideOptionalLabel]="true"
+                          [control]="appealDecisionForm.get('auditorDecision')"
+                        >
+                        </gosi-input-text-dc>
+                        <!-- Legal Opinion -->
+                        <gosi-input-text-dc
+                          id="legalOpinion"
+                          name="legalOpinion"
+                          label="Legal Opinion"
+                          [label]="'COMPLAINTS.LEGAL-OPINION' | translate"
+                          [disabled]="true"
+                          [hideOptionalLabel]="true"
+                          [control]="appealDecisionForm.get('legalOpinion')"
+                        >
+                        </gosi-input-text-dc>
+                        <!-- Execution Decision -->
+                        <gosi-input-text-dc
+                          id="executorDecision"
+                          name="executorDecision"
+                          label="Legal Opinion"
+                          [label]="'COMPLAINTS.COMMENTS' | translate"
+                          [disabled]="true"
+                          [hideOptionalLabel]="true"
+                          [control]="appealDecisionForm.get('executorDecision')"
+                        >
+                        </gosi-input-text-dc>
+                        <!-- Final Decision -->
+                        <gosi-input-text-dc
+                          id="finalDecision"
+                          name="finalDecision"
+                          [label]="'COMPLAINTS.FINAL-DECISION' | translate"
+                          [disabled]="true"
+                          [hideOptionalLabel]="true"
+                          [control]="appealDecisionForm.get('finalDecision')"
+                        >
+                        </gosi-input-text-dc>
+                      </form>
+                    </div>
+                  </ng-container>
+                </div>
+              </accordion-group>
+            </accordion>
+          </div>
+        </div>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+</ng-container>

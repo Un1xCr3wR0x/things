@@ -1,0 +1,172 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="!isValidatorView">    
+
+  <!--Contact details-->
+  <oh-contact-details-dc
+    #contactForm
+    [control]="emergencyContact"    
+    [isdControl]="isdControl"
+    [contactDetails]="contactDetails"
+  >
+  </oh-contact-details-dc>
+  <!--Address details-->
+ 
+    <div class="col-md-12" *ngIf="!isAddressPresent && isAddressOptional">
+      <frm-address-dc
+        idValue="oh"
+        [cityList]="cityList"
+        [countryList]="countryList"
+        [hasNationalAddress]="true"
+        [hasPOAddress]="true"
+        [hasOverseasAddress]="true"  
+        [isOptional]="false"
+        [contactDetail]="contactDetails"      
+        [isPoMandatory]="isPoMandatory"
+        [addressDetails]="contactDetails?.addresses ? contactDetails?.addresses : null"
+        [currentMailingAddress]="contactDetails ? contactDetails.currentMailingAddress : null"
+        [parentForm]="addressForms"
+        #addressForm
+      >
+      </frm-address-dc>
+    </div>
+    <div class="col-md-12" *ngIf="!isAddressPresent && !isAddressOptional">
+      <frm-address-dc
+        idValue="oh"
+        [cityList]="cityList"
+        [countryList]="countryList"
+        [hasNationalAddress]="true"
+        [hasPOAddress]="true"
+        [hasOverseasAddress]="true"
+        [isPoMandatory]="isPoMandatory"
+        [isOptional]="false"
+        [contactDetail]="contactDetails" 
+        [addressDetails]="contactDetails?.addresses"
+        [currentMailingAddress]="contactDetails ? contactDetails.currentMailingAddress : null"
+        [parentForm]="addressForms"
+        #addressForm
+      >
+      </frm-address-dc>
+    </div>
+  
+  <!--Allowance Payee details-->
+  <div class="card" [formGroup]="payeeListForm">
+    <div class="row">
+      <div class="col">
+        <h4 class="card-heading">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYMENT-DETAILS' | translate }}
+        </h4>
+      </div>
+    </div>
+    <div class="card-body">
+      <gosi-alert-dc
+        *ngIf="(payeeListForm.get('payeeType').get('english').value === 'Contributor' && workFlowType === 'Injury')"
+        [message]="'OCCUPATIONAL-HAZARD.INJURY.PAYEE-INFO' | translate"
+        [dismissible]="false"
+        type="warning"
+        [noPadding]="true"
+      ></gosi-alert-dc>
+      <div
+        class="sub-label show-detail"
+        [ngClass]="{
+          'pt-3': payeeListForm.get('payeeType').get('english').value === 'Contributor' && workFlowType === 'Injury'
+        }"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate }}
+        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="allowancePayeeTemplate" class="info-circle"></fa-icon>
+      </div>
+      <gosi-input-radio-dc
+        id="payeeType"
+        name="payeeType"
+        class="payeeType"
+        [control]="payeeListForm.get('payeeType')"
+        [list]="payeeList"
+        (select)="selectedpayeeList($event)"
+        [disabled]="disabled"
+        [noMargin]="true"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+</ng-container>
+<!--Save and Next button details-->
+<div class="row" *ngIf="!isValidatorView">
+  <div class="col-lg-12 form-action">
+    <div class="personal-details">
+      <div class="float-right btn-section">
+        <gosi-button-dc (submit)="submitPersonalDetails()" id="saveAndNext" [type]="'primary'">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc (submit)="previousSection()" id="previousContributor" [type]="'secondary'">
+          {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" [type]="'secondary'">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<!--personal details for Validator View-->
+<div class="row" *ngIf="person && isValidatorView">
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="arabicName"
+      [control]="personNameArabic"
+      label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME-AR"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="englishName"
+      [control]="personNameEnglish"
+      label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME-EN"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc
+      id="nationality"
+      [control]="person.nationality"
+      label="OCCUPATIONAL-HAZARD.NATIONALITY"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-3" *ngIf="personType && appToken !== 'INDIVIDUAL_APP'">
+    <gosi-label-dc
+      [id]="'identityType'"
+      [value]="primaryIdentity.id"
+      [label]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-ID' | translate"
+      [isLink]="true"
+      (click)="navigateToInjuryDetails()"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-lg-3" *ngIf="personType && appToken === 'INDIVIDUAL_APP'">
+    <gosi-label-dc
+      [id]="'identityType'"
+      [value]="primaryIdentity.id"
+      [label]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-ID' | translate"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc id="gender" [control]="person.sex" label="OCCUPATIONAL-HAZARD.GENDER"></gosi-label-dc>
+  </div>
+  <div class="col-lg-3">
+    <gosi-label-dc id="dateOBirth" [date]="true" [value]="calculateAge()" label="OCCUPATIONAL-HAZARD.DATE-OF-BIRTH">
+    </gosi-label-dc>
+  </div>
+</div>
+<ng-template #allowancePayeeTemplate>
+  <ng-container>
+    <div>{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE-INFO' | translate }}</div>
+    <div>{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE-INFO-LABEL' | translate }}</div>
+  </ng-container>
+</ng-template>

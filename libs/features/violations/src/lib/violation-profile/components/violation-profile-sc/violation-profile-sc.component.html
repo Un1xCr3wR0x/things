@@ -1,0 +1,160 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content" *ngIf="showAppealForm">
+  <trn-appeal-form-dc
+        [transaction]="transaction"
+        [userId]="userId"
+        (appealRequest)="submitAppeal($event)"
+        (hideAppealForm)="deactivateAppealForm()"
+        >
+    </trn-appeal-form-dc>
+
+</div>
+
+<div class="content" *ngIf="!showAppealForm">
+  <div class="custom-header">
+    <div class="row no-gutters p-2 violation-details">
+      <div class="col-auto">
+        <a class="back-button" (click)="navigateBack()">
+          <fa-icon class="fa-icon" *ngIf="lang === 'en'" icon="arrow-left"></fa-icon>
+          <fa-icon class="fa-icon" *ngIf="lang === 'ar'" icon="arrow-right"></fa-icon>
+        </a>
+      </div>
+      <div class="col-auto heading">
+        {{ 'VIOLATIONS.VIOLATION-DETAILS' | translate | titlecase }}
+      </div>
+
+      <div class="action-btn ml-auto" id="id">
+        <div class="d-flex flex-row-reverse" *ngIf="!isCancelled">
+          <div
+            class="btn-section desktop-screen"
+            *ngIf="
+              (transactionDetails?.violationClass?.english !== doNoImposePenalty &&
+              !transactionDetails?.establishmentInfo?.isClosed) || showAppealButton
+            "
+          >
+            <gosi-button-dc
+              type="secondary"
+              *gosiShow="accessCsrOnly"
+              size="sm"
+              id="actionsBtn"
+              [popover]="optionsModal"
+              placement="bottom"
+              outsideClick="true"
+            >
+              {{ 'VIOLATIONS.ACTIONS' | translate }}
+              <fa-icon class="action-btn ml-2 mr-2" icon="ellipsis-v"></fa-icon>
+            </gosi-button-dc>
+
+            <gosi-button-dc
+            *gosiShow="(showAppealButton && estAppealActive == 'Appeal_Est')"
+            [size]="'sm'"
+            (click)="navigateToAppealOnViolation(transaction?.transactionRefNo, transaction?.canRequestReview, previousRequest)"
+            >
+            {{ transaction?.canRequestReview
+              ? ('TRANSACTION-TRACING.REVIEW-REQUEST' | translate)
+              : ('TRANSACTION-TRACING.APPEAL' | translate) }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="small-screen">
+      <div class="row no-gutters p-2">
+        <div class="d-flex flex-row-reverse" *ngIf="!isCancelled">
+          <div
+            class="btn-section"
+            *ngIf="
+              (transactionDetails?.violationClass?.english !== doNoImposePenalty &&
+              !transactionDetails?.establishmentInfo?.isClosed) || showAppealButton
+            "
+          >
+            <gosi-button-dc
+              type="secondary"
+              *gosiShow="accessCsrOnly"
+              [popover]="optionsModal"
+              placement="bottom"
+              outsideClick="true"
+              size="sm"
+              id="actionsBtn"
+            >
+              {{ 'VIOLATIONS.ACTIONS' | translate }}
+              <fa-icon icon="ellipsis-v" class="action-btn ml-2 mr-2"></fa-icon>
+            </gosi-button-dc>
+
+            <gosi-button-dc
+            *gosiShow="(showAppealButton && estAppealActive == 'Appeal_Est')"
+            [size]="'sm'"
+            (click)="navigateToAppealOnViolation(transaction?.transactionRefNo, transaction?.canRequestReview, previousRequest)"
+            >
+            {{ transaction?.canRequestReview
+              ? ('TRANSACTION-TRACING.REVIEW-REQUEST' | translate)
+              : ('TRANSACTION-TRACING.APPEAL' | translate) }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-md-12">
+      <vol-violation-details-dc
+        [transactionDetails]="transactionDetails"
+        [accessRoles]="accessInternalRoles"
+        [isAppPrivate]="isAppPrivate"
+        [isSimisFlag]="isSimisFlag"
+        [isKashefInspection]="isKashefInspection"
+        (goToTransaction)="goToTransaction($event)"
+      ></vol-violation-details-dc>
+      <ng-container *ngIf="!isSimisFlag">
+        <div *ngIf="isRasedInspection || (e_Inspection && transactionDetails?.inspectionInfo?.visitId)">
+          <vol-inspections-details-dc [transactionDetails]="transactionDetails" *gosiShow="accessInternalRoles">
+          </vol-inspections-details-dc>
+        </div>
+        <vol-effected-contributors-dc
+          [transactionDetails]="transactionDetails"
+          [accessRoles]="accessExternalRoles"
+          (showDescriptionPopup)="showModal($event)"
+          (hideDescription)="closeModal()"
+        >
+        </vol-effected-contributors-dc>
+      </ng-container>
+      <vol-documents-dc [documents]="violationDocuments"></vol-documents-dc>
+    </div>
+  </div>
+</div>
+
+<!-- Penalty Action Modal -->
+<ng-template #optionsModal>
+  <button type="button" id="modify" (click)="modifyPenaltyAmount()" class="d-flex btn text-left action-pop-btn">
+    {{ 'VIOLATIONS.MODIFY-VIOLATIONS' | translate }}
+  </button>
+  <button type="button" id="terminate" class="d-flex btn text-left action-pop-btn" (click)="cancelViolation()">
+    {{ 'VIOLATIONS.CANCEL-VIOLATIONS' | translate }}
+  </button>
+</ng-template>
+
+<!-- alert -->
+<ng-template #warningTemplate>
+  <gosi-modal-dc [modalHeader]="modalHeading | translate">
+    <div modalContent>
+      <gosi-alert-dc
+        [message]="warningMessage | translate: { transactionId: transactionDetails?.existingTransactionId } | titlecase"
+        type="warning"
+        [dismissible]="dismissible"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="closeModal()">
+        {{ 'VIOLATIONS.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>

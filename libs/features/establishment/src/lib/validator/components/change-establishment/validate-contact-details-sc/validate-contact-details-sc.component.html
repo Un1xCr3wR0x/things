@@ -1,0 +1,148 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc name="contactDetails" [establishment]="establishment">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          [heading]="'ESTABLISHMENT.EST-CONTACT-DETAILS-AFTER-CHANGES' | translate"
+          (onEdit)="changeEstablishmentService.navigateToEditContactDetails()"
+        ></frm-content-heading-dc>
+        <!--Modified Contact Details Fields -->
+        <div class="row">
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate?.contactDetails?.mobileNo?.primary !==
+              establishment?.contactDetails?.mobileNo?.primary
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.contactDetails?.mobileNo?.primary"
+              label="ESTABLISHMENT.MOBILE-NUMBER"
+              ><span id="prefixValue">{{ getISDCodePrefix(establishmentToValidate.contactDetails?.mobileNo) }}</span>
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate?.contactDetails?.telephoneNo?.primary !==
+              establishment?.contactDetails?.telephoneNo?.primary
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.contactDetails?.telephoneNo?.primary"
+              label="ESTABLISHMENT.TELEPHONE-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate?.contactDetails?.telephoneNo?.extensionPrimary !==
+              establishment?.contactDetails?.telephoneNo?.extensionPrimary
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.contactDetails?.telephoneNo?.extensionPrimary"
+              label="ESTABLISHMENT.EXTENSION"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate?.contactDetails?.emailId?.primary !==
+              establishment?.contactDetails?.emailId?.primary
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate?.contactDetails?.emailId?.primary"
+              label="ESTABLISHMENT.EMAIL-ID"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(contactDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(contactDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(contactDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="contactDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-CONTACT'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(contactDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="contactDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-CONTACT'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(contactDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="contactDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(contactDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

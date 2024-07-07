@@ -1,0 +1,290 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <div>
+        <frm-main-heading-dc
+          heading="{{ 'BENEFITS.SUSPEND-UNEMPLOYMENT-INSURANCE-SANED' | translate }}"
+        ></frm-main-heading-dc>
+      </div>
+    </ng-container>
+    <frm-main-content-dc [documents]="documentList" [comments]="comments">
+      <gosi-alert-dc> </gosi-alert-dc>
+      <div id="contentArea" *ngIf="benefitDetails">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary" lessPadding="true">
+              <!-- Contributor  Details -->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="user"
+                    [canEdit]="false"
+                    heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+                  >
+                  </frm-content-heading-dc>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorNin"
+                        label="{{ 'BENEFITS.NIN' | translate }}"
+                        [isLink]="true"
+                        [value]="benefitDetails.nin"
+                        (click)="viewContributorDetails()"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorName"
+                        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+                        [value]="benefitDetails.contributorName.english"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorNameArabic"
+                        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+                        [value]="benefitDetails.contributorName.arabic"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!----------------------- Benefit Details ---------------------------------->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="Benefits"
+                    isSvg="true"
+                    [canEdit]="false"
+                    heading="{{ 'BENEFITS.VIEW-BENEFIT-DETAILS' | translate }}"
+                  >
+                  </frm-content-heading-dc>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="benefitRequestDate"
+                        label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+                        [value]="benefitDetails.requestDate.gregorian | date: 'dd/MM/yyyy'"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="sanedType"
+                        label="{{ 'BENEFITS.SANED-TYPE' | translate }}"
+                        [value]="benefitDetails.type | bilingualText"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="benefitAmount"
+                        label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+                        [value]="
+                          'BENEFITS.AMOUNT-MONTHS' | translate: { amount: benefitDetails.benefitAmount || 0 | number }
+                        "
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- view benefit details LINK -->
+              <div class="row pl-3">
+                <div class="view-benefit-details pb-4">
+                  <a id="paymentoptions" routerLinkActive="active" (click)="onViewBenefitDetails()">
+                    <u>{{ 'BENEFITS.VIEW-BENEFIT-DETAILS' | translate }}</u>
+                  </a>
+                </div>
+              </div>
+              <!-------------------------- Benefit suspend details -------------------------->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="stopHold-gray"
+                    isSvg="true"
+                    [canEdit]="validatorCanEdit && validatorSuspendEdit"
+                    (onEdit)="navigateToEdit()"
+                    heading="{{ 'BENEFITS.BENEFIT-SUSPEND-DETAILS-CAPS' | translate | titlecase }}"
+                  >
+                  </frm-content-heading-dc>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="suspendDate"
+                        label="{{ 'BENEFITS.SUSPEND-DATE' | translate }}"
+                        value="{{ suspendDetails?.suspendDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="suspendReason"
+                        label="{{ 'BENEFITS.SUSPEND-REASON' | translate }}"
+                        [value]="suspendDetails?.reason | bilingualText"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row pb-2">
+                    <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="suspendDetails?.notes">
+                      <div>{{ 'BENEFITS.NOTES' | translate }}</div>
+                      {{ suspendDetails?.notes | limitTo: limit }}
+                      <div *ngIf="suspendDetails?.notes?.length > limitvalue">
+                        <a (click)="readFullNote(suspendDetails?.notes)" class="read-more">
+                          {{ showMoreText | translate }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <!-------------------------- Adjustment Details -------------------------->
+                  <div
+                    class="adjustment-details col-md-12 row d-flex align-items-center w-100"
+                    *ngIf="adjustmentDetails"
+                  >
+                    <div class="table-scroll table-responsive table-adjustmentDetails">
+                      <div class="details-heading">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</div>
+                      <table class="table table-borderless">
+                        <thead class="table-header">
+                          <tr>
+                            <th>
+                              {{ 'BENEFITS.PAYMENT-DATE' | translate }}
+                            </th>
+                            <th class="amount">
+                              {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let adj of adjustmentDetails.suspendDetailsList" class="data-row border-bottom">
+                            <td>
+                              {{ adj.paymentDate.gregorian | date: 'dd/MM/yyyy' }}
+                            </td>
+                            <td class="amount">
+                              {{ adj.adjustmentAmount }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="total-amount text-end">
+                        {{ 'BENEFITS.TOTAL-ADJUSTMENT' | translate }} :
+                        <span [ngClass]="100 > 0 ? 'net-value-green' : 0 == 0 || !false ? '' : 'net-value-red'">
+                          {{ adjustmentDetails.totalAdjustmentAmount | number: '1.2-2' }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+      </div>
+      <div id="actionArea">
+        <div class="row form-action">
+          <div class="col-lg-12">
+            <div class="col-lg-12 form-action">
+              <div class="btn-section float-right">
+                <ng-container *gosiShow="validatorSanedSuspend">
+                <gosi-button-dc
+                  id="approve"
+                  [disabled]="disableApprove"
+                  type="primary"
+                  (submit)="approveTransaction(approveTemplate)"
+                >
+                  {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+
+              <ng-container>
+                <div class="btn-section float-right" *ngIf="canReject">
+                  <ng-container *gosiShow="validatorSanedSuspend">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    (submit)="rejectTransaction(rejectTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                  </ng-container>
+                </div>
+
+                <div class="btn-section float-right" *ngIf="canReturn">
+                  <ng-container *gosiShow="validatorSanedSuspend">
+                  <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                    {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                  >
+                  </ng-container>
+                </div>
+              </ng-container>
+              <div class="btn-section float-left">
+                <ng-container *gosiShow="validatorSanedSuspend">
+                <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelBenefitTemplate)">
+                  {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #cancelBenefitTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE' | translate }} - {{ 'BENEFITS.SUSPEND-UNEMPLOYMENT-INSURANCE-SANED' | translate }}"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="suspendBenefitForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveBenefit()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{ 'BENEFITS.SUSPEND-UNEMPLOYMENT-INSURANCE-SANED' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="suspendBenefitForm"
+    (rejectEvent)="confirmRejectBenefit()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.STOP-STATUS' | translate }} {{ heading | translate }}"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="suspendBenefitForm"
+    (returnEvent)="returnBenefit()"
+  >
+  </frm-return-template-dc>
+</ng-template>

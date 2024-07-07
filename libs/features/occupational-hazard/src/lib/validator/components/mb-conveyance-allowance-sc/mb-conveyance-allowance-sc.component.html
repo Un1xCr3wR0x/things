@@ -1,0 +1,579 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div id="mainHeading">
+    <frm-main-heading-dc
+      heading="{{ 'OCCUPATIONAL-HAZARD.PAYMENT.MEDICAL-BOARD-CONVEYANCE-ALLOWANCE' | translate }}"
+      [subLabel]="'OCCUPATIONAL-HAZARD.SOCIAL-INSURANCE-NO' | translate"
+      [subValue]="socialInsuranceNo"
+    >
+    </frm-main-heading-dc>
+    <frm-main-content-dc [documents]="documents ? documents : []">
+      <!-- [comments]="comment ? comment : []" -->
+      <div id="contentArea">
+        <!--Heir Details-->
+        <oh-heir-disability-details-dc
+          *ngIf="(heirConveyance || dependentConveyance) && activeBenefitDetails && PersonalInformation"
+          [contributor]="contributorDetails ? contributorDetails : contributor"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          [activeBenefitDetails]="activeBenefitDetails"
+          [heirDisabilityAssessment]="heirConveyance"
+          [dependentDisability]="dependentConveyance"
+          (previousOhDetails)="previousOhDetails()"
+          [PersonalInformation]="PersonalInformation"
+        ></oh-heir-disability-details-dc>
+        <br />
+        <!--Contributor Details-->
+        <oh-engagement-details-dc
+          [contributor]="contributorDetails ? contributorDetails : contributor"
+          [registrationNo]="registrationNo"
+          [disabilty]="isWithDisability"
+          [injury]="injury"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          [activeBenefitDetails]="activeBenefitDetails"
+          [injuryClosingStatus]="injuryClosingStatus"
+          [showNonOCCDisability]="nonOccConveyance"
+          [heirDisabilityAssessment]="heirConveyance || dependentConveyance"
+          [isComplication]="complicationConveyance"
+          [complicationOccupation]="complicationWrapper?.complicationDetailsDto?.injuryDetails?.occupation"
+          (previousOhDetails)="previousOhDetails()"
+          (previousAssessmentDetails)="previousAssessmentDetails($event)"
+          [isMbTransaction]=" true"
+        >
+        </oh-engagement-details-dc>
+        <br />
+        <!-- <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div> -->
+        <ng-container *ngIf="injuryConveyance || complicationConveyance">
+          <div class="row">
+            <div class="col-md-12">
+              <frm-content-heading-dc icon="user" heading="OCCUPATIONAL-HAZARD.ESTABLISHMENT-DETAILS" [canEdit]="false">
+              </frm-content-heading-dc>
+              <div>
+                <div class="row">
+                  <div class="col-sm-12 col-md-12 col-lg-12">
+                    <gosi-label-dc
+                      id="regNo"
+                      [value]="registrationNo"
+                      label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-REG-NUMBER"
+                      isLink="true"
+                      (click)="navigateToDashboard()"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="establishmentName"
+                      [value]="
+                        injuryConveyance
+                          ? injuryDetailsWrapper?.injuryDetailsDto?.establishmentName?.english
+                          : complicationWrapper?.complicationDetailsDto?.establishmentName?.english
+                      "
+                      label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME-EN"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="establishmentName"
+                      [value]="
+                        injuryConveyance
+                          ? injuryDetailsWrapper?.injuryDetailsDto?.establishmentName?.arabic
+                          : complicationWrapper?.complicationDetailsDto?.establishmentName?.arabic
+                      "
+                      label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME-AR"
+                    ></gosi-label-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <!-- discussed with mifin no need to show injury and complication details for allowance  -->
+        <!-- <oh-close-injury-dc
+          *ngIf="injuryConveyance && injury"
+          [injury]="injury"
+          [close]="true"
+          (injurySelected)="viewInjury()"
+          [canEdit]="false"
+          [injuryClosingStatus]="injuryClosingStatus"
+          [injuryHistoryResponse]="InjuryHistoryResponse"
+        >
+        </oh-close-injury-dc>
+        <oh-close-complication-dc
+          *ngIf="complicationWrapper && complicationConveyance"
+          [complication]="complicationWrapper?.complicationDetailsDto"
+          [close]="true"
+          [canEdit]="false"
+          [complicationClosingStatus]="complicationClosingStatus"
+          [injuryComplicationID]="injuryComplicationID"
+          (injurySelected)="viewInj($event)"
+          (complicationSelected)="viewComplication()"
+        >
+        </oh-close-complication-dc> -->
+        <br />
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <frm-content-heading-dc icon="coins" heading="OCCUPATIONAL-HAZARD.ALLOWANCE-DETAILS" [canEdit]="false">
+              </frm-content-heading-dc>
+              <div>
+                <div class="row">
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="assessment id"
+                      [value]="mbAllowanceDto?.assessmentId"
+                      label="OCCUPATIONAL-HAZARD.ASSESSMENT-ID"
+                      isLink="true"
+                      (click)="navigateToAssessmentPage()"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="assessmentDate "
+                      [value]="mbAllowanceDto?.assessmentDate | dateType"
+                      label="OCCUPATIONAL-HAZARD.ASSESSMENT-DATE"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="assesmentType"
+                      [value]="mbAllowanceDto?.assessmentType | bilingualText"
+                      label="OCCUPATIONAL-HAZARD.ASSESSMENT-TYPE"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="medicalBoardType"
+                      [value]="mbAllowanceDto?.medicalBoardType | bilingualText"
+                      label="OCCUPATIONAL-HAZARD.PAYMENT.MEDICAL-BOARD-TYPE"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6">
+                    <gosi-label-dc
+                      id="totalAmount"
+                      [value]="mbAllowanceDto?.totalAmount | number"
+                      label="OCCUPATIONAL-HAZARD.PAYMENT.TOTAL-AMOUNT"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="mbAllowanceDto?.originLatitude">
+                    <gosi-label-dc
+                      id="originLocation"
+                      value="{{ address }}"
+                      label="{{ 'MEDICAL-BOARD.ORIGIN-LOCATION' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="mbAllowanceDto?.officeLocation">
+                    <gosi-label-dc
+                      id="originLocation"
+                      [value]="mbAllowanceDto?.officeLocation | bilingualText"
+                      label="{{ 'MEDICAL-BOARD.FIELD-OFFICE-LOCATION' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.assessmentChannel">
+                    <gosi-label-dc
+                      id="originLocation"
+                      [value]="assessmentDetails?.assessmentChannel | bilingualText"
+                      label="{{ 'MEDICAL-BOARD.ASSESSMENT-CHANNEL' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.locationType">
+                    <gosi-label-dc
+                    id="locationType"
+                    [value]="assessmentDetails?.locationType | bilingualText"
+                    label="{{ 'MEDICAL-BOARD.LOCATION-TYPE' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="assessmentDetails?.officeLocation">
+                    <gosi-label-dc
+                      id="locationType"
+                      [value]="assessmentDetails?.officeLocation | bilingualText"
+                      label="{{ 'MEDICAL-BOARD.OTHER-GOSI-OFFICE-LOCATION' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                </div>
+                <div *ngIf="mbAllowanceDto.allowanceDetails">
+                  <accordion class="dependent-accordion mx-2 w-100">
+                    <accordion-group class="wrapper-accordion-group">
+                      <div accordion-heading>
+                        <div class="font-weight-normal">
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.CONVEYANCE-ALLOWANCE' | translate }}
+                        </div>
+                      </div>
+                      <div class="ml-auto mr-auto" accordion-heading></div>
+                      <div class="header-wrapper ml-2" accordion-heading>
+                        <span>
+                          {{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment | number }}
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SAR' | translate }}
+                        </span>
+                        <span class="arrow-up">
+                          <fa-icon icon="angle-up" size="lg"></fa-icon>
+                        </span>
+                        <span class="arrow-down">
+                          <fa-icon icon="angle-down" size="lg"></fa-icon>
+                        </span>
+                      </div>
+                      <div class="accordian-wrapper">
+                        <div body>
+                          <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                            <!-- <ng-container> -->
+                            <div class="row">
+                              <div class="col-md-6">
+                                <gosi-label-dc
+                                  [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-METHOD'"
+                                  [value]="
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentMethod | bilingualText
+                                  "
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-md-6">
+                                <gosi-label-dc
+                                  label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+                                  value="{{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.bankAccountNumber }}"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-md-6">
+                                <!-- <gosi-label-dc
+                                  [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-DATE'"
+                                  [value]="
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentDate?.hijiri
+                                      | date: 'dd/MM/yyyy'
+                                  "
+                                >
+                                </gosi-label-dc> -->
+                              </div>
+                              <br />
+                              <div class="col-md-6"></div>
+                              <div class="col-md-6">
+                                <strong>
+                                  {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION' | translate }}
+                                </strong>
+                              </div>
+                              <div class="col-md-6"></div>
+                              <div class="col-md-6" *ngIf=" !mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                              !mbAllowanceDto?.isSameCity">
+                                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL' | translate }}
+                              </div>
+                              <div class="col-md-6" *ngIf="mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                              !mbAllowanceDto?.isSameCity">
+                                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL-LA' | translate }}
+                              </div>
+                              <div class="col-md-12">
+
+                                <div
+                                  class="d-flex flex-row"
+                                  *ngIf="
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                                    !mbAllowanceDto?.isSameCity
+                                  "
+                                >
+                                  = (
+                                  {{
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                                      ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                                      : 0
+                                  }}
+                                  x 2) x 30 / 100 + 100
+                                </div>
+                                <div
+                                  class="d-flex flex-row"
+                                  *ngIf="
+                                    !mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                                    !mbAllowanceDto?.isSameCity
+                                  "
+                                >
+                                  = ((
+                                  {{
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                                      ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                                      : 0
+                                  }}
+                                  x 2) x 30) / 100
+                                </div>
+                                <div class="d-flex flex-row" *ngIf="mbAllowanceDto?.isSameCity">
+                                  {{ 'OCCUPATIONAL-HAZARD.PAYMENT.CONVEYANCE-ALLOWANCE' | translate }}
+                                </div>
+                                <div class="d-flex flex-row-reverse">
+                                  =
+                                  {{
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                                      ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                                      : 0
+                                  }}
+                                  {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                                </div>
+                              </div>
+                              <div class="col-md-12">
+                                <div class="d-flex flex-row">
+                                  <strong>
+                                    {{ 'OCCUPATIONAL-HAZARD.PAYMENT.TOTAL' | translate }}
+                                  </strong>
+                                </div>
+                                <div class="d-flex flex-row-reverse">
+                                  <strong>
+                                    =
+                                    {{
+                                      mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                                        ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                                        : 0
+                                    }}
+                                    {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                                  </strong>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- </ng-container> -->
+                    </accordion-group>
+                    <accordion-group
+                      class="wrapper-accordion-group"
+                      *ngIf="
+                        medicalBoardType &&
+                        medicalBoardType?.english !== 'Primary Medical Board' &&
+                        mbAllowanceDto?.allowanceDetails?.companionDetails
+                      "
+                    >
+                      <div accordion-heading>
+                        <div class="font-weight-normal">
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.COMPANION-ALLOWANCE' | translate }}
+                        </div>
+                      </div>
+                      <div class="ml-auto mr-auto" accordion-heading></div>
+                      <div class="header-wrapper ml-2" accordion-heading>
+                        <span>
+                          {{ mbAllowanceDto?.allowanceDetails?.companionDetails?.companionPayment | number }}
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SAR' | translate }}
+                        </span>
+                        <span class="arrow-up">
+                          <fa-icon icon="angle-up" size="lg"></fa-icon>
+                        </span>
+                        <span class="arrow-down">
+                          <fa-icon icon="angle-down" size="lg"></fa-icon>
+                        </span>
+                      </div>
+                      <div class="accordian-wrapper">
+                        <div body>
+                          <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                            <!-- <ng-container> -->
+                            <div class="row">
+                              <div class="col-md-6">
+                                <gosi-label-dc
+                                  [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-METHOD'"
+                                  [value]="
+                                    mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentMethod | bilingualText
+                                  "
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-md-6">
+                                <gosi-label-dc
+                                  label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+                                  value="{{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.bankAccountNumber }}"
+                                >
+                                </gosi-label-dc>
+                              </div>
+                              <div class="col-md-6">
+                                <!-- <gosi-label-dc
+                                  [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-DATE'"
+                                  [value]="
+                                    mbAllowanceDto?.allowanceDetails?.companionDetails?.paymentDate?.hijiri
+                                      | date: 'dd/MM/yyyy'
+                                  "
+                                >
+                                </gosi-label-dc> -->
+                              </div>
+                              <br />
+                              <div class="col-md-6"></div>
+                              <div class="col-md-6">
+                                <div class="font-weight-normal">
+                                  <strong>
+                                    {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION' | translate }}
+                                  </strong>
+                                </div>
+                              </div>
+                              <div class="col-md-6"></div>
+                              <div class="col-md-6" *ngIf="!mbAllowanceDto?.isSameCity">
+                                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL' | translate }}
+                              </div>
+                              <div class="col-md-12">
+                                <div class="d-flex flex-row" *ngIf="!mbAllowanceDto?.isSameCity">
+                                  = ((
+                                  {{
+                                    mbAllowanceDto?.allowanceDetails?.companionDetails?.distance
+                                      ? mbAllowanceDto?.allowanceDetails?.companionDetails?.distance
+                                      : 0
+                                  }}
+                                  x 2) x 30) / 100
+                                </div>
+                                <div class="d-flex flex-row" *ngIf="mbAllowanceDto?.isSameCity">
+                                  {{ 'OCCUPATIONAL-HAZARD.PAYMENT.COMPANION-CONVEYANCE' | translate }}
+                                </div>
+                                <div class="d-flex flex-row-reverse">
+                                  =
+                                  {{
+                                    mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                                      ? mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                                      : 0
+                                  }}
+                                  {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                                </div>
+                              </div>
+                              <div class="col-md-12">
+                                <div class="d-flex flex-row">
+                                  <strong>
+                                    {{ 'OCCUPATIONAL-HAZARD.PAYMENT.TOTAL' | translate }}
+                                  </strong>
+                                </div>
+                                <div class="d-flex flex-row-reverse">
+                                  <strong>
+                                    =
+                                    {{
+                                      mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                                        ? mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                                        : 0
+                                    }}
+                                    {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                                  </strong>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- </ng-container> -->
+                    </accordion-group>
+                  </accordion>
+                  <!-- </ng-container> -->
+                </div>
+                <!-- To show the details for carousel accodian  -->
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <br />
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <ng-container>
+            <div class="col-lg-12 form-action">
+              <div class="btn-section float-right">
+                <gosi-button-dc [id]="'approve'" (click)="approveTransaction(approveTemplate)" [type]="'primary'">
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <ng-container>
+                <div class="btn-section float-right">
+                  <gosi-button-dc type="danger" id="reject" (click)="rejectTransaction(rejectTemplate)">
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </div>
+                <div class="btn-section float-right">
+                  <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                    {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </ng-container>
+              <div class="btn-section float-left">
+                <gosi-button-dc [id]="'cancel'" [type]="'secondary'" (submit)="cancelTransacation(cancelTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #approveTemplate>
+  <gosi-modal-dc
+    modalHeader="{{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}- {{
+      lang === 'en' ? payload?.titleEnglish : payload?.titleArabic
+    }}"
+  >
+    <div class="row" modalContent>
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          [id]="'validatorComments'"
+          [name]="'rejectComments'"
+          [label]="'OCCUPATIONAL-HAZARD.COMMENTS'"
+          [control]="reportInjuryModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right">
+        <gosi-button-dc [id]="'confirmApproveBtn'" [type]="'primary'" class="action-button" (submit)="approveButton()">
+          {{ 'OCCUPATIONAL-HAZARD.YES' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc [type]="'secondary'" [id]="'cancelApproveBtn'" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.NO' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="conveyanceRejectLovList"
+    heading="{{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}- {{
+      lang === 'en' ? payload?.titleEnglish : payload?.titleArabic
+    }}"
+    [parentForm]="reportInjuryForm"
+    (rejectEvent)="reject()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <gosi-modal-dc
+    modalHeader="{{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}- {{
+      lang === 'en' ? payload?.titleEnglish : payload?.titleArabic
+    }}"
+  >
+    <div class="row" modalContent>
+      <div class="col-lg-12">
+        <gosi-input-select-dc
+          [name]="'returnReason'"
+          [label]="'OCCUPATIONAL-HAZARD.RETURN-REASON'"
+          [list]="returnReasonList$ | async"
+          [control]="returnForm.get('returnReason')"
+          (select)="selectedLov($event)"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          [name]="'returnComments'"
+          [label]="'OCCUPATIONAL-HAZARD.COMMENTS'"
+          [control]="returnForm.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right">
+        <gosi-button-dc [id]="'confirmReturn'" [type]="'primary'" class="action-button" (submit)="returnConveyance()">
+          {{ 'OCCUPATIONAL-HAZARD.YES' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc [type]="'secondary'" [id]="'cancelApproveBtn'" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.NO' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

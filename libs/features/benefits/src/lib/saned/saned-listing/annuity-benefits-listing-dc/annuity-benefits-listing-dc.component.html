@@ -1,0 +1,329 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="annuity-summary">
+  <div class="d-flex flex-row-reverse py-3">
+    <div *gosiShow="viewHistory">
+      <a class="view-link" (click)="navigateToViewHistory()">{{ 'BENEFITS.VIEW-HISTORY' | translate }}</a>
+    </div>
+    <div class="px-3">
+      <ng-container *gosiShow="isIndividualApp ? true : viewModify">
+        <gosi-button-dc
+          size="sm"
+          type="primary"
+          [outlineOnly]="true"
+          [disabled]="isIndividualApp ? !showEstimateBtn : true"
+          (submit)="navigateToEstimate()"
+        >
+          {{ 'BENEFITS.ESTIMATE' | translate }}</gosi-button-dc
+        >
+      </ng-container>
+    </div>
+    <div *ngIf="!isIndividualApp">
+      <ng-container *gosiShow="contributorVisitAccess">
+        <a class="view-link" (click)="navigateToContributorVisit()">{{
+          'BENEFITS.CONTRIBUTOR-VISITS-PAGE' | translate
+        }}</a>
+      </ng-container>
+    </div>
+  </div>
+  <!-- annuity benefit heading and sub paragraph area -->
+  <ng-container *ngIf="annuitybenefits && annuitybenefits.length > 0">
+    <ng-container *ngFor="let annbenefit of annuitybenefits">
+      <div class="benefit-set">
+        <div class="d-flex py-3">
+          <span class="annuity-type">{{ annbenefit.benefitType | bilingualText }}</span>
+
+          <!-- Eligibility criteria button for different benefits -->
+          <div class="ml-auto px-4 pt-2">
+            <gosi-button-dc
+              *ngIf="!annbenefit.eligible"
+              [size]="'sm'"
+              [outlineOnly]="true"
+              (submit)="ShowEligibilityPopup(eligibilityCriteria, annbenefit)"
+              type="secondary"
+            >
+              {{ 'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.womanLumpsum">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [isIndividualApp]="isIndividualApp"
+            [benefit]="annbenefit"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-LUMPSUM-WORKFLOW-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.LUMPSUM-BENEFIT-TXT'"
+            (applyForBenefit)="navigateToWomenLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- retirement pension -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.retirementPension">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [isIndividualApp]="isIndividualApp"
+            [benefit]="annbenefit"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-RETIREMENT-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-RETIREMENT-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-RETIREMENT-WORKFLOW-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.RETIREMENT-PENSION-TEXT'"
+            (applyForBenefit)="navigateToRetirementPension()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- retirementLumpsum -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.retirementLumpsum">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-RETIREMENT-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-RETIREMENT-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-RETIREMENT-LUMPSUM-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.RETIREMENT-LUMPSUM-TEXT'"
+            (applyForBenefit)="navigateToRetirementLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+
+        <!--  early retirement benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.earlyretirement">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-EARLY-RETIREMENT-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-EARLY-RETIREMENT-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-EARLY-RETIREMENT-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.RETIREMENT-PENSION-TEXT'"
+            (applyForBenefit)="navigateToEarlyRetirement()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+
+        <!--  non occ Disability Assessment -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.NonOccDisabilityAssessment">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-NON-OCC-DISABILITY-MSG'"
+            [eligibleLabel]="'BENEFITS.NON-OCC-DISABILITY-PROCESS'"
+            [activeLabel]="'BENEFITS.NON-OCC-DISABILITY-ASSMENT-INPROGRESS'"
+            [benefitDescriptionLabel]="'BENEFITS.NON-OCC-DISABILITY-TEXT'"
+            (applyForBenefit)="navigateToNonOccDisabilityAssessment()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!--  non occ Disability Assessment -->
+        <!--    <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.NonOccDisabilityAssessment">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-NON-OCC-DISABILITY-MSG'"
+            [eligibleLabel]="'BENEFITS.NON-OCC-DISABILITY-PROCESS'"
+            [activeLabel]="'BENEFITS.NON-OCC-DISABILITY-ASSMENT-INPROGRESS'"
+            [benefitDescriptionLabel]="'BENEFITS.NON-OCC-DISABILITY-TEXT'"
+            (applyForBenefit)="navigateToNonOccPension()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>-->
+        <!--  non occ Disabilty benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.NonOccDisabilityBenefitsType">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-NON-OCC-DISABILITY-MSG'"
+            [eligibleLabel]="'BENEFITS.NON-OCC-DISABILITY-PROCESS'"
+            [activeLabel]="'BENEFITS.NON-OCC-DISABILITY-ASSMENT-INPROGRESS'"
+            [benefitDescriptionLabel]="'BENEFITS.NON-OCC-DISABILITY-TEXT'"
+            (applyForBenefit)="navigateToNonOccPension(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+
+        <!--  non occ lumpsum  benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.nonOccLumpsumBenefitType">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-NON-OCC-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-NON-OCC-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-NON-OCC-LUMPSUM-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.NON-OCC-LUMPSUM-TEXT'"
+            (applyForBenefit)="navigateToNonOccLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+
+        <!--  non occ pension  benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.nonOccPensionBenefitType">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-NON-OCC-PENSION-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-NON-OCC-PENSION-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-NON-OCC-PENSION-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.NON-OCC-PENSION-TEXT'"
+            (applyForBenefit)="navigateToNonOccPension(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- jailed pension benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.jailedContributorPension">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-JAILED-PENSION-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-JAILED-RETIREMENT-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-JAILED-RETIREMENT-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.JAILED-CONTRIBUTOR-PENSION-TEXT'"
+            (applyForBenefit)="navigateToJailedPension()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- jailed lumpsum benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.jailedContributorLumpsum">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-JAILED-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-JAILED-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-JAILED-LUMPSUM-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.JAILED-CONTRIBUTOR-LUMPSUM-TEXT'"
+            (applyForBenefit)="navigateToJailedLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- hazardous pension benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.hazardousPension">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-HAZARDOUS-PENSION-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-HAZARDOUS-PENSION-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-HAZARDOUS-PENSION-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.HAZARDOUS-PENSION-TEXT'"
+            (applyForBenefit)="navigateToHazardousPension()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- hazardous lumpsum benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.hazardousLumpsum">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-HAZARDOUS-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-HAZARDOUS-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-HAZARDOUS-LUMPSUM-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.HAZARDOUS-LUMPSUM-TEXT'"
+            (applyForBenefit)="navigateToHazardousLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- heir pension benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.heirPension">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-HEIR-PENSION-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-HEIR-PENSION-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-HEIR-PENSION-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.HEIR_PENSION_TEXT'"
+            (applyForBenefit)="navigateToHeirPension(annbenefit.eligibleForPensionReform)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- heir lumpsum benefit -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.heirLumpsum">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-HEIR-LUMPSUM-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-HEIR-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-HEIR-LUMPSUM-MSG'"
+            [benefitDescriptionLabel]="'BENEFITS.HEIR_LUMPSUM_TEXT'"
+            (applyForBenefit)="navigateToHeirLumpsum(annbenefit)"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+
+        <!-- Funeral Grant -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.funeralGrant">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [lang]="lang"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-FUNERAL-GRANT-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-FUNERAL-GRANT-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-FUNERAL-GRANT-MSG'"
+            [systemParameter]="systemParameter"
+            [benefitDescriptionLabel]="'BENEFITS.FUNERAL_GRANT_TEXT'"
+            (applyForBenefit)="navigateToFuneralGrant()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+        <!-- RPA Lumpsum -->
+        <div *ngIf="annbenefit?.benefitType?.english === benefitTypeEnums.rpaBenefit">
+          <bnt-benefit-apply-card-dc
+            [eligible]="annbenefit.eligible"
+            [benefit]="annbenefit"
+            [isIndividualApp]="isIndividualApp"
+            [benefitStatus]="annbenefit.status"
+            [lang]="lang"
+            [notEligibleLabel]="'BENEFITS.NON-ELIGIBLE-RPA-MSG'"
+            [eligibleLabel]="'BENEFITS.ELIGIBLE-RPA-LUMPSUM-MSG'"
+            [activeLabel]="'BENEFITS.ELIGIBLE-ACTIVE-RPA-LUMPSUM-MSG'"
+            [systemParameter]="systemParameter"
+            [benefitDescriptionLabel]="'BENEFITS.RPA_LUMPSUM_TEXT'"
+            (applyForBenefit)="navigateToRPALumpsum()"
+          >
+          </bnt-benefit-apply-card-dc>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- this will be removed -->
+
+  <ng-container *ngIf="annuitybenefits.length === 0">
+    <p class="ml-2">
+      {{ 'BENEFITS.NO-ITEM-FOUND' | translate }}
+    </p>
+  </ng-container>
+</div>
+
+<ng-template #eligibilityCriteria>
+  <bnt-eligibility-criteria-demo-dc (close)="hideModal()" [benefitInfo]="benefitInfo">
+  </bnt-eligibility-criteria-demo-dc>
+</ng-template>
+<!-- Eligibility Modal templates Ends here -->

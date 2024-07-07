@@ -1,0 +1,114 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<table class="table table-notifications">
+  <thead>
+    <tr>
+      <th style="width: 15%">
+        {{ 'INBOX.DATE' | translate | uppercase }}
+      </th>
+      <th style="width: 85%">
+        {{ 'INBOX.MESSAGE' | translate | uppercase }}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr
+      *ngFor="
+        let task of notificationList
+          | paginate
+            : {
+                itemsPerPage: itemsPerPage,
+                currentPage: pageDetails.currentPage,
+                totalItems: totalCount
+              };
+        let i = index
+      "
+      [ngClass]="task.readFlag === 0 ? 'dark-color' : 'grey-color'"
+      (click)="updateNotification(task)"
+    >
+      <td class="d-flex flex-column justify-items-around">
+        <div class="date">
+          {{ task.date.gregorian | gosiDate }}
+        </div>
+      </td>
+      <td>
+        <div class="message">
+          <div *ngIf="task.title" class="message-title">{{ task.title | bilingualText }}</div>
+          <div class="message-content" *ngIf="lang === 'en'" [innerHTML]="getText(task.message.english)"></div>
+          <div class="message-content" *ngIf="lang === 'ar'" [innerHTML]="getText(task.message.arabic)"></div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div *ngIf="notificationList?.length === 0">
+  <gosi-no-result-dc></gosi-no-result-dc>
+</div>
+<!-- Mobile View Started -->
+<div class="mobile-screen mb-4">
+  <ng-container
+    *ngFor="
+      let task of notificationList
+        | paginate
+          : {
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: totalCount
+            };
+      let i = index
+    "
+  >
+    <div class="wrapper">
+      <div
+        class="mobile-wrapper"
+        [ngClass]="task.readFlag === 0 ? 'dark-color' : 'grey-color'"
+        (click)="updateNotification(task)"
+      >
+        <div class="main-detail d-flex justify-content-between">
+          <div class="d-flex flex-column">
+            <span class="date">
+              <ng-container>
+                {{ task.title | bilingualText }}
+              </ng-container>
+            </span>
+          </div>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="label">
+            {{ 'INBOX.DATE' | translate | uppercase }}
+            <span class="label-value px-1"> {{ task.date.gregorian | gosiDate }}</span></span
+          >
+          <span class="label">
+            {{ 'INBOX.MESSAGE' | translate | uppercase }}
+            <span
+              class="label-value label-message px-1"
+              *ngIf="lang === 'en'"
+              [innerHTML]="getText(task.message.english)"
+            ></span>
+            <span
+              class="label-value label-message px-1"
+              *ngIf="lang === 'ar'"
+              [innerHTML]="getText(task.message.arabic)"
+            ></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<div class="mobile-screen mb-4" *ngIf="!notificationList">
+  <gosi-no-result-dc></gosi-no-result-dc>
+</div>
+
+<gosi-pagination-dc
+  *ngIf="totalCount > itemsPerPage"
+  [totalSize]="totalCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+>
+</gosi-pagination-dc>

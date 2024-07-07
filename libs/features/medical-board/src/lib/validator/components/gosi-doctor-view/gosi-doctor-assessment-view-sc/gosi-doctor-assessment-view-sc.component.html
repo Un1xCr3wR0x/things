@@ -1,0 +1,157 @@
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc
+    [documents]="assessmentDocuments?.length > 0 ? assessmentDocuments : []"
+    [comments]="comments ? comments : []"
+    [canEdit]="false"
+  >
+    <div id="mainHeading" *ngIf="!isReassessment">
+      <frm-main-heading-dc
+        heading="{{ assessmentDetails?.assessmentType | bilingualText }} {{
+          'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate
+        }}"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="mainHeading" *ngIf="isReassessment">
+      <frm-main-heading-dc
+        heading="{{ assessmentDetails?.assessmentType | bilingualText }} {{ 'MEDICAL-BOARD.DETAILS' | translate }}"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <ng-container>
+        <frm-content-heading-dc
+          icon="user"
+          heading="{{ 'MEDICAL-BOARD.CONTRIBUTOR-DETAILS' | translate }}"
+          [canEdit]="false"
+        ></frm-content-heading-dc>
+      </ng-container>
+      <mb-contributor-personal-details-dc
+        [contributor]="contributor"
+        [identity]="identity"
+        [identityLabel]="identityLabel"
+        (onContributorIdClicked)="viewContributorDetails($event)"
+      ></mb-contributor-personal-details-dc>
+      <div
+        *ngIf="
+          assessmentDetails?.assessmentType?.english === ' Non - Occupational Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Heir Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Dependent Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Heir Disability Reassessment' ||
+          assessmentDetails?.assessmentType?.english === 'Dependent Disability Reassessment'
+        "
+      >
+        <frm-content-heading-dc
+          icon="user"
+          heading="{{
+            (assessmentDetails?.assessmentType?.english === 'Heir Disability' || assessmentDetails?.assessmentType?.english === 'Heir Disability Reassessment'
+              ? 'MEDICAL-BOARD.HEIR-DETAILS'
+              : 'MEDICAL-BOARD.DEPENDENT-DETAILS'
+            ) | translate
+          }}"
+          [canEdit]="false"
+        ></frm-content-heading-dc>
+        <mb-heir-dependent-details-dc [assessmentDetails]="assessmentDetails"></mb-heir-dependent-details-dc>
+      </div>
+      <ng-container>
+        <frm-content-heading-dc
+          icon="user"
+          heading="{{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate }}"
+          [canEdit]="isGosiDoctor"
+          (onEdit)="navigateToGosiDoctorEdit()"
+        ></frm-content-heading-dc>
+      </ng-container>
+      <mb-assessment-details-view-dc
+        [assessmentDetails]="assessmentDetails"
+        (navigateToGosiDoctorEdit)="navigateToGosiDoctorEdit()"
+        [isGosiDoctor]="isGosiDoctor"
+        [lang]="lang"
+        (onOHClicked)="viewInjuryHistory()"
+        [contributor]="contributor"
+        [ambTransaction]="ambTransaction"
+        [previousDisabilityDetails]="previousDisabilityDetails"
+        [socialInsuranceNo]="socialInsuranceNo"
+        [personId]="personId"
+        [isGosiDrShow]="false"
+        [hoDoctor]="hoDoctor"
+        (onAssessmentIdClicked)="viewAssessmentById($event)"
+      ></mb-assessment-details-view-dc>
+    </div>
+
+    <!-- </frm-main-content-dc>
+</div> -->
+    <!-- Action area -->
+    <!-- <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="false"
+        [canReturn]="canReturn"
+        [canApprove]="canReturn"
+        (approveEvent)="showModal(approveTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div> -->
+  </frm-main-content-dc>
+  <div id="conveyanceDetails">
+    <gosi-card-dc type="secondary" *ngIf="assessmentDetails">
+      <mb-conveyance-details-dc [assessmentDetails]="assessmentDetails"></mb-conveyance-details-dc>
+    </gosi-card-dc>
+  </div>
+  <div id="actionArea">
+    <div class="row">
+      <div class="col-lg-12 form-action">
+        <div class="reopen-details">
+          <div class="btn-section float-right" *ngIf="canApprove">
+            <gosi-button-dc id="approve" (submit)="showModal(approveTemplate)" type="primary">
+              {{ 'MEDICAL-BOARD.APPROVE' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-right" *ngIf="canAppeal && !ambTransaction">
+            <gosi-button-dc type="secondary" id="reject" (submit)="navigateToAppealHistory()">
+              {{ 'MEDICAL-BOARD.APPEAL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn && !isEdited">
+            <gosi-button-dc type="secondary" id="return" (submit)="showModal(returnTemplate)">
+              {{ 'MEDICAL-BOARD.RETURN-ASSESSMENT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-left">
+            <gosi-button-dc id="cancel" (submit)="showModal(cancelTemplate)" type="secondary">
+              {{ 'MEDICAL-BOARD.CANCEL-ASSESSMENT' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="this.hideModal()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <ng-container *ngIf="canReturn">
+      <frm-approve-template-dc
+        [heading]="'MEDICAL-BOARD.APPROVE-MEDICAL-ASSESSMENT' | translate"
+        (cancelEvent)="hideModal()"
+        (approveEvent)="confirmApprove()"
+        [parentForm]="validatorMemberForm"
+      ></frm-approve-template-dc>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #returnTemplate>
+    <ng-container>
+      <frm-return-template-dc
+        [heading]="'MEDICAL-BOARD.RETURN-MEDICAL-ASSESSMENT'"
+        (cancelEvent)="hideModal()"
+        [returnReasonList$]="returnReasonList"
+        (returnEvent)="confirmReturn(validatorMemberForm)"
+        [parentForm]="validatorMemberForm"
+      >
+      </frm-return-template-dc>
+    </ng-container>
+  </ng-template>
+</div>

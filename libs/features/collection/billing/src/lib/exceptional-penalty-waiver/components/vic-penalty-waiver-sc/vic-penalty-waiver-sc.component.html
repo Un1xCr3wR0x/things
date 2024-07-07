@@ -1,0 +1,104 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <ng-container>
+    <div class="row extra-margin heading-margin">
+      <span class="header"> {{ 'BILLING.EXCEPTIONAL-LATE-FEE-WAIVER' | translate }}</span>
+    </div>
+    <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+    <div class="row" *ngIf="isCommentsPresent">
+      <div class="col-12">
+        <gosi-comments-dc [comments]="comments"> </gosi-comments-dc>
+      </div>
+    </div>
+    <span *ngIf="searchOption !== 'SIN'">
+      <gosi-alert-dc message="BILLING.EXCEPTION-VIC-WAIVER-INFO" type="info" [dismissible]="true" [noPadding]="true">
+      </gosi-alert-dc
+    ></span>
+    <div class="row">
+      <div class="col-lg-12" *ngIf="searchOption !== 'SIN'">
+        <blg-waiver-segment-details-dc
+          [establishmentSegment]="vicSegment"
+          [establishmentSegmentMultiSelect]="vicSegmentMultiSelect"
+          [vicExceptionalFlag]="true"
+          [entityFlag]="false"
+          [csvUploadFlag]="csvUploadFlag"
+          [csvDataList]="csvSinDataList"
+          [bulkpenaltyCount]="bulkpenaltyCount"
+          [segmentDetailsOnEdit]="segmentDetailsOnEdit"
+        >
+        </blg-waiver-segment-details-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="searchOption === 'SIN'">
+        <blg-vic-contributor-details-dc [wavierDetails]="wavierDetails"> </blg-vic-contributor-details-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="searchOption === 'SIN'">
+        <blg-waiver-account-details-dc
+          [wavierDetails]="wavierDetails"
+          [penaltyType]="entity"
+        ></blg-waiver-account-details-dc>
+      </div>
+    </div>
+    <gosi-card-dc type="secondary">
+      <blg-penalty-waiver-calculation-dc
+        [penaltyWaiverReason]="penalityWaiverSelectedReason"
+        [penaltyWaiverOtherReason]="penalityWaiverSelectedOtherReason"
+        [waiverPeriodPenaltyAmount]="wavierDetails?.waiverPeriodPenaltyAmount"
+        (waiverPeriod)="getWaiverAmount($event)"
+        (eligiblePenaltyAmount)="passEligiblePenaltyAmount($event)"
+        [parentForm]="exceptionalPenalityMainForm"
+        [wavierDetails]="wavierDetails"
+        [searchOption]="searchOption"
+        [validatorFlag]="isEditFlag"
+        [waiverDetailsOnEdit]="wavierDetailsOnEdit"
+        [penaltyType]="entity"
+      ></blg-penalty-waiver-calculation-dc>
+    </gosi-card-dc>
+
+    <div>
+      <gosi-card-dc type="secondary" *ngIf="searchOption === 'SIN'">
+        <blg-penalty-payment-details-dc
+          [wavierDetails]="wavierDetails"
+          [parentForm]="exceptionalPenalityMainForm"
+          [eligibleWaiveOffAmount]="eligibleWaiveOffAmount"
+          (extensionValues)="getExtensionValues($event)"
+          (paymentRequired)="getPaymentValue($event)"
+          [validatorFlag]="isEditFlag"
+          [waiverDetailsOnEdit]="wavierDetailsOnEdit"
+        ></blg-penalty-payment-details-dc>
+      </gosi-card-dc>
+    </div>
+    <gosi-card-dc type="secondary">
+      <blg-waiver-document-upload-dc
+        (doc)="refreshDocumentsForVic($event)"
+        [documents]="documents"
+        [isScan]="isAppPrivate"
+        [parentForm]="exceptionalPenalityMainForm"
+        [csrFlag]="true"
+        [transactionId]="documentTransactionId"
+        [businessKey]="idNumber"
+        [uuid]="uuid"
+        [referenceNumber]="referenceNumber"
+      ></blg-waiver-document-upload-dc>
+    </gosi-card-dc>
+    <!-- Action area -->
+    <div class="row">
+      <div class="col-lg-12">
+        <blg-action-area-dc
+          primaryButtonLabel="BILLING.SUBMIT"
+          secondaryButtonLabel="BILLING.CANCEL"
+          (submit)="onSubmitVicPenalityDetails()"
+          (cancel)="showModal(cancelTemplate, 'md')"
+        ></blg-action-area-dc>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BILLING.INFO-CANCEL'" (onConfirm)="navigateBackToHome()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,271 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="transaction?.transactionId === 101501">
+  <!-- Establishment details section -->
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate"
+        headingSize="md"
+        icon="building"
+      >
+        <oh-establishment-dtls-dc
+          *ngIf="contributor && establishment"
+          [establishment]="establishment"
+          [contributor]="contributor"
+        >
+        </oh-establishment-dtls-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+
+  <!-- Injury details section -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user-injured"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate"
+      >
+        <oh-injury-detail-dc [injuryDetails]="injury" [idCode]="idCode"></oh-injury-detail-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Reject injury -->
+<ng-container *ngIf="transaction?.transactionId === 101553">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="file-alt" [heading]="'OCCUPATIONAL-HAZARD.REJECTION-DETAILS' | translate">
+        <oh-reject-injury-dc
+          [transactionReferenceData]="transactionReferenceData ? transactionReferenceData : []"
+          [injury]="injury"
+          [showHeading]="false"
+          [resourceType]="resourceType"
+        ></oh-reject-injury-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user-injured"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-DETAILS' | translate"
+      >
+        <oh-injury-view-dc
+          [injury]="injury"
+          [idCode]="idCode"
+          (injurySelected)="viewInjury()"
+          [showHeading]="false"
+          [showPayee]="true"
+        ></oh-injury-view-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Modify and Reopen Injury-->
+<ng-container *ngIf="transaction?.transactionId === 101571 || transaction?.transactionId === 101573">
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate">
+        <!--Contributor Details-->
+        <oh-engagement-details-dc
+          [establishment]="establishment"
+          [contributor]="contributor"
+          [registrationNo]="registrationNo"
+          [showHeading]="false"
+        >
+        </oh-engagement-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user-injured"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-DETAILS' | translate"
+      >
+        <oh-injury-view-dc
+          [injury]="injury"
+          [idCode]="idCode"
+          (injurySelected)="viewInjury()"
+          [showHeading]="false"
+          [showPayee]="true"
+          [reopen]="transientDetails"
+          [status]="transaction.status.english"
+          [transactionId]="transaction.transactionId"
+        ></oh-injury-view-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="modifiedInjuryDetails && injury?.modifyInjuryIndicator">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="file-alt"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.MODIFY-INJURY-DETAILS' | translate"
+      >
+        <oh-modified-details-dc
+          [injury]="modifiedInjuryDetails"
+          [idCode]="code"
+          [showHeading]="false"
+        ></oh-modified-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Close Injury-->
+<ng-container *ngIf="transaction?.transactionId === 101504">
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary">
+        <!-- icon="user" [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate" -->
+        <!--Contributor Details-->
+        <oh-engagement-details-dc *ngIf="establishment && contributor"
+          [establishment]="establishment"
+          [contributor]="contributor"
+          [registrationNo]="registrationNo"
+          [showHeading]="true"
+        >
+        </oh-engagement-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="file-alt"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY-CLOSING-DETAILS' | translate"
+      >
+        <oh-close-injury-dc [injury]="injury" [close]="true" (injurySelected)="viewInjury()" [showHeading]="false">
+        </oh-close-injury-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="transaction?.transactionId === 300397">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user"
+        [heading]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURED-CONTRIBUTOR' | translate"
+      >
+        <!--Injured Contributor Details-->
+        <oh-injured-contributors-dc
+          [injuredContributorList]="injuredContributorList"
+          (viewInjury)="viewInjuryDetails($event)"
+        >
+        </oh-injured-contributors-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="transaction?.transactionId === 300397">
+  <!-- Establishment details section -->
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.ESTABLISHMENT-DETAILS' | translate"
+        headingSize="md"
+        icon="building"
+      >
+        <oh-establishment-dtls-dc *ngIf="establishment" [establishment]="establishment" [isGroupInjury]="true">
+        </oh-establishment-dtls-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+
+  <!-- Injury details section -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user-injured"
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate"
+      >
+        <oh-groupinjury-detail-dc [injuryDetails]="groupInjury" [idCode]="idCode"></oh-groupinjury-detail-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- Documents section -->
+<ng-container
+  *ngIf="
+    transaction?.transactionId !== 101504 &&
+    transaction?.transactionId !== 101507 &&
+    transaction?.transactionId !== 300399
+  "
+>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="transaction?.transactionId === 101507 || transaction?.transactionId === 300399">
+  <div class="row" *ngIf="!isAppIndividual">
+    <div class="col-md-12">
+      <gosi-card-dc class="card-section" type="secondary">
+        <oh-engagement-details-dc [contributor]="contributor"></oh-engagement-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+
+  <!-- Establishement and Occupation details section -->
+   <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc class="card-section" type="secondary">
+        <div class="type-pic">
+          <span class="disease-heading">
+            {{ 'OCCUPATIONAL-HAZARD.DISEASE.ESTABLISHMENT_OCCUPATION-DETAILS' | translate }}</span
+          >
+        </div>
+        <oh-establishment-occupation-details-dc
+          [diseaseDetails]="disease"
+          [diseaseDetailsWrapper]="diseaseDetailsWrapper"
+        ></oh-establishment-occupation-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div> 
+
+  <!-- Disease details section -->
+   <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc class="card-section" type="secondary">
+        <div class="type-pic">
+          <img src="assets/images/disease-details.svg" alt="disease" class="disease" />
+          <span class="disease-heading">
+            {{ 'OCCUPATIONAL-HAZARD.DISEASE.OCCUPATIONAL-DISEASE-DETAILS' | translate }}</span
+          >
+        </div>
+        <oh-disease-detail-dc
+          [diseaseDetails]="disease"
+          [diseaseDetailsWrapper]="diseaseDetailsWrapper"
+          [isTransferredInjury]="isTransferredInjury"
+          (viewInjury)="viewInjury()"
+        ></oh-disease-detail-dc>
+      </gosi-card-dc>
+    </div>
+  </div> 
+  <!-- Documents section -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

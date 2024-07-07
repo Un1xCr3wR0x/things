@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="txn-item card p-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0">
+  <div class="card-body align-items-center" [ngStyle]="{ 'text-align': lang === 'ar' ? 'right' : 'left' }">
+    <div class="first-row d-flex flex-row justify-content-between my-2">
+      <div class="first-cell">
+        <p class="title">
+          <span
+            *ngIf="transaction.status?.english?.toUpperCase() === transactionStatus.DRAFT.toUpperCase()"
+            class="draft-title"
+            >[{{ transaction.status | bilingualText }}]
+          </span>
+          {{ transaction.title | bilingualText }}
+        </p>
+        <p class="text-grayed sub-title" dir="ltr" *ngIf="appToken !== 'INDIVIDUAL_APP'">
+          {{ transaction.description | bilingualText }}
+        </p>
+      </div>
+      <div class="second-cell">
+        <gosi-status-badge-dc [label]="transaction.status" [type]="statusBadgeType(transaction)"></gosi-status-badge-dc>
+        <gosi-status-badge-dc *ngIf="transaction.hasItsm"
+          [label]=" 'TRANSACTION-TRACING.INC_TXN' | translate" 
+          type="{{
+            transaction.itsmStatus == 'Closed'
+            ? 'success' : 'warning'
+            }}"
+          >
+        </gosi-status-badge-dc>
+      </div>
+    </div>
+    <div
+      class="second-row d-flex flex-column justify-content-between my-2"
+      *ngIf="
+        transaction?.initiatedDate?.gregorian ||
+        transaction?.lastActionedDate?.gregorian ||
+        transaction?.transactionRefNo
+      "
+    >
+      <div class="third-cell" *ngIf="transaction?.transactionRefNo">
+        <span class="text-grayed date-title"> {{ 'TRANSACTION-TRACING.TRANSACTION' | translate }} #</span>
+        <span class="txn-date p-2">{{ transaction.transactionRefNo }}</span>
+      </div>
+      <div class="third-cell" *ngIf="transaction?.initiatedDate?.gregorian">
+        <span class="text-grayed date-title">{{ 'TRANSACTION-TRACING.INITIATION-DATE' | translate | uppercase }}</span>
+        <span class="txn-date p-2">{{ transaction?.initiatedDate?.gregorian | gosiDate }}</span>
+        <span class="text-grayed sub-title" dir="ltr">
+          {{ transaction?.initiatedDate?.gregorian | date: 'hh:mm a':'GMT' }}
+        </span>
+      </div>
+      <div class="fourth-cell" *ngIf="transaction?.lastActionedDate?.gregorian">
+        <span class="text-grayed date-title">{{ 'TRANSACTION-TRACING.LAST-ACTION-DATE' | translate | uppercase }}</span>
+        <span class="txn-date p-2">{{ transaction?.lastActionedDate?.gregorian | gosiDate }}</span>
+        <span class="text-grayed sub-title" dir="ltr">
+          {{ transaction?.lastActionedDate?.gregorian | date: 'hh:mm a':'GMT' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

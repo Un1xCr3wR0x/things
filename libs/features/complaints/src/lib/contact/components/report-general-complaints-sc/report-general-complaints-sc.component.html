@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-main-heading-dc
+    [header]="'COMPLAINTS.COMPLAINTS-SUGGESTIONS' | translate"
+    (back)="onBack()"
+  ></gosi-main-heading-dc>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+  <gosi-ui-customer-verify-dc *ngIf="isFromSideMenu && !isVerify"
+            [parentForm]="verifyForm"
+            (verify)="searchSaudiPerson($event.queryParams, $event.personDetails)"></gosi-ui-customer-verify-dc>
+  <ces-customer-details-dc *ngIf="isShowCustomerDetails" [person]="person" (isOnReset)="resetPage()" (roleSelect)="isAdminorNot($event)" [dateofbirth]="dateofbirth" [nin]="nin" [isShowNewEmployeeDetails]="isShowNewEmployeeDetails" [isVerify]="isVerify" [parentForm]="contactTypeForm"></ces-customer-details-dc>
+  <gosi-card-dc type="secondary" [negativeMobileMargin]="false">
+  <ces-required-details-dc
+    [parentForm]="contactForm"
+    [categoryList]="categoryList$ | async"
+    [typeList]="typeList$ | async"
+    [subTypeList]="subTypeList$ | async"
+    [isCategorySelected]="isCategorySelected"
+    [isTypeSelected]="isTypeSelected"
+    (clear)="onFocus()"
+    (category)="onCategorySelection($event,isAdmin)"
+    (registerCategory)="onCategoryRegister($event,isAdmin)"
+    (type)="onCategoryTypeSelect($event,isAdmin)"
+    [typeLabels]="typeLabel"
+    [subTypeLabels]="subTypeLabel"
+    [typePlaceholders]="typePlaceholder"
+    [subTypePlaceholders]="subTypePlaceholder"
+    [cardItems]="cardItems"
+    (isCardSelected)="isCardSelected($event)"
+    [isSubmitted]="showSuccess"
+    [transactionIds]="transactionIds"
+  ></ces-required-details-dc>
+</gosi-card-dc>
+<div class="row" style="margin-left: 0.5rem;">
+  <gosi-input-checkbox-dc
+      id="checkBox"
+      name="checkBox"
+      (select)="onClicking($event)"
+      [label]="'COMPLAINTS.COMPLAINTS-RESUBMIT-TRANSFER' | translate"
+      [control]="commentForm?.get('checkBoxForUpload')"
+    >
+    </gosi-input-checkbox-dc>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <gosi-input-text-area-dc
+      (focus)="onFocus()"
+      [maxLength]="1200"
+      gosiSpecialCharacterMask
+      gosiMaxLength
+      [maxByteLength]="2000"
+      [label]="'COMPLAINTS.COMMENTS' | translate"
+      [control]="commentForm.get('csrComment')"
+      id="comments"  
+    >
+    </gosi-input-text-area-dc>
+  </div>
+</div>
+  <div class="row">
+    <div class="col-md-12">
+      <ces-complaint-file-upload-dc
+        *ngIf="category"
+        [documents]="uploadDocuments"
+        (add)="getRequiredDocuments()"
+        [isScan]="false"
+        [uuid]="uuid"
+        [transactionId]="transactionId"
+        (refresh)="refreshDocument($event)"
+        (remove)="removeDocuments($event)"
+        [disableAutoDoc]="true"
+      >
+      </ces-complaint-file-upload-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="complaint-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelTemplate)">
+            {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc id="submit" (submit)="onSubmitComplaint(OTPTemplate)" type="primary">
+            {{ 'COMPLAINTS.SUBMIT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="COMPLAINTS.INFO-CANCEL" (onConfirm)="confirmGeneralCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #OTPTemplate>
+  <ces-complaint-otp-dc
+    [parentForm]="otpForm"
+    [isOtpValid]="isOtpValid"
+    (verify)="onVerify()"
+    (cancel)="onCancelOTP()"
+    (resend)="reSendOtp()"
+    [currentAlert]="currentAlert"
+    [isResend]="isResend"
+    [enableResend]="enableResend"
+  >
+  </ces-complaint-otp-dc>
+</ng-template>

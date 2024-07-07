@@ -1,0 +1,65 @@
+<div class="table-responsive" *ngIf="benefitRecalculationDetails?.adjustments?.length > 0">
+  <table class="table table-borderless">
+    <thead>
+      <tr>
+        <th>{{ 'BENEFITS.BENEFIT-PERIOD' | translate }}</th>
+        <th>{{ 'BENEFITS.ADJUSTMENT-TYPE-SANED' | translate }}</th>
+        <th *ngIf="isDebitRequired">{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}</th>
+        <th>{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}</th>
+        <th>{{ 'BENEFITS.ADJUSTMENT-AMOUNT-SANED-SAR' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let adjustment of benefitRecalculationDetails?.adjustments">
+        <td>
+          <span *ngIf="adjustment?.benefitPeriodStartDate">
+            <!-- getDayMonthLabel(adjustment?.benefitPeriodStartDate)
+                | translate
+                  : {
+                      day: adjustment?.benefitPeriodStartDate?.gregorian | date: 'dd',
+                      year: adjustment?.benefitPeriodStartDate?.gregorian | date: 'y'
+                    } -->
+            {{ adjustment?.benefitPeriodStartDate | dateType }}
+            <fa-icon class="arrow" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+          </span>
+          <span *ngIf="adjustment?.benefitPeriodStopDate; else Onwards">
+            {{ adjustment?.benefitPeriodStopDate | dateType }}
+            <!-- getDayMonthLabel(adjustment?.benefitPeriodStopDate)
+            | translate
+              : {
+                  day: adjustment?.benefitPeriodStopDate?.gregorian | date: 'dd',
+                  year: adjustment?.benefitPeriodStopDate?.gregorian | date: 'y'
+                } -->
+          </span>
+          <span class="mx-1"></span>
+          <span class="border rounded-circle p-2 border-primary" *ngIf="adjustment?.periodId">{{
+            adjustment?.periodId
+          }}</span>
+          <ng-template #Onwards>
+            <ng-container *ngIf="adjustment?.benefitPeriodStartDate">
+              {{ 'BENEFITS.ONWARDS' | translate }}
+            </ng-container>
+          </ng-template>
+        </td>
+        <td>{{ adjustment?.adjustmentType | bilingualText }}</td>
+        <td *ngIf="isDebitRequired">
+          <ng-container *ngIf="adjustment?.adjustmentPercentage; else noData">
+            {{ adjustment?.adjustmentPercentage }} %
+          </ng-container>
+          <ng-template #noData> - </ng-template>
+        </td>
+        <td>{{ adjustment?.adjustmentReason | bilingualText }}</td>
+        <td>{{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="col-lg-12">
+  <bnt-adjustment-net-amount-dc
+    [benefitRecalculationDetails]="benefitRecalculationDetails"
+    [checkForm]="checkForm"
+    [disableDirectPayment]="disableDirectPayment"
+    (onPreviousAdjustmentsClicked)="onViewPreviousDetails()"
+  >
+  </bnt-adjustment-net-amount-dc>
+</div>

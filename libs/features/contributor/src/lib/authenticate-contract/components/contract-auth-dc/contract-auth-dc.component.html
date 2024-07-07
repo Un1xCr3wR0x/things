@@ -1,0 +1,102 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-alert-dc
+  *ngIf="errorAlert.message && errorMsg"
+  [message]="lang === 'en' ? _errorRes?.english : _errorRes?.arabic"
+  [alert]="errorAlert"
+></gosi-alert-dc>
+<div class="row">
+  <div class="col-lg-12">
+    <div *ngIf="!isEngagement" class="heading-prop">{{ 'CONTRIBUTOR.CONTRACT-AUTH.AUTH-CONTRCT' | translate }}</div>
+    <div *ngIf="isEngagement" class="heading-prop">{{ 'CONTRIBUTOR.CONTRACT-AUTH.ENG-CONTRCT' | translate }}</div>
+  </div>
+</div>
+<ng-container *ngIf="showOtpError">
+  <gosi-alert-dc [type]="'danger'" [message]="otpErrorMessageKey | translate" (hasClosed)="clearAlert()">
+  </gosi-alert-dc>
+</ng-container>
+<div class="card" [formGroup]="contractAuthForm">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-lg-5">
+        <gosi-input-number-dc
+          id="nationalIdentity"
+          [control]="contractAuthForm.get('identity')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.NIN/IQAMA' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NIN/IQAMA' | translate"
+          [maxLength]="10"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-lg-5 col-sm-10 top-padding" *ngIf="!showOtp">
+        <gosi-input-captcha-dc
+          *ngIf="captcha"
+          [captchaString]="captcha"
+          [control]="contractAuthForm.get('captchaControl')"
+          (refresh)="refreshCaptcha()"
+        >
+        </gosi-input-captcha-dc>
+      </div>
+      <div class="col-lg-5 col-sm-10" *ngIf="showOtp">
+        <div class="mb-3 lbl-prop mr-1 ml-1">
+          <div class="d-inline-block">{{ 'CONTRIBUTOR.CONTRACT-AUTH.OTP' | translate }}</div>
+        </div>
+        <gosi-input-otp-dc
+          [componentId]="'contractAuth'"
+          (timerStopped)="hasRetriesExceeded()"
+          [isValid]="isOtpValid"
+          [otpLength]="4"
+          [disabledOTP]="disabledOTP"
+          [control]="contractAuthForm.get('otp')"
+        >
+        </gosi-input-otp-dc>
+        <span class="mr-1"></span>
+        <div class="d-inline-block mt-3" *ngIf="isResend === false">
+          <fa-icon [icon]="['fas', 'stopwatch']"></fa-icon>
+        </div>
+        <span class="mr-2"></span>
+        <div class="d-inline-block timer-wrapper" *ngIf="isResend === false">
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.WILL-SEND-OTP' | translate }}
+          <gosi-timer-dc (timerStopped)="isResend = true" [min]="minutes"> </gosi-timer-dc>
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.MINUTE' | translate }}
+        </div>
+      </div>
+      <div class="d-flex align-items-end link-padding col-sm-2 justify-content-center" *ngIf="showOtp">
+        <div *ngIf="isResend === true" class="regen-otp">
+          <a
+            id="resendOtp"
+            *ngIf="noOfIncorrectOtp !== noOfResend"
+            class="resend-otp custom-wrap"
+            (click)="reSendOtp()"
+          >
+            {{ 'CONTRIBUTOR.CONTRACT-AUTH.REGENERATEOTP' | translate }}
+          </a>
+          <a
+            id="reLoadApplication"
+            *ngIf="noOfIncorrectOtp == noOfResend"
+            class="resend-otp custom-wrap"
+            (click)="reLoadApplication()"
+          >
+            {{ 'CONTRIBUTOR.CONTRACT-AUTH.RELOAD-APP' | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action area -->
+<div class="row">
+  <div class="col-lg-12">
+    <cnt-action-area-dc
+      [primaryButtonLabel]="showOtp ? 'CONTRIBUTOR.VERIFY' : 'CONTRIBUTOR.CONTINUE'"
+      [showCancel]="showOtp"
+      [disablePrimary]="isResend"
+      (submit)="showOtp ? verifyOtp() : continueAuth()"
+      (cancel)="cancelAuth()"
+    ></cnt-action-area-dc>
+  </div>
+</div>

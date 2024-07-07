@@ -1,0 +1,358 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc type="secondary">
+  <div class="row d-flex">
+    <div class="col-auto mr-auto section-heading">
+      {{ 'BILLING.RECEIPT-ALLOCATION-FOR-BRANCHES' | translate }}
+    </div>
+    <div class="menu d-flex col-auto menu-pad">
+      <ng-container *ngIf="!isBranchesClosed || estCount > 1 || isFiltered">
+        <gosi-search-dc
+          id="registrationNumberBranch"
+          [placeholder]="'BILLING.ENTER-REGISTRATION-NUMBER' | translate"
+          (search)="searchBranches($event)"
+        >
+        </gosi-search-dc>
+      </ng-container>
+      <ng-container *ngIf="(!isBranchesClosed && estCount > 1) || isFiltered">
+        <blg-reciept-filter-dc
+          class="filter-padding"
+          (branchDetailsFilter)="getBranchFilter($event)"
+          [establishmentLocationList]="establishmentLocationList"
+          [establishmentStatusList]="establishmentStatusList"
+          (filterFlag)="getFilterFlag($event)"
+        >
+        </blg-reciept-filter-dc>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!noFilterResult">
+    <div class="col-lg-12">
+      <gosi-alert-dc message="BILLING.RECEIPT-ALLOCATION-BRANCH-INFO" type="info" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <ng-container *ngIf="!noFilterResult">
+      <div class="row">
+        <div class="col-lg-12 receipt-margin">
+          <ng-container *ngIf="branches && branches.length > 0">
+            <div class="table-scroll table-responsive">
+              <table class="table">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col ">
+                      {{ 'BILLING.ESTABLISHMENT-NAME' | translate }}
+                    </th>
+                    <th scope="col ">
+                      {{ 'BILLING.REGISTRATION-NO' | translate }}
+                    </th>
+                    <th scope="col">
+                      {{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}
+                    </th>
+                    <th scope="col">{{ 'BILLING.STATUS' | translate }}</th>
+                    <th scope="col">
+                      {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+                      <span class="currency-label">({{ currentCurrency | bilingualText }}) </span>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody *ngIf="branches">
+                  <ng-container>
+                    <tr
+                      *ngFor="
+                        let item of branches
+                          | paginate
+                            : {
+                                id: 'paginationId',
+                                itemsPerPage: itemsPerPage,
+                                currentPage: pageDetails.currentPage,
+                                totalItems: branches?.length
+                              };
+                        let i = index
+                      "
+                    >
+                      <td id="{{ 'establishmentNameValue' + i }}">
+                        {{ item.name.english === null ? item.name.arabic : (item.name | bilingualText) }}
+                      </td>
+                      <td id="{{ 'registrationNumberValue' + i }}">{{ item.registrationNo }}</td>
+                      <td id="{{ 'locationValue' + i }}">
+                        {{ item.fieldOffice | bilingualText }}
+                      </td>
+                      <td id="{{ 'statusValue' + i }}">
+                        {{ item.status | bilingualText | titlecase }}
+                      </td>
+                      <td class="amount-value">
+                        <ng-container
+                          *ngIf="
+                            item.status.english == 'Closed' ||
+                              item.status.english == 'Cancelled' ||
+                              item.status.english == 'Draft' ||
+                              item.status.english == 'Reopening in Progress' ||
+                              item.status.english == 'Opening in progress' ||
+                              item.status.english == 'Under Inspection' ||
+                              item.status.english == 'Closed- waiting for settlement' ||
+                              item.status.english == 'Under Closure waiting for settlement' ||
+                              item.status.english == 'Cancelled - Under Inspection' ||
+                              item.status.english == 'Opening in progress for GOL Update' ||
+                              item.status.english == 'Opening in Progress GOL' ||
+                              item.status.english == 'Pending';
+                            else amountAllocation
+                          "
+                        >
+                          <div class="margin-adjust">
+                            {{ 'BILLING.NA' | translate }}
+                          </div>
+                        </ng-container>
+
+                        <ng-template #amountAllocation>
+                          <gosi-input-currency-dc
+                            [id]="'allocationAmount' + i"
+                            [ignoreLabel]="'true'"
+                            [control]="branchList.controls[absoluteIndex(i)].get('allocatedAmount').get('amount')"
+                            [disabled]="
+                              branches.length > 1 || isSearched || isFiltered || !amountDisabledFlag
+                                ? (isBranchesClosed && i === 0) || branches.length === 1
+                                  ? true
+                                  : false
+                                : false
+                            "
+                            [placeholder]="'BILLING.ALLOCATION-AMOUNT' | translate | titlecase"
+                            [separatorLimit]="separatorLimit"
+                            (blur)="totalAllocationAmount()"
+                            [ThreeDecimal]="gccFlag"
+                            size="sm"
+                            noMargin="true"
+                          >
+                          </gosi-input-currency-dc>
+                        </ng-template>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <tr>
+                    <td colspan="3"></td>
+                    <td>
+                      <div class="total-indicator">
+                        {{ 'BILLING.TOTAL-AMOUNT' | translate }}
+                      </div>
+                    </td>
+                    <td>
+                      <gosi-input-currency-dc
+                        [control]="
+                          isBranchesClosed || branches.length === 1
+                            ? branchList.controls[0].get('allocatedAmount').get('amount')
+                            : totalAmountForm.get('totalAmount')
+                        "
+                        [ThreeDecimal]="gccFlag"
+                        [disabled]="true"
+                        size="sm"
+                        [ignoreLabel]="true"
+                        noMargin="true"
+                      ></gosi-input-currency-dc>
+                    </td>
+                  </tr>
+                  <tr></tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+          <ng-container>
+            <gosi-pagination-dc
+              *ngIf="branches?.length > itemsPerPage"
+              [totalSize]="branches?.length"
+              [itemsPerPage]="itemsPerPage"
+              [pageDetails]="pageDetails"
+              (pageChange)="selectPage($event)"
+              paginationId="paginationId"
+            ></gosi-pagination-dc>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="noFilterResult">
+      <div class="col-lg-12">
+        <div class="mt-10 text-center">
+          <img src="assets/images/search-error.svg" alt="search-error" />
+          <br />
+          <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+        </div>
+      </div>
+    </ng-container>
+    <div class="row"></div>
+
+    <div class="row d-flex top-margin" *ngIf="gccFlag !== true">
+      <div class="col-auto mr-auto card-heading section-heading out-side-heading">
+        {{ 'BILLING.UNLISTED-TITLE' | translate }}
+      </div>
+
+      <ng-container>
+        <div class="bt-margin">
+          <gosi-button-dc
+            [outlineOnly]="true"
+            id="view"
+            type="primary"
+            [size]="'md'"
+            (click)="addNewOutsideEstablishment()"
+          >
+            {{ 'BILLING.ADD-NEW' | translate }}</gosi-button-dc
+          >
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="row" *ngIf="gccFlag !== true">
+      <div class="col-lg-12 receipt-margin">
+        <ng-container>
+          <div class="table-scroll table-responsive">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col " id="estName">
+                    {{ 'BILLING.ESTABLISHMENT-NAME' | translate }}
+                  </th>
+                  <th scope="col " id="regNo">
+                    {{ 'BILLING.REGISTRATION-NO' | translate }}
+                  </th>
+                  <th scope="col" id="fieldOffice">
+                    {{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}
+                  </th>
+                  <th scope="col" id="status">{{ 'BILLING.STATUS' | translate }}</th>
+                  <th scope="col" id="allocationAmount">
+                    {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+                    <span class="currency-label">({{ currentCurrency | bilingualText }}) </span>
+                  </th>
+                  <th scope="col" id="removeIconHeader"></th>
+                </tr>
+              </thead>
+
+              <tbody *ngIf="fieldArrays && outsideBranches">
+                <ng-container>
+                  <tr *ngFor="let data of outsideBranches; let i = index">
+                    <td id="{{ 'establishmentNameValue' + i }}">
+                      {{ data.name.english === null ? data.name.arabic : (data.name | bilingualText) }}
+                    </td>
+                    <td id="{{ 'registrationNumberValue' + i }}">
+                      {{ data.registrationNo }}
+                    </td>
+                    <td id="{{ 'locationValue' + i }}">
+                      {{ data.location | bilingualText }}
+                    </td>
+                    <td id="{{ 'statusValue' + i }}">
+                      {{ data.status | bilingualText | titlecase }}
+                    </td>
+                    <td class="amount-value">
+                      <ng-container
+                        *ngIf="
+                          data.status.english == 'Closed' ||
+                            data.status.english == 'Cancelled' ||
+                            data.status.english == 'Draft' ||
+                            data.status.english == 'Reopening in Progress' ||
+                            data.status.english == 'Opening in progress' ||
+                            data.status.english == 'Under Inspection' ||
+                            data.status.english == 'Closed- waiting for settlement' ||
+                            data.status.english == 'Under Closure waiting for settlement' ||
+                            data.status.english == 'Cancelled - Under Inspection' ||
+                            data.status.english == 'Opening in progress for GOL Update' ||
+                            data.status.english == 'Opening in Progress GOL' ||
+                            data.status.english == 'Pending';
+                          else outSideAmountAllocation
+                        "
+                      >
+                        <div class="margin-adjust">
+                          {{ 'BILLING.NA' | translate }}
+                        </div>
+                      </ng-container>
+                      <ng-template #outSideAmountAllocation>
+                        <gosi-input-currency-dc
+                          [id]="'allocationAmountValues' + i"
+                          [ignoreLabel]="'true'"
+                          [control]="ousideBranchList.controls[i].get('allocatedAmount').get('amount')"
+                          [placeholder]="'BILLING.ALLOCATION-AMOUNT' | translate | titlecase"
+                          [separatorLimit]="separatorLimit"
+                          [ThreeDecimal]="gccFlag"
+                          (blur)="totalOutsideAllocationAmount()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </ng-template>
+                    </td>
+                    <td id="{{ 'statusValue' + i }}">
+                      <a [id]="'delete' + i" class="delete-icon" (click)="deleteFieldValue(i, 2)">
+                        <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr *ngFor="let data of fieldArrays; let i = index">
+                    <td>
+                      <gosi-search-dc
+                        gosiNumberMask
+                        id="registrationNumber"
+                        maxLength="10"
+                        [placeholder]="'BILLING.ENTER-REGISTRATION-NUMBER' | translate"
+                        (search)="searchOutsideBranches($event)"
+                      >
+                      </gosi-search-dc>
+                    </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>
+                      <a [id]="'delete' + i" class="delete-icon" (click)="deleteFieldValue(i, 1)">
+                        <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                      </a>
+                    </td>
+                  </tr>
+                </ng-container>
+                <tr>
+                  <td colspan="3"></td>
+                  <td>
+                    <div class="total-indicator">
+                      {{ 'BILLING.TOTAL-AMOUNT' | translate }}
+                    </div>
+                  </td>
+                  <td>
+                    <gosi-input-currency-dc
+                      [control]="outsideTotalAmountForm.get('totalAmount')"
+                      [disabled]="true"
+                      size="sm"
+                      [ignoreLabel]="true"
+                      [readOnly]="true"
+                      [ThreeDecimal]="gccFlag"
+                      noMargin="true"
+                    ></gosi-input-currency-dc>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="gccFlag !== true">
+    <div class="col-lg-12 totalAllocationAmount">
+      <div class="allocatedAmountValue">
+        <div class="row mob-view">
+          <div class="amtValue">
+            {{ 'BILLING.TOTAL-ALLOCATION-AMOUNT' | translate }}
+          </div>
+          <div class="totalValue" id="totalAllocatedAmount">
+            {{ sumInsideAndOutside | number: '1.2-2' }}
+          </div>
+          <div class="amtValue">
+            {{ 'BILLING.SAR' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</gosi-card-dc>

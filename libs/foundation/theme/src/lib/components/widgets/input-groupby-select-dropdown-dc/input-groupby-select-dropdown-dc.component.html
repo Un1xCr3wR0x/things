@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="form-group fc-margin" [ngClass]="[ignoreLabel ? 'no-label' : '', size === 'sm' ? 'form-group-sm' : '']">
+  <label *ngIf="!ignoreLabel">
+    {{ label | translate }}
+    <span class="optional-field" *ngIf="!isRequired() && !hideOptionalLabel">({{ 'THEME.OPTIONAL' | translate }})</span>
+    <fa-icon
+      class="info-icon"
+      *ngIf="tooltipContent && !disabled"
+      [icon]="['fas', 'info-circle']"
+      [placement]="selectedLang === 'en' ? 'right' : 'left'"
+      [tooltip]="toolTipTemplate"
+    ></fa-icon>
+  </label>
+  <ng-template #toolTipTemplate>{{ tooltipContent | translate }}</ng-template>
+  <div *ngIf="!items">
+    Loading..
+    <i class="fa fa-spinner fa-spin"></i>
+  </div>
+  <ng-container *ngIf="control && control.controls">
+    <ng-select
+      id="{{ id }}"
+      [formControl]="control.controls.english"
+      [config]
+      [ngClass]="[validateField() ? 'is-invalid' : '', disabled ? 'disabled' : '']"
+      *ngIf="items && selectedLang === 'en'"
+      [items]="items"
+      groupBy="groupByValueEnglish"
+      bindValue="value.english"
+      bindLabel="value.english"
+      (close)="close()"
+      (clear)="clear()"
+      placeholder="{{ hidePlaceholder === true ? null : ('THEME.SELECT' | translate) }} {{
+        hidePlaceholder === true ? null : placeholder ? placeholder : (label | translate)
+      }}"
+      (blur)="onBlur($event)"
+      (change)="change($event)"
+      (ngModelChange)="onChange($event)"
+      notFoundText="No items found"
+      #selectInput
+    >
+      <ng-template ng-optgroup-tmp let-item="item">
+        {{ item?.groupByValueEnglish }}
+      </ng-template>
+    </ng-select>
+    <ng-select
+      id="{{ id }}"
+      [formControl]="control.controls.english"
+      [ngClass]="[validateField() ? 'is-invalid' : '', disabled ? 'disabled' : '']"
+      *ngIf="items && selectedLang === 'ar'"
+      [items]="items"
+      groupBy="groupByValueArabic"
+      bindValue="value.english"
+      bindLabel="value.arabic"
+      (close)="close()"
+      (clear)="clear()"
+      placeholder="{{ 'THEME.SELECT' | translate }} {{ placeholder ? placeholder : (label | translate) }}"
+      (blur)="onBlur($event)"
+      (change)="change($event)"
+      notFoundText="لا يوجد سجل مطابق"
+      #selectInput
+    >
+      <ng-template ng-optgroup-tmp let-item="item">
+        {{ item?.groupByValueArabic }}
+      </ng-template>
+    </ng-select>
+  </ng-container>
+  <ng-container *ngIf="control && !control.controls">
+    <ng-select
+      id="{{ id }}"
+      [formControl]="control"
+      [ngClass]="[validateField() ? 'is-invalid' : '', disabled ? 'disabled' : '']"
+      *ngIf="items"
+      [items]="items"
+      groupBy="category.english"
+      (close)="close()"
+      (clear)="clear()"
+      placeholder="{{ 'THEME.SELECT' | translate }} {{ placeholder ? placeholder : (label | translate) }}"
+      (blur)="onBlur($event)"
+      (change)="change($event)"
+      notFoundText="{{ 'THEME.NO-ITEM-FOUND' | translate }}"
+      #selectInput
+    >
+    </ng-select>
+  </ng-container>
+  <small class="form-text text-muted" *ngIf="helpText">
+    {{ helpText }}
+  </small>
+  <div class="invalid-feedback" id="{{ id }}-feedback" *ngIf="validationError">
+    {{ validationError.error | translate: validationError }}
+  </div>
+</div>

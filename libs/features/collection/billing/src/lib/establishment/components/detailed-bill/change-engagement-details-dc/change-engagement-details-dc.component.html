@@ -1,0 +1,202 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ 'BILLING.CHANGE-ENGAGEMENT' | translate }}">
+    <span class="arrow-up-period arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ total | number: '1.2-2' }} {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-down-period arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ total | number: '1.2-2' }} {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container>
+      <div class="row">
+        <div class="col-lg-12 search-window">
+          <div class="search-sort-filter-sec search-value">
+            <div class="search" id="searchPeriod">
+              <gosi-search-dc
+                [placeholder]="'BILLING.SEARCH' | translate"
+                (search)="onSearchValue($event)"
+                (keyup)="onSearchValue($event.target.value)"
+              >
+              </gosi-search-dc>
+            </div>
+            <div class="filter-padding" id="periodFilter">
+              <gosi-filter-dc></gosi-filter-dc>
+            </div>
+          </div>
+        </div>
+        <ng-container *ngIf="itemizedLateFeeList; else noLateFees">
+          <div class="col-lg-12">
+            <div class="table-scroll table-responsive">
+              <table class="table table-borderless">
+                <thead class="thead-light">
+                  <tr>
+                    <th rowspan="5" id="details">
+                      {{ 'BILLING.CONTRIBUTOR-DETAILS' | translate | titlecase }}
+                    </th>
+                    <th rowspan="4" id="date">
+                      {{ 'BILLING.TRANSACTION-DATE' | translate | titlecase }}
+                    </th>
+
+                    <th rowspan="3" id="date" class="heading-alignment">
+                      {{ 'BILLING.TYPE-OF-CHANGE' | translate | titlecase }}
+                    </th>
+                    <th rowspan="3" id="date" class="heading-alignment">
+                      {{ 'BILLING.START-DATE' | translate | titlecase }}
+                    </th>
+                    <th rowspan="3" id="wages">
+                      {{ 'BILLING.END-DATE' | translate | titlecase }}
+                    </th>
+                    <th rowspan="3" id="old-wage" class="heading-alignment">
+                      {{ 'BILLING.OLD-CONTRIBUTORY-WAGE' | translate | titlecase }}
+                      <span class="wage-note">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th rowspan="3" id="new-wage" class="heading-alignment">
+                      {{ 'BILLING.NEW-CONTRIBUTORY-WAGE' | translate }}
+                      <span class="wage-note">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th rowspan="3" id="ohnewpercentage">
+                      {{ 'BILLING.OH-OLD' | translate }}
+                    </th>
+                    <th rowspan="3">
+                      {{ 'BILLING.OH-NEW' | translate }}
+                    </th>
+                    <th rowspan="3">
+                      {{ 'BILLING.TOTAL' | translate }}
+                      <span class="wage-note">({{ currencyType | bilingualText }})</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container
+                    *ngFor="
+                      let latefee of itemizedLateFeeList
+                        | paginate
+                          : {
+                              id: 'paginationId',
+                              itemsPerPage: itemsPerPage,
+                              currentPage: pageDetails.currentPage,
+                              totalItems: changeEngagement.noOfRecords
+                            };
+                      let i = index
+                    "
+                  >
+                    <ng-container>
+                      <tr *ngFor="let changerequest of latefee?.changeType; let j = index">
+                        <td [attr.rowspan]="latefee?.changeType?.length" *ngIf="j === 0" id="{{ 'nameDetails' }}">
+                          <span *ngIf="latefee.person.name.english.name !== null && lang === 'en'">
+                            {{ latefee.person.name.english.name }}
+                          </span>
+                          <span
+                            *ngIf="(latefee.person.name.english.name === undefined && lang === 'en') || lang === 'ar'"
+                            >{{ latefee.person.name.arabic.firstName }}
+                            {{ latefee.person.name.arabic.secondName ? latefee.person.name.arabic.secondName : '' }}
+                            {{ latefee.person.name.arabic.thirdName ? latefee.person.name.arabic.thirdName : '' }}
+                            {{ latefee.person.name.arabic.familyName }}
+                          </span>
+                          <div *ngIf="latefee.person.identity !== null">
+                            <div *ngIf="latefee.person.identity.idType === 'NIN'">
+                              <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                              <span>
+                                {{ latefee.person.identity.newNin }}) ({{
+                                  latefee.person.nationality | bilingualText
+                                }})</span
+                              >
+                            </div>
+                            <div *ngIf="latefee.person.identity.idType === 'PASSPORT'">
+                              <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                              <span>
+                                {{ latefee.person.identity.passportNo }}) ({{
+                                  latefee.person.nationality | bilingualText
+                                }})
+                              </span>
+                            </div>
+                            <div *ngIf="latefee.person.identity.idType === 'IQAMA'">
+                              <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                              <span>
+                                {{ latefee.person.identity.iqamaNo }}) ({{
+                                  latefee.person.nationality | bilingualText
+                                }})</span
+                              >
+                            </div>
+                            <div *ngIf="latefee.person.identity.idType === 'BORDERNO'">
+                              <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                              <span>
+                                {{ latefee.person.identity.id }}) ({{ latefee.person.nationality | bilingualText }})
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td [attr.rowspan]="latefee?.changeType?.length" *ngIf="j === 0">
+                          {{ latefee.transactionDate.gregorian | date: 'dd/MM/yyyy' }}
+                        </td>
+                        <td>{{ changerequest.changeType ? (changerequest.changeType | bilingualText) : 'NA' }}</td>
+                        <td>{{
+                           changerequest.startDate.entryFormat === dateFormat.HIJRI 
+                           ? (changerequest.startDate.hijri | date: 'dd/MM/yyyy' )
+                           : (changerequest.startDate.hijri | date: 'dd/MM/yyyy' )
+                            }}
+                        </td>
+                        <td>{{ changerequest.endDate | dateType }}</td>
+                        <td>
+                          {{
+                            changerequest.oldContributoryWage
+                              ? (changerequest.oldContributoryWage | number: '1.2-2')
+                              : 'NA'
+                          }}
+                        </td>
+                        <td>
+                          {{
+                            changerequest.newContributoryWage
+                              ? (changerequest.newContributoryWage | number: '1.2-2')
+                              : 'NA'
+                          }}
+                        </td>
+                        <td>{{ changerequest.oldOHPercentage ? changerequest.oldOHPercentage : 'NA' }}</td>
+                        <td>{{ changerequest.newOHPercentage ? changerequest.newOHPercentage : 'NA' }}</td>
+                        <td [attr.rowspan]="latefee?.changeType?.length" *ngIf="j === 0">
+                          {{ latefee.total | number: '1.2-2' }}
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </ng-container>
+                </tbody>
+              </table>
+              <ng-container>
+                <div>
+                  <gosi-pagination-dc
+                    *ngIf="changeEngagement.noOfRecords > itemsPerPage"
+                    [itemsPerPage]="itemsPerPage"
+                    [totalSize]="changeEngagement.noOfRecords"
+                    (pageChange)="selectPage($event)"
+                    [pageDetails]="pageDetails"
+                    paginationId="paginationId"
+                  ></gosi-pagination-dc>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+    <ng-template #noLateFees>
+      <div class="col-lg-12">
+        <div class="mt-10 text-center">
+          <img src="assets/images/search-error.svg" alt="search-error" />
+          <br />
+          <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+        </div>
+      </div>
+    </ng-template>
+  </accordion-group>
+</accordion>

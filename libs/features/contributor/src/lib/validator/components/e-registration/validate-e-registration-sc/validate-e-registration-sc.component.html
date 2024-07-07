@@ -1,0 +1,782 @@
+<!------------------------------------- Validator  ------------------------------------------------------->
+
+<div class="content" *ngIf="!isAdmin && requestId != null">
+  <!---------------Heading Section------------------------>
+  <div class="row">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="
+          isPPA ? ('CONTRIBUTOR.ADD-MISSING-ENG' | translate) : ('CONTRIBUTOR.ADD-BACKDATED-ENGAGEMENT' | translate)
+        "
+        [badge]="hasInspectionCompleted ? ('CONTRIBUTOR.INSPECTION-PERFORMED' | translate | uppercase) : ''"
+      >
+      </frm-main-heading-dc>
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!------------- Comment section ------------------->
+  <div class="row" *ngIf="!isCsr">
+    <div class="col-md-12 col-lg-12">
+      <gosi-comments-dc [comments]="comments"> </gosi-comments-dc>
+    </div>
+  </div>
+
+  <!-----------------Content Section--------------------->
+  <div class="row">
+    <div [ngClass]="collapseView ? 'col-lg-11 collapsed' : 'col-lg-6'">
+      <gosi-card-dc>
+        <!-- Personal Details -->
+        <div id="contentArea">
+          <div *ngIf="contributor" class="sub-content-item">
+            <cnt-contributor-personal-details-dc
+              class="cnt"
+              [contributor]="contributor"
+              [age]="age"
+              [canEdit]="isValidator1 && !disableEdit"
+              (onEdit)="onEditPersonalDetails()"
+            >
+            </cnt-contributor-personal-details-dc>
+          </div>
+        </div>
+        <hr />
+        <!------------------- Establishment details -------------------------------->
+        <div class="contentArea">
+          <frm-content-heading-dc
+            [icon]="'briefcase'"
+            [canEdit]="isValidator1 && !disableEdit"
+            (onEdit)="onEditContent()"
+            [heading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate"
+          ></frm-content-heading-dc>
+
+          <div class="row">
+            <div class="col-sm-6 col-md-6" *ngIf="isCsr">
+              <gosi-label-dc
+                [control]="
+                  engDetailsCsr?.establishmentName
+                    ? engDetailsCsr?.establishmentName
+                    : engDetailsCsr?.actualEstablishment?.english
+                    ? engDetailsCsr?.actualEstablishment
+                    : engDetailsCsr?.actualEstablishment?.arabic
+                "
+                label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="!isCsr">
+              <gosi-label-dc
+                [control]="
+                  engDetailsCsr?.actualEstablishment?.english
+                    ? engDetailsCsr?.actualEstablishment
+                    : engDetailsCsr?.actualEstablishment?.arabic
+                "
+                label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="!isPPA">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.commercialRegistrationNumber"
+                label="CONTRIBUTOR.COMMERCIAL-REGISTERATION-NUMBER"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="!isPPA">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.unifiedNationalNumber"
+                label="CONTRIBUTOR.ESTABLISHMENT-UNIFIED-NUMBER"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div>
+            <!-- <div class="col-sm-6 col-md-6">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.ownerId"
+                label="CONTRIBUTOR.ESTABLISHMENT-OWNER-ID"
+                [labelsuffix]="isPPA?'':'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div> -->
+            <!-- <div class="col-sm-6 col-md-6">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.hrsdEstablishmentId"
+                label="CONTRIBUTOR.HRSD-ESTABLISHMENT-ID"
+                [labelsuffix]="isPPA?'':'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div> -->
+            <div class="col-sm-6 col-md-6">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.gosiRegistrationNumber"
+                label="CONTRIBUTOR.REGISTRATION-NO"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+                <!-- label changed from gosi registration number to registration -->
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="isPPA">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.lawType | bilingualText"
+                label="CONTRIBUTOR.LAW-TYPE"
+                [labelsuffix]="isPPA ? '' : 'CONTRIBUTOR.OPTIONAL'"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="isCsr">
+              <label style="font-size: 1rem"
+                >{{ 'CONTRIBUTOR.GOSI-REGISTERATION-NUMBER-PROVIDE' | translate }}
+                <span class="text-danger">*</span></label
+              >
+              <gosi-input-number-dc
+                id="searchKey"
+                class="searchKey"
+                [control]="searchKeyForm.get('searchKey')"
+                [maxLength]="MAX_LENGTH"
+                [defaultPlaceholder]="true"
+                (keyup.enter)="onSearch()"
+                (blur)="onSearch()"
+              >
+              </gosi-input-number-dc>
+            </div>
+            <!-- <div class="col-sm-6 col-md-6" *ngIf="!isCsr">
+              <label style="font-size: 1rem"
+                >{{ 'CONTRIBUTOR.GOSI-REGISTERATION-NUMBER-PROVIDE' | translate }}
+                <span class="text-danger">*</span></label
+              >
+              <input
+                id="searchKey"
+                type="text"
+                class="form-control"
+                placeholder="{{ gosiRegistrationNumber }}"
+                disabled
+              />
+            </div> -->
+            <!-- <div class="col-sm-6 col-md-6">
+              <gosi-label-dc [control]="status | translate" label="CONTRIBUTOR.Establishment-Status"> </gosi-label-dc>
+            </div> -->
+          </div>
+        </div>
+        <hr />
+        <!------------------ Engagemnet Details --------------------->
+        <div class="contentArea">
+          <frm-content-heading-dc
+            [icon]="'briefcase'"
+            [canEdit]="isValidator1 && !disableEdit"
+            (onEdit)="onEditContent()"
+            [heading]="'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate"
+          ></frm-content-heading-dc>
+
+          <div class="row">
+            <div class="col-sm-6 col-md-6">
+              <gosi-label-dc [control]="joiningDate" label="CONTRIBUTOR.JOINING-DATE"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6">
+              <gosi-label-dc [control]="engagementStatus | translate" label="CONTRIBUTOR.ENGAGEMENT-STATUS">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="engDetailsCsr?.engagementRequestDto.leavingDate && !isPPA">
+              <gosi-label-dc [control]="leavingDate" label="CONTRIBUTOR.LEAVING"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="engDetailsCsr?.engagementRequestDto.leavingDate && isPPA">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.engagementRequestDto?.leavingDate | dateType"
+                label="CONTRIBUTOR.LEAVING"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6" *ngIf="engDetailsCsr?.engagementRequestDto.leavingDate">
+              <gosi-label-dc
+                [control]="engDetailsCsr?.engagementRequestDto.leavingReason | bilingualText"
+                label="CONTRIBUTOR.LEAVE-REASON"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+        <hr />
+        <!---------------------- Wage and Occupation details  ----------------------->
+        <div class="contentArea">
+          <frm-content-heading-dc
+            [icon]="'briefcase'"
+            [canEdit]="isValidator1 && !disableEdit"
+            (onEdit)="onEditContent()"
+            [heading]="'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate"
+          ></frm-content-heading-dc>
+
+          <table class="table table-wage row_separate table-responsive">
+            <thead>
+              <!-- *ngIf="!editWagePeriodOn || (editWagePeriodOn && engagementWageDetails.length > 1)" -->
+              <tr>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+                </th>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+                </th>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+                </th>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+                </th>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+                </th>
+                <th class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+                </th>
+                <th *ngIf="!isPPA" class="text-left" scope="col">
+                  {{ 'CONTRIBUTOR.OCCUPATION' | translate | uppercase }}
+                </th>
+                <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.JOB-CLASS' | translate | uppercase }}</th>
+                <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.RANK' | translate | uppercase }}</th>
+                <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.GRADE' | translate | uppercase }}</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="
+                  let wageDetail of engDetailsCsr?.engagementRequestDto.engagementPeriod;
+                  let i = index;
+                  last as isLast;
+                  first as isFirst
+                "
+                style="height: 4rem"
+              >
+                <ng-container *ngIf="!wageDetail.canEdit">
+                  <td class="engagementPeriod">
+                    <span>
+                      {{ wageDetail.startDate | dateType }}
+                    </span>
+                    <span class="ml-1 faw-icons">
+                      <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                      <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+                    </span>
+                    <span class="ml-1">
+                      <span *ngIf="!wageDetail?.endDate?.gregorian && !wageDetail?.endDate?.hijiri">{{
+                        'CONTRIBUTOR.ONWARDS' | translate
+                      }}</span>
+                    </span>
+                    <span *ngIf="wageDetail?.endDate?.gregorian || wageDetail?.endDate?.hijiri">
+                      {{ wageDetail.endDate | dateType }}
+                    </span>
+                  </td>
+                  <td>{{ wageDetail.wage.basicWage | number }}</td>
+                  <td>
+                    {{
+                      isPPA &&
+                      ((wageDetail.wage.housingBenefit | number) === '0' ||
+                        wageDetail.wage.housingBenefit === null ||
+                        wageDetail.wage.housingBenefit === undefined)
+                        ? '-'
+                        : (wageDetail.wage.housingBenefit | number)
+                    }}
+                  </td>
+
+                  <td>
+                    {{
+                      isPPA &&
+                      ((wageDetail.wage.commission | number) === '0' ||
+                        wageDetail.wage.commission === null ||
+                        wageDetail.wage.commission === undefined)
+                        ? '-'
+                        : (wageDetail.wage.commission | number)
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      isPPA &&
+                      ((wageDetail.wage.otherAllowance | number) === '0' ||
+                        wageDetail.wage.otherAllowance === null ||
+                        wageDetail.wage.otherAllowance === undefined)
+                        ? '-'
+                        : (wageDetail.wage.otherAllowance | number)
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      wageDetail.wage.basicWage +
+                        wageDetail.wage.housingBenefit +
+                        wageDetail.wage.commission +
+                        wageDetail.wage.otherAllowance | number
+                    }}
+                  </td>
+                  <td *ngIf="!isPPA">{{ wageDetail.occupation | bilingualText }}</td>
+                  <td *ngIf="isPPA">{{ wageDetail?.jobClassName | bilingualText }}</td>
+                  <td *ngIf="isPPA">{{ wageDetail?.jobRankName | bilingualText }}</td>
+                  <td *ngIf="isPPA">{{ wageDetail?.jobGradeName | bilingualText }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </gosi-card-dc>
+    </div>
+    <div class="document-details" [ngClass]="collapseView ? 'col-lg-1 collapsed' : 'col-lg-6'">
+      <div class="document-block custom-scroll-bar">
+        <frm-documents-dc
+          [canEdit]="isValidator1 && !disableEdit"
+          [collapseView]="collapseView"
+          [documents]="documents"
+          [csvDocument]="csvDocument"
+          (onCollapse)="collapseView = !collapseView"
+          (onEdit)="onEditDocument()"
+          (downloadCsv)="downloadCsvFile()"
+        >
+        </frm-documents-dc>
+      </div>
+    </div>
+  </div>
+  <!-------------------------------- Action area ---------------------------------------------->
+  <div id="actionArea">
+    <cnt-validator-action-area-dc
+      [showApprove]="true"
+      [showReject]="canReject"
+      [showReturn]="canReturn"
+      [showRequestInspection]="canRequestInspection && !establishment?.ppaEstablishment"
+      [isReInspection]="canRequestInspection"
+      (requestInspection)="checkForActiveInspection()"
+      (approveEvent)="showModal(approveTemplate, false, false, true)"
+      (rejectEvent)="showModal(rejectTemplate)"
+      (returnEvent)="showModal(returnTemplate)"
+      (cancelEvent)="showModal(cancelTemplate, true)"
+      [disableApprove]="isBillBatch"
+    >
+    </cnt-validator-action-area-dc>
+
+    <!-- 
+      
+
+    navigateToInbox()
+    [showRequestInspection]="canRequestInspection"
+  " -->
+    <!-- <frm-action-area-dc
+    [canReject]="canReject"
+    [canReturn]="canReturn"
+    [isReturn]="false"
+    [disableApprove]="isBillBatch"
+    (approveEvent)="showModal(approveTemplate)"
+    (rejectEvent)="showModal(rejectTemplate)"
+    (returnEvent)="showModal(returnTemplate)"
+    (cancelEvent)=""
+  >
+  </frm-action-area-dc> -->
+  </div>
+
+  <!----------------  My Transaction Component(Needs to move to another page) ---------------------->
+
+  <!-- <div>
+    <cnt-e-transaction></cnt-e-transaction>
+  </div> -->
+</div>
+<!------------------------  Modals ----------------------------->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CORE.REJECT-REASON'"
+    [warningMessage]="isCsr ? 'CONTRIBUTOR.INFO-REJECT-VALIDATOR-CSR' : 'CONTRIBUTOR.INFO-REJECT-VALIDATOR'"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CORE.RETURN-REASON'"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleApprove()"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<!------------------------------------- Admin  ------------------------------------------------------->
+
+<div class="content" *ngIf="isAdmin && requestId != null">
+  <ng-container>
+    <div class="row">
+      <div class="col-md-12">
+        <!-- Heading Section -->
+        <!-- <div id="mainHeading">
+          <frm-main-heading-dc [heading]="heading | bilingualText | titlecase"> </frm-main-heading-dc>
+        </div>
+        <span class="mx-2"></span>
+        <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+          <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+        </div>
+        <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+        <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+          {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+          <span class="ml-3" style="margin-top: -0.4rem">
+            <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+          </span>
+        </div>
+        <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+          <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+        </div> -->
+
+        <div class="row mx-3 heading-row">
+          <div class="heading-prop">
+            {{ heading | bilingualText | titlecase }}
+          </div>
+          <span class="mx-2"></span>
+          <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+            <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+          </div>
+          <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+          <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+            {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+            <span class="ml-3" style="margin-top: -0.4rem">
+              <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+            </span>
+          </div>
+          <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+            <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+          </div>
+        </div>
+
+        <gosi-alert-sc></gosi-alert-sc>
+
+        <!-- Contributor details banner -->
+        <div class="row mt-4">
+          <div class="col">
+            <cnt-contributor-banner-dc [contributor]="contributor"> </cnt-contributor-banner-dc>
+          </div>
+        </div>
+
+        <br /><br />
+        <!-- Engagement Details -->
+
+        <div>
+          <accordion id="transactionAccordion">
+            <accordion-group
+              class="accordion-group-class"
+              heading="{{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }} "
+              [isOpen]="true"
+            >
+              <span class="badge" accordion-heading *ngIf="badge">
+                <div *ngIf="badge">{{ badge | translate | uppercase }}</div>
+              </span>
+
+              <span style="width: 50em" *ngIf="badge" accordion-heading>&nbsp;</span>
+
+              <span class="arrow-up" accordion-heading>
+                <fa-icon icon="angle-up" size="lg"></fa-icon>
+              </span>
+
+              <span class="arrow-down" accordion-heading>
+                <fa-icon icon="angle-down" size="lg"></fa-icon>
+              </span>
+
+              <!-- Begin Accordion content-->
+              <!-- <div class="accordion-content secondary "
+                              [ngClass]="[isEmpty ? 'd-flex justify-content-center align-items-center' : '']">
+                              <ng-content> </ng-content>
+                          </div> -->
+
+              <div class="padding secondary" body>
+                <ng-container *ngTemplateOutlet="engagementDetails"></ng-container>
+              </div>
+
+              <!-- End Accordion content-->
+            </accordion-group>
+          </accordion>
+        </div>
+
+        <!-- Wage and Occupation History -->
+        <accordion id="transactionAccordion">
+          <accordion-group
+            class="accordion-group-class"
+            heading="{{ 'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate }}"
+            [isOpen]="true"
+          >
+            <span class="badge" accordion-heading *ngIf="badge">
+              <div *ngIf="badge">{{ badge | translate | uppercase }}</div>
+            </span>
+
+            <span style="width: 50em" *ngIf="badge" accordion-heading>&nbsp;</span>
+
+            <span class="arrow-up" accordion-heading>
+              <fa-icon icon="angle-up" size="lg"></fa-icon>
+            </span>
+
+            <span class="arrow-down" accordion-heading>
+              <fa-icon icon="angle-down" size="lg"></fa-icon>
+            </span>
+
+            <!-- Begin Accordion content-->
+            <!-- <div class="accordion-content secondary"
+                          [ngClass]="[isEmpty ? 'd-flex justify-content-center align-items-center' : '']">
+                          <ng-content> </ng-content>
+                      </div> -->
+
+            <div body class="secondary padding">
+              <ng-container *ngTemplateOutlet="wage"></ng-container>
+            </div>
+
+            <!-- End Accordion content-->
+          </accordion-group>
+        </accordion>
+
+        <!-- Radio button -->
+        <gosi-card-dc type="secondary">
+          <gosi-alert-dc
+            *ngIf="docUploaded"
+            type="info"
+            [message]="'CONTRIBUTOR.USER-ACTION-DISABLE-MSG' | translate"
+            [dismissible]="false"
+          >
+          </gosi-alert-dc>
+          <div class="col-md-12">
+            <gosi-input-radio-dc
+              id="agree"
+              name="agree"
+              [label]="isPPA ? 'CONTRIBUTOR.COMPLIANCE.INSPECTION-RADIO-LBL-PPA' : 'CONTRIBUTOR.AGREE-RADIO'"
+              [control]="AdminDetailsForm?.get('agree')"
+              [list]="booleanList"
+              (select)="listenForAdminDecision($event)"
+              [disabled]="checkForDocumentUpload() || isUnclaimed"
+            >
+            </gosi-input-radio-dc>
+            <!-- [disabled]="isBillBatch" -->
+          </div>
+        </gosi-card-dc>
+        <div class="row" *ngIf="isPPA && contributorDocs?.length > 0">
+          <div class="col-md-12">
+            <gosi-document-list-view-dc [documents]="contributorDocs"></gosi-document-list-view-dc>
+          </div>
+        </div>
+        <div *ngIf="isDocumentUpload && !isUnclaimed">
+          <!-- document upload section -->
+          <cnt-document-upload-dc
+            [documentList]="adminDocuments"
+            [businessKey]="requestId"
+            [transactionId]="transactionId"
+            [parentForm]="documentsForm"
+            [referenceNo]="referenceNo"
+            [showDocuments]="isDocumentUpload"
+            [showComments]="isDocumentUpload"
+            (refresh)="refreshDocument($event)"
+            [uuid]="uuid"
+          >
+          </cnt-document-upload-dc>
+        </div>
+        <!-- Disclamer Content Checkbox -->
+        <!-- <div class="row">
+                  <div class="col-lg-12">
+                      <gosi-input-checkbox-dc 
+                      id="declarationMessage" 
+                      name="declaration"
+                      [control]="AdminDetailsForm.get('checkBoxFlag')"
+                      [label]="'CONTRIBUTOR.E-ACCEPT-DECLARATION' | translate">
+                      </gosi-input-checkbox-dc>
+                  </div>
+              </div> -->
+        <!-- End Disclamer Content Checkbox -->
+
+        <!-- Action area -->
+        <cnt-action-area-dc
+          primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+          [showPreviousSection]="false"
+          (submit)="submitDetails()"
+          (cancel)="saveCancellationDetails()"
+          [isUnclaimed]="isUnclaimed"
+        >
+        </cnt-action-area-dc>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!------------------------  Modals ----------------------------->
+
+<ng-template #engagementDetails>
+  <div class="row space-padding">
+    <div class="col-lg-12">
+      <div class="row">
+        <div class="col-lg-4">
+          <gosi-label-dc
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-AR' | translate"
+            [control]="engDetailsCsr?.actualEstablishment?.arabic"
+          >
+          </gosi-label-dc>
+        </div>
+
+        <div class="col-lg-4">
+          <gosi-label-dc
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME-EN' | translate"
+            [control]="engDetailsCsr?.actualEstablishment?.english"
+          >
+          </gosi-label-dc>
+          <br />
+        </div>
+
+        <div class="col-lg-4">
+          <gosi-label-dc
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-REG-NO' | translate"
+            [control]="engDetailsCsr?.gosiRegistrationNumber"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-4">
+          <gosi-label-dc
+            [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+            [control]="engDetailsCsr?.engagementRequestDto?.joiningDate | dateType"
+            id="joiningDate"
+          >
+          </gosi-label-dc>
+        </div>
+
+        <div class="col-lg-4">
+          <gosi-label-dc
+            id="status"
+            [control]="engagementStatus | translate"
+            [label]="'CONTRIBUTOR.ENGAGEMENT-STATUS' | translate"
+          >
+          </gosi-label-dc>
+          <br />
+        </div>
+
+        <div class="col-lg-4" *ngIf="engDetailsCsr?.engagementRequestDto.leavingDate">
+          <gosi-label-dc
+            id="leavingDate"
+            [label]="'CONTRIBUTOR.LEAVING' | translate"
+            [control]="engDetailsCsr?.engagementRequestDto?.leavingDate | dateType"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-3" *ngIf="engDetailsCsr?.engagementRequestDto.leavingDate">
+          <gosi-label-dc
+            id="leavingReason"
+            [label]="'CONTRIBUTOR.LEAVE-REASON' | translate"
+            [control]="engDetailsCsr?.engagementRequestDto.leavingReason | bilingualText"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <!-- engagment period details  -->
+  </div>
+</ng-template>
+
+<ng-template #wage>
+  <!-- <div class="row">
+      <div class="col-sm-12 col-md-12">
+        <span class="sub-heading">
+          {{ 'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate }}
+        </span>
+      </div>
+    </div> -->
+
+  <div class="row">
+    <div class="col-md-12 table-responsive">
+      <table class="table table-wage row_separate">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'CONTRIBUTOR.START-DATE' | translate }}</th>
+            <th scope="col">{{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}</th>
+            <th scope="col">{{ 'CONTRIBUTOR.HRA' | translate }} &nbsp; &nbsp;</th>
+            <th scope="col">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+            <th scope="col">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+            <th scope="col">{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}</th>
+            <th *ngIf="!isPPA" scope="col">{{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+            <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.JOB-CLASS' | translate }}</th>
+            <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.RANK' | translate }}</th>
+            <th *ngIf="isPPA" scope="col">{{ 'CONTRIBUTOR.GRADE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of engDetailsCsr?.engagementRequestDto.engagementPeriod" style="height: 4rem">
+            <td class="engagementPeriod">
+              <span>
+                {{ item.startDate | dateType }}
+              </span>
+
+              <span class="ml-1 faw-icons">
+                <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                <fa-icon class="arrow-right h6" [icon]="['fas', 'arrow-right']"></fa-icon>
+              </span>
+              <span class="ml-1">
+                <span *ngIf="!item?.endDate?.gregorian && !item?.endDate?.hijiri">{{
+                  'CONTRIBUTOR.ONWARDS' | translate
+                }}</span>
+              </span>
+              <span *ngIf="item?.endDate?.gregorian || item?.endDate?.hijiri">
+                {{ item.endDate | dateType }}
+              </span>
+            </td>
+            <td>{{ item.wage.basicWage | number }}</td>
+            <td>
+              {{
+                isPPA &&
+                ((item.wage.housingBenefit | number) === '0' ||
+                  item.wage.housingBenefit === null ||
+                  item.wage.housingBenefit === undefined)
+                  ? '-'
+                  : (item.wage.housingBenefit | number)
+              }}
+            </td>
+
+            <td>
+              {{
+                isPPA &&
+                ((item.wage.commission | number) === '0' ||
+                  item.wage.commission === null ||
+                  item.wage.commission === undefined)
+                  ? '-'
+                  : (item.wage.commission | number)
+              }}
+            </td>
+            <td>
+              {{
+                isPPA &&
+                ((item.wage.otherAllowance | number) === '0' ||
+                  item.wage.otherAllowance === null ||
+                  item.wage.otherAllowance === undefined)
+                  ? '-'
+                  : (item.wage.otherAllowance | number)
+              }}
+            </td>
+            <td>{{ item.wage.totalWage | number }}</td>
+            <td *ngIf="!isPPA">{{ item.occupation | bilingualText }}</td>
+            <td *ngIf="isPPA">{{ item?.jobClassName | bilingualText }}</td>
+            <td *ngIf="isPPA">{{ item?.jobRankName | bilingualText }}</td>
+            <td *ngIf="isPPA">{{ item?.jobGradeName | bilingualText }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,1040 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div
+  id="contributorSection"
+  class="row"
+  *ngIf="
+    (transactionDetails && transactionDetails?.contributors && transactionDetails?.contributors.length > 0) ||
+    isViolatingProvisions
+  "
+>
+  <div class="col-md-12">
+    <frm-content-heading-dc icon="user" [heading]="'VIOLATIONS.CONTRIBUTOR-DETAILS' | translate" [canEdit]="false">
+    </frm-content-heading-dc>
+  </div>
+</div>
+<ng-container
+  *ngIf="
+    transactionDetails && transactionDetails?.contributors && transactionDetails?.contributors.length > 0;
+    else noContributors
+  "
+>
+  <div class="row">
+    <div class="col-lg-12" *ngIf="transactionDetails?.showSaveError">
+      <gosi-alert-dc
+        [message]="'CORE.ERROR.MANDATORY-FIELDS'"
+        type="danger"
+        class="successMessage"
+        noPadding="true"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+
+  <accordion *ngFor="let contributor of transactionDetails?.contributors; let i = index">
+    <accordion-group
+      id="{{ i }}"
+      class="accordion-group-class"
+      [ngClass]="transactionDetails?.showSaveError && !contributor?.isSaved ? 'accordion-error' : ''"
+      (isOpenChange)="selectPanel($event, i + 1)"
+      [isOpen]="accordionPanel === i + 1"
+    >
+      <div accordion-heading>
+        <span class="name-value">
+          {{
+            contributor.contributorName.english === null || contributor.contributorName.english.trim() === ''
+              ? contributor.contributorName.arabic
+              : (contributor.contributorName | bilingualText)
+          }}
+        </span>
+        <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinValue">
+          <div *ngFor="let identifier of contributor?.identity">
+            <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinValue">
+              <div *ngIf="identifier?.idType === 'NIN'">
+                <div class="identity-value">
+                  {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                </div>
+              </div>
+              <div *ngIf="identifier?.idType === 'IQAMA'">
+                <div class="identity-value">
+                  {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                </div>
+              </div>
+              <div *ngIf="identifier?.idType === 'GCCID'">
+                <div class="identity-value">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}</div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+        <ng-template #isSinValue>
+          <div class="identity-value">
+            {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+          </div>
+        </ng-template>
+      </div>
+      <div accordion-heading class="symbol-adjust">
+        <span accordion-heading>
+          <ng-container>
+            <span class="ml-3 mr-3" *ngIf="contributorDetailFlags[i]">
+              <img class="ml-1 mr-1" src="assets/icons/excluded-icon.svg" alt="excluded-icon" />
+              <span class="exclude-value"> {{ 'VIOLATIONS.EXCLUDED' | translate }}</span>
+            </span>
+          </ng-container>
+        </span>
+        <span accordion-heading class="verify-symbol">
+          <ng-container *ngIf="contributor?.isSaved">
+            <span class="ml-3 mr-3">
+              <img class="ml-1 mr-1" src="assets/icons/Verify-Icon.svg" alt="verified-icon" />
+              <span class="exclude-value"> {{ 'VIOLATIONS.VERIFIED' | translate }}</span>
+            </span>
+          </ng-container>
+        </span>
+        <span class="arrow-up-period arrow-color" accordion-heading>
+          <span>
+            <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+          </span>
+        </span>
+        <span class="arrow-down-period arrow-color" accordion-heading>
+          <span>
+            <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+          </span>
+        </span>
+      </div>
+      <!-- </span> -->
+      <ng-container>
+        <div class="row">
+          <div class="col-lg-12" *ngIf="contributor?.previousViolationRecordDesc">
+            <gosi-alert-dc
+              [bilingualMessage]="contributor?.previousViolationRecordDesc"
+              type="info"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div class="col-lg-12" *ngIf="contributor?.previousCancelledEngagementViolation && !isCancelEngagement">
+            <gosi-alert-dc
+              [bilingualMessage]="contributor?.previousCancelledEngagementViolation"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <!-- save button alert -->
+          <div class="col-lg-12" id="{{ i }}" *ngIf="contributor?.showMandatoryError">
+            <gosi-alert-dc
+              [message]="'CORE.ERROR.MANDATORY-FIELDS'"
+              type="danger"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+        </div>
+        <div class="row form-label">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinTemplate">
+              <div *ngFor="let identifier of contributor?.identity">
+                <ng-container *ngIf="isSinNeeded(contributor.identity) === 1; else isSinTemplate">
+                  <div *ngIf="identifier?.idType === 'NIN'">
+                    <div class="identity-heading no-wrap title-label">
+                      {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }}
+                    </div>
+                    <a class="link-clr" (click)="navigateToProfile(i)"> {{ identifier?.newNin }} </a>
+                  </div>
+                  <div *ngIf="identifier?.idType === 'IQAMA'">
+                    <div class="identity-heading no-wrap title-label">{{ 'VIOLATIONS.IQAMA-NUMBER' | translate }}</div>
+                    <a class="link-clr" (click)="navigateToProfile(i)"> {{ identifier?.iqamaNo }} </a>
+                  </div>
+                  <div *ngIf="identifier?.idType === 'GCCID'">
+                    <div class="identity-heading no-wrap title-label">{{ 'VIOLATIONS.GCCID' | translate }}</div>
+                    <a class="link-clr" (click)="navigateToProfile(i)">
+                      {{ identifier?.id }}
+                    </a>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-template #isSinTemplate>
+              <gosi-label-dc
+                [label]="'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate"
+                [value]="contributor?.socialInsuranceNo"
+                isLink="true"
+                (select)="navigateToProfile(i)"
+              ></gosi-label-dc>
+            </ng-template>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="identity-heading title-label">{{ 'VIOLATIONS.DOB' | translate }}</div>
+            <div>
+              <span>{{ contributor?.dateOfBirth | dateType | formatDate }}</span>
+              <span>({{ 'VIOLATIONS.AGE' | translate }}:{{ getAge(i) }})</span>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4 form-label">
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="(isIncorrectWage || isIncorrectReason || isaddEngagement) && !isRaiseVioFoVcm"
+          >
+            <gosi-label-dc
+              [label]="
+                (isIncorrectWage
+                  ? 'VIOLATIONS.TRANSACTION-ID'
+                  : isIncorrectReason
+                  ? 'VIOLATIONS.TRANSACTION-ID'
+                  : 'VIOLATIONS.TRANSACTION-ID'
+                ) | translate
+              "
+              [value]="contributor?.engagementInfo[0]?.changeTerminationReasonTransaction"
+              isLink="true"
+              (select)="navigateToTracker(i, 0)"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-sm-6 col-md-6 col-lg-6 cont-joining-date"
+            *ngIf="(isaddEngagement || isInjuryViolation) && !isRaiseVioFoVcm"
+          >
+            <gosi-label-dc
+              [label]="'VIOLATIONS.JOINING-DATE' | translate"
+              [value]="contributor?.engagementInfo[0]?.joiningDate | dateType | formatDate"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="(isaddEngagement || isIncorrectReason || isInjuryViolation) && !isRaiseVioFoVcm"
+          >
+            <gosi-label-dc
+              [label]="'VIOLATIONS.TERMINATION-DATE' | translate"
+              [value]="contributor?.engagementInfo[0]?.terminationDate | dateType | formatDate"
+            >
+            </gosi-label-dc>
+          </div>
+          <!-- adding oh vio-->
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isInjuryViolation && !isRaiseVioFoVcm">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.INJURY-DATE' | translate"
+              [value]="contributor?.engagementInfo[0]?.injuryDetails?.injuryDate"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isInjuryViolation && !isRaiseVioFoVcm">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.TRANSACTION-ID' | translate"
+              [value]="contributor?.engagementInfo[0]?.injuryDetails?.injuryTransactionId"
+              isLink="true"
+              (select)="navigateToTracker(i, 0)"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="(isaddEngagement || isInjuryViolation) && !isRaiseVioFoVcm">
+            <div class="form-content-label">
+              <div class="form-label">
+                {{ 'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate }}
+              </div>
+              <div class="form-value">
+                <span>{{
+                  contributor?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears | bilingualText | titlecase
+                }}</span>
+                <ng-container
+                  *ngIf="
+                    contributor?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears?.english === noPenaltyPopupYes
+                  "
+                >
+                  <gosi-status-badge-dc
+                    class="form-penalty"
+                    [label]="'VIOLATIONS.NO-PENALTY' | translate"
+                    [tooltip]="commentBox"
+                  >
+                  </gosi-status-badge-dc>
+                  <ng-template #commentBox>
+                    <ng-container>
+                      <div>
+                        {{ 'VIOLATIONS.NO-PENALTY-POPUP' | translate }}
+                      </div>
+                    </ng-container>
+                  </ng-template>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+          <!-- request submission date for IW, ANE,IRT -->
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="
+              (isIncorrectWage || isaddEngagement || isIncorrectReason || isInjuryViolation) &&
+              contributor?.engagementInfo[0]?.requestSubmissionDate &&
+              !isRaiseVioFoVcm
+            "
+          >
+            <gosi-label-dc
+              [label]="'VIOLATIONS.REQUEST-SUBMISSION-DATE' | translate"
+              [date]="true"
+              value="{{ contributor?.engagementInfo[0]?.requestSubmissionDate | dateType | formatDate }}"
+            ></gosi-label-dc>
+          </div>
+          <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isIncorrectWage && !isRaiseVioFoVcm">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.WAGE-CORRECTED' | translate"
+              [control]="
+                contributor?.engagementInfo[0]?.isWageCorrected
+                  ? ('VIOLATIONS.YES' | translate)
+                  : ('VIOLATIONS.NO' | translate)
+              "
+            >
+            </gosi-label-dc>
+          </div> -->
+          <!-- cancelled eng duration previous code position -->
+        </div>
+        <!-- table for IRT,IW,MDT,MJD-->
+        <div class="termination-table">
+          <table class="table" *ngIf="isIncorrectReason && !isRaiseVioFoVcm">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-TREMINATION-RSN' | translate }}</td>
+                <td class="termination-head">
+                  {{ contributor?.engagementInfo[0]?.oldTerminationReason | bilingualText }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.CURRENT-TREMINATION-RSN' | translate }}</td>
+                <td class="termination-tail">
+                  {{ contributor?.engagementInfo[0]?.updatedTerminationReason | bilingualText }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isIncorrectWage && !isRaiseVioFoVcm">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-WAGE' | translate }}</td>
+                <td class="termination-head">
+                  {{ contributor?.engagementInfo[0]?.oldWage | number: '1.2-2' }}
+                  {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-WAGE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ contributor?.engagementInfo[0]?.updatedWage | number: '1.2-2' }}
+                  {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isModifyTerminationDate">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-TERMINATION-DATE' | translate }}</td>
+                <td class="termination-head">
+                  {{
+                    contributor?.engagementInfo[0]?.oldTerminationDate?.gregorian
+                      ? (contributor?.engagementInfo[0]?.oldTerminationDate | dateType | formatDate)
+                      : ('VIOLATIONS.NOT-APPLICABLE' | translate)
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-TERMINATION-DATE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ contributor?.engagementInfo[0]?.updatedTerminationDate | dateType | formatDate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isModifyJoiningDate">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-JOINING-DATE' | translate }}</td>
+                <td class="termination-head">
+                  {{ contributor?.engagementInfo[0]?.oldJoiningDate | dateType | formatDate }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-JOINING-DATE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ contributor?.engagementInfo[0]?.updatedJoiningDate | dateType | formatDate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- contribution details section heading -->
+        <div class="row" *ngIf="isModifyTerminationDate && contributor?.engagementInfo[0]?.contributionInfo">
+          <div class="col-md-12 mb-3 contribution-details">
+            {{ 'VIOLATIONS.CONTRIBUTION-DETAILS' | translate }}
+          </div>
+        </div>
+        <!-- cancelled engagement section heading -->
+        <div class="row">
+          <div
+            class="col-md-12 mb-3 contribution-details"
+            *ngIf="isCancelEngagement && contributor?.engagementInfo?.length > 0"
+          >
+            {{ 'VIOLATIONS.CANCEL-ENGAGEMENT-DETAILS' | translate }}
+          </div>
+          <div
+            class="col-md-12 mb-3 mt-2 contribution-details"
+            *ngIf="isRaiseVioFoVcm && !isCancelEngagement && !isViolatingProvisions"
+          >
+            {{ 'VIOLATIONS.ENGAGEMENT-DETAILS' | translate }}
+          </div>
+        </div>
+        <!-- table section as per new vd for CE, MTD -->
+
+        <ng-container
+          *ngIf="
+            (isCancelEngagement || isModifyTerminationDate || (isRaiseVioFoVcm && !isViolatingProvisions)) &&
+            contributor?.engagementInfo?.length > 0
+          "
+        >
+          <accordion *ngFor="let engagement of contributor?.engagementInfo; let j = index">
+            <accordion-group class="accordion-group-class" [isOpen]="true" [isDisabled]="true">
+              <div accordion-heading>
+                <span class="name-value">
+                  <!-- period -->
+                  <ng-container
+                    *ngIf="
+                      (engagement?.contributionInfo?.startDate?.gregorian ||
+                        engagement?.contributionInfo?.startDate?.hijiri) &&
+                      (engagement?.contributionInfo?.endDate?.gregorian ||
+                        engagement?.contributionInfo?.endDate?.hijiri) &&
+                      !isRaiseVioFoVcm
+                    "
+                  >
+                    {{ engagement?.contributionInfo?.startDate | dateType | formatDate }}
+                    <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    {{ engagement?.contributionInfo?.endDate | dateType | formatDate }}
+                  </ng-container>
+                  <ng-container *ngIf="isRaiseVioFoVcm">
+                    {{
+                      (engagement?.cancelledDurationStartDate?.gregorian
+                        ? engagement?.cancelledDurationStartDate
+                        : engagement?.joiningDate
+                      )
+                        | dateType
+                        | formatDate
+                    }}
+                    <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    <ng-container
+                      *ngIf="
+                        engagement?.terminationDate?.gregorian ||
+                          engagement?.terminationDate?.hijiri ||
+                          engagement?.cancelledDurationEndDate?.gregorian;
+                        else onwards
+                      "
+                    >
+                      {{
+                        (engagement?.cancelledDurationEndDate?.gregorian
+                          ? engagement?.cancelledDurationEndDate
+                          : engagement?.terminationDate
+                        )
+                          | dateType
+                          | formatDate
+                      }}
+                    </ng-container>
+                  </ng-container>
+                </span>
+                <ng-container>
+                  <div
+                    class="engagement-duration"
+                    *ngIf="
+                      engagement?.cancelledEngDuration?.months ||
+                      engagement?.cancelledEngDuration?.days ||
+                      (engagement?.cancelledEngDuration?.months === 0 && engagement?.cancelledEngDuration?.days === 0)
+                    "
+                  >
+                    <!-- duration -->
+                    (
+                    <span
+                      *ngIf="engagement?.cancelledEngDuration?.months && engagement?.cancelledEngDuration?.months !== 0"
+                    >
+                      <span>
+                        <!-- showing month value -->
+                        {{ engagement?.cancelledEngDuration?.months }}
+                      </span>
+                      <!-- month label -->
+                      {{
+                        engagement?.cancelledEngDuration?.months >= 3 && engagement?.cancelledEngDuration?.months <= 10
+                          ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                          : engagement?.cancelledEngDuration?.months === 1
+                          ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                          : engagement?.cancelledEngDuration?.months > 10
+                          ? ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                          : ('VIOLATIONS.MONTHS' | translate | titlecase)
+                      }}
+                    </span>
+                    <!-- after displaying month if there is days comma will be displayed -->
+                    <span *ngIf="engagement?.cancelledEngDuration?.months && engagement?.cancelledEngDuration?.days">
+                      ,</span
+                    >
+                    <span
+                      *ngIf="
+                        (engagement?.cancelledEngDuration?.days === 0 &&
+                          engagement?.cancelledEngDuration?.months === 0) ||
+                        engagement?.cancelledEngDuration?.days
+                      "
+                    >
+                      <!-- showing days -->
+                      <span>
+                        <!-- *ngIf="!(engagement?.cancelledEngDuration?.days <= 2 && lang === 'ar')" -->
+                        <!-- day value displaying -->
+                        {{
+                          engagement?.cancelledEngDuration?.days === 0 && engagement?.cancelledEngDuration?.month === 0
+                            ? 0
+                            : engagement?.cancelledEngDuration?.days
+                        }}
+                      </span>
+                      <!-- day label -->
+                      {{
+                        engagement?.cancelledEngDuration?.days === 2
+                          ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                          : engagement?.cancelledEngDuration?.days === 1
+                          ? ('VIOLATIONS.DAY' | translate | titlecase)
+                          : engagement?.cancelledEngDuration?.days > 2 && engagement?.cancelledEngDuration?.days < 11
+                          ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                          : engagement?.cancelledEngDuration?.days >= 11
+                          ? ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                          : ('VIOLATIONS.DAY-0' | translate | titlecase)
+                      }}
+                    </span>
+                    )
+                  </div>
+                  <!-- for violation types other than cancel -->
+                  <div
+                    class="engagement-duration"
+                    *ngIf="
+                      (engagement?.engagementPeriodMonth ||
+                        engagement?.engagementPeriodDays ||
+                        (engagement?.engagementPeriodMonth === 0 && engagement?.engagementPeriodDays === 0)) &&
+                      !isCancelEngagement
+                    "
+                  >
+                    <!-- duration -->
+                    (
+                    <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodMonth !== 0">
+                      <span>
+                        <!-- showing month value -->
+                        {{ engagement?.engagementPeriodMonth }}
+                      </span>
+                      <!-- month label -->
+                      {{
+                        engagement?.engagementPeriodMonth >= 3 && engagement?.engagementPeriodMonth <= 10
+                          ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                          : engagement?.engagementPeriodMonth === 1
+                          ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                          : engagement?.engagementPeriodMonth > 10
+                          ? ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                          : ('VIOLATIONS.MONTHS' | translate | titlecase)
+                      }}
+                    </span>
+                    <!-- after displaying month if there is days comma will be displayed -->
+                    <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodDays"> ,</span>
+                    <span
+                      *ngIf="
+                        (engagement?.engagementPeriodDays === 0 && engagement?.engagementPeriodMonth === 0) ||
+                        engagement?.engagementPeriodDays
+                      "
+                    >
+                      <!-- showing days -->
+                      <span *ngIf="engagement?.engagementPeriodDays">
+                        {{
+                          engagement?.engagementPeriodDays === 0 && engagement?.engagementPeriodMonth === 0
+                            ? 0
+                            : engagement?.engagementPeriodDays
+                        }}
+                      </span>
+                      <!-- day label -->
+                      {{
+                        engagement?.engagementPeriodDays === 2
+                          ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                          : engagement?.engagementPeriodDays === 1
+                          ? ('VIOLATIONS.DAY' | translate | titlecase)
+                          : engagement?.engagementPeriodDays > 2 && engagement?.engagementPeriodDays < 11
+                          ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                          : engagement?.engagementPeriodDays >= 11
+                          ? ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                          : ('VIOLATIONS.DAY-0' | translate | titlecase)
+                      }}
+                    </span>
+                    )
+                  </div>
+                  <ng-template #onwards> {{ 'VIOLATIONS.ONWARDS' | translate }} </ng-template>
+                </ng-container>
+              </div>
+              <span class="arrow-up-period arrow-color" accordion-heading *ngIf="isCancelEngagement">
+                <span class="ml-2 mr-2">
+                  <span class="exclude-value">
+                    {{ 'VIOLATIONS.CONTRIBUTION' | translate }} :
+                    <span class="contribution-amount">
+                      {{
+                        (engagement?.contributionInfo?.contributionAmount
+                          ? engagement?.contributionInfo?.contributionAmount
+                          : engagement?.contributionAmount
+                        ) | number: '1.2-2'
+                      }}
+                      {{ 'VIOLATIONS.CURRENCY' | translate }}
+                    </span>
+                    <!-- contribution amount -->
+                  </span>
+                </span>
+              </span>
+              <ng-container>
+                <!-- content -->
+                <div class="row form-label">
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isRaiseVioFoVcm">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.TRANSACTION-ID' | translate"
+                      [value]="engagement?.changeTerminationReasonTransaction"
+                      isLink="true"
+                      (select)="navigateToTracker(i, j)"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="engagement?.requestSubmissionDate && !isRaiseVioFoVcm">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.REQUEST-SUBMISSION-DATE' | translate"
+                      [date]="true"
+                      value="{{ engagement?.requestSubmissionDate | dateType | formatDate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isIncorrectWage && isRaiseVioFoVcm">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.IS-WAGE-CORRECTED' | translate"
+                      [control]="
+                        contributor?.engagementInfo[0]?.isWageCorrected
+                          ? ('VIOLATIONS.YES' | translate)
+                          : ('VIOLATIONS.NO' | translate)
+                      "
+                    >
+                    </gosi-label-dc>
+                  </div> -->
+                  <div
+                    class="col-sm-12 col-md-6 col-lg-6"
+                    *ngIf="(isaddEngagement || isInjuryViolation) && isRaiseVioFoVcm"
+                  >
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.IS-ENG-ADDED-BACKDATED' | translate"
+                      [control]="engagement?.isBackdated"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isIncorrectReason && isRaiseVioFoVcm">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.IS-REASON-EFFECTED-BENEFIT' | translate"
+                      [control]="engagement?.isBenefitsEffected"
+                    ></gosi-label-dc>
+                  </div>
+
+                  <!-- include violation happended five years ago if needed -->
+                  <div class="col-sm-6 col-md-6 col-lg-6 happened-style">
+                    <div class="form-label pb-2">
+                      {{ 'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate }}
+                    </div>
+                    <div class="form-value">
+                      <span>{{ engagement?.isViolationHappenedBeforeFiveYears | bilingualText | titlecase }}</span>
+                      <ng-container
+                        *ngIf="engagement?.isViolationHappenedBeforeFiveYears?.english == noPenaltyPopupYes"
+                      >
+                        <gosi-status-badge-dc
+                          class="form-penalty"
+                          [label]="'VIOLATIONS.NO-PENALTY' | translate"
+                          [tooltip]="commentBox"
+                        >
+                        </gosi-status-badge-dc>
+                        <ng-template #commentBox>
+                          <ng-container>
+                            <div>
+                              {{ 'VIOLATIONS.NO-PENALTY-POPUP' | translate }}
+                            </div>
+                          </ng-container>
+                        </ng-template>
+                      </ng-container>
+                    </div>
+                  </div>
+                  <!-- termination reason -->
+                  <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isIncorrectReason && isRaiseVioFoVcm">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.LEAVING-REASON' | translate"
+                      [control]="engagement?.terminationReason"
+                    ></gosi-label-dc>
+                  </div>
+                </div>
+              </ng-container>
+            </accordion-group>
+          </accordion>
+        </ng-container>
+        <!-- Benefits section -->
+        <div class="row mt-2 mb-2" *ngIf="isWrongBenefits && contributor?.benefitInfo[0]">
+          <div class="col-sm-12 col-md-12 col-lg-12 mt-2 benefit-label">
+            <span class="identity-heading benefit-heading">{{ 'VIOLATIONS.BENEFIT-DETAILS' | translate }}</span>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <table class="table-benefit">
+              <thead class="thead multiple-header">
+                <tr class="heading">
+                  <th id="benefit-type" class="heading-values">
+                    {{ 'VIOLATIONS.BENEFIT-TYPE' | translate }}
+                  </th>
+                  <th id="benefit-amount" class="heading-values">
+                    {{ 'VIOLATIONS.BENEFIT-AMOUNT' | translate }}
+                  </th>
+                  <!-- <th id="benefit-duration" class="heading-values">
+                  {{ 'VIOLATIONS.BENEFIT-DURATION' | translate }}
+                </th>
+                <th id="last-benefit-date" class="heading-values">
+                  {{ 'VIOLATIONS.LAST-BENEFIT-DATE' | translate }}
+                </th> -->
+                </tr>
+              </thead>
+              <tbody class="tbody">
+                <tr class="border-bottom" *ngFor="let benefit of contributor?.benefitInfo">
+                  <td class="benefit-value">
+                    <div class="row ml-2 mr-2 benefit-type-period">
+                      <div class="benefit-type-section">{{ benefit?.benefitType | bilingualText }}</div>
+                      <div class="benefit-period-section">
+                        {{ benefit?.firstPaymentDate?.gregorian | gosiDate }}
+                        <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                        {{ benefit?.lastBenefitDate?.gregorian | gosiDate }} ({{ benefit?.benefitDuration }}
+                        {{
+                          benefit?.benefitDuration === 1
+                            ? ('VIOLATIONS.BENEFIT-MONTH' | translate)
+                            : benefit?.benefitDuration === 2
+                            ? ('VIOLATIONS.BENEFIT-MONTHS-2' | translate)
+                            : benefit?.benefitDuration > 2 && benefit?.benefitDuration < 11
+                            ? ('VIOLATIONS.BENEFIT-MONTHS-3-10' | translate)
+                            : ('VIOLATIONS.BENEFIT-MONTHS-11' | translate)
+                        }})
+                      </div>
+                    </div>
+                  </td>
+                  <td class="amount-currency">
+                    <span> {{ benefit?.benefitAmount | number: '1.2-2' }} </span>
+                    <span class="benefit-currency-label">
+                      <span>{{ 'VIOLATIONS.CURRENCY' | translate }}</span>
+                      <span>
+                        {{ checkIfLumpsum(benefit?.benefitType.english) ? '' : ('VIOLATIONS.PER-MONTH' | translate) }}
+                      </span>
+                    </span>
+                  </td>
+
+                  <!-- <td>
+                  {{ benefit?.benefitDuration }}
+                </td>
+                <td>
+                  {{ benefit?.lastBenefitDate?.gregorian | gosiDate }}
+                </td> -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-6 mt-4 total-benefit-amount">
+            <!-- <gosi-label-dc
+              [label]="'VIOLATIONS.TOTAL-BENEFIT-AMOUNT' | translate"
+              [value]="contributor?.totalBenefitAmount"
+              ></gosi-label-dc>
+              {{ 'VIOLATIONS.CURRENCY' | translate }}/{{ 'VIOLATIONS.MONTH' | translate }} -->
+            <div class="row mb-4 mt-2">
+              <div class="col-sm-12 col-md-12 col-lg-12 benefit-amount-label">
+                {{ 'VIOLATIONS.TOTAL-BENEFIT-AMOUNT' | translate }}
+              </div>
+              <div class="col-sm-12 col-md-12 col-lg-12 benefit-amount-value">
+                <span>{{ contributor?.totalBenefitAmount | number: '1.2-2' }}</span>
+                <span class="benefit-currency">{{ 'VIOLATIONS.CURRENCY' | translate }}</span>
+              </div>
+            </div>
+          </div>
+          <!-- <div class="col-sm-12 col-md-6 col-lg-6 wb-payment-date">
+            <gosi-label-dc
+            [label]="'VIOLATIONS.FIRST-PAYMENT-DATE' | translate"
+            [value]="contributor?.violationStartDate | dateType | formatDate"
+            ></gosi-label-dc>
+          </div> -->
+        </div>
+        <!--  -->
+        <!-- </ng-container> -->
+
+        <div class="row mt-2 mb-2" *ngIf="isRaiseVioFoVcm && isViolatingProvisions">
+          <div class="col-sm-12 col-md-12 col-lg-12 mb-2" *ngIf="isRaiseVioFoVcm && isViolatingProvisions">
+            <span class="identity-headings">{{ 'VIOLATIONS.ENGAGEMENT-CONTRIBUTED-BENEFITS' | translate }}</span>
+          </div>
+          <table class="table othervio">
+            <thead class="thead multiple-header">
+              <tr>
+                <th id="eng-period">{{ 'VIOLATIONS.ENGAGEMENT-PERIOD' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-bottom" *ngFor="let engagement of contributor?.engagementInfo">
+                <td class="table-othervio">
+                  <span class="name-value">
+                    {{
+                      (getDateType(engagement?.joiningDate?.entryFormat) === 'Hijiri'
+                        ? engagement?.joiningDate?.hijiri
+                        : engagement?.joiningDate?.gregorian
+                      ) | gosiDate
+                    }}
+                    <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    <ng-container
+                      *ngIf="
+                        engagement?.terminationDate?.gregorian || engagement?.terminationDate?.hijiri;
+                        else onwards
+                      "
+                    >
+                      {{
+                        (getDateType(engagement?.terminationDate?.entryFormat) === 'Hijiri'
+                          ? engagement?.terminationDate?.hijiri
+                          : engagement?.terminationDate?.gregorian
+                        ) | gosiDate
+                      }}
+                    </ng-container>
+                  </span>
+                  <ng-container>
+                    <div
+                      class="engagement-duration"
+                      *ngIf="engagement?.engagementPeriodMonth || engagement?.engagementPeriodDays"
+                    >
+                      <!-- duration -->
+                      (
+                      <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodMonth !== 0">
+                        <span>
+                          {{ engagement?.engagementPeriodMonth }}
+                        </span>
+
+                        {{
+                          engagement?.engagementPeriodMonth >= 3 && engagement?.engagementPeriodMonth <= 10
+                            ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                            : engagement?.engagementPeriodMonth === 1
+                            ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                            : engagement?.engagementPeriodMonth === 2
+                            ? ('VIOLATIONS.MONTHS' | translate | titlecase)
+                            : ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                        }}
+                      </span>
+                      <!-- after displaying month if there is days comma will be displayed -->
+                      <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodDays"> ,</span>
+                      <span *ngIf="engagement?.engagementPeriodDays && engagement?.engagementPeriodDays !== 0">
+                        <span *ngIf="engagement?.engagementPeriodDays">
+                          {{ engagement?.engagementPeriodDays }}
+                        </span>
+
+                        {{
+                          engagement?.engagementPeriodDays === 2
+                            ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                            : engagement?.engagementPeriodDays === 1
+                            ? ('VIOLATIONS.DAY' | translate | titlecase)
+                            : engagement?.engagementPeriodDays > 2 && engagement?.engagementPeriodDays < 11
+                            ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                            : ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                        }}
+                      </span>
+                      )
+                    </div>
+                    <ng-template #onwards> {{ 'VIOLATIONS.ONWARDS' | translate }} </ng-template>
+                  </ng-container>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row label-details" *ngIf="!isViolatingProvisions && !isInjuryViolation">
+          <!-- violation happened before 5 years -->
+          <div
+            class="col-sm-6 col-md-6 col-lg-6 label-details"
+            *ngIf="((isIncorrectWage || isIncorrectReason) && !isRaiseVioFoVcm) || isModifyJoiningDate"
+          >
+            <div class="form-label">
+              {{ 'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate }}
+            </div>
+            <div class="form-value">
+              <span>{{
+                contributor?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears | bilingualText | titlecase
+              }}</span>
+              <ng-container
+                *ngIf="
+                  contributor?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears?.english === noPenaltyPopupYes
+                "
+              >
+                <gosi-status-badge-dc
+                  class="form-penalty"
+                  [label]="'VIOLATIONS.NO-PENALTY' | translate"
+                  [tooltip]="commentBox"
+                >
+                </gosi-status-badge-dc>
+                <ng-template #commentBox>
+                  <ng-container>
+                    <div>
+                      {{ 'VIOLATIONS.NO-PENALTY-POPUP' | translate }}
+                    </div>
+                  </ng-container>
+                </ng-template>
+              </ng-container>
+            </div>
+          </div>
+          <!-- compensated radio btn -->
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="!contributor?.isNoPenalty && !contributorDetailFlags[i] && !isRaiseVioFoVcm && !isInjuryViolation"
+          >
+            <gosi-input-radio-dc
+              id="compensation {{ i }}"
+              name="compensation {{ i }}"
+              [noMargin]="true"
+              [list]="booleanList"
+              [control]="exclusionDetailsForm.controls[i].get('compensated')"
+              [label]="'VIOLATIONS.COMPENSATED' | translate"
+              (select)="setCompensation(i, $event)"
+            >
+            </gosi-input-radio-dc>
+          </div>
+          <div
+            class="col-sm-12 col-md-6 col-lg-6 compensated-label"
+            *ngIf="isRaiseVioFoVcm && !isViolatingProvisions && !isInjuryViolation"
+          >
+            <gosi-label-dc
+              [label]="'VIOLATIONS.COMPENSATED' | translate"
+              [value]="isWrongBenefits ? ('VIOLATIONS.YES' | translate) : (contributor?.compensated | bilingualText)"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <!--  View previous violations Button Area-->
+        <div class="row pb-4" *ngIf="contributor?.previousViolationRecordDesc">
+          <div class="col-lg-12 view-previous-violations-btn">
+            <gosi-button-dc
+              id="viewPreviousViolations"
+              type="primary"
+              size="md"
+              [outlineOnly]="true"
+              (click)="showViewPreviousViolations(i)"
+              [isTransparent]="true"
+            >
+              {{ 'VIOLATIONS.VIOLATIONS-VIEW-PREVIOUS-VIOLATIONS' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+        <!-- excluded vcm message -->
+        <div class="row mb-4" *ngIf="getIfExcluded(contributor?.contributorId) === 1 && isVch">
+          <div class="col-lg-12">
+            <div class="exclusion-value">
+              <img
+                [ngClass]="lang === 'en' ? 'mr-3' : 'ml-3'"
+                src="assets/icons/excluded-icon.svg"
+                alt="excluded-icon"
+              />
+              <span>{{ 'VIOLATIONS.CONTRIBUTOR-EXCLUDED' | translate }} </span>
+              <ng-container *ngFor="let details of transactionDetails?.penaltyInfo; let j = index">
+                <ng-container *ngFor="let penalty of details?.excludedContributors; let h = index">
+                  <span *ngIf="penalty?.contributorId === contributor?.contributorId && j !== assigneeIndex">
+                    {{ details.decisionBy | titlecase }}
+                    <span *ngIf="isCommaRequired(contributor?.contributorId, j + 1) === 1 && assigneeIndex - 1 !== j"
+                      >,
+                    </span>
+                  </span>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+        <!-- previous violation table section -->
+        <div class="row prev-tables mb-3" *ngIf="contributor?.showPrevViolationTable && !isViolatingProvisions">
+          <div class="col-sm-12 col-md-12 col-lg-12 prev-vio-heading">
+            {{ 'VIOLATIONS.REPEATED-VIOLATION-DETAILS' | translate }}
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <table class="table">
+              <thead class="thead-light">
+                <tr>
+                  <th class="prev-number-border heading-values">
+                    {{ 'VIOLATIONS.VIOLATION-NUMBER' | translate }}
+                  </th>
+                  <th class="prev-date-border heading-values">{{ 'VIOLATIONS.HISTORY-LETTER-DATE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody class="border-bottom">
+                <ng-container *ngFor="let prevVio of contributor?.violationList">
+                  <tr class="border-bottom">
+                    <td>
+                      <div class="violation-column" (click)="navigateViolationDetails(prevVio?.violationId)">
+                        {{ prevVio?.violationId }}
+                      </div>
+                    </td>
+                    <td>{{ prevVio?.violationLetterDate | dateType | formatDate }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- exclude checkbox -->
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-checkbox-dc
+              id="exclusion {{ i }}"
+              (select)="addExcludedPenalty(i, true)"
+              name="exclusion {{ i }}"
+              [control]="exclusionDetailsForm.controls[i].get('excluded')"
+              [label]="'VIOLATIONS.EXCLUDE-CALCULATION' | translate"
+              [disabled]="contributor?.isNoPenalty"
+            >
+            </gosi-input-checkbox-dc>
+          </div>
+        </div>
+        <!-- repetition tier -->
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="!contributor?.isNoPenalty && !contributorDetailFlags[i]">
+            <gosi-input-radio-dc
+              *ngIf="!(isRaiseVioFoVcm && isViolatingProvisions)"
+              id="repetetion-tire {{ i }}"
+              name="repetetion-tire {{ i }}"
+              [noMargin]="true"
+              [list]="repetetionTierList"
+              [control]="exclusionDetailsForm.controls[i].get('repetetionTier')"
+              [label]="'VIOLATIONS.REPETETION-TIER' | translate"
+              (select)="setRepetetionTier(i, $event)"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+        <!--  Save Button Area-->
+        <div class="row pb-3" *ngIf="!contributor?.isSaved">
+          <div class="col-lg-12 save-btn">
+            <div class="float-left">
+              <gosi-button-dc type="primary" (click)="saveContributorDetails(i, true)">
+                {{ 'VIOLATIONS.VIOLATIONS-SAVE' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </accordion-group>
+  </accordion>
+</ng-container>
+<ng-template #noContributors>
+  <div class="row">
+    <div class="col-sm-12 col-md-12 col-g-6">
+      <gosi-alert-dc
+        [bilingualMessage]="'VIOLATIONS.NO-CONTRIBUTORS-ADDED' | translate"
+        type="info"
+        [dismissible]="false"
+        [noPadding]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+</ng-template>

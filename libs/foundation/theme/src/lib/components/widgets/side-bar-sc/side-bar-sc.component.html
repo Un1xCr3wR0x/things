@@ -1,0 +1,145 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="gosi-sidebar sidebar" *ngIf="!hideSidebar">
+  <div class="sidebar-content gosi-scrollbar">
+    <ul class="navigation">
+      <li
+        class="nav-item"
+        *ngFor="let menu of sideMenus; let i = index"
+        [ngClass]="[menu.open ? 'open' : '', menuActive(menu) ? 'activeState' : '']"
+      >
+        <a
+          *ngIf="menu.hasSubMenu && sideMenu.value === true"
+          id="{{ menu.label | translate }}"
+          class="nav-link"
+          [ngClass]="[menu.hasSubMenu ? 'has-sub' : '']"
+          (click)="openMenu(i)"
+        >
+          <div class="main-icon" [ngClass]="[menu.isImage ? 'd-flex justify-content-center pb-1' : '']">
+            <fa-icon *ngIf="!menu.isImage" icon="{{ menu.icon }}" size="lg"></fa-icon>
+            <img class="image-icon" alt="image" *ngIf="menu.isImage" src="assets/icons/svg/{{ menu.icon }}.svg" />
+          </div>
+
+          <div class="menu-title">{{ menu.label | translate }}</div>
+
+          <div class="submenu-icon">
+            <fa-icon *ngIf="selectedLang == 'en' && !menu.open" icon="angle-right"></fa-icon>
+            <fa-icon *ngIf="selectedLang == 'en' && menu.open" icon="angle-down"></fa-icon>
+            <fa-icon *ngIf="selectedLang == 'ar' && !menu.open" icon="angle-left"></fa-icon>
+            <fa-icon *ngIf="selectedLang == 'ar' && menu.open" icon="angle-down"></fa-icon>
+          </div>
+        </a>
+        <a
+          *ngIf="menu.hasSubMenu && sideMenu.value === false && !mobileView"
+          id="{{ menu.label | translate }}"
+          class="nav-link"
+          [ngClass]="[menu.hasSubMenu ? 'has-sub' : '', i === currentMainMenuIndex ? 'menu-hover' : '']"
+          (click)="openMenu(i)"
+          [popover]="popTemplate"
+          #pop="bs-popover"
+          placement="{{ selectedLang == 'en' ? 'left' : 'right' }}"
+          container="body"
+          containerClass="sidemenu-popover gosi-scrollbar"
+          outsideClick="true"
+        >
+          <div class="main-icon" [ngClass]="[menu.isImage ? 'd-flex justify-content-center pb-1' : '']">
+            <fa-icon *ngIf="!menu.isImage" icon="{{ menu.icon }}" size="lg"></fa-icon>
+            <img class="image-icon" alt="image" *ngIf="menu.isImage" src="assets/icons/svg/{{ menu.icon }}.svg" />
+          </div>
+
+          <div class="menu-title">{{ menu.label | translate }}</div>
+          <ng-template #popTemplate>
+            <ul *ngIf="!mobileView && sideMenu.value === false" class="menu-content">
+              <li *ngFor="let subMenu of menu.menuItems; let j = index" class="submenu-item">
+                <a
+                  class="menu-item"
+                  id="{{ subMenu.label | translate }}"
+                  [routerLink]="subMenu.link"
+                  [queryParams]="subMenu.queryParams"
+                  routerLinkActive="active"
+                  (click)="clearRouterData(subMenu, pop)"
+                  (mouseover)="onMouseOver(menu)"
+                  (mouseout)="onMouseOut()"
+                >
+                  <div class="menu-title">{{ subMenu.label | translate }}</div>
+                </a>
+              </li>
+            </ul>
+          </ng-template>
+        </a>
+        <a
+          *ngIf="!menu.hasSubMenu"
+          id="{{ menu.label | translate }}"
+          class="nav-link"
+          routerLinkActive="active"
+          [routerLink]="menu.link"
+          [queryParams]="menu.queryParams"
+          (click)="clearRouterData(menu)"
+        >
+          <div class="main-icon" [ngClass]="[menu.isImage ? 'd-flex justify-content-center pb-1' : '']">
+            <fa-icon *ngIf="!menu.isImage" icon="{{ menu.icon }}" size="lg"></fa-icon>
+            <img class="image-icon" alt="image" *ngIf="menu.isImage" src="assets/icons/svg/{{ menu.icon }}.svg" />
+          </div>
+          <div class="menu-title">{{ menu.label | translate }}</div>
+        </a>
+        <ul *ngIf="sideMenu.value === true" class="menu-content">
+          <li *ngFor="let subMenu of menu.menuItems; let j = index" class="submenu-item">
+            <a
+              class="menu-item"
+              id="{{ subMenu.label | translate }}"
+              [routerLink]="subMenu.link"
+              [queryParams]="subMenu.queryParams"
+              routerLinkActive="active"
+              (click)="clearRouterData(subMenu)"
+            >
+              <div class="menu-title">{{ subMenu.label | translate }}</div>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <!-- <div *ngIf="menuService.showSMSMessage.value">
+        <li *gosiShow="accessRoles" class="nav-item"
+          (click)="showPopupSendMessage(curMobileNumber, sendMessageTemplate)">
+          <a class="nav-link">
+            <div class="main-icon">
+              <fa-icon icon="sms" size="lg"></fa-icon>
+            </div>
+            <div class="menu-title">{{ 'FEATURE360.SEND-MESSAGE' | translate }}</div>
+          </a>
+        </li>
+      </div> -->
+      <ng-container *ngIf="menuService.showSMSMessage.value && appToken !== 'INDIVIDUAL_APP'">
+        <li
+          *gosiShow="accessRoles"
+          class="nav-item"
+          (click)="showPopupSendMessage(curMobileNumber, sendMessageTemplate)"
+        >
+          <a class="nav-link">
+            <div class="main-icon">
+              <fa-icon icon="sms" size="lg"></fa-icon>
+            </div>
+            <div class="menu-title">{{ 'FEATURE360.SEND-MESSAGE' | translate }}</div>
+          </a>
+        </li>
+      </ng-container>
+    </ul>
+  </div>
+</div>
+
+<ng-template #sendMessageTemplate>
+  <gosi-fea-send-message-dc
+    #sendMessageDcComp
+    [mobileNumber]="curMobileNumber"
+    [isSend]="isSendMessage"
+    (send)="sendMessage($event)"
+    (sourceSystem)="getSourceSystem($event)"
+    (close)="close()"
+    [responseTypes]="responseTypes"
+    [details]="details"
+    [token]="token"
+  >
+  </gosi-fea-send-message-dc>
+</ng-template>

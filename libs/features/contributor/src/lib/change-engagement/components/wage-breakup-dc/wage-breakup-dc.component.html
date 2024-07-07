@@ -1,0 +1,322 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row justify-content-space-between">
+  <div class="col-auto breakup-header">
+    <span *ngIf="!ppaIndicator">{{ 'CONTRIBUTOR.OCCUPATION-AND-WAGE-DETAILS' | translate }}</span>
+    <span *ngIf="ppaIndicator">{{ 'CONTRIBUTOR.WAGE.WAGE-DETAILS' | translate }}</span>
+    <span class="breakup-period" *ngIf="!checkPrivate"
+      >({{ startMonthLabel | translate: { year: startYear } }}
+      <ng-container *ngIf="!isPeriodActive; else onwards">
+        {{ 'CONTRIBUTOR.TO' | translate }}
+        {{ endMonthLabel | translate: { year: endYear } }})</ng-container
+      >
+    </span>
+    <span class="breakup-period" *ngIf="checkPrivate"
+      >({{ startMonthLabelHijiri | monthTranslator }}
+      <ng-container *ngIf="!isPeriodActive; else onwards">
+        {{ 'CONTRIBUTOR.TO' | translate }}
+        {{ endMonthLabelHijiri | monthTranslator }})</ng-container
+      >
+    </span>
+    <ng-template #onwards>{{ 'CONTRIBUTOR.ONWARDS' | translate }})</ng-template>
+  </div>
+</div>
+
+<div *ngIf="mandatoryAlert">
+  <gosi-alert-dc
+    message="CORE.ERROR.MANDATORY-FIELDS"
+    type="danger"
+    [dismissible]="true"
+    (closed)="mandatoryAlert = false"
+  ></gosi-alert-dc>
+</div>
+<!-- Wage breakup view of selected period -->
+<ng-container *ngIf="selectedPeriod && !editMode">
+  <table class="table table-borderless my-3">
+    <thead>
+      <tr>
+        <th *ngIf="!ppaIndicator">{{ 'CONTRIBUTOR.OCCUPATION' | translate | uppercase }}</th>
+        <th>{{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}</th>
+        <th>{{ 'CONTRIBUTOR.HOUSING' | translate | uppercase }}</th>
+        <th>{{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}</th>
+        <th>{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}</th>
+        <th>{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}</th>
+        <th *ngIf="ppaIndicator">{{ 'CONTRIBUTOR.JOB-CLASS' | translate | uppercase }}</th>
+        <th *ngIf="ppaIndicator">{{ 'CONTRIBUTOR.RANK' | translate | uppercase }}</th>
+        <th *ngIf="ppaIndicator">{{ 'CONTRIBUTOR.GRADE' | translate | uppercase }}</th>
+        <th></th>
+        <th *ngIf="isPeriodSplit && !validatorEdit"></th>
+      </tr>
+    </thead>
+    <tbody [ngClass]="{ split: isPeriodSplit }">
+      <tr>
+        <td *ngIf="!ppaIndicator">{{ selectedPeriod.occupation | bilingualText }}</td>
+        <td>{{ selectedPeriod.wage.basicWage | number: '1.2-2' }}</td>
+        <td>
+          {{
+            ppaIndicator &&
+            ((selectedPeriod.wage.housingBenefit | number) === '0' || selectedPeriod.wage.housingBenefit === null)
+              ? '-'
+              : (selectedPeriod.wage.housingBenefit | number: '1.2-2')
+          }}
+        </td>
+        <td>
+          {{
+            ppaIndicator &&
+            ((selectedPeriod.wage.commission | number) === '0' || selectedPeriod.wage.commission === null)
+              ? '-'
+              : (selectedPeriod.wage.commission | number: '1.2-2')
+          }}
+        </td>
+        <td>
+          {{
+            ppaIndicator &&
+            ((selectedPeriod.wage.otherAllowance | number) === '0' || selectedPeriod.wage.otherAllowance === null)
+              ? '-'
+              : (selectedPeriod.wage.otherAllowance | number: '1.2-2')
+          }}
+        </td>
+        <td>{{ selectedPeriod.wage.totalWage | number: '1.2-2' }}</td>
+        <td *ngIf="ppaIndicator">{{ selectedPeriod.jobClassName | bilingualText }}</td>
+        <td *ngIf="ppaIndicator">{{ selectedPeriod.jobRankName | bilingualText }}</td>
+        <td *ngIf="ppaIndicator">{{ selectedPeriod.jobGradeName | bilingualText }}</td>
+        <!-- || isAppPublic -->
+        <td
+          id="{{ 'edit' + periodIndex }}"
+          [ngClass]="disableEdit ? 'disabled' : ''"
+          [tooltip]="isBeyondDateLimit ? tolTemplate : null"
+        >
+          <fa-icon
+            [ngClass]="disableEdit ? 'disabled' : ''"
+            [icon]="['fas', 'pencil-alt']"
+            class="icon"
+            (click)="disableEdit ? null : editWage(true)"
+          ></fa-icon>
+        </td>
+        <td id="{{ 'delete' + periodIndex }}" *ngIf="isPeriodSplit && !validatorEdit">
+          <fa-icon
+            [ngClass]="disableEdit ? 'disabled' : ''"
+            [icon]="['fas', 'trash-alt']"
+            class="icon"
+            (click)="disableEdit ? null : showModal(cancelModal, true)"
+          ></fa-icon>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</ng-container>
+
+<!-- Edit mode view for wage breakup -->
+<ng-container *ngIf="editMode && !isWageVerified">
+  <div class="my-3 edit-section" [ngClass]="{ 'split-section': isPeriodSplit }">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="!ppaIndicator">
+        <gosi-input-select-dc
+          id="occupation"
+          [label]="'CONTRIBUTOR.OCCUPATION' | translate"
+          [list]="occupationList"
+          [control]="wageForm.get('occupation')"
+          [disabled]="disableOccupation || ppaIndicator"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="!ppaIndicator">
+        <gosi-input-radio-dc
+          id="contributorAbroad"
+          name="contributorAbroad"
+          [control]="wageForm.get('contributorAbroad')"
+          [list]="yesOrNoList"
+          [label]="'CONTRIBUTOR.CONTRIBUTOR-IS-ABROAD' | translate"
+          [disabled]="disableContributorAbroad || ppaIndicator"
+        >
+        </gosi-input-radio-dc>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="ppaIndicator">
+      <div class="col-lg-4">
+        <gosi-input-select-dc
+          class="min-width-300"
+          id="jobClass"
+          [control]="wageForm.get('jobClassName')"
+          [lookup]="jobClassLov"
+          [label]="'CONTRIBUTOR.JOB-CLASS'"
+          [placeholder]="'CONTRIBUTOR.JOB-CLASS' | translate"
+          (selectLov)="selectJobClass($event)"
+          appendTo="body"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-input-select-dc
+          class="min-width-300"
+          id="rank"
+          [control]="wageForm.get('jobRankName')"
+          [lookup]="jobRankLov"
+          [label]="'CONTRIBUTOR.RANK'"
+          [placeholder]="'CONTRIBUTOR.RANK' | translate"
+          (selectLov)="selectJobRank($event)"
+          appendTo="body"
+        ></gosi-input-select-dc>
+      </div>
+
+      <div class="col-lg-4">
+        <gosi-input-select-dc
+          class="min-width-300"
+          id="grade"
+          [control]="wageForm.get('jobGradeName')"
+          [lookup]="jobGradeLov"
+          [label]="'CONTRIBUTOR.GRADE'"
+          [placeholder]="'CONTRIBUTOR.GRADE' | translate"
+          (selectLov)="selectJobGrade($event)"
+          appendTo="body"
+        ></gosi-input-select-dc>
+      </div>
+    </div>
+    <div class="d-flex justify-content-around">
+      <div>
+        <gosi-input-currency-dc
+          id="basicWage"
+          [label]="'CONTRIBUTOR.BASIC-WAGE' | translate"
+          [control]="wageForm.get('wage.basicWage')"
+          [disabled]="ppaIndicator ? disableWage || wageForm.get('wage.basicWage').disabled : disableWage"
+          (blur)="calculateTotalWage(wageForm)"
+          [separatorLimit]="wageSeparatorLimit"
+        ></gosi-input-currency-dc>
+      </div>
+      <div class="icon mx-2"><fa-icon [icon]="['fas', 'plus']"></fa-icon></div>
+      <div>
+        <gosi-input-currency-dc
+          id="housing"
+          [label]="'CONTRIBUTOR.HOUSING' | translate"
+          [control]="wageForm.get('wage.housingBenefit')"
+          [disabled]="disableWage || ppaIndicator"
+          (blur)="calculateTotalWage(wageForm)"
+          [hideOptionalLabel]="true"
+          [separatorLimit]="wageSeparatorLimit"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="icon mx-2"><fa-icon [icon]="['fas', 'plus']"></fa-icon></div>
+      <div>
+        <gosi-input-currency-dc
+          id="commissions"
+          [label]="'CONTRIBUTOR.COMMISSIONS' | translate"
+          [control]="wageForm.get('wage.commission')"
+          [disabled]="disableWage || ppaIndicator"
+          (blur)="calculateTotalWage(wageForm)"
+          [hideOptionalLabel]="true"
+          [separatorLimit]="wageSeparatorLimit"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="icon mx-2"><fa-icon [icon]="['fas', 'plus']"></fa-icon></div>
+      <div>
+        <gosi-input-currency-dc
+          id="otherAllowance"
+          [label]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+          [control]="wageForm.get('wage.otherAllowance')"
+          [disabled]="disableWage || ppaIndicator"
+          (blur)="calculateTotalWage(wageForm)"
+          [hideOptionalLabel]="true"
+          [separatorLimit]="wageSeparatorLimit"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="icon mx-2"><fa-icon [icon]="['fas', 'equals']"></fa-icon></div>
+      <div>
+        <gosi-input-currency-dc
+          id="totalWage"
+          [label]="'CONTRIBUTOR.TOTAL-WAGE'"
+          [control]="wageForm.get('wage.totalWage')"
+          [readOnly]="true"
+          [disabled]="true"
+        >
+        </gosi-input-currency-dc>
+      </div>
+    </div>
+
+    <div class="row my-3 button-center">
+      <div class="col-auto">
+        <gosi-button-dc
+          type="outline-secondary"
+          id="cancel"
+          size="md"
+          (submit)="
+            !selectedPeriod.wageDetailsUpdated && isPeriodSplit ? showModal(cancelModal, false) : cancelPeriodEdit()
+          "
+          >{{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="col-auto">
+        <gosi-button-dc type="outline-primary" id="save" size="md" (submit)="saveWageChanges()">{{
+          'CONTRIBUTOR.SAVE-CHANGES' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-template #tolTemplate>
+  <div d-flex flex-column>
+    <span *ngIf="isBeyondDateLimit">
+      {{ 'CONTRIBUTOR.PERIOD-BEYOND-MAXLIMIT-MESSAGE' | translate }}
+    </span>
+    <!-- <span *ngIf="isAppPublic">
+      {{ 'CONTRIBUTOR.EDIT-UNAVAILABLE' | translate }}
+    </span> -->
+  </div>
+</ng-template>
+
+<ng-template #cancelModal>
+  <gosi-modal-dc>
+    <div class="row" modalContent>
+      <div class="col-lg-12 content-heading text-center">
+        {{
+          isDelete
+            ? ('CONTRIBUTOR.NEWLY-SPLIT-PERIOD-DELETE-MESSAGE' | translate)
+            : ('CONTRIBUTOR.NEWLY-SPLIT-PERIOD-CANCEL-MESSAGE' | translate)
+        }}
+      </div>
+      <div class="col-lg-12 text-center mt-3">
+        {{ 'CONTRIBUTOR.DO-YOU-WISH-CONTINUE' | translate }}
+      </div>
+    </div>
+    <div class="d-flex justify-content-around mt-5" modalAction>
+      <div class="btn-section">
+        <gosi-button-dc id="noBtn" type="secondary" (submit)="hideModal()">
+          {{ 'CONTRIBUTOR.NO' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section">
+        <gosi-button-dc id="yesBtn" type="secondary" (submit)="deletePeriod(periodIndex)">
+          {{ 'CONTRIBUTOR.YES' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<!-- show wage update popup -->
+<ng-template #wageDifferenceModal>
+  <gosi-modal-dc>
+    <div class="row content-heading p-3" id="confirm-msg-align-right" *ngIf="wageDiff >= 50" modalContent>
+      {{ 'CONTRIBUTOR.WAGE.WAGE-UPDATE-CONFIRM-MSG' | translate }}
+    </div>
+    <div class="row content-heading p-3" id="confirm-msg-align-right" *ngIf="wageDiff <= -50" modalContent>
+      {{ 'CONTRIBUTOR.WAGE.WAGE-UPDATE-DECREASE-CONFIRM-MSG' | translate }}
+    </div>
+    <div class="row d-flex justify-content-around mt-5" modalAction>
+      <div class="btn-section">
+        <gosi-button-dc id="noBtn" type="secondary" (submit)="resetWage()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section">
+        <gosi-button-dc id="yesBtn" type="secondary" (submit)="confirmWageUpdate(true)">
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

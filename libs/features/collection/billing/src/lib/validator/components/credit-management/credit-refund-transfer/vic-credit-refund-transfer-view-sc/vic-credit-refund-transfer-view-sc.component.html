@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="vicCreditBalanceDetails?.paymentMode?.english !== 'Cheque'">
+  <div class="col-lg-12" *ngIf="isSamaWorkflow">
+    <gosi-alert-dc type="danger" [message]="'BILLING.SAMA-VERIFICATION-MSG'"> </gosi-alert-dc>
+  </div>
+
+  <div class="col-lg-12" *ngIf="isSamaFailed">
+    <gosi-alert-dc type="danger" [message]="'BILLING.SAMA-VERIFICATION-FAILED'"> </gosi-alert-dc>
+  </div>
+</ng-container>
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documents" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.VIC-REFUND-CREDIT-BALANCE' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc
+          icon="user"
+          heading="BILLING.CONTRIBUTOR-DETAILS"
+          [canEdit]="editFlag"
+          (onEdit)="navigateToEditForVicREfund()"
+        >
+        </frm-content-heading-dc>
+        <blg-credit-refund-establishment-dc
+          [contributorDetails]="contributorDetails"
+          [CreditRefundDetails]="vicCreditBalanceDetails"
+          [vicCreditRefundIbanDetails]="vicCreditRefundIbanDetails"
+          [fromPage]="'vic'"
+          [iscreditRefund]="iscreditRefund"
+          [bankName]="bankName"
+        >
+        </blg-credit-refund-establishment-dc>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="canReject"
+          [isReturn]="false"
+          [disableApprove]="isSamaWorkflow || (isSamaFailed && isSamaFail)"
+          (approveEvent)="approveVicRefundCreditTransaction(approveTemplateVic)"
+          (rejectEvent)="rejectVicRefundCreditTransaction(rejectTemplateVic)"
+          (returnEvent)="returnVicRefundCreditTransaction(returnTemplateVic)"
+          (cancelEvent)="showModalsForVicRefund(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      message="BILLING.INFO-CANCEL"
+      (onConfirm)="confirmVicRefundCreditCancel()"
+      (onCancel)="decline()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplateVic>
+    <frm-reject-template-dc
+      (cancelEvent)="hideModals()"
+      [rejectReasonList$]="rejectReasonLists"
+      [transactionNumber]="transactionNumber"
+      warningMessage="BILLING.INFO-VALIDATOR-REJECTION"
+      [parentForm]="vicCreditManagementForm"
+      [heading]="rejectHeadingVic"
+      (rejectEvent)="confirmVicRefundCreditReject()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #approveTemplateVic>
+    <frm-approve-template-dc
+      (approveEvent)="confirmVicRefundCreditApprove()"
+      [parentForm]="vicCreditManagementForm"
+      (cancelEvent)="hideModals()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #returnTemplateVic>
+    <frm-return-template-dc
+      [warningMessage]="'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'"
+      (returnEvent)="confirmVicRefundCreditReturn()"
+      [returnReasonList$]="returnReasonLists"
+      [parentForm]="vicCreditManagementForm"
+      [heading]="returnHeadingVic"
+      (cancelEvent)="hideModals()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

@@ -1,0 +1,198 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <frm-main-heading-dc
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.REJECT-INJURY-TRANSACTION' | translate"
+      ></frm-main-heading-dc>
+    </ng-container>
+
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="documents ? documents : []"
+      [showComments]="showComments"
+      [transactionType]="routerData.initiatorComment"
+      [comments]="comment ? comment : []"
+      (onEdit)="navigateToScan()"
+    >
+      <div id="contentArea">
+        <ng-container>
+          <div class="col-md-12">
+            <oh-reject-injury-dc
+              [transactionReferenceData]="transactionReferenceData ? transactionReferenceData : []"
+              [injury]="injury"
+              [resourceType]="resourceType"
+              [role]="role"
+            ></oh-reject-injury-dc>
+          </div>
+          <div class="col-md-12">
+            <oh-injury-view-dc [injury]="injury" (injurySelected)="viewInjury()" [idCode]="idCode"
+            [allowanceFlagVal]="allowanceFlagVal"
+            [allowanceFlagVal2]="allowanceFlagVal2"
+            [allowanceFlagVal3]="allowanceFlagVal3"
+            [allowanceFlagVal4]="allowanceFlagVal4"></oh-injury-view-dc>
+          </div>
+        </ng-container>
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="reject-injury">
+              <div class="btn-section float-right" *ngIf="canApprove">
+                <gosi-button-dc
+                  id="approve"
+                  [type]="'primary'"
+                  name="approve-reject-injury"
+                  (click)="approveTransaction(approveTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canReject">
+                <gosi-button-dc
+                  [type]="'danger'"
+                  id="reject"
+                  name="reject-injury"
+                  (click)="rejectTransaction(rejectTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+
+              <div class="btn-section float-right" *ngIf="canReturn">
+                <gosi-button-dc
+                  [type]="'secondary'"
+                  id="return"
+                  name="return-reject-injury"
+                  (submit)="showModal(modal, 'showReturnRejectInjury')"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canRequestClarification">
+                <gosi-button-dc
+                  [type]="'secondary'"
+                  id="request"
+                  name="request-TPA"
+                  (submit)="showModal(modal, 'showSubmitRejectInjury')"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-left">
+                <gosi-button-dc
+                  id="cancel"
+                  [type]="'secondary'"
+                  name="cancel-rejectInjury"
+                  (submit)="showCancelTemplate(rejectInjuryTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #rejectInjuryTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+<ng-template #modal>
+  <gosi-modal-dc [modalHeader]="headingTextRejectInjury | translate">
+    <div class="row" modalContent>
+      <div *ngIf="noteRequestRejectInjury">
+        <div class="form-group" *ngIf="canEdit">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN' | translate }}</i>
+        </div>
+        <div class="form-group" *ngIf="!canEdit">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.REJECTINFO-VALIDATOR-RETURN-VALIDATOR' | translate }}</i>
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div *ngIf="docAlert" class="col-lg-12">
+          <gosi-alert-dc
+            type="warning"
+            message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+            [dismissible]="true"
+          ></gosi-alert-dc>
+        </div>
+        <div class="col-lg-12" *ngIf="commentAlert">
+          <gosi-alert-dc [dismissible]="true" message="CORE.ERROR.MANDATORY-FIELDS" type="danger"></gosi-alert-dc>
+        </div>
+      </div>
+      <div class="col-md-12" *ngIf="returnToEstAdmin || returnTpa">
+        <gosi-input-multi-select-dropdown-dc
+          [list]="documentListLov"
+          id="requestDocuments"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          [control]="reportInjuryModal.get('document')"
+          name="rejectInjuryOptions"
+          (selected)="receiveDocumentList($event)"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          label="OCCUPATIONAL-HAZARD.COMMENTS"
+          [maxLength]="maxLengthComments"
+          [name]="'comment'"
+          [control]="reportInjuryModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right" *ngIf="showConfirmReturnBtnRejectInjury">
+        <gosi-button-dc id="confirmReturnBtn" class="action-button" [type]="'primary'" (submit)="returnInjury()">
+          {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right" *ngIf="showConfirmSubmitBtnRejectInjury">
+        <gosi-button-dc id="confirmSubmitBtn" type="danger" class="action-button" (submit)="requestTpaReject()">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancelApproveBtn" (submit)="hideModal()" [type]="'secondary'">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="reportInjuryForm"
+    [heading]="'OCCUPATIONAL-HAZARD.CNF-APPROVE'"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    (rejectEvent)="confirmRejectInjury()"
+    [warningMessage]="'OCCUPATIONAL-HAZARD.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+    [rejectReasonList$]="rejectReasonList"
+    (cancelEvent)="hideModal()"
+    [parentForm]="reportInjuryForm"
+    [transactionNumber]="transactionNumber"
+  >
+  </frm-reject-template-dc>
+</ng-template>

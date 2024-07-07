@@ -1,0 +1,165 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row" *ngIf="person">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="user"
+      [heading]="heading"
+      [canEdit]="canEdit"
+      (onEdit)="onEditOwnerDetails()"
+      *ngIf="showHeading"
+    >
+    </frm-content-heading-dc>
+    <div class="row owner-content">
+      <!-- Section 1 -->
+      <div class="col-lg-12">
+        <div class="sub-content-item">
+          <div class="row">
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc id="nationality" [control]="person?.nationality" label="ESTABLISHMENT.NATIONALITY">
+              </gosi-label-dc>
+            </div>
+            <ng-container *ngIf="!checkNull(person.identity)">
+              <ng-container *ngFor="let item of person.identity">
+                <div class="col-sm-12 col-lg-6" *ngIf="saudiNationality">
+                  <gosi-label-dc id="ownerNin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.id">
+                  <gosi-label-dc id="ownerNationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="(gccNationality || others) && item.iqamaNo">
+                  <gosi-label-dc id="ownerIqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.passportNo">
+                  <gosi-label-dc id="ownerPassportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+                  </gosi-label-dc>
+                </div>
+              </ng-container>
+            </ng-container>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                [date]="true"
+                id="birthDate"
+                [control]="person?.birthDate?.gregorian"
+                label="ESTABLISHMENT.BIRTH-DATE"
+              ></gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-12">
+        <div class="sub-content-item">
+          <div class="row">
+            <div id="ArabicName" class="col-sm-12 col-lg-6" *ngIf="person">
+              <gosi-label-dc id="ArabicName" [value]="name" label="ESTABLISHMENT.NAME-IN-ARABIC"> </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6" *ngIf="person.name.english">
+              <gosi-label-dc
+                id="EnglishName"
+                [control]="person?.name?.english?.name"
+                label="ESTABLISHMENT.NAME-IN-ENGLISH"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc id="Gender" [control]="person?.sex" label="ESTABLISHMENT.GENDER"></gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6" *ngIf="showDate">
+              <gosi-label-dc
+                [date]="true"
+                id="startDate"
+                [control]="startDate?.gregorian"
+                label="ESTABLISHMENT.START-DATE"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6" *ngIf="showDate">
+              <gosi-label-dc
+                *ngIf="showDate"
+                [date]="true"
+                id="EndDate"
+                [control]="endDate?.gregorian"
+                label="ESTABLISHMENT.END-DATE"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Section 3  Address Details-->
+      <div class="col-lg-12" *ngIf="person.contactDetail && person.contactDetail.addresses && showAddress">
+        <div class="sub-content-item">
+          <div class="row">
+            <div class="col-sm-12 col-md-12">
+              <div class="sub-heading ml-0 mr-0">
+                {{ 'ESTABLISHMENT.ADDRESS-DETAILS' | translate }}
+              </div>
+            </div>
+            <frm-address-dc
+              class="col-lg-12"
+              [isViewOnly]="true"
+              [showEdit]="false"
+              [hasAddressDetailsLabel]="false"
+              [isPaddingRequired]="false"
+              [addressDetails]="person.contactDetail?.addresses"
+              [hasNationalAddress]="!isGcc"
+              [hasPOAddress]="!isGcc"
+              [hasOverseasAddress]="isGcc"
+              [currentMailingAddress]="person.contactDetail?.currentMailingAddress"
+            >
+            </frm-address-dc>
+          </div>
+        </div>
+      </div>
+      <!-- Section contact -->
+      <div class="col-lg-12" *ngIf="person.contactDetail">
+        <div class="sub-content-last-item">
+          <div class="row">
+            <div class="col-sm-12 col-md-12">
+              <div class="sub-heading ml-0 mr-0">
+                {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="MobileNo"
+                [control]="person?.contactDetail?.mobileNo?.primary"
+                label="ESTABLISHMENT.MOBILE-NUMBER"
+                ><span id="prefixValue">{{ getISDCodePrefix() }}</span>
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="TelephoneNumber"
+                [control]="person?.contactDetail?.telephoneNo?.primary"
+                label="ESTABLISHMENT.TELEPHONE-NUMBER"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="Extension"
+                [control]="person?.contactDetail?.telephoneNo?.extensionPrimary"
+                label="ESTABLISHMENT.EXTENSION"
+              >
+              </gosi-label-dc>
+            </div>
+
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="EmailId"
+                [control]="person?.contactDetail?.emailId?.primary"
+                label="ESTABLISHMENT.EMAIL-ID"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

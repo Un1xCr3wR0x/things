@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div [formGroup]="gccEstablishmentDetailsForm" class="row">
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary">
+      <div class="row">
+        <div class="col-lg-4 col-md-12">
+          <gosi-input-select-dc
+            id="lawType"
+            [label]="'ESTABLISHMENT.LAW-TYPE' | translate"
+            [control]="gccEstablishmentDetailsForm.get('lawType')"
+            [list]="lawTypeList"
+            (select)="selectLawType($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <gosi-input-select-dc
+            id="legalEntity"
+            name="legalEntity"
+            [label]="'ESTABLISHMENT.LEGAL-ENTITY' | translate"
+            [control]="gccEstablishmentDetailsForm.get('legalEntity')"
+            [lookup]="legalEntityList"
+            [disabled]="!islawTypeSelected"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <gosi-input-select-dc
+            id="gccCountryName"
+            name="gccCountryName"
+            [label]="'ESTABLISHMENT.GCC-COUNTRY-NAME' | translate"
+            [control]="gccEstablishmentDetailsForm.get('country')"
+            [list]="gccCountryList"
+            (select)="selectGCCCountry($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <gosi-input-text-dc
+            id="gccRegistrationNumber"
+            name="gccRegistrationNumber"
+            [label]="'ESTABLISHMENT.GCC-REGISTRATION-NUMBER' | translate"
+            [maxLength]="registrationNoMaxLength"
+            [control]="gccEstablishmentDetailsForm.get('registrationNo')"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div
+          class="col-lg-4 col-md-12"
+          *ngIf="
+            gccEstablishmentDetailsForm?.get('lawType.english')?.value === lawTypeEnum.CIVIL_PENSION_LAW &&
+            gccEstablishmentDetailsForm?.get('departmentNumber')
+          "
+        >
+          <gosi-input-text-dc
+            id="departmentId"
+            name="departmentId"
+            [label]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+            [control]="gccEstablishmentDetailsForm.get('departmentNumber')"
+            gosiSpecialCharacterMask
+            [onlyAlphaNumerics]="true"
+            [removeSpecialCharacters]="true"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<est-footer-buttons-dc
+  [showCancel]="false"
+  [showPrevious]="false"
+  primaryLabel="ESTABLISHMENT.VERIFY"
+  primaryId="verify"
+  (submit)="verifyGCCEstablishmentDetails()"
+  [noMarginTop]="true"
+></est-footer-buttons-dc>
+<ng-template #customOkButtonRef>
+  <div class="btn-section">
+    <gosi-button-dc id="cancelBtn" type="secondary" (submit)="decline()">{{ 'THEME.OK' | translate }} </gosi-button-dc>
+  </div>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [customFooter]="customOkButtonRef"
+    [message]="'ESTABLISHMENT.LAW-TYPE-CHECK'"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #customGccCountryOkButtonRef>
+  <div class="btn-section">
+    <gosi-button-dc id="cancelBtn" type="secondary" (submit)="declineCountrySelection()">{{ 'THEME.OK' | translate }} </gosi-button-dc>
+  </div>
+</ng-template>
+<ng-template #gccCountry>
+  <gosi-confirm-modal-dc
+    [customFooter]="customGccCountryOkButtonRef"
+    [message]="'ESTABLISHMENT.GCC-COUNTRY-SELECTION'"
+    (onCancel)="declineCountrySelection()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

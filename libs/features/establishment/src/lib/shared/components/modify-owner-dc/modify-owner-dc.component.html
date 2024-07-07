@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <ng-container *ngIf="owner?.person != null">
+    <gosi-card-dc
+      class="modify-owner wrapper-card-dc"
+      [ngClass]="[
+        owner.recordAction === removed && canDelete ? 'is-removed' : '',
+        owner.recordAction === add ? 'is-selected' : '',
+        viewOnly ? '' : 'date-input',
+        canChoose ? 'enable-pointer' : '',
+        owner.recordAction === edit ? 'edited' : ''
+      ]"
+      *ngIf="owner"
+      (click)="choseOwner()"
+    >
+      <div class="row align-items-center">
+        <div class="col-md-4 col-sm-12">
+          <div class="d-flex">
+            <div class="owner-name" id="ownerName">{{ owner?.person?.name | nameToString: true }}</div>
+            <div class="col-md-2 d-none text-right ml-auto clickable delete-sm" id="delete" *ngIf="canDelete">
+              <ng-container *ngTemplateOutlet="deleteTemplate"></ng-container>
+            </div>
+          </div>
+  
+          <div class="identifier" id="identification" *ngIf="identity">
+            {{ identity.idType | translate }} :
+            <ng-container *ngIf="identity.id && identity.id !== null; else noValueTemplate">{{
+              identity.id
+            }}</ng-container>
+            <ng-template #noValueTemplate>
+              <span class="null-value">
+                {{ 'THEME.NOT-AVAILABLE' | translate }}
+              </span>
+            </ng-template>
+          </div>
+        </div>
+  
+        <ng-container *ngIf="!viewOnly && ownerDetailsForm">
+          <div class="col-md-6 col-sm-12 d-flex date-period">
+            <gosi-input-date-dc
+              id="{{ 'startDate' + index }}"
+              [label]="'ESTABLISHMENT.START-DATE' | translate | titlecase"
+              [control]="ownerDetailsForm.get('startDate').get('gregorian')"
+              [disabled]="owner.recordAction === removed || disableStartDate"
+              [maxDate]="maxStartDate"
+              [minDate]="minStartDate"
+              class="date"
+            >
+            </gosi-input-date-dc>
+            <ng-container *ngIf="showEndDate">
+              <fa-icon *ngIf="lang === 'ar'" [icon]="['fas', 'arrow-left']" class="ml-2 mr-2 angle-right arrow"></fa-icon>
+              <fa-icon
+                *ngIf="lang === 'en'"
+                [icon]="['fas', 'arrow-right']"
+                class="ml-2 mr-2 angle-right arrow"
+              ></fa-icon>
+              <gosi-input-date-dc
+                id="{{ 'endDate' + index }}"
+                [label]="'ESTABLISHMENT.END-DATE' | translate | titlecase"
+                [control]="ownerDetailsForm.get('endDate').get('gregorian')"
+                [disabled]="owner.recordAction === removed || disableEndDate"
+                [maxDate]="maxEndDate"
+                [minDate]="minEndDate"
+                [gosiDateOverlap]="ownerDetailsForm.get('startDate').get('gregorian')"
+                [canBeSame]="true"
+                class="date"
+              >
+              </gosi-input-date-dc>
+            </ng-container>
+          </div>
+        </ng-container>
+        <div class="col-md-auto col-sm-auto ml-auto owner-status mb-2 mb-md-0" *ngIf="canChoose">
+          <div class="alert" [ngClass]="[isActive ? 'alert-success' : 'alert-secondary']">
+            {{ (isActive ? active : inactive) | translate | uppercase }}
+          </div>
+        </div>
+        <div class="col-md-2 text-right ml-auto clickable delete" id="delete" *ngIf="canDelete">
+          <ng-container *ngTemplateOutlet="deleteTemplate"></ng-container>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  
+  <ng-template #deleteTemplate>
+    <div (click)="unSelectOwner()" class="text-center" *ngIf="owner.recordAction === removed; else deleteIcon">
+      <div class="removed-info" *ngIf="showRemovedInfo">
+        {{ 'ESTABLISHMENT.MODIFIED' | translate }}
+      </div>
+      <fa-icon class="icon-wrapper-undo" (click)="unSelectOwner()" icon="undo"></fa-icon>
+      <span> {{ 'ESTABLISHMENT.UNSELECT' | translate }}</span>
+    </div>
+    <ng-template #deleteIcon>
+      <fa-icon (click)="removeOwner()" size="lg" class="delete-icon" [icon]="['far', 'trash-alt']"></fa-icon>
+    </ng-template>
+  </ng-template>

@@ -1,0 +1,249 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- To find unavailable member error message  -->
+<gosi-card-dc [heading]="'MEDICAL-BOARD.' + label | translate" type="secondary">
+  <div class="col-lg-12 warning-message" *ngIf="isAdhocSession && submitDisable && unAvailableMemberList.length > 0">
+    <gosi-alert-dc
+      [message]="'MEDICAL-BOARD.MEMBER-AVAILABILITY-WARNING' | translate"
+      type="warning"
+      class="successMessage"
+      noPadding="true"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </div>
+  <table
+    class="table table-borderless"
+    *ngIf="selectedMembers?.length !== 0 || membersList.length !== 0; else noValueTemplate"
+  >
+    <thead class="thead-light">
+      <tr>
+        <th>
+          {{ 'MEDICAL-BOARD.SERIAL-NO' | translate }}
+        </th>
+        <th>
+          {{ 'MEDICAL-BOARD.MEMBER-TYPE' | translate }}
+        </th>
+        <ng-container *ngIf="isAdhocSession">
+          <th>
+            {{ 'MEDICAL-BOARD.MEMBER-NAME' | translate }}
+          </th>
+          <th>
+            {{ 'MEDICAL-BOARD.IDENTIFICATION-NUMBER' | translate }}
+          </th>
+          <th>
+            {{ 'MEDICAL-BOARD.DOCTOR-SPECIALITY' | translate }}
+          </th>
+        </ng-container>
+        <ng-container *ngIf="isRegularSession">
+          <th style="width: 25%">
+            {{ 'MEDICAL-BOARD.MEMBER-SPECIALITY' | translate }}
+          </th>
+          <th style="width: 25%">
+            {{ 'MEDICAL-BOARD.MEMBER-SUB-SPECIALITY' | translate }}
+          </th>
+          <th style="width: 25%">
+            {{ 'MEDICAL-BOARD.ALLOCATION-PERCENTAGE' | translate }}
+          </th>
+        </ng-container>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngIf="isRegularSession">
+        <tr class="border-bottom" *ngIf="isPrimaryMedicalBoard">
+          <td>1</td>
+          <td class="pt-4 pb-4">
+            {{ 'MEDICAL-BOARD.GOSI-DOCTOR' | translate }}
+            <div>
+              <span class="office px-1">{{officeLocation | bilingualText }} </span>
+            </div>
+          </td>
+          <td class="border-bottom">
+            {{ 'MEDICAL-BOARD.NOT-APPLICABLE' | translate }}
+          </td>
+        </tr>
+
+        <tr class="border-bottom" *ngFor="let item of membersList; let i = index">
+          <td>
+            {{ setIndex(i) }}
+          </td>
+          <td>
+            {{ 'MEDICAL-BOARD.CONTRACTED-DOCTOR' | translate }}
+          </td>
+          <td class="specialitystyle">
+            <gosi-input-select-dc
+              id="specialityList{{ i }}"
+              [list]="specialityList"
+              name="specialityList{{ i }}"
+              [placeholder]="'MEDICAL-BOARD.SPECIALITY' | translate"
+              [control]="medicalBoardForm.controls[i]?.get('speciality')"
+              [ignoreLabel]="true"
+              (selectLov)="onSelect($event, i)"
+            ></gosi-input-select-dc>
+          </td>
+          <td class="specialitystyle">
+            <gosi-input-select-dc
+              id="subspecialityList{{ i }}"
+              [list]="subspecialityList[i] ? subspecialityList[i] : blankList"
+              name="subspecialityList{{ i }}"
+              [control]="medicalBoardForm.controls[i]?.get('subspeciality')"
+              [placeholder]="'MEDICAL-BOARD.SUB-SPECIALITY' | translate"
+              [ignoreLabel]="true"
+            ></gosi-input-select-dc>
+          </td>
+          <td>
+            <gosi-input-number-dc
+              name="percentage"
+              id="percentageId"
+              [ignoreLabel]="true"
+              [placeholder]="'MEDICAL-BOARD.ALLOCATION-PERCENTAGE' | translate"
+              [control]="medicalBoardForm.controls[i]?.get('allocationPercentage')"
+              [maxLength]="3"
+            >
+            </gosi-input-number-dc>
+          </td>
+          <td>
+            <a
+              *ngIf="(i > 2 && !isPrimaryMedicalBoard) || (i > 0 && isPrimaryMedicalBoard)"
+              [id]="'delete' + i"
+              class="delete-icon"
+              (click)="onDeleteField(i)"
+            >
+              <fa-icon [icon]="['far', 'trash-alt']"></fa-icon>
+            </a>
+          </td>
+        </tr>
+      </ng-container>
+      <ng-container *ngIf="isAdhocSession">
+        <tr *ngFor="let item of selectedMembers; let k = index" class="border-bottom">
+          <td>
+            <fa-icon
+              *ngIf="item.isUnavailableDr && unAvailableMemberList.length > 0"
+              [icon]="['fas', 'exclamation-triangle']"
+            ></fa-icon>
+          </td>
+          <!-- To find Index of a member  -->
+          <!-- <td>
+            {{ k + 1 }}
+          </td> -->
+          <td>
+            {{ item?.contractType | bilingualText }}
+          </td>
+          <td>
+            {{
+              item?.doctorName.english === null || item?.doctorName.english === ''
+                ? item?.doctorName?.arabic
+                : (item?.doctorName | bilingualText)
+            }}
+          </td>
+          <td>
+            <ng-container>
+              <a class="member-click" (click)="navigationToProfile(item.nationalId)">{{ item.nationalId }}</a>
+            </ng-container>
+          </td>
+          <td>
+            <ng-container *ngFor="let element of item?.speciality">
+              <span> {{ element | bilingualText }}</span>
+            </ng-container>
+          </td>
+          <td>
+            <div class="btn-group" dropdown *ngIf="isInCharge || (!isTimeDisabled && !isInCharge)">
+              <button
+                id="button-actions"
+                type="button"
+                class="btn-actions"
+                dropdownToggle
+                aria-controls="dropdown-actions"
+              >
+                <fa-icon
+                  class="options-icon"
+                  icon="ellipsis-v"
+                  [ngClass]="!item.isHide && isModify ? 'fa-disabled' : ''"
+                  [popover]="(item.isHide && isModify) || !isModify ? optionsModal : ''"
+                  outsideClick="true"
+                ></fa-icon>
+              </button>
+            </div>
+            <ng-template #optionsModal let-memberindex>
+              <button
+                type="button"
+                id="removebtn"
+                class="d-flex btn text-left action-pop-btn"
+                (click)="onRemoveMember(k, item.isUnavailableDr && unAvailableMemberList.length > 0)"
+              >
+                {{ 'MEDICAL-BOARD.REMOVE' | translate }}
+              </button>
+            </ng-template>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-center align-self-end pt-4">
+    <gosi-button-dc
+      *ngIf="isRegularSession"
+      [outlineOnly]="true"
+      type="secondary"
+      size="md"
+      [disabled]="isRegularSession ? !medicalBoardForm.valid : isDisabled"
+      (click)="onAddMember()"
+    >
+      {{ 'MEDICAL-BOARD.ADD-ANOTHER-MEMBER' | translate }}
+    </gosi-button-dc>
+    <gosi-button-dc
+      *ngIf="isAdhocSession"
+      [outlineOnly]="true"
+      size="md"
+      type="secondary"
+      id="actionsBtns"
+      outsideClick="true"
+      [popover]="!(!isInCharge && isTimeDisabled) ? addMembersModal : null"
+      placement="bottom"
+      [disabled]="isTimeDisabled && !isInCharge"
+    >
+      {{ 'MEDICAL-BOARD.ADD-ANOTHER-MEMBER' | translate }}
+    </gosi-button-dc>
+  </div>
+  <ng-template #noValueTemplate>
+    <div class="header">
+      <div class="head">{{ 'MEDICAL-BOARD.SERIAL-NO' | translate }}</div>
+      <div class="head">{{ 'MEDICAL-BOARD.MEMBER-TYPE' | translate }}</div>
+      <ng-container *ngIf="isRegularSession">
+        <div class="head">{{ 'MEDICAL-BOARD.MEMBER-SPECIALITY' | translate }}</div>
+        <div class="head">{{ 'MEDICAL-BOARD.MEMBER-SUB-SPECIALITY' | translate }}</div>
+      </ng-container>
+      <ng-container *ngIf="isAdhocSession">
+        <div class="head">{{ 'MEDICAL-BOARD.MEMBER-NAME' | translate }}</div>
+        <div class="head">{{ 'MEDICAL-BOARD.NIN' | translate }}</div>
+        <div class="head">{{ 'MEDICAL-BOARD.DOCTOR-SPECIALITY' | translate }}</div>
+      </ng-container>
+      <div class="head header-toggle"></div>
+    </div>
+    <div class="d-flex justify-content-center no-value p-4">
+      {{ 'MEDICAL-BOARD.NO-MEMBERS' | translate }}
+    </div>
+  </ng-template>
+  <ng-template #addMembersModal>
+    <button
+      type="button"
+      id="regular"
+      class="d-flex btn text-left mb-2 action-pop-btn"
+      (click)="onAddContractedMembers()"
+    >
+      {{ 'MEDICAL-BOARD.ADD-CONTRACTED-MEMBER' | translate }}
+    </button>
+    <button
+      *ngIf="!isAmb"
+      type="button"
+      id="ad-hoc"
+      class="d-flex btn text-left action-pop-btn"
+      (click)="onAddGosiDoctors()"
+    >
+      {{ 'MEDICAL-BOARD.ADD-GOSI-DOCTORS' | translate }}
+    </button>
+  </ng-template>
+</gosi-card-dc>

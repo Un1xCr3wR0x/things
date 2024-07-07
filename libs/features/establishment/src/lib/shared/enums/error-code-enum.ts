@@ -1,0 +1,21 @@
+/**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */
+
+export enum ErrorCodeEnum {
+  INCORRECT_ROUTE = 'INCORRECT-ROUTE',
+  NO_PROFILE_ACCESS = 'NO-PROFILE-ACCESS',
+  EST_CLOSED = 'EST-CLOSED',
+  EST_REG_PENDING = 'EST-REG-PENDING',
+  LE_MISMATCH = 'LE-MISMATCH',
+  OWNER_NO_RECORD = 'EST-ERR-5037',
+  PERSON_DECEASED = 'EST-ERR-5026',
+  PERSON_AGE_ELIGIBILITY = 'EST-ERR-5030',
+  PERSON_NO_RECORD = 'PM-ERR-0013',
+  EST_NO_RECORD = 'EST-ERR-5024',
+  ADMIN_NO_RECORD = 'EST-ERR-5027',
+  BRANCH_NO_RECORD = 'EST-ERR-5093',
+  NO_INSPECTION_ID = 'IM-ERR-1017'
+}

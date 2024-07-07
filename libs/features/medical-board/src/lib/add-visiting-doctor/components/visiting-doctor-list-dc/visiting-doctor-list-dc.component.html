@@ -1,0 +1,165 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-modal-dc>
+  <div modalContent>
+    <div class="d-flex flex-wrap align-items-center justify-content-between table-headers pt-4 pb-4">
+      <div class="d-flex justify-content-start">
+        <div class="header">
+          <h4>{{ 'MEDICAL-BOARD.ADD-VISITING-DOCTOR' | translate }}</h4>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <gosi-search-dc
+          id="search-area"
+          [placeholder]="'MEDICAL-BOARD.NAME/ID' | translate"
+          class="pr-2 pl-2 search-value"
+          (search)="onsearchVisitingDoctor($event)"
+          (keyup)="onSearchEnable($event.target.value)"
+          [searchParam]="searchParams"
+          (reset)="resetSearch()"
+        >
+        </gosi-search-dc>
+        <mb-visiting-doctor-filter-dc
+          [specialtyList]="specialtyList"
+          [locationList]="locationList"
+          [regionList]="regionList"
+          (filter)="onFilter($event)"
+        ></mb-visiting-doctor-filter-dc>
+      </div>
+    </div>
+
+    <div class="table-view">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th></th>
+            <th class="headings">
+              {{ 'MEDICAL-BOARD.NAME' | translate }}
+            </th>
+            <th class="headings">
+              {{ 'MEDICAL-BOARD.SPECIALTY' | translate }}
+            </th>
+
+            <th class="headings">
+              {{ 'MEDICAL-BOARD.SERVICE-REGIONS' | translate }}
+            </th>
+            <th class="headings">
+              {{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="border-bottom"
+            *ngFor="
+              let doctor of doctorList
+                | paginate
+                  : {
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: totalResponse
+                    };
+              let i = index
+            "
+          >
+            <td>
+              <gosi-input-radio-dc
+                id="doctor{{ i }}"
+                name="doctor{{ i }}"
+                [control]="visitingForm?.controls[i]?.get('addDoctor')"
+                [list]="visitingDoctorList"
+                (select)="selectedDoctor($event, doctor, i)"
+                ignoreLabel="true"
+              >
+                <!-- [disabled]="disableRadio ? true : false" -->
+              </gosi-input-radio-dc>
+            </td>
+            <td>
+              <div class="d-flex flex-column">
+                <div class="value" *ngIf="lang === 'en'">
+                  {{
+                    doctor?.name?.english === null || doctor?.name?.english?.length === 0
+                      ? doctor?.name?.arabic
+                      : doctor?.name?.english
+                  }}
+                </div>
+                <div class="value" *ngIf="lang === 'ar'">
+                  {{ doctor.name?.arabic }}
+                </div>
+              </div>
+              <span class="id-label" *ngIf="lang === 'en'">
+                {{
+                  doctor?.idType === 'NIN'
+                    ? 'National ID'
+                    : doctor?.idType === 'IQAMA' || 'Iqama'
+                    ? 'IQAMA'
+                    : doctor?.idType === 'PASSPORT' || 'Passport'
+                    ? 'Passport Number'
+                    : doctor?.idType === 'GCCID' || 'GCCId'
+                    ? 'GCC ID'
+                    : doctor?.idType === 'BORDERNO'
+                    ? 'Border Number'
+                    : doctor?.idType
+                }}:</span
+              >
+              <span class="id-label" *ngIf="lang === 'ar'">
+                {{
+                  doctor?.idType === 'NIN'
+                    ? 'الهوية الوطنية'
+                    : doctor?.idType === 'IQAMA' || 'Iqama'
+                    ? 'رقم الإقامة'
+                    : doctor?.idType === 'PASSPORT' || 'Passport'
+                    ? 'رقم الجواز'
+                    : doctor?.idType === 'GCCID' || 'GCCId'
+                    ? 'رقم الهوية الخليجية"'
+                    : doctor?.idType === 'BORDERNO'
+                    ? 'رقم الحدود'
+                    : doctor?.idType
+                }}:</span
+              >
+
+              <a class="member-click" (click)="getDoctor(doctor.identity)">{{ doctor.identity }}</a>
+            </td>
+            <td>
+              <span> {{ doctor?.specialty | bilingualText }}</span>
+            </td>
+            <td>
+              <div *ngFor="let region of doctor.region; let j = index">{{ region | bilingualText }}</div>
+            </td>
+            <td>
+              {{ doctor.mobileNo }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="doctorList?.length === 0" class="pt-4">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </div>
+
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="totalResponse > itemsPerPage"
+      [totalSize]="totalResponse"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="onSelectPage($event)"
+    >
+    </gosi-pagination-dc>
+  </div>
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="submit" type="primary" [disabled]="isDisabled" (submit)="onAddDoctor()">
+        {{ 'MEDICAL-BOARD.ADD-DOCTOR' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>

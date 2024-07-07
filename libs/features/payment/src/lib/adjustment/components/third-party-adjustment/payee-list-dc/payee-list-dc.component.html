@@ -1,0 +1,98 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row mt-3 payee-table">
+  <div class="col-md-12">
+    <div class="table-responsive table-scroll" *ngIf="payeeForm?.get('payees')?.controls?.length > 0; else noResult">
+      <table class="table table-borderless">
+        <thead class="border-bottom">
+          <tr>
+            <th class="pl-3">
+              {{ 'ADJUSTMENT.PARTY-NAME' | translate }}
+            </th>
+            <th>{{ 'ADJUSTMENT.PARTY-CODE' | translate }}</th>
+            <th>{{ 'ADJUSTMENT.PARTY-TYPE' | translate }}</th>
+            <th>{{ 'ADJUSTMENT.COMMERCIAL-REGISTRATION-NUMBER' | translate }}</th>
+            <th>{{ 'ADJUSTMENT.IBAN-NUMBER' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody [formGroup]="payeeForm">
+          <tr
+            class="border-bottom"
+            formArrayName="payees"
+            *ngFor="
+              let payeeItem of payeeForm?.get('payees')?.controls
+                | paginate
+                  : {
+                      id: 'payeePagination',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails?.currentPage,
+                      totalItems: totalPayees
+                    };
+              let i = index
+            "
+          >
+            <td [formGroupName]="i">
+              <div class="row no-gutters d-flex flex-nowrap">
+                <div class="col-auto radio-container">
+                  <gosi-input-radio-dc
+                    [control]="payeeItem"
+                    id="payeeItem_{{ i }}"
+                    name="payeeItem_{{ i }}"
+                    (select)="onCheckPayee($event, i)"
+                    [list]="payeesMap?.get(i)?.lov"
+                    [ignoreLabel]="true"
+                    class="radio"
+                    [noMargin]="true"
+                  ></gosi-input-radio-dc>
+                </div>
+                <div class="col-auto d-flex flex-column pay-name">
+                  <div>{{ payeesMap?.get(i)?.payee?.payeeName | bilingualText }}</div>
+                  <div *ngIf="payeesMap?.get(i)?.payee?.nationalId">
+                    {{ 'ADJUSTMENT.NATIONAL-ID' | translate }}: {{ payeesMap?.get(i)?.payee?.nationalId }}
+                  </div>
+                  <div class="view-link" *ngIf="payeesMap?.get(i)?.payee?.iqama" (click)="selectPayeee()">
+                    {{ 'ADJUSTMENT.IQAMA-NUMBER' | translate }}: {{ payeesMap?.get(i)?.payee?.iqama }}
+                  </div>
+                </div>
+              </div>
+              <div
+                class="row no-gutters select-payee-btn"
+                *ngIf="payeeItem?.get('english').value === payeesMap?.get(i)?.payee?.payeeId.toString()"
+              >
+                <gosi-button-dc id="selectPayee" type="primary" size="sm" (submit)="selectPayeee()">
+                  {{ 'ADJUSTMENT.SELECT-PAYEE' | translate }}</gosi-button-dc
+                >
+              </div>
+            </td>
+            <td class="justify-content-center">{{ payeesMap?.get(i)?.payee?.payeeCode }}</td>
+            <td class="justify-content-center">{{ payeesMap?.get(i)?.payee?.payeeType | bilingualText }}</td>
+            <td class="justify-content-center">{{ payeesMap?.get(i)?.payee?.crn }}</td>
+            <td class="justify-content-center">
+              {{ payeesMap?.get(i)?.payee?.iban }}
+            </td>
+          </tr>
+          <tr></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-12" *ngIf="totalPayees > itemsPerPage">
+    <gosi-pagination-dc
+      class="pagination"
+      [totalSize]="totalPayees"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      paginationId="payeePagination"
+    ></gosi-pagination-dc>
+  </div>
+</div>
+<ng-template #noResult>
+  <div class="mt-5 text-center" *ngIf="payeeForm?.get('payees')?.controls?.length === 0">
+    <img src="assets/images/search-error.svg" alt="search-error" />
+    <br />
+    <p class="text-muted">{{ 'ADJUSTMENT.NO-DATA' | translate }}</p>
+  </div>
+</ng-template>

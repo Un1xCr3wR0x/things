@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ 'BILLING.VIOLATION-ADJUSTMENT' | translate }}">
+    <span class="arrow-up-period arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ violationAdjustment?.totalDifference | number: '1.2-2' }}
+        {{ violationCurrencyType | bilingualText }} )</span
+      >
+      <span><fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon> </span>
+    </span>
+
+    <span class="arrow-down-period arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ violationAdjustment?.totalDifference }}
+        {{ violationCurrencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container>
+      <div class="row">
+        <div class="col-lg-12 search-window">
+          <div class="search-sort-filter-sec search-value">
+            <div class="search" id="searchPeriod">
+              <gosi-search-dc [placeholder]="'BILLING.SEARCH' | translate"> </gosi-search-dc>
+            </div>
+          </div>
+        </div>
+        <ng-container>
+          <div class="col-lg-12">
+            <div class="table-scroll table-responsive">
+              <table class="table table-borderless">
+                <thead class="thead-light">
+                  <tr>
+                    <th>{{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}</th>
+                    <th>
+                      {{ 'BILLING.OLD-VIOLATION-AMOUNT' | translate }}
+                      <span class="currency">({{ 'BILLING.SAR' | translate }})</span>
+                    </th>
+                    <th>
+                      {{ 'BILLING.NEW-VIOLATION-AMOUNT' | translate }}
+                      <span class="currency"> ({{ 'BILLING.SAR' | translate }})</span>
+                    </th>
+
+                    <th>
+                      {{ 'BILLING.ADJUSTMENT-AMOUNT' | translate }}
+                      <span class="currency"> ({{ 'BILLING.SAR' | translate }})</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container>
+                    <ng-container
+                      *ngFor="
+                        let violationItem of violationAdjustment?.violatedContributorsList
+                          | paginate
+                            : {
+                                id: 'paginationId',
+                                itemsPerPage: itemsPerPage,
+                                currentPage: pageDetails.currentPage,
+                                totalItems: violationAdjustment?.violatedContributorsCount
+                              };
+                        let i = index
+                      "
+                    >
+                      <ng-container>
+                        <tr>
+                          <td id="nameDetails">
+                            <span
+                              *ngIf="(violationItem.person.name.english == undefined && lang === 'en') || lang === 'ar'"
+                              >{{ violationItem.person.name.arabic }}
+                            </span>
+                            <span *ngIf="violationItem.person.name.english !== null && lang === 'en'">
+                              {{ violationItem.person.name.english }}
+                            </span>
+                            <div *ngIf="violationItem.person.identity !== null">
+                              <div *ngIf="violationItem.person.identity.idType === 'NIN'">
+                                <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                                <span>
+                                  {{ violationItem.person.identity.newNin }}) ({{
+                                    violationItem.person.nationality | bilingualText
+                                  }})</span
+                                >
+                              </div>
+                              <div *ngIf="violationItem.person.identity.idType === 'PASSPORT'">
+                                <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                                <span>
+                                  {{ violationItem.person.identity.passportNo }}) ({{
+                                    violationItem.person.nationality | bilingualText
+                                  }})
+                                </span>
+                              </div>
+                              <div *ngIf="violationItem.person.identity.idType === 'IQAMA'">
+                                <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                                <span>
+                                  {{ violationItem.person.identity.iqamaNo }}) ({{
+                                    violationItem.person.nationality | bilingualText
+                                  }})</span
+                                >
+                              </div>
+                              <div *ngIf="violationItem.person.identity.idType === 'BORDERNO'">
+                                <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                                <span>
+                                  {{ violationItem.person.identity.id }}) ({{
+                                    violationItem.person.nationality | bilingualText
+                                  }})
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td id="oldViolation">
+                            {{ violationItem.oldViolationAmount | number: '1.2-2' }}
+                          </td>
+                          <td id="newViolation">
+                            {{ violationItem.newViolationAmount | number: '1.2-2' }}
+                          </td>
+
+                          <td id="violationDifference">
+                            {{ violationItem.difference | number: '1.2-2' }}
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </ng-container>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <div></div>
+
+            <gosi-pagination-dc
+              *ngIf="violationAdjustment?.violatedContributorsCount > itemsPerPage"
+              [totalSize]="violationAdjustment?.violatedContributorsCount"
+              [itemsPerPage]="itemsPerPage"
+              [pageDetails]="pageDetails"
+              (pageChange)="selectPage($event)"
+              paginationId="paginationId"
+            ></gosi-pagination-dc>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+    <ng-template #noResult>
+      <div class="col-lg-12">
+        <div class="mt-10 text-center">
+          <img src="assets/images/search-error.svg" alt="search-error" />
+          <br />
+          <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+        </div>
+      </div>
+    </ng-template>
+  </accordion-group>
+</accordion>

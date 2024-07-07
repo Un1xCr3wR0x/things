@@ -1,0 +1,434 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<!-- showing the injry status for the contributor -->
+<div class="row" *ngIf="processType != 'reopen'">
+  <div class="col-lg-12 pb-4">
+    <oh-injury-statistics-dc></oh-injury-statistics-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 pb-4">
+    <oh-establishment-details-dc 
+      #establishmentListForm
+      *ngIf="isAppPrivate && processType != 'reopen'"
+      [establishmentName]="establishmentName"
+      [establishments]="establishmentList"
+      [disableEst]="processType === 'modify' ? true : disableEst"
+      [registrationNumber]="registrationNumber"
+      [occupation]="occupation"
+      (selectEstablishment)="selectEstablishment($event)"
+      [isValidator1]="isValidator1"
+      [isEdit]="isEdit"
+      [processType]="processType"
+    >
+    </oh-establishment-details-dc>
+  </div>
+</div>
+<div class="row" *ngIf="processType === 'reopen'">
+  <div class="col-md-12">
+    <oh-reopen-details-dc
+      #reopenDetailsForm
+      (showInjury)="showInjuryDetails($event)"
+      [InjuryDetails]="viewInjuryDetails"
+      [showToggle]="showToggle"
+      [reopenReasonList]="reopenReasonList"
+      [isWorkflow]="taskid"
+      (selectedReopenReason)="selectedReopenReason($event)"
+      [isEdit]="isEdit"
+    ></oh-reopen-details-dc>
+  </div>
+</div>
+<div class="row" *ngIf="showInjury">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="row" [formGroup]="reportInjuryForm">
+        <div class="col-lg-12">
+          <div class="card-heading float-left"> 
+            {{ 'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate }}
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" formGroupName="injuryDate">
+              <gosi-input-date-dc
+                id="injuryDate"
+                label="OCCUPATIONAL-HAZARD.INJURY.INJURY-DATE"
+                [control]="
+                  reportInjuryForm.get('injuryDate') ? reportInjuryForm.get('injuryDate').get('gregorian') : null
+                "
+                [maxDate]="currentDate"
+                (changeEvent)="validateExistingInjury(reportInjuryForm.get('injuryDate').get('gregorian').value)"
+                (focusout)="validateExistingInjury(reportInjuryForm.get('injuryDate').get('gregorian').value)"
+              >
+              </gosi-input-date-dc>
+            </div>
+
+            <!-- this block showing the time picker for reporting injury -->
+
+            <div class="col-lg-6" formGroupName="datePicker">
+              <div class="date-picker-block">
+                <gosi-input-time-dc
+                  label="OCCUPATIONAL-HAZARD.INJURY.INJURY-TIME" 
+                  [hour]="reportInjuryForm.get('datePicker').get('injuryHour')"
+                  [minute]="reportInjuryForm.get('datePicker').get('injuryMinute')"
+                ></gosi-input-time-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- this block shows the death indicator to mark that the injury leads the person to dead or not-->
+
+        <div class="col-lg-12" *ngIf="!allowanceFlag">
+          <div class="dead-confirmation-block mb-4">
+            <div class="d-flex bd-highlight">
+              <div class="p-4 w-100 bd-highlight injuryDescription">
+                <span>{{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-LEADS-TO-DEATH' | translate }}</span>
+              </div>
+              <div class="p-2 flex-shrink-1 bd-highlight">
+                <gosi-input-toggle-dc
+                  id="injuryToDeathIndicator"
+                  name="injuryToDeathIndicator"
+                  ignoreLabel="true"
+                  [control]="reportInjuryForm.get('injuryToDeathIndicator')"
+                  (changeEvent)="validationCheck()"
+                >
+                </gosi-input-toggle-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <!-- this block shows the user to select death date if person is dead -->
+          <div class="row">
+            <div class="col-lg-6" *ngIf="isPersonDead">
+              <gosi-input-date-dc
+                id="deathDate"
+                label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+                [control]="reportInjuryForm.get('deathDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorInjuryDate"
+                [disabled]="disableDeath"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+
+          <!-- this block show the user to select work disability date -->
+          <div class="row">
+            <div class="col-lg-6" formGroupName="workDisabilityDate">
+              <gosi-input-date-dc
+                id="workDisabilityDate"
+                label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+                [control]="reportInjuryForm.get('workDisabilityDate').get('gregorian')"
+                [maxDate]="deathDate"
+                [minDate]="contributorInjuryDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+
+            <!-- this block will allow user to select the informed date -->
+
+            <div class="col-lg-6" formGroupName="employeeInformedDate">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+                [control]="reportInjuryForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorInjuryDate"
+                [disabled]="disabled || allowanceFlag"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+
+          <!-- this block will allow user to add reason for delay -->
+
+          <div class="row" *ngIf="!allowanceFlag">
+            <div class="col-lg-6" *ngIf="showResonforDelay && !showResonforDelayCurrentDate">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-CONTRIBUTOR"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="allowanceFlag && allowanceFlagReopen && ((viewInjuryDetails.reasonForDelay === null) || (viewInjuryDetails.reasonForDelay === undefined)) && showResonforDelay">
+            <div class="col-lg-6">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-CONTRIBUTOR"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+                [disabled]="allowanceFlag && !allowanceFlagReopen"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="allowanceFlag && reasonForDelayIndividual && !allowanceFlagReopen">
+            <div class="col-lg-6">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-CONTRIBUTOR"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+                [disabled]="allowanceFlag && !allowanceFlagReopen"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="allowanceFlag && reasonForDelayIndividual && allowanceFlagReopen && showResonforDelay">
+            <div class="col-lg-6">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-CONTRIBUTOR"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+                [disabled]="allowanceFlag && !allowanceFlagReopen"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="!allowanceFlag">
+            <div class="col-lg-6" *ngIf="showResonforDelayCurrentDate && !showResonforDelay">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-EMPLOYER"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+
+          <div class="row" *ngIf="!allowanceFlag">
+            <div class="col-lg-6" *ngIf="showResonforDelay && showResonforDelayCurrentDate">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-BOTH"
+                [control]="reportInjuryForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6" formGroupName="employerInformedDate" *ngIf="isAppPrivate">
+              <gosi-input-date-dc
+                id="employerInformedOn"
+                label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+                [control]="reportInjuryForm.get('employerInformedDate').get('gregorian')"
+                [minDate]="employerInformedDateMinDate"
+                [maxDate]="currentDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="treatmentCompleted">
+              <gosi-input-radio-dc
+                id="treatmentCompleted"
+                name="treatmentStarted"
+                [control]="reportInjuryForm.get('treatmentCompleted')"
+                [list]="booleanList"
+                label="OCCUPATIONAL-HAZARD.TREATMENT-COMPLETED"
+              >
+              </gosi-input-radio-dc>
+            </div>
+          </div>
+
+          <!-- showing the map for reporting injury -->
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="map-block">
+                <gosi-google-map-dc
+                  #googleMapDcComponent
+                  id="selectInjuryLocation"
+                  [showCity]="showCity"
+                  [showMap]="showCity"
+                  [countryList]="countryList"
+                  [showCityDistrict]="showCityDistrict"
+                  [latitude]="latitude"
+                  [longitude]="longitude"
+                  [cityList]="cityList"
+                  [showCountry]="true"
+                  [mapViewMode]="mapViewMode"
+                  [parentForm]="reportInjuryForm"
+                  [cityDistrictList]="cityDistrictList"
+                  [showMarker]="isShowMarker"
+                >
+                </gosi-google-map-dc>
+              </div>
+            </div>
+          </div>
+
+          <div class="row pt-4">
+            <!-- injury occured place list will be shown -->
+
+            <div class="col-lg-6 margin-top">
+              <gosi-input-select-dc
+                name="injuryOccuredPlace"
+                [label]="'OCCUPATIONAL-HAZARD.INJURY.PLACE-WHERE-INJURY-OCCURED' | translate"
+                id="placeInjuryOccured"
+                [list]="injuryOccuredPlace"
+                [control]="reportInjuryForm.get('place')"
+                (blur)="validationCheck()"
+              >
+              </gosi-input-select-dc>
+            </div>
+            <div class="col-lg-6 details">
+              <gosi-input-text-dc
+                id="placeWhereTheInjuryOccured"
+                [label]="'OCCUPATIONAL-HAZARD.INJURY.PLACE-DETAILS-WHERE-INJURY-OCCURED' | translate"
+                [maxLength]="maxlengthData"
+                [control]="reportInjuryForm.get('detailedPlace')"
+              >
+              </gosi-input-text-dc> 
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <gosi-input-text-area-dc
+                name="injuryOccuredPlace"
+                [label]="'OCCUPATIONAL-HAZARD.INJURY.HOW-INJURY-OCCURED' | translate"
+                [maxLength]="maxlengthData"
+                [control]="reportInjuryForm.get('detailsDescription')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+
+          
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                name="occupation"
+                [label]="'OCCUPATIONAL-HAZARD.EMPLOYEE-ACTIVITY' | translate"
+                id="contributorsOccupationWhenInjuryOccured"
+                [list]="employeeActivityAtInjuryTime"
+                [control]="reportInjuryForm.get('occupation')"
+              >
+              </gosi-input-select-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                [name]="'accidentType'"
+                [label]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-TYPE' | translate"
+                id="injuryType"
+                [list]="injuryList"
+                [control]="reportInjuryForm.get('accidentType')"
+                (click)="filterInactiveType()"
+                (select)="selectInjuryTypefn($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                [name]="'injuryReason'"
+                [label]="'OCCUPATIONAL-HAZARD.INJURY.INJURY-REASON' | translate"
+                id="injuryReason"
+                [list]="reasonList"
+                [control]="reportInjuryForm.get('injuryReason')"
+                (click)="filterReason()"
+              >
+              </gosi-input-select-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-input-select-dc
+                [name]="'governmentSector'"
+                [label]="'OCCUPATIONAL-HAZARD.GOVERNMENT-SECTOR' | translate"
+                id="governmentSector"
+                [list]="governmentSectorList"
+                [control]="reportInjuryForm.get('governmentSector')"
+                (select)="selectgovernmentSectorfn($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="allowanceFlag && !allowanceFlagReopen">
+            <div class="col-lg-6">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-EMPLOYER"
+                [control]="reportInjuryForm.get('delayByEmployer')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="allowanceFlag && allowanceFlagReopen && ((viewInjuryDetails.delayByEmployer !== null) && (viewInjuryDetails.delayByEmployer !== undefined))">
+            <div class="col-lg-6">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                [name]="'reasonForDelay'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-EMPLOYER"
+                [control]="reportInjuryForm.get('delayByEmployer')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+
+          <div class="row" *ngIf="IsReopen">
+            <div class="col-lg-6" formGroupName="emergencyContactNo">
+              <gosi-input-mobile-dc
+                [name]="'emergencyContactNo'"
+                [isdControl]="getISDCodePrefix(reportInjuryForm.get('emergencyContactNo').get('isdCodePrimary'))"
+                [control]="reportInjuryForm.get('emergencyContactNo').get('primary')"
+                label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+                id="emergencyContactNo"
+                [disabled]="!disabled"
+              ></gosi-input-mobile-dc>
+            </div>
+            <div formGroupName="payeeType" *ngIf="IsReopen">
+              <div class="col-lg-12">
+                <gosi-input-radio-dc
+                  id="payeeType"
+                  name="payeeType"
+                  [control]="reportInjuryForm.get('payeeType')"
+                  [list]="payeeList"
+                  [disabled]="true"
+                  [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate"
+                >
+                </gosi-input-radio-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 form-action">
+    <div class="injury-details">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="employeeSaveAndNext" (submit)="submitInjuryDetails()" type="primary">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,278 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-md-12" [formGroup]="immigratedTribePersonDetailsForm">
+    <gosi-card-dc [heading]="'CONTRIBUTOR.PERSONAL-DETAILS' | translate" type="secondary">
+      <!-- Person details section -->
+      <div class="row" formGroupName="name">
+        <div class="col-md-6 col-lg-3" formGroupName="arabic">
+          <gosi-input-text-dc
+            name="arabicFirstName"
+            gosiArabicMask
+            id="arabicFirstName"
+            [label]="'CONTRIBUTOR.NAME-IN-ARABIC' | translate"
+            [placeholder]="'CONTRIBUTOR.FIRST-NAME' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('name').get('arabic').get('firstName')"
+            [maxLength]="arbMaxLength"
+            [disabled]="isEditMode"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-md-6 col-lg-3" formGroupName="arabic">
+          <gosi-input-text-dc
+            [readOnly]=""
+            gosiArabicMask
+            name="arabicSecondName"
+            id="arabicSecondName"
+            [ignoreLabel]="true"
+            [placeholder]="'CONTRIBUTOR.SECOND-NAME' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('name').get('arabic').get('secondName')"
+            [maxLength]="arbMaxLength"
+            [disabled]="isEditMode || true"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-md-6 col-lg-3" formGroupName="arabic">
+          <gosi-input-text-dc
+            gosiArabicMask
+            name="arabicThirdName"
+            id="arabicThirdName"
+            [ignoreLabel]="true"
+            [placeholder]="'CONTRIBUTOR.THIRD-NAME' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('name').get('arabic').get('thirdName')"
+            [maxLength]="arbMaxLength"
+            [disabled]="isEditMode || true"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-md-6 col-lg-3" formGroupName="arabic">
+          <gosi-input-text-dc
+            gosiArabicMask
+            name="arabicFamilyName"
+            id="arabicFamilyName"
+            [ignoreLabel]="true"
+            [placeholder]="'CONTRIBUTOR.FAMILY-NAME' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('name').get('arabic').get('familyName')"
+            [maxLength]="arbMaxLength"
+            [disabled]="isEditMode"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6" formGroupName="english">
+          <gosi-input-text-dc
+            [readOnly]=""
+            gosiEnglishMask
+            name="englishName"
+            id="contEnglishName"
+            [label]="'CONTRIBUTOR.NAME-IN-ENGLISH' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('name.english.name')"
+            [maxLength]="engMaxLength"
+            [disabled]="isEditMode"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div class="col-lg-6">
+          <gosi-input-select-dc
+            name="nationality"
+            [label]="'CONTRIBUTOR.NATIONALITY' | translate"
+            id="nationality"
+            [list]="nationalityList | async"
+            [control]="immigratedTribePersonDetailsForm.get('nationality')"
+            [disabled]="true"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6" formGroupName="birthDate">
+          <gosi-input-date-dc
+            id="dateOfBirth"
+            [label]="'CONTRIBUTOR.DATE-OF-BIRTH' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('birthDate').get('gregorian')"
+            [disabled]="true"
+          >
+          </gosi-input-date-dc>
+        </div>
+
+        <div class="col-lg-6"></div>
+      </div>
+      <ng-container *ngFor="let item of identities.controls">
+        <div *ngIf="item.get('idType').value === 'IQAMA'">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-number-dc
+                [label]="'CONTRIBUTOR.IQAMA-NUMBER' | translate"
+                [control]="item.get('iqamaNo')"
+                [disabled]="true"
+                id="iqamaNo"
+              >
+              </gosi-input-number-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                [label]="'CONTRIBUTOR.IQAMA-EXPIRY-DATE' | translate"
+                [control]="item.get('expiryDate').get('gregorian')"
+                [disabled]="!item.get('iqamaNo').value"
+                [minDate]="minExpiryDate"
+                id="iqamaExpiryDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngFor="let item of identities.controls">
+        <div *ngIf="item.get('idType').value === 'PASSPORT'">
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-text-dc
+                [label]="'CONTRIBUTOR.PASSPORT-NO' | translate"
+                [control]="item.get('passportNo')"
+                id="passportNo"
+                [disabled]="true"
+                [maxLength]="passportMaxLength"
+              >
+              </gosi-input-text-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                [label]="'CONTRIBUTOR.PASSPORT-ISSUEDATE' | translate"
+                [control]="item.get('issueDate').get('gregorian')"
+                [disabled]="!item.get('passportNo').value"
+                [maxDate]="maxIssueDate"
+                id="passportIssueDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-input-date-dc
+                [label]="'CONTRIBUTOR.PASSPORT-EXPIRYDATE' | translate"
+                [control]="item.get('expiryDate').get('gregorian')"
+                [disabled]="!item.get('passportNo').value"
+                [minDate]="minExpiryDate"
+                id="passportExpiryDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-input-radio-dc
+            id="maritalStatus"
+            name="maritalStatus"
+            [label]="'CONTRIBUTOR.MARITAL-STATUS'"
+            [control]="immigratedTribePersonDetailsForm.get('maritalStatus')"
+            [list]="maritalStatusList | async"
+          >
+          </gosi-input-radio-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-input-radio-dc
+            id="sex"
+            name="sex"
+            [label]="'CONTRIBUTOR.GENDER'"
+            [control]="immigratedTribePersonDetailsForm.get('sex')"
+            [list]="genderList | async"
+          >
+          </gosi-input-radio-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6" formGroupName="education">
+          <gosi-input-select-dc
+            id="education"
+            [label]="'CONTRIBUTOR.EDUCATION' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('education')"
+            [list]="educationList | async"
+          ></gosi-input-select-dc>
+        </div>
+        <div class="col-md-6" formGroupName="specialization">
+          <gosi-input-select-dc
+            id="specialization"
+            [label]="'CONTRIBUTOR.SPECIALIZATION' | translate"
+            [control]="immigratedTribePersonDetailsForm.get('specialization')"
+            [list]="specializationList | async"
+          ></gosi-input-select-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+    <!-- Contact details section -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <frm-contact-dc
+              idValue="cont"
+              #contactDetails
+              [contactDetails]="personDetails.contactDetail"
+              [defaultOnly]="isMobileDefault"
+              [emailMandatory]="true"
+              [isNonSaudi]="isNonSaudi"
+            ></frm-contact-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Address details section -->
+    <div class="row" *ngIf="isNonSaudi">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <frm-address-dc
+              idValue="cont"
+              #addressDetails
+              [parentForm]="contactDetailParentForm"
+              [cityList]="cityList | async"
+              [hasNationalAddress]="true"
+              [hasPOAddress]="true"
+              [isSaudiAddrMandatory]="true"
+              [countryList]="nationalityList | async"
+              [addressDetails]="personDetails.contactDetail?.addresses"
+              [currentMailingAddress]="
+                personDetails.contactDetail ? personDetails.contactDetail.currentMailingAddress : null
+              "
+            ></frm-address-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Footer section -->
+<div class="row">
+  <div class="col-md-12 form-action">
+    <div class="float-right btn-section" *ngIf="isUnclaimed">
+      <gosi-button-dc
+        (submit)="saveImmigratedTribeContributorDetails()"
+        id="personSaveAndNext"
+        type="primary"
+        [disabled]="isApiTriggered"
+      >
+        {{ 'CONTRIBUTOR.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancel" (submit)="confirmCancel()" type="secondary">
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal-->
+<ng-template #confirmid>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

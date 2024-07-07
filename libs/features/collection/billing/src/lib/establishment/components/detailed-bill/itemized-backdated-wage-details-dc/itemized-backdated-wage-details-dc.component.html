@@ -1,0 +1,395 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ HeadingName | translate }} ">
+    <span class="arrow-ups arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-downs arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}:
+        {{ totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container>
+      <div class="row">
+        <div class="col-lg-12 search-margin">
+          <div class="period-search-sort-filter search-menu">
+            <div class="search" id="searchSearch">
+              <gosi-search-dc
+                [placeholder]="'BILLING.SEARCH' | translate"
+                (search)="onSearchValue($event)"
+                (keyup)="onSearchValue($event.target.value)"
+              >
+              </gosi-search-dc>
+            </div>
+            <div class="filter-padding" id="wageFilter">
+              <blg-adjustment-table-filter-dc
+                (filtervalues)="applyFilterValues($event)"
+                [residentType]="residentType | async"
+              >
+              </blg-adjustment-table-filter-dc>
+            </div>
+            <div id="wageSort" class="sort">
+              <gosi-sort-dc
+                [list]="adjustmentSort | async"
+                (direction)="sortListOrder($event)"
+                (sortItemSelected)="sortListValue($event)"
+              >
+              </gosi-sort-dc>
+            </div>
+          </div>
+        </div>
+        <ng-container *ngIf="backDatedWageList?.length > 0; else noResult">
+          <div class="col-lg-12">
+            <div class="table-scroll table-responsive">
+              <table class="table table-borderless">
+                <thead class="thead-light">
+                  <tr>
+                    <th rowspan="3">
+                      {{ 'BILLING.CONTRIBUTOR-DETAILS' | translate | titlecase }}
+                    </th>
+                    <th rowspan="3">
+                      {{ 'BILLING.ADJUSTMENT-DATE' | translate | titlecase }}
+                    </th>
+                    <th rowspan="2" colspan="2" class="header-align">
+                      {{ 'BILLING.PERIOD' | translate | titlecase }}
+                    </th>
+
+                    <th rowspan="3" id="date">
+                      {{ 'BILLING.CONTRIBUTION-UNIT' | translate | titlecase }}
+                      <div>
+                        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="contributionUnitMesg"></fa-icon>
+                      </div>
+                    </th>
+                    <th rowspan="2" colspan="3" class="header-align">
+                      {{ 'BILLING.CALCULATION-RATE' | translate | titlecase }}
+                      <div>
+                        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="calculationRateMesg"></fa-icon>
+                      </div>
+                    </th>
+                    <th rowspan="3" id="date">
+                      {{ 'BILLING.ADJUSTMENT-CONTRIBUTORY-WAGE' | translate | titlecase }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th colspan="7" class="header-align" *ngIf="!isPPA">
+                      {{ 'BILLING.ADJUSTMENT-BREAKUP' | translate | titlecase }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th colspan="4" class="header-align" *ngIf="isPPA">
+                      {{ 'BILLING.ADJUSTMENT-BREAKUP' | translate | titlecase }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th rowspan="3" *ngIf="!isMofFlag" id="wageLateFee">
+                      {{ 'BILLING.LATE-FEES' | translate }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th rowspan="3" *ngIf="!isMofFlag">
+                      {{ 'BILLING.TOTAL-AMOUNT' | translate | titlecase }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                    <th rowspan="3" *ngIf="isMofFlag">
+                      {{
+                        !creditRequired
+                          ? ('BILLING.TOTAL-REQUIRED-AMOUNT' | translate | titlecase)
+                          : ('BILLING.TOTAL-CREDIT-AMOUNT' | translate | titlecase)
+                      }}
+                      <span class="currency-value">({{ currencyType | bilingualText }})</span>
+                    </th>
+                  </tr>
+                  <tr>
+                    <th colspan="2" class="header-align" *ngIf="isPPA">{{ 'BILLING.CONTRIBUTOR-SHARE' | translate | titlecase }}</th>
+                    <th colspan="3" class="header-align" *ngIf="!isPPA">{{ 'BILLING.CONTRIBUTOR-SHARE' | translate | titlecase }}</th>
+                    <th colspan="4" class="header-align" *ngIf="!isPPA">{{ 'BILLING.EMPLOYER-SHARE' | translate | titlecase }}</th>
+                    <th colspan="2" class="header-align"*ngIf="isPPA">{{ 'BILLING.EMPLOYER-SHARE' | translate | titlecase }}</th>
+                  </tr>
+                  <tr>
+                    <th class="header-align">
+                      {{ 'BILLING.FROM' | translate | titlecase }}
+                    </th>
+                    <th class="header-align">{{ 'BILLING.TO' | translate | titlecase }}</th>
+
+                    <th class="header-align">{{ 'BILLING.OLD' | translate | titlecase }}</th>
+                    <th class="header-align">
+                      {{ 'BILLING.NEW' | translate | titlecase }}
+                    </th>
+                    <th class="header-align">{{ 'BILLING.DIFFERENCES' | translate | titlecase }}</th>
+                    <th class="header-align" *ngIf="!isPPA">{{ 'BILLING.GOSI-ANNUITY' | translate }}</th>
+                    <th class="header-align" *ngIf="isPPA">{{  'BILLING.PPA-ANNUITY'| translate | titlecase }}</th>
+                    <th class="header-align">{{  'BILLING.PPA-PENSION'| translate | titlecase }}</th>
+                    <th class="header-align" *ngIf="!isPPA">{{ 'BILLING.UI' | translate | titlecase }}</th>
+                    <th class="header-align" *ngIf="!isPPA">{{ 'BILLING.GOSI-ANNUITY' | translate }}</th>
+                    <th class="header-align" *ngIf="isPPA">{{  'BILLING.PPA-ANNUITY'| translate | titlecase }}</th>
+                    <th class="header-align">{{  'BILLING.PPA-PENSION'| translate | titlecase }}</th>
+                    <th class="header-align" *ngIf="!isPPA">{{ 'BILLING.UI' | translate | titlecase }}</th>
+                    <th class="header-align" *ngIf="!isPPA">{{ 'BILLING.OCCUPATIONAL-HAZARD' | translate | titlecase }}</th>
+                    
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <ng-container *ngIf="backDatedWageList">
+                    <ng-container
+                      *ngFor="
+                        let value of backDatedWageList
+                          | paginate
+                            : {
+                                id: paginationId,
+                                itemsPerPage: itemsPerPage,
+                                currentPage: pageDetails.currentPage,
+                                totalItems: backDatedWageDetails.noOfRecords
+                              };
+                        let i = index
+                      "
+                    >
+                      <ng-container>
+                        <tr>
+                          <td id="{{ 'infoDetails' }}">
+                            <span *ngIf="value.person.name.english.name !== null && lang === 'en'">
+                              {{ value.person.name.english.name }}
+                            </span>
+                            <span
+                              *ngIf="(value.person.name.english.name === undefined && lang === 'en') || lang === 'ar'"
+                              >{{ value.person.name.arabic.firstName }}
+                              {{ value.person.name.arabic.secondName ? value.person.name.arabic.secondName : '' }}
+                              {{ value.person.name.arabic.thirdName ? value.person.name.arabic.thirdName : '' }}
+                              {{ value.person.name.arabic.familyName }}
+                            </span>
+                            <div *ngIf="value.person.identity !== null">
+                              <div *ngIf="value.person.identity.idType === 'NIN'">
+                                <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                                <span>
+                                  {{ value.person.identity.newNin }}) ({{
+                                    value.person.nationality | bilingualText
+                                  }})</span
+                                >
+                              </div>
+                              <div *ngIf="value.person.identity.idType === 'PASSPORT'">
+                                <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                                <span>
+                                  {{ value.person.identity.passportNo }}) ({{
+                                    value.person.nationality | bilingualText
+                                  }})
+                                </span>
+                              </div>
+                              <div *ngIf="value.person.identity.idType === 'IQAMA'">
+                                <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                                <span>
+                                  {{ value.person.identity.iqamaNo }}) ({{
+                                    value.person.nationality | bilingualText
+                                  }})</span
+                                >
+                              </div>
+                              <div *ngIf="value.person.identity.idType === 'BORDERNO'">
+                                <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                                <span>
+                                  {{ value.person.identity.id }}) ({{ value.person.nationality | bilingualText }})
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{{ value.adjustments.adjustmentDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+                          <td *ngIf="lang === 'en'">
+                            {{
+                              value.adjustments.contributionStartDate.entryFormat === dateFormat.HIJRI 
+                                ? (value.adjustments.contributionStartDate.hijiri | date: 'dd/MM/yyyy')
+                                : (value.adjustments.contributionStartDate.gregorian  | date: 'dd/MM/yyyy' )
+                            }}
+                          </td>
+                          <td *ngIf="lang === 'ar'">
+                            {{
+                              value.adjustments.contributionStartDate.entryFormat === dateFormat.HIJRI 
+                                ? (value.adjustments.contributionStartDate.hijiri | date: 'yyyy/MM/dd')
+                                : (value.adjustments.contributionStartDate.gregorian  | date: 'dd/MM/yyyy' )
+                            }}
+                          </td>
+                          <td *ngIf="lang === 'en'">
+                            {{ value.adjustments.contributionEndDate.entryFormat === dateFormat.HIJRI
+                            ? (value.adjustments.contributionEndDate.hijiri | date: 'dd/MM/yyyy' )
+                            : (value.adjustments.contributionEndDate.gregorian | date: 'dd/MM/yyyy ')
+                          }}
+                        </td>
+                        <td *ngIf="lang === 'ar'">
+                          {{ value.adjustments.contributionEndDate.entryFormat === dateFormat.HIJRI
+                          ? (value.adjustments.contributionEndDate.hijiri | date: 'yyyy/MM/dd' )
+                          : (value.adjustments.contributionEndDate.gregorian | date: 'dd/MM/yyyy ')
+                        }}
+                      </td>
+                          <td id="{{ 'contributionUnit' }}" *ngIf="lang === 'en'">
+                            <span *ngIf="value?.unit === 'Month' && value?.contributionUnit === 1">
+                              {{ value.contributionUnit }} {{ 'BILLING.MONTH' | translate }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Month' && value?.contributionUnit !== 1">
+                              {{ value.contributionUnit }} {{ 'BILLING.MONTHS' | translate }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Day'">
+                              {{ value.contributionUnit }} {{ 'BILLING.DAYS' | translate }}
+                            </span>
+                          </td>
+                          <td id="{{ 'contributionUnit' }}" *ngIf="lang === 'ar'">
+                            <span *ngIf="value?.unit === 'Month' && value?.contributionUnit === 1">
+                              {{ value?.contributionUnit }} {{ 'BILLING.MONTH' | translate }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Month' && value?.contributionUnit !== 1">
+                              {{ value?.contributionUnit }} {{ 'BILLING.MONTHS' | translate }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Day'">
+                              {{ value?.contributionUnit }}
+                              {{ value?.contributionUnit === '1' ? 'BILLING.DAY' : 'BILLING.DAYS' | translate  }}
+                            </span>
+                          </td>
+                          <td>
+                            <span *ngIf="value?.unit === 'Month'">
+                              {{ value?.oldCalculationRate * exchangeRate | number: '1.2-2' }}/{{
+                                'BILLING.MONTH' | translate
+                              }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Day'">
+                              {{ value?.oldCalculationRate * exchangeRate | number: '1.2-2' }}/{{
+                                'BILLING.DAY' | translate
+                              }}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span *ngIf="value?.unit === 'Month'">
+                              {{ value?.newCalculationRate * exchangeRate | number: '1.2-2' }}/{{
+                                'BILLING.MONTH' | translate
+                              }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Day'">
+                              {{ value?.newCalculationRate * exchangeRate | number: '1.2-2' }}/{{
+                                'BILLING.DAY' | translate
+                              }}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span *ngIf="value?.unit === 'Month'">
+                              {{
+                                (value.newCalculationRate - value.oldCalculationRate) * exchangeRate
+                                  | numToPositive
+                                  | number: '1.2-2'
+                              }}/{{ 'BILLING.MONTH' | translate }}
+                            </span>
+                            <span *ngIf="value?.unit === 'Day'">
+                              {{
+                                (value.newCalculationRate - value.oldCalculationRate) * exchangeRate
+                                  | numToPositive
+                                  | number: '1.2-2'
+                              }}/{{ 'BILLING.DAY' | translate }}
+                            </span>
+                          </td>
+                          <td>
+                            {{
+                              value.contributionUnit *
+                                (value.newCalculationRate - value.oldCalculationRate) *
+                                exchangeRate
+                                | numToPositive
+                                | number: '1.2-2'
+                            }}
+                          </td>
+                          <td *ngIf="!isPPA">
+                            {{
+                              value.adjustments.contributorShare.annuity * exchangeRate
+                                | numToPositive
+                                | number: '1.2-2'
+                            }}
+                          </td>
+                          <td *ngIf="isPPA">
+                            {{ value.adjustments.contributorShare.ppaAnnuity * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>
+                          <td>
+                            {{ value.adjustments.contributorShare.prAnnuity * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>
+                          <td *ngIf="!isPPA">
+                            {{ value.adjustments.contributorShare.ui * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>
+                          <td *ngIf="!isPPA">
+                            {{
+                              value.adjustments.establishmentShare.annuity * exchangeRate
+                                | numToPositive
+                                | number: '1.2-2'
+                            }}
+                          </td>
+                          <td *ngIf="isPPA">
+                            {{ value.adjustments.establishmentShare.ppaAnnuity * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>
+                          <td>
+                            {{ value.adjustments.establishmentShare.prAnnuity * exchangeRate | numToPositive | number: '1.2-2' }} 
+                          </td>
+                          <td *ngIf="!isPPA">
+                            {{
+                              value.adjustments.establishmentShare.ui * exchangeRate | numToPositive | number: '1.2-2'
+                            }}
+                          </td>
+                          <td *ngIf="!isPPA">
+                            {{
+                              value.adjustments.establishmentShare.oh * exchangeRate | numToPositive | number: '1.2-2'
+                            }}
+                          </td>
+                          <td *ngIf="!isMofFlag">
+                            {{ value.adjustments.lateFee * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>                       
+                          <td>
+                            {{ value.adjustments.total * exchangeRate | numToPositive | number: '1.2-2' }}
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </ng-container>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-container>
+      <div>
+        <gosi-pagination-dc
+          *ngIf="backDatedWageDetails.noOfRecords > itemsPerPage"
+          [totalSize]="backDatedWageDetails.noOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          [paginationId]="paginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+    <ng-template #noResult>
+      <div class="col-lg-12">
+        <div class="mt-10 text-center">
+          <img src="assets/images/search-error.svg" alt="search-error" />
+          <br />
+          <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template #contributionUnitMesg>
+      <ng-container>
+        <div>
+          {{ 'BILLING.CONTRIBUTION-UNIT-MESG' | translate }}
+        </div>
+      </ng-container>
+    </ng-template>
+    <ng-template #calculationRateMesg>
+      <ng-container>
+        <div>
+          {{ 'BILLING.AMOUNT-PER-CONTRIBTUION-UNIT' | translate }}
+        </div>
+      </ng-container>
+    </ng-template>
+  </accordion-group>
+</accordion>

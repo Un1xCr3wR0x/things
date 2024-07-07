@@ -1,0 +1,326 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="col-lg-12" *ngIf="commentAlert">
+    <gosi-alert-dc message="MEDICAL-BOARD.MANDATORY-FIELDS" type="danger" [dismissible]="true"></gosi-alert-dc>
+  </div>
+  <frm-main-heading-dc
+    *ngIf="(isReturn || ambReturn) && !isReassessment"
+    heading="{{ gosiDoctorAssessDetails?.assessmentType | bilingualText }} {{
+      'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate
+    }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="isReturn && isReassessment"
+    heading="{{ heading | translate }} {{ 'MEDICAL-BOARD.DETAILS' | translate }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="!isGosiDoctor && !isReturn && !ambReturn && !isReassessment && !conveyanceRequired"
+    heading="{{ assessmentTypeText | bilingualText }} {{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="!isGosiDoctor && !isReturn && isReassessment"
+    heading="{{ heading | translate }} {{ 'MEDICAL-BOARD.DETAILS' | translate }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="isGosiDoctor && !isReassessment"
+    heading="{{ 'MEDICAL-BOARD.MODIFY-DETAILS' | translate }} {{
+      gosiDoctorAssessDetails?.assessmentType | bilingualText
+    }} {{ 'MEDICAL-BOARD.ASSESSMENT' | translate }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="isGosiDoctor && isReassessment"
+    heading="{{ 'MEDICAL-BOARD.MODIFY-DETAILS' | translate }} {{
+      gosiDoctorAssessDetails?.assessmentType | bilingualText
+    }}"
+  ></frm-main-heading-dc>
+  <frm-main-heading-dc
+    *ngIf="!isGosiDoctor && !isReturn && !isReassessment && conveyanceRequired"
+    heading="{{ gosiDoctorAssessDetails?.assessmentType | bilingualText }} {{
+      'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate
+    }}"
+  ></frm-main-heading-dc>
+  <div class="row" *ngIf="returnComments && (isReturn || ambReturn || conveyanceRequired)">
+    <div class="col-12">
+      <gosi-comments-dc [comments]="returnComments"> </gosi-comments-dc>
+    </div>
+  </div>
+  <gosi-progress-wizard-dc
+    *ngIf="!isCompleted"
+    (clickWizard)="selectedWizard($event)"
+    [wizardItems]="assessmentWizards"
+    #assessmentWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset class="pills" #assessmentDetailsTab>
+      <tab [active]="currentTab === 0" heading="'MEDICAL-BOARD.ASSESSMENT-DETAILS'">
+        <tabset [justified]="false" type="tabs" class="pension-listing-tabset">
+          <tab
+            heading="{{ 'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate }}"
+            id="contributorTab"
+            *ngIf="assessmentType"
+            (selectTab)="onContributorTabSelected()"
+          >
+            <mb-contributor-details-dc
+              *ngIf="personDetails"
+              [personDetails]="personDetails?.person"
+              [injuryDetails]="injuryDetails"
+              [injuryDetailsById]="injuryDetailsById"
+              [assessmentType]="assessmentType"
+              [isContributor]="true"
+              [complicationDetails]="complicationDetails"
+              [assessmentDetails]="assessmentDetails"
+              (onShowMBAssessmentClicked)="viewMBAssessmentModal(previousMBAssessmentModal)"
+              (onOHClicked)="viewInjuryHistory()"
+              (onInjuryIdClicked)="viewInjuryInfo($event)"
+              (onContributorIdClicked)="viewContributorDetails($event)"
+              (onShowEngagementClicked)="viewEngagementDetails()"
+            >
+            </mb-contributor-details-dc>
+          </tab>
+          <tab
+            heading="{{
+              (assessmentType === 'Dependent Disability' || assessmentType === 'Dependent Disability Assessment')
+                ? ('MEDICAL-BOARD.DEPENDENT-DETAILS' | translate)
+                : ('MEDICAL-BOARD.HEIR-DETAILS' | translate)
+            }}"
+            id="dependentDetails"
+            *ngIf="assessmentType === 'Dependent Disability' || assessmentType === 'Heir Disability' || assessmentType === 'Dependent Disability Assessment'"
+            (selectTab)="onDependentTabSelected()"
+          >
+            <mb-contributor-details-dc
+              *ngIf="heirPersonDetails"
+              [personDetails]="heirPersonDetails"
+              [injuryDetails]="injuryDetails"
+              [injuryDetailsById]="injuryDetailsById"
+              [assessmentType]="assessmentType"
+              [isContributor]="false"
+              [complicationDetails]="complicationDetails"
+              (onShowMBAssessmentClicked)="viewMBAssessmentModal(previousMBAssessmentModal)"
+              (onOHClicked)="viewInjuryHistory()"
+              (onInjuryIdClicked)="viewInjuryInfo($event)"
+              (onContributorIdClicked)="viewContributorDetails($event)"
+            >
+            </mb-contributor-details-dc>
+          </tab>
+          <tab
+            heading="{{ 'OCCUPATIONAL-HAZARD.ASSESSMENT-DETAILS' | translate }}"
+            id="paymentTab"
+            *ngIf="assessmentType"
+            (selectTab)="onAssessmentTabSelected()"
+          >
+            <mb-assessment-details-dc
+              [assessmentDetails]="assessmentDetails"
+              [dropdownList]="dropdownList"
+              [lang]="lang"
+            ></mb-assessment-details-dc>
+          </tab>
+          <tab
+            heading="{{ 'OCCUPATIONAL-HAZARD.PREVIOUS-DISABILITY' | translate }}"
+            id="paymentTab"
+            *ngIf="assessmentType"
+            (selectTab)="onAssessmentTabSelected()"
+          >
+            <mb-previous-disability-dc
+              *ngIf="previousDisabilityDetailsById; else noData"
+              [previousDisabilityDetails]="previousDisabilityDetailsById"
+              (onAssessmentIdClicked)="viewAssessmentById($event)"
+            ></mb-previous-disability-dc>
+          </tab>
+          <tab
+            heading="{{ 'MEDICAL-BOARD.VISITING-DOCTOR-DETAILS' | translate }}"
+            id="visitingDoctorTab"
+            *ngIf="assessmentType"
+          >
+            <mb-visiting-doctor-details-dc
+              *ngIf="visitingDoctorDetails; else noData"
+              [selectedVistingDr]="visitingDoctorDetails"
+              [isColumnThree]="true"
+            >
+            </mb-visiting-doctor-details-dc>
+          </tab>
+          <tab heading="{{ 'MEDICAL-BOARD.DOCUMENTS_LBL' | translate }}" id="documentDetailsTab" *ngIf="assessmentType">
+            <div class="row" *ngIf="supportingDocuments?.length > 0; else noDocuments">
+              <div
+                class="col-lg-4 col-md-4 col-sm-4 hori-align"
+                *ngFor="let item of supportingDocuments; let i = index"
+              >
+                <gosi-document-view-dc [document]="item"></gosi-document-view-dc>
+              </div>
+            </div>
+            <div class="row" *ngIf="amboDocuments?.length && isAmbo">
+              <div class="col-lg-4 col-md-4 col-sm-4 hori-align" *ngFor="let item of amboDocuments; let i = index">
+                <!-- <div *ngFor="let item of items"> -->
+                <gosi-document-view-dc [document]="item"></gosi-document-view-dc>
+                <!-- </div> -->
+              </div>
+            </div>
+            <ng-template #noDocuments>
+              <div class="d-flex justify-content-center">
+                {{ 'THEME.NO-DOCUMENTS' | translate }}
+              </div>
+            </ng-template>
+          </tab>
+        </tabset>
+        <div class="my-2" *ngIf="!isCompleted">
+          <mb-medical-board-decision-dc
+            *ngIf="
+              sessionDataLovList &&
+              parentForm &&
+              otherSpecialityList &&
+              offices &&
+              mainReasonList &&
+              secondaryReasonList &&
+              ((isOcc && injuredParts) || !isOcc) &&
+              ((reqAssessmentDetails && gosiDoctorAssessDetails) || !reqAssessmentDetails)
+            "
+            [sessionDataLovList]="sessionDataLovList"
+            [sessionData]="sessionData"
+            [isAmb]="isAmb"
+            [sessionDataLovListTemp]="sessionDataLovListTemp"
+            [sessionGosiDrLovList]="sessionGosiDrLovList"
+            [listYesNo$]="listYesNo$"
+            [parentForm]="parentForm"
+            [helperReasonList]="helperReasonList"
+            [hospital$]="hospital$"
+            [bodyPartsCategoryList]="bodyPartsCategoryList"
+            [assessmentType]="assessmentType"
+            [mainReasonList]="mainReasonList"
+            [secondaryReasonList]="secondaryReasonList"
+            [otherSpecialityList]="otherSpecialityList"
+            [offices]="offices"
+            [gosiDoctorAssessDetails]="gosiDoctorAssessDetails"
+            [injuredParts]="injuredParts"
+            [isGosiDoctor]="isGosiDoctor"
+            [personDetails]="personDetails"
+            [previousDisabilityDetailsById]="previousDisabilityDetailsById"
+            (onMainDoctorSelected)="onDoctorSelected($event)"
+            (onOriginSelected)="setOrigin($event)"
+            (onCitySelected)="setCity($event)"
+            [docsLists]="requestDocumentList"
+            [isReturn]="isReturn"
+            [isHeir]="isHeir"
+            [conveyanceRequired]="conveyanceRequired"
+            (helperDateLimits)="getHelperDates($event)"
+            [assessmentResponseDateDto]="assessmentResponseDateDto"
+            [assessmentTypeText]="assessmentTypeText"
+            [isAmbo]="isAmbo"
+            [doctorList]="doctorList"
+            [isSaudi]="isSaudi"
+            [addressValue]="addressText"
+            [heirPersonDetails]="heirPersonDetails"
+            [assessmentDetails]="assessmentDetails"
+            (getAssessmentDate)="getHelperDates('', $event)"
+            [modifiedByGosiDoc]="modifiedByGosiDoc"
+            [ambReturn]="ambReturn"
+            [isHoReturn]="isHoReturn"
+          >
+          </mb-medical-board-decision-dc>
+        </div>
+        <div class="d-flex flex-row-reverse justify-content-between" *ngIf="!isCompleted">
+          <div class="">
+            <gosi-button-dc
+              (submit)="
+                this.disabilityAssessmentService.participantPresence?.english === 'No' &&
+                parentForm?.get('disabilityDetails')?.get('assessmentChannel')?.value?.english ===
+                  'Reschedule Assessment'
+                  ? showRescheduleWarning(noShowMessage)
+                  : saveAssessmentDetails()
+              "
+              id="saveAndNext"
+              [type]="'primary'"
+            >
+              {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="d-none">
+            <gosi-button-dc (submit)="previousSection()" id="previousAssessment" [type]="'secondary'">
+              {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="">
+            <gosi-button-dc (submit)="showCancelTemplate(cancelTemplate)" id="cancel" [type]="'secondary'">
+              {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-12">
+            <mb-document-upload-dc
+              #scanDocsComp
+              [registrationNumber]="assessmentResponse?.disabilityAssessmentId"
+              [documentList]="documentList$ | async"
+              [isScan]="true"
+              (submit)="submitDocument($event)"
+              (onDocUploadCancel)="showCancelTemplate(cancelTemplate)"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+              [transactionId]="businessId"
+              [isAddOtherDocuments]="true"
+              [referenceNo]="isGosiDoctor ? referenceNo : assessmentResponse.transactionTraceId"
+            ></mb-document-upload-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  <ng-template #previousMBAssessmentModal>
+    <gosi-modal-dc
+      [modalHeader]="'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate"
+      [needCloseButton]="true"
+      (closeModal)="modalRef.hide()"
+    >
+      <div modalContent>
+        <mb-previous-disability-dc
+          *ngIf="previousDisabilityDetails; else noData"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          (onAssessmentIdClicked)="viewAssessmentById($event)"
+        ></mb-previous-disability-dc>
+      </div>
+    </gosi-modal-dc>
+  </ng-template>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc [message]="'MEDICAL-BOARD.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #noData>
+    <gosi-alert-dc [message]="'MEDICAL-BOARD.NO-RECORDS' | translate" type="info" [dismissible]="true"> </gosi-alert-dc>
+  </ng-template>
+  <ng-template #noShowMessage>
+    <gosi-modal-dc>
+      <div class="row" modalContent>
+        <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+          <span class="times-icon" (click)="modalRef.hide()">
+            <fa-icon icon="times"></fa-icon>
+          </span>
+        </div>
+        <div class="col-lg-12">
+          <gosi-alert-dc
+            type="warning"
+            [message]="'MEDICAL-BOARD.RESCHEDULE-MESSAGE' | translate"
+            [dismissible]="false"
+          >
+          </gosi-alert-dc>
+        </div>
+      </div>
+      <!-- <div class="d-flex flex-row-reverse justify-content-between"> -->
+      <div modalAction>
+        <gosi-button-dc class="btn float-left" (click)="hideModal()" id="ok" [type]="'secondary'">
+          {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+        >
+        <gosi-button-dc class="btn float-right" (submit)="saveAssessmentDetails()" id="ok" [type]="'secondary'">
+          {{ 'MEDICAL-BOARD.OK' | translate }}</gosi-button-dc
+        >
+        <!-- </div> -->
+      </div>
+    </gosi-modal-dc>
+  </ng-template>
+</div>

@@ -1,0 +1,174 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="pad-content content mt-lg-5" [ngStyle]="isHeading ? { padding: '2.5em' } : { padding: '0' }">
+  <div class="column">
+    <div class="col-lg-12">
+      <gosi-alert-sc *ngIf="isAppPrivate && individualProfile"></gosi-alert-sc>
+    </div>
+    <!-- <div class="column style-margin" *ngIf="diseasePresent && isPrivate">
+      <gosi-alert-dc [message]="'OCCUPATIONAL-HAZARD.ALLOWANCE.DISEASE-REPORT' | translate" type="info"></gosi-alert-dc>
+    </div> -->
+    <div id="actionArea">
+      <div class="row">
+        <div class="col-lg-12 form-action">
+          <div class="history-injury">
+            <div class="btn-section float-left position-relative">
+              <a *ngIf ="fromMb" (click)="routeBack()">
+                <fa-icon
+                  class="align-self-center backarrow-icon"
+                  *ngIf="lang === 'ar'"
+                  [icon]="['far', 'arrow-alt-circle-right']"
+                  size="2x"
+                ></fa-icon>
+                <fa-icon
+                  class="align-self-center backarrow-icon"
+                  *ngIf="lang === 'en'"
+                  [icon]="['far', 'arrow-alt-circle-left']"
+                  size="2x"
+                ></fa-icon>
+              </a>
+              <span class="sub-heading">
+                {{ 'OCCUPATIONAL-HAZARD.REPORT-HAZARD' | translate }}</span>
+            </div>
+            <div class="btn-section float-right">
+              <oh-injury-filter-dc *ngIf="status$" [ngClass]="isHeading ? 'mt-1 filter-text' : ' mt-1 filter-area'"
+                (injuryDetailsFilter)="getInjuryFilter($event)" [transactionStatus]="status$ | async"
+                [clearResult]="clearResult" [statusFilter]="statusFilter">
+              </oh-injury-filter-dc>
+            </div>
+            <ng-container *ngIf="!hideButtonForPpa">
+              <div class="btn-section float-right report-btn"
+                *gosiShow="roleValidation; regNo: establishment?.registrationNo">
+                <gosi-button-dc type="primary" id="reportOccupationalHazard" [popover]="optionsModal" placement="top"
+                  size="sm" *ngIf="!isHeading">
+                  {{ 'OCCUPATIONAL-HAZARD.INJURY.REPORT-OCCUPATIONAL-HAZARD' | translate }}
+                  <fa-icon class="injury-history" icon="ellipsis-v"></fa-icon>
+                </gosi-button-dc>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Filter Details-->
+    <div class="col-lg-12" *ngIf="this.statusLists.length > 0" class="ffilter">
+      <div class="filter-heading">{{ 'OCCUPATIONAL-HAZARD.FILTER' | translate }} ({{ this.statusLists.length }}) :</div>
+      <div #data class="chip" *ngFor="let data of statusLists">
+        {{ data | bilingualText }}
+        <span class="closebtn" onclick="this.parentElement.style.display='none'" (click)="getStatus(data)"
+          value="data">&times;</span>
+      </div>
+      <div>
+        <a (click)="resetFilter()"> {{ 'THEME.CLEAR-ALL' | translate }}</a>
+      </div>
+    </div>
+
+    <!--InjuryHistoryView-->
+    <ng-container *ngFor="let injury of injuryList">
+      <oh-view-injury-dc [injuryHistory]="injury" [isLoading]="isLoading" [isHeading]="isHeading"
+        [establishment]="establishment" [isDisabled]="injury.disableId" [roleValidation]="roleValidation"
+        (injurySelected)="viewInjury($event)" (compSelected)="viewComplication($event)"
+        (reportComplication)="reportComplication($event)"></oh-view-injury-dc>
+    </ng-container>
+    <!--DiseaseHistoryView-->
+
+     <ng-container *ngFor="let disease of diseaseList">
+      <oh-view-disease-dc [diseaseHistory]="disease" [isLoading]="isDiseaseLoading" [isHeading]="isHeading"
+        [establishment]="establishment" [isDisabled]="disease.disableId" [roleValidation]="roleValidation"
+        (diseaseSelected)="viewDisease($event)" (compSelected)="viewComplication($event)"
+        (reportComplication)="reportComplication($event)"></oh-view-disease-dc>
+    </ng-container>  
+    <div *ngIf="!isLoading && !isDiseaseLoading" class="mt-3">
+      <gosi-loadmore-dc [currentPage]="currentPage" [totalCount]="totalSize" [pageSize]="pageSize"
+        (loadMore)="onLoadMore($event)">
+      </gosi-loadmore-dc>
+    </div>
+    <div *ngIf="(isLoading || isDiseaseLoading) && noResults">
+      <div class="row">
+        <div class="col-lg-12">
+          <button class="btn more-options">
+            {{ 'OCCUPATIONAL-HAZARD.NO-MATCH-RESULTS' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <ng-template #optionsModal>
+      <button type="button" id="reportInjury" (click)="addNewInjury()" *ngIf="!isIndividualApp"
+        class="d-flex btn text-left report-oh-button">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.REPORT-INJURY' | translate }}
+      </button>
+      <button type="button" id="reportComplication" (click)="addNewComplication()"
+        class="d-flex btn text-left report-oh-button">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.REPORT-COMPLICATION' | translate }}
+      </button>
+       <button type="button" id="reportDisease" (click)="showModal(diseaseModal, 'xl')"
+        class="d-flex btn text-left report-oh-button">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.REPORT-DISEASE' | translate }}
+      </button>   
+    </ng-template>
+
+    <!-- Disease Popup -->
+    <ng-template #diseaseModal>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-md-12 ml-sm-3 pl-5 pt-4 mr-sm-5 mr-5 pr-2">
+              <div class="main-heading imp-info">{{ 'OCCUPATIONAL-HAZARD.DISEASE.IMP-INFO' | translate }}</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 pl-5 pr-5">
+              <ol class="row pl-md-5 pr-5">
+                <li>
+                  <div class="row pb-3">
+                    <div class="col-12">
+                      {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-1' | translate }}
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="row pb-3">
+                    <div class="col-12">
+                      {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-2' | translate }}
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="row pb-3">
+                    <div class="col-12">
+                      {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-3' | translate }}
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="row pb-3">
+                    <div class="col-12">
+                      {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-4' | translate }}
+                    </div>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div class="row pb-3 pl-5 pr-4">
+            <div class="col-md-12 form-action">
+              <div class="float-right btn-section">
+                <gosi-button-dc id="reportDisease" type="primary" [size]="'md'" (submit)="addNewDisease()">
+                  {{ 'OCCUPATIONAL-HAZARD.DISEASE.PROCEED-DISEASE' | translate }}</gosi-button-dc>
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

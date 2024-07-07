@@ -1,0 +1,291 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc [heading]="'BILLING.PAYMENT-DETAILS' | translate" type="secondary" headingSize="md">
+  <!-- <div class="row">
+    <div class="col-lg-6" *ngIf="mofFlag && isAppPrivate">
+      <gosi-input-radio-dc
+        id="establishmentTypeIndicator"
+        [label]="'BILLING.ESTABLISHMENT-TYPE' | translate"
+        [control]="receiptModeForm?.get('establishmentType')"
+        [noMargin]="true"
+        [list]="establishmentTypeList"
+        (select)="getEstablishmentType($event)"
+      ></gosi-input-radio-dc>
+    </div>
+  </div> -->
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        [label]="'BILLING.RECEIPT-MODE' | translate"
+        id="receiptMode"
+        [control]="receiptModeForm.get('receiptMode')"
+        [list]="receiptMode"
+        (select)="createPaymentDetailsForm()"
+        [placeholder]="'BILLING.RECEIPT-MODE' | translate | lowercase"
+        [disabled]="disabled"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+
+  <div class="row">
+    <ng-container *ngIf="currentReceiptMode">
+      <ng-container *ngIf="!isLocalBank || isInternationalBank || gccFlag">
+        <div class="col-lg-6">
+          <gosi-input-select-dc
+            id="bankLocation"
+            [label]="'BILLING.BANK-LOCATION' | translate"
+            [control]="paymentDetailsForm.get('bank').get('country')"
+            [list]="isInternationalBank ? internationalCountryList : gccCountryList"
+            [placeholder]="'BILLING.BANK-LOCATION' | translate"
+            (select)="countryNameChange(paymentDetailsForm.get('bank').get('country').get('english').value)"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="!isInternationalBank && paymentDetailsForm.get('bank').get('country').get('english').value">
+        <div class="col-lg-6">
+          <gosi-input-select-dc
+            [label]="'BILLING.BANK-NAME' | translate"
+            id="bankName"
+            [control]="paymentDetailsForm.get('bank').get('name')"
+            [list]="isLocalBank ? saudiBankList : gccBankList"
+            [placeholder]="'BILLING.BANK-NAME' | translate"
+            (select)="bankNameChange()"
+            [disabled]="disabled"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </ng-container>
+      <ng-container
+        *ngIf="
+          (isOtherBank || isInternationalBank) && paymentDetailsForm.get('bank').get('country').get('english').value
+        "
+      >
+        <div class="col-lg-6">
+          <gosi-input-text-dc
+            id="bankName"
+            [control]="paymentDetailsForm.get('bank').get('nonListedBank')"
+            [placeholder]="'BILLING.BANK-NAME' | translate"
+            [label]="'BILLING.BANK-NAME' | translate"
+            [ignoreLabel]="isOtherBank ? true : false"
+            [maxLength]="bankNameLength"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  <div class="row">
+    <ng-container *ngIf="currentReceiptMode">
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="transactionDate"
+          [label]="'BILLING.TRANSACTION-DATE' | translate | titlecase"
+          [control]="paymentDetailsForm.get('transactionDate').get('gregorian')"
+          [maxDate]="maxDate"
+          [minDate]="transactionMinDate"
+          [disabled]="disabled"
+        >
+        </gosi-input-date-dc>
+      </div>
+    </ng-container>
+    <ng-container
+      *ngIf="
+        (currentReceiptMode && !mofFlag) ||
+        (currentReceiptMode === typeAccountTransfer && mofFlag) ||
+        (currentReceiptMode === typeSAMAVoucher && mofFlag)
+      "
+    >
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="transactionReferenceNumber"
+          [label]="'BILLING.PAYMENT-REFERENCE-NUMBER' | translate"
+          [control]="paymentDetailsForm.get('referenceNo')"
+          [maxLength]="transactionNoMaxLength"
+          [placeholder]="'BILLING.PAYMENT-REFERENCE-NUMBER' | translate | titlecase"
+          [disabled]="disabled"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="currentReceiptMode === typePersonnelCheque || currentReceiptMode === typeBankersCheque">
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="chequeNumber"
+          [label]="'BILLING.CHEQUE-NUMBER' | translate"
+          [control]="paymentDetailsForm.get('chequeNumber')"
+          [maxLength]="chequeNoMaxLength"
+          [placeholder]="'BILLING.CHEQUE-NUMBER' | translate | titlecase"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <ng-container *ngIf="!gccFlag">
+        <div class="col-lg-6">
+          <gosi-input-date-dc
+            id="chequeDate"
+            [label]="'BILLING.CHEQUE-DATE' | translate | titlecase"
+            [control]="paymentDetailsForm.get('chequeDate').get('gregorian')"
+            [maxDate]="maxDate"
+            [minDate]="chequeMinDate"
+          >
+          </gosi-input-date-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="currentReceiptMode">
+      <div class="col-lg-6">
+        <ng-container
+          *ngIf="
+            gccFlag &&
+              !isInternationalBank &&
+              !isLocalBank &&
+              paymentDetailsForm.get('bank').get('country').get('english').value !== 'Saudi Arabia';
+            else amountReceived
+          "
+        >
+          <div class="row">
+            <div class="col d-flex currency-value">
+              <gosi-input-currency-dc
+                id="gccAmountReceived"
+                [label]="'BILLING.AMOUNT-RECEIVED' | translate"
+                [control]="paymentDetailsForm.get('gccAmountReceived')"
+                [separatorLimit]="amountReceivedSeparatorLimit"
+                [ThreeDecimal]="ThreeDecimal"
+                [placeholder]="'BILLING.RECEIPT-AMOUNT' | translate | titlecase"
+                [countryCode]="
+                  paymentDetailsForm.get('bank').get('country').get('english').value
+                    ? currencyDetails
+                      ? currencyDetails.countryCode
+                      : null
+                    : null
+                "
+                (blur)="updateAllocationAmount(paymentDetailsForm.get('gccAmountReceived').value)"
+                [helpText]="
+                  this.paymentDetailsForm.get('transactionDate').get('gregorian').value
+                    ? initialCurerencyDetails
+                      ? ('BILLING.CONVERSION-RATE' | translate: currencyDetails)
+                      : null
+                    : null
+                "
+              >
+              </gosi-input-currency-dc>
+              <ng-container
+                *ngIf="currencyDetails && paymentDetailsForm.get('bank').get('country').get('english').value"
+              >
+                <div class="currency-code">
+                  {{ currencyDetails.currencyCode | bilingualText }}
+                </div>
+              </ng-container>
+            </div>
+            <div class="col-auto align-self-center currency-align">
+              <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+            </div>
+            <div class="flag-icon flag-icon-sa currency-align"></div>
+            <div class="col label-margin align-self-center align-amount">
+              <gosi-currency-label-dc
+                id="amountReceived"
+                [currencyTo]="exchangeValue ? exchangeValue : (0 | number: '1.2-2')"
+                [countryCodeFrom]="'BILLING.SAR' | translate"
+              ></gosi-currency-label-dc>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #amountReceived>
+          <gosi-input-currency-dc
+            [label]="
+              gccFlag && (isInternationalBank || isLocalBank)
+                ? ('BILLING.AMOUNT-RECEIVED-SAR' | translate)
+                : ('BILLING.AMOUNT-RECEIVED' | translate)
+            "
+            [placeholder]="'BILLING.RECEIPT-AMOUNT' | translate | titlecase"
+            [control]="paymentDetailsForm.get('amountReceived').get('amount')"
+            id="amountReceived"
+            (blur)="updateAllocationAmount(paymentDetailsForm.get('amountReceived.amount').value)"
+            [countryCode]="'sa'"
+            [separatorLimit]="amountReceivedSeparatorLimit"
+            [disabled]="disabled"
+          >
+          </gosi-input-currency-dc>
+        </ng-template>
+      </div>
+      <div class="col-lg-6" *ngIf="!mofFlag && isAppPrivate">
+        <gosi-input-radio-dc
+          id="selectPenalityIndicator"
+          [label]="'BILLING.REMOVE-LATE-FEES' | translate"
+          [control]="paymentDetailsForm.get('penaltyIndicator')"
+          [list]="yesOrNoList"
+          [noMargin]="true"
+          (select)="getIndicator($event)"
+        ></gosi-input-radio-dc>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-lg-12">
+      <ng-container *ngIf="currentReceiptMode">
+        <gosi-input-text-area-dc
+          [label]="'BILLING.ADDITIONAL-PAYMENT-DETAILS' | translate"
+          id="description"
+          name="description"
+          [maxLength]="additionalDetailsMaxLength"
+          [control]="paymentDetailsForm.get('description')"
+        >
+        </gosi-input-text-area-dc>
+      </ng-container>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<div class="row">
+  <div class="col-lg-12">
+    <ng-container *ngIf="currentReceiptMode && !mofFlag">
+      <blg-receipt-allocation-dc
+        [parentForm]="parentForm"
+        [branchLists]="branchLists"
+        [outsideBranchLists]="outsideBranchLists"
+        [gccFlag]="gccFlag"
+        [currency]="currencyDetails ? currencyDetails.currencyCode : saudiCurrencyCode"
+        [establishmentDetails]="establishmentDetails"
+        [isBranchesClosed]="isBranchesClosed"
+        [totalAmountValue]="totalAmountValue"
+        [currentReceiptMode]="currentReceiptMode"
+        (branchSearch)="searchPaymentDetails($event)"
+        (branchDetailsFilter)="getBranchFilter($event)"
+        [branchFilterDetails]="branchFilterDetails"
+        [establishmentLocationList]="establishmentLocationList"
+        [establishmentStatusList]="establishmentStatusList"
+        (outSideBranchSearch)="searchOutsideBranches($event)"
+        (validateOutsideBranch)="outSideBranchValidate($event)"
+        [fieldArray]="fieldArray"
+        [noFilterResult]="noFilterResult"
+        [isGovPayment]="isGovPayment"
+        [allocatedAmount]="allocatedAmount"
+      ></blg-receipt-allocation-dc>
+    </ng-container>
+  </div>
+</div>
+
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section">
+      <gosi-button-dc id="saveAndNext" type="primary" (submit)="saveAndNext()">
+        {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

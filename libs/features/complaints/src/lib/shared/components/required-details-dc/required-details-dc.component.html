@@ -1,0 +1,126 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc [lessPadding]="true" type="secondary">
+        <div class="row" *ngIf="isPublicApp">
+          <div class="col-lg-12 category-header">
+            {{ 'COMPLAINTS.SELECT-CATEGORY' | translate }}
+          </div>
+          <div class="row">
+            <div
+              class="col mt-2 margin-category"
+              *ngFor="let item of cardItems; let i = index; let last = last; let first = first"
+              [ngClass]="{ 'box-margin': !first && (last || lastTwo) }"
+            >
+              <gosi-card-dc
+                type="primary"
+                class="card-wrapper"
+                (click)="categoryClicked(item.name, i); categoryClick()"
+                [ngClass]="{ 'card-wrapper-custom': selectedIndex === i && !isSubmitted }"
+              >
+                <div class="card-head">{{ item.name | bilingualText }}</div>
+  
+                <img [src]="selectedIndex === i && !isSubmitted ? item.newUrl : item.url" alt="{{ item.name }}" />
+              </gosi-card-dc>
+            </div>
+          </div>
+          <div class="col-lg-12 pb-3 category-header" *ngIf="isCLicked">
+            {{ 'COMPLAINTS.REQUIRED-DETAILS' | translate }}
+          </div>
+        </div>
+        <div class="row" *ngIf="!isPublicApp">
+          <div class="col-lg-12 category-header">
+            {{ 'COMPLAINTS.SELECT-CATEGORY' | translate }}
+          </div>
+          <div class="row">
+          <div
+          class="col mt-2 margin-category"
+          *ngFor="let item of cardItems; let i = index; let last = last; let first = first"
+          [ngClass]="{ 'box-margin': !first && (last || lastTwo) }"
+          >
+          <gosi-card-dc
+            type="primary"
+            class="card-wrapper"
+            (click)="categoryClicked(item.name, i); categoryClick()"
+            [ngClass]="{ 'card-wrapper-custom': selectedIndex === i && !isSubmitted }"
+          >
+            <div class="card-head">{{ item.name | bilingualText }}</div>
+            <img [src]="selectedIndex === i && !isSubmitted ? item.newUrl : item.url" alt="{{ item.name }}" />
+          </gosi-card-dc>
+        </div>
+      </div>
+        </div>
+          <div class="row">
+            <div class="col-lg-6" *ngIf="transactionIds">
+              <gosi-input-select-dc
+                id="type"
+                [label]="'COMPLAINTS.' + typeLabels | translate"
+                [control]="categoryForm.get('type')"
+                [list]="type1List"
+                [placeholder]="'COMPLAINTS.' + typePlaceholders | translate"
+                (select)="onCategoryTypeSelect($event)"
+                (focus)="onFocus()"
+                [disabled]="true"
+              >
+              </gosi-input-select-dc>
+            </div>
+          <div class="col-lg-6" *ngIf="isCategorySelected && !transactionIds">
+            <gosi-input-select-dc
+              id="type"
+              [label]="'COMPLAINTS.' + typeLabels | translate"
+              [control]="categoryForm.get('type')"
+              [list]="typeList"
+              [placeholder]="'COMPLAINTS.' + typePlaceholders | translate"
+              (select)="onCategoryTypeSelect($event)"
+              (focus)="onFocus()"
+            >
+            </gosi-input-select-dc>
+          </div>  
+          <div class="col-lg-6" *ngIf="isTypeSelected && categoryType != 'Follow up Request'">
+            <gosi-input-select-dc
+              id="subType"
+              [label]="'COMPLAINTS.' + subTypeLabels | translate"
+              [control]="categoryForm.get('subType')"
+              [list]="subTypeList"
+              [placeholder]="'COMPLAINTS.' + subTypePlaceholders | translate"
+              (focus)="onFocus()"
+            >
+            </gosi-input-select-dc>
+          </div>
+  
+          <div class="col-lg-6" *ngIf="isTypeSelected && categoryType == 'Follow up Request'">
+            <gosi-input-number-dc
+              id="ctype"
+              [control]="categoryForm.get('complaintSubType').get('english')"
+              [label]="'COMPLAINTS.COMPLAINT-TRANSACTION-ID' | translate"
+              [placeholder]="'COMPLAINTS.COMPLAINT-TRANSACTION-ID' | translate"
+              [disabled]="transactionIds ? true : false"
+            >
+            </gosi-input-number-dc>
+          </div>
+        </div>
+        <ng-container *ngTemplateOutlet="comment"></ng-container>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <ng-template #comment>
+    <div class="row" *ngIf="!isPublicApp && isCategorySelected">
+      <div class="col-md-12">
+        <gosi-input-text-area-dc
+          (focus)="onFocus()"
+          [maxLength]="250"
+          gosiSpecialCharacterMask
+          [label]="categoryLabel | translate"
+          [control]="categoryForm.get('message')"
+          id="description"
+          [removeExtraSpecialCharacters]="true"
+          [removeSpecialCharacters]="true"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+  </ng-template>

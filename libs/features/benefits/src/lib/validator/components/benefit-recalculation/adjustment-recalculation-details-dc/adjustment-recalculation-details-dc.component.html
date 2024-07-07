@@ -1,0 +1,387 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div #allSessionWrapper class="main-wrapper mt-4 pr-2">
+  <ul class="timeline" *ngIf="benefitRecalculationDetails?.heirRecalculationDetails?.benefitPeriods?.length > 0">
+    <ng-container>
+      <li
+        class="timeline-item"
+        *ngFor="
+          let recalculationDetail of benefitRecalculationDetails?.heirRecalculationDetails?.benefitPeriods;
+          let i = index
+        "
+      >
+        <div class="timeline-badge"></div>
+        <span>
+          {{ recalculationDetail?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+          <fa-icon class="arrow" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+          <span *ngIf="recalculationDetail?.endDate; else onwards">{{
+            recalculationDetail?.endDate?.gregorian | date: 'dd/MM/yyyy'
+          }}</span>
+          <span *ngIf="recalculationDetail?.months != null"
+            >({{ recalculationDetail?.months }}{{ 'BENEFITS.MONTHS' | translate }})</span
+          >
+          | {{ 'BENEFITS.TOTAL-AMOUNT' | translate }} : {{ recalculationDetail?.totalAmount }}
+          {{ 'BENEFITS.SR' | translate }}/{{ 'BENEFITS.MONTH' | translate }}
+          <span *ngIf="recalculationDetail?.percentage != null">({{ recalculationDetail?.percentage }}%)</span>
+        </span>
+        <accordion class="dependent-accordion mx-2 w-100">
+          <ng-container>
+            <accordion-group
+              class="wrapper-accordion-group"
+              *ngFor="let heirDetail of recalculationDetail?.heirRecalculationDetails"
+            >
+              <div accordion-heading>
+                <div class="font-weight-normal">
+                  {{ heirDetail?.name | nameToString: true }} ({{ heirDetail?.relationship | bilingualText }})
+                </div>
+              </div>
+              <div class="ml-auto mr-auto" accordion-heading></div>
+              <div class="header-wrapper ml-2" accordion-heading>
+                <span> {{ 'BENEFITS.ADJUSTMENT-AMOUNT' | translate }}: </span>
+                <span
+                  class="mx-1"
+                  [ngClass]="
+                    heirDetail?.adjustmentAmount > 0
+                      ? 'text-success'
+                      : heirDetail?.adjustmentAmount < 0
+                      ? 'text-danger'
+                      : ''
+                  "
+                >
+                  {{ Math.abs(heirDetail?.adjustmentAmount) | number: '1.0-2' }} {{ 'BENEFITS.SR' | translate }}
+                </span>
+                <span class="arrow-up">
+                  <fa-icon icon="angle-up" size="lg"></fa-icon>
+                </span>
+                <span class="arrow-down">
+                  <fa-icon icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </div>
+              <div body>
+                <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <gosi-label-dc
+                        [id]="'monthly-wage'"
+                        value="{{ heirDetail?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                        [label]="'BENEFITS.REQUEST-DATE' | translate"
+                      ></gosi-label-dc>
+                    </div>
+                    <div class="col-md-4">
+                      <gosi-label-dc
+                        [id]="'start-date'"
+                        value="{{ heirDetail?.benefitStartDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                        [label]="'BENEFITS.START-DATE' | translate"
+                      ></gosi-label-dc>
+                    </div>
+                    <!-- <div class="col-md-4">
+                                            <gosi-label-dc [id]="'monthly-wage'" value="2,000 SAR"
+                                                [label]="'BENEFITS.MONTHLY-WAGE' | translate"></gosi-label-dc>
+                                        </div> -->
+                    <div class="col-md-4">
+                      <gosi-label-dc
+                        [id]="'share'"
+                        value="{{ heirDetail?.benefitShare }}"
+                        [label]="'BENEFITS.BENEFIT-SHARE' | translate"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4" *ngIf="heirDetail?.benefitStopDate">
+                      <gosi-label-dc
+                        [id]="'type'"
+                        value="{{ heirDetail?.benefitStopDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                        [label]="'BENEFITS.STOP-DATE' | translate"
+                      ></gosi-label-dc>
+                    </div>
+                    <div class="col-md-4" *ngIf="heirDetail?.reasonForStop">
+                      <gosi-label-dc
+                        [id]="'reasonForStoppingBenefit'"
+                        value="{{ heirDetail?.reasonForStop | bilingualText }}"
+                        [label]="'BENEFITS.REASON-FOR-STOPPING-BENEFIT' | translate"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-4" *ngIf="heirDetail?.lastPaymentDate">
+                      <gosi-label-dc
+                        [id]="'lastpaymentDate'"
+                        value="{{ heirDetail?.lastPaymentDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                        [label]="'BENEFITS.LAST-PAYMENT-DATE' | translate"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div
+                      class="col-md-12 header"
+                      (click)="navigateToProfileBenefit(heirDetail?.otherBenefitDetails)"
+                      ngClass="{{ heirDetail?.otherBenefitDetails ? 'full-opacity' : 'half-opacity' }}"
+                    >
+                      {{ 'BENEFITS.OTHER-BENEFITS-DETAILS' | translate }}
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-12 px-4">
+                      <table class="table table-bordered">
+                        <tbody>
+                          <tr>
+                            <td></td>
+                            <td class="benefit-heading">
+                              {{ 'BENEFITS.BEFORE-RECALCULATION' | translate }}
+                            </td>
+                            <td class="benefit-heading">
+                              {{ 'BENEFITS.AFTER-RECALCULATION' | translate }}
+                            </td>
+                          </tr>
+                          <!-- <tr>
+                                                        <td class="benefit-heading">
+                                                            {{ 'BENEFITS.BENEFIT-AMOUNT-SAR-PER-MONTH' | translate }}
+                                                        </td>
+                                                        <td class="bg-white">
+                                                            {{heirDetail?.reCalculation?.beforeRecalculation?.basicBenefitAmount}}
+                                                        </td>
+                                                        <td class="bg-white">
+                                                            {{heirDetail?.reCalculation?.afterRecalculation?.basicBenefitAmount}}
+                                                        </td>
+                                                    </tr> -->
+                          <tr>
+                            <td class="benefit-heading">
+                              {{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}
+                            </td>
+                            <td>
+                              {{ heirDetail?.reCalculation?.beforeRecalculation?.benefitAmount }}
+                            </td>
+                            <td>
+                              {{ heirDetail?.reCalculation?.afterRecalculation?.benefitAmount }}
+                            </td>
+                          </tr>
+                          <tr
+                            *ngIf="
+                              heirDetail?.reCalculation?.beforeRecalculation?.marriageGrantAmount ||
+                              heirDetail?.reCalculation?.afterRecalculation?.marriageGrantAmount
+                            "
+                          >
+                            <td class="benefit-heading">
+                              {{ 'BENEFITS.MARRIAGE-GRANT' | translate }}({{ 'BENEFITS.SR' | translate }})
+                            </td>
+                            <td class="bg-white">
+                              {{ heirDetail?.reCalculation?.beforeRecalculation?.marriageGrantAmount }}
+                            </td>
+                            <td class="bg-white">
+                              {{ heirDetail?.reCalculation?.afterRecalculation?.marriageGrantAmount }}
+                            </td>
+                          </tr>
+                          <tr
+                            *ngIf="
+                              heirDetail?.reCalculation?.beforeRecalculation?.deathGrantAmount ||
+                              heirDetail?.reCalculation?.afterRecalculation?.deathGrantAmount
+                            "
+                          >
+                            <td class="benefit-heading">
+                              {{ 'BENEFITS.DEATH-GRANT' | translate }}({{ 'BENEFITS.SR' | translate }})
+                            </td>
+                            <td class="bg-white">
+                              {{ heirDetail?.reCalculation?.beforeRecalculation?.deathGrantAmount }}
+                            </td>
+                            <td class="bg-white">
+                              {{ heirDetail?.reCalculation?.afterRecalculation?.deathGrantAmount }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </accordion-group>
+          </ng-container>
+        </accordion>
+      </li>
+    </ng-container>
+  </ul>
+  <div>{{ 'BENEFITS.NET-ADJUSTMENT-DETAILS' | translate }}</div>
+  <accordion class="dependent-accordion mx-2 w-100">
+    <ng-container>
+      <accordion-group
+        class="wrapper-accordion-group"
+        *ngFor="
+          let adjustmentDetail of benefitRecalculationDetails?.heirRecalculationDetails?.netAdjustmentDetails;
+          let i = index
+        "
+      >
+        <div accordion-heading>
+          <div class="font-weight-normal">
+            {{ adjustmentDetail?.name | nameToString: true }} ({{ adjustmentDetail?.relationship | bilingualText }})
+          </div>
+        </div>
+        <div class="ml-auto mr-auto" accordion-heading></div>
+        <div class="header-wrapper ml-2" accordion-heading>
+          <span> {{ 'BENEFITS.AMOUNT_ONLY' | translate }}: </span>
+          <span
+            class="mx-1"
+            [ngClass]="
+              adjustmentDetail?.totalAdjustmentAmount > 0
+                ? 'text-success'
+                : adjustmentDetail?.totalAdjustmentAmount < 0
+                ? 'text-danger'
+                : ''
+            "
+          >
+            {{ Math.abs(adjustmentDetail?.totalAdjustmentAmount) | number: '1.0-2' }} {{ 'BENEFITS.SR' | translate }}
+          </span>
+          <span class="arrow-up">
+            <fa-icon icon="angle-up" size="lg"></fa-icon>
+          </span>
+          <span class="arrow-down">
+            <fa-icon icon="angle-down" size="lg"></fa-icon>
+          </span>
+        </div>
+        <div class="m-3">
+          <!-- <bnt-recalculate-adjustment-dc 
+                    [benefitRecalculationDetails]="adjustmentDetail" 
+                    [lang]="lang"
+                    [hidePayment]="false" 
+                    [checkForm]="payForm" 
+                    [disableDirectPayment]="disableDirectPayment"
+                    >
+                    </bnt-recalculate-adjustment-dc> -->
+          <div class="table-responsive" *ngIf="adjustmentDetail?.adjustments?.length">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>{{ 'BENEFITS.BENEFIT-PERIOD' | translate }}</th>
+                  <th>{{ 'BENEFITS.ADJUSTMENT-TYPE-SANED' | translate }}</th>
+                  <th>{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}</th>
+                  <th>{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}</th>
+                  <th>{{ 'BENEFITS.ADJUSTMENT-AMOUNT-SANED-SAR' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let adjustment of adjustmentDetail?.adjustments">
+                  <td>
+                    <span *ngIf="adjustment?.benefitPeriodStartDate">
+                      {{
+                        getMonthLabelByPeriod(adjustment?.benefitPeriodStartDate)
+                          | translate: { year: adjustment?.benefitPeriodStartDate?.gregorian | date: 'y' }
+                      }}
+                      <fa-icon class="arrow" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+                    </span>
+                    <span *ngIf="adjustment?.benefitPeriodStopDate; else Onwards">
+                      {{
+                        getMonthLabelByPeriod(adjustment?.benefitPeriodStopDate)
+                          | translate: { year: adjustment?.benefitPeriodStopDate?.gregorian | date: 'y' }
+                      }}
+                    </span>
+                    <span class="mx-1"></span>
+                    <span class="border rounded-circle p-2 border-primary" *ngIf="adjustment?.periodId">{{
+                      adjustment?.periodId
+                    }}</span>
+                    <ng-template #Onwards>
+                      <ng-container *ngIf="adjustment?.benefitPeriodStartDate">
+                        {{ 'BENEFITS.ONWARDS' | translate }}
+                      </ng-container>
+                    </ng-template>
+                  </td>
+                  <td>{{ adjustment?.adjustmentType | bilingualText }}</td>
+                  <td>
+                    <ng-container *ngIf="adjustment?.adjustmentPercentage; else noData">
+                      {{ adjustment?.adjustmentPercentage }} %
+                    </ng-container>
+                    <ng-template #noData> - </ng-template>
+                  </td>
+                  <td>{{ adjustment?.adjustmentReason | bilingualText }}</td>
+                  <td>{{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-end py-3 mx-2">
+            {{ 'BENEFITS.TOTAL-ADJUSTMENT-LBL' | translate }} :
+            <span
+              [ngClass]="
+                adjustmentDetail?.totalAdjustmentAmount > 0
+                  ? 'text-success'
+                  : adjustmentDetail?.totalAdjustmentAmount < 0
+                  ? 'text-danger'
+                  : ''
+              "
+            >
+              {{ Math.abs(adjustmentDetail?.totalAdjustmentAmount.toFixed(2)) }} {{ 'BENEFITS.SR' | translate }}
+            </span>
+          </div>
+          <div class="row">
+            <div class="col-lg-4 pb-3">
+              <label class="mb-0 custom-label">{{ 'BENEFITS.PRE-ADJUSTMENT' | translate }}</label>
+              <div
+                id="recalculationPreviousAdjustmentHeir"
+                class="custom-value"
+                ngClass="{{
+                  adjustmentDetail?.previousAdjustmentAmount > 0
+                    ? 'text-success'
+                    : adjustmentDetail?.previousAdjustmentAmount < 0
+                    ? 'text-danger'
+                    : ''
+                }}"
+              >
+                {{ Math.abs(adjustmentDetail?.previousAdjustmentAmount.toFixed(2)) }} {{ 'BENEFITS.SR' | translate }}
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <gosi-label-dc
+                id="viewPreviousAdjustment"
+                [label]="'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate"
+                [value]="'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate"
+                (select)="onViewPreviousDetails(adjustmentDetail?.personId)"
+                [ignoreLabel]="true"
+                [isLink]="true"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-4" *ngIf="adjustmentDetail?.netAdjustmentAmount != null">
+              <label class="mb-0 custom-label">{{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }}</label>
+              <div
+                id="netAdjustmentAmountRecalculationHeir"
+                class="custom-value"
+                ngClass="{{
+                  adjustmentDetail?.netAdjustmentAmount > 0
+                    ? 'text-success'
+                    : adjustmentDetail?.netAdjustmentAmount < 0
+                    ? 'text-danger'
+                    : ''
+                }}"
+              >
+                {{ Math.abs(adjustmentDetail?.netAdjustmentAmount.toFixed(2)) }} {{ 'BENEFITS.SR' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="row mx-0 mt-5" *ngIf="adjustmentDetail?.netAdjustmentAmount != null">
+            <div class="col-lg-12 px-0">
+              <gosi-input-checkbox-dc
+                id="benefitDirectPaymentHeir"
+                name="benefitDirectPaymentHeir"
+                [control]="paymentFormArray.controls[i].get('directPaymentStatus')"
+                [label]="'ADJUSTMENT.ALLOW-DIRECT-PAYMENT' | translate"
+                [disabled]="disableDirectPayment"
+                (select)="onSelected($event, adjustmentDetail?.personId)"
+              >
+              </gosi-input-checkbox-dc>
+            </div>
+          </div>
+        </div>
+      </accordion-group>
+    </ng-container>
+  </accordion>
+</div>
+<div *ngIf="false" class="no-result d-flex align-items-center justify-content-center">
+  <gosi-no-result-dc></gosi-no-result-dc>
+</div>
+<ng-template #nullValue>
+  <div class="null-value">—</div>
+</ng-template>
+<ng-template #onwards>
+  {{ 'BENEFITS.ONWARDS' | translate }}
+</ng-template>

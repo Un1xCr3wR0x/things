@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="mobile-view">
+  <div
+    *ngFor="
+      let historyList of filteredHistory
+        | paginate: { id: id, itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalItems };
+      let i = index;
+      let odd = odd
+    "
+  >
+    <vol-violation-history-card-dc
+      [transaction]="historyList"
+      [index]="(currentPage - 1) * pageSize + i"
+      [odd]="odd"
+      [accessRoles]="accessRoles"
+      (click)="navigateToHistory(historyList.violationId)"
+    >
+    </vol-violation-history-card-dc>
+  </div>
+</div>
+<div class="desktop-view">
+  <div class="row mt-4">
+    <div class="col-lg-12 table-head-padding">
+      <div class="table-responsive">
+        <div class="table-worklist">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">
+                  {{ 'VIOLATIONS.VIOLATION-NUMBER' | translate }}
+                </th>
+                <th scope="col">
+                  {{ 'VIOLATIONS.VIOLATION-TYPE' | translate }}
+                </th>
+                <th scope="col">
+                  {{ 'VIOLATIONS.HISTORY-LETTER-DATE' | translate }}
+                </th>
+                <th scope="col" *gosiShow="accessRoles">
+                  {{ 'VIOLATIONS.INSPECTION-CHANNEL' | translate }}
+                </th>
+                <th scope="col">
+                  {{ 'VIOLATIONS.PENALTY-AMOUNT' | translate }}
+                </th>
+                <th scope="col">
+                  {{ 'VIOLATIONS.AMOUNT-PAID' | translate }}
+                </th>
+                <th scope="col">
+                  {{ 'VIOLATIONS.STATUS' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="history-content" *ngFor="let historyList of filteredHistory; let i = index">
+                <td class="violation-column" (click)="navigateToHistory(historyList.violationId)">
+                  {{ historyList.violationId ? historyList.violationId : '-' }}
+                </td>
+                <td>{{ historyList.violationType ? (historyList.violationType | bilingualText) : '-' }}</td>
+                <td>
+                  {{ historyList.violationLetterDate ? (historyList.violationLetterDate | dateType | formatDate) : '-' }}
+                </td>
+                <td *gosiShow="accessRoles">{{ historyList.channel ? (historyList.channel | bilingualText) : '-' }}</td>
+                <td>
+                  {{
+                    historyList?.penaltyAmount
+                      ? (historyList?.penaltyAmount | number: '1.2-2')
+                      : historyList?.penaltyAmount === 0 &&
+                        historyList?.approvedViolationClass?.english != doNotImposePenalty
+                      ? '0.00'
+                      : ('VIOLATIONS.PENALTY-AMOUNT-FOR-DONOT-IMPOSE-PENALTY' | translate)
+                  }}
+                </td>
+                <td>{{ historyList?.paidAmount ? (historyList?.paidAmount | number: '1.2-2') : '-' }}</td>
+                <td>
+                  <gosi-status-badge-dc
+                    [label]="getStatus(historyList.status.english) | bilingualText"
+                    [type]="statusBadgeType(historyList.status.english)"
+                  >
+                  </gosi-status-badge-dc>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

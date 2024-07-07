@@ -1,0 +1,1124 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content" *ngIf="acitveBenefit">
+  <div class="row no-gutters">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ heading ? (heading | translate) : (acitveBenefit?.benefitType | bilingualText) }}
+    </div>
+
+    <div class="pr-3 py-3" *ngIf="activeBenefitDetails?.isEnableReturnEligible">
+      <ng-container *gosiShow="restoreLumpsumAccess">
+        <gosi-button-dc
+        [disabled]="eligibleForPensionReform"
+        id="restoreLumpsum"
+        size="sm"
+        (click)="!eligibleForPensionReform ? navigateToRestoreLumpsum() :null">
+          {{ 'BENEFITS.ENABLE-RETURN-LUMPSUM-HEADING' | translate }}
+        </gosi-button-dc>
+      </ng-container>
+    </div>
+
+    <div class="col-auto mr-0" *ngIf="showActionButton()">
+      <ng-container *gosiShow="accessForActionPrivate">
+        <gosi-button-dc
+          [disabled]="actionButtonDisabled || isPersonWithoutId"
+          type="primary"
+          id="actionButton"
+          [popover]="!(actionButtonDisabled || isPersonWithoutId) ? optionsModal : ''"
+          placement="bottom right"
+          size="sm"
+        >
+          {{ 'BENEFITS.ACTIONS' | translate }}
+          <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+        </gosi-button-dc>
+      </ng-container>
+    </div>
+    <div class="col-md-12">
+      <gosi-alert-dc
+        *ngIf="isPersonWithoutId"
+        type="danger"
+        [dismissible]="false"
+        [message]="'BENEFITS.NO-PERSONAL-DETAILS-ERROR' | translate"
+      >
+      </gosi-alert-dc>
+      <gosi-alert-sc></gosi-alert-sc>
+      <gosi-alert-dc
+        *ngIf="activeBenefitDetails?.startDateGreaterThanStopDate"
+        [dismissible]="false"
+        [details]="[]"
+        type="warning"
+      >
+        <div actOnAlert>
+          {{ 'BENEFITS.START-DATE-GREATER-THAN-STOP-DATE' | translate }}
+        </div>
+      </gosi-alert-dc>
+    </div>
+
+    <!-- Contributor Details -->
+    <div
+      class="col-md-12 pt-4"
+      *ngIf="
+        !isHeir &&
+        !(
+          isIndividualApp &&
+          (isSaned ||
+            benefitType === BenefitType.retirementPension ||
+            benefitType === BenefitType.retirementLumpsum ||
+            benefitType === BenefitType.occBenefit ||
+            benefitType === BenefitType.nonOcc ||
+            benefitType === BenefitType.nonOccPensionBenefitType ||
+            benefitType === BenefitType.hazardousLumpsum ||
+            benefitType === BenefitType.hazardousPension ||
+            benefitType === BenefitType.occPension ||
+            benefitType === BenefitType.occLumpsum ||
+            benefitType === BenefitType.nonOccLumpsumBenefitType ||
+            benefitType === BenefitType.nonOccPensionType ||
+            benefitType === BenefitType.earlyretirement)
+        )
+      "
+    >
+     
+<div *ngIf="activeBenefitDetails?.isEnableReturnEligible && eligibleForPensionReform">
+  <div class="flex-row statusMessage">
+    <div class="d-flex">
+      <fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon>
+      <span> {{ 'BENEFITS.CONTRIBUTOR-ELIGIBLE-NEW-SOCIAL-INSURANCE-LAW' | translate}}</span>
+    </div>
+  </div>
+</div>
+
+
+      <gosi-card-dc
+        type="secondary"
+        class="custom-card"
+        headingSize="md"
+        heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+      >
+        <div class="row">
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="contributorName"
+              [value]="activeBenefitDetails?.contributorName | bilingualText"
+              label="{{ 'BENEFITS.CONTRIBUTOR-NAME' | translate }}"
+              [noMargin]="true"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-4">
+            <gosi-label-dc
+              id="nationalId"
+              [value]="activeBenefitDetails?.nin ? activeBenefitDetails?.nin : activeBenefitDetails?.identityValue?.id"
+              [isLink]="true"
+              [label]="
+                activeBenefitDetails?.nin
+                  ? ('BENEFITS.NATIONAL-ID' | translate)
+                  : ('BENEFITS.' + activeBenefitDetails?.identityValue?.idType | translate)
+              "
+              [noMargin]="true"
+              (select)="viewContributorDetails()"
+            ></gosi-label-dc>
+          </div>
+        </div>
+
+        <ng-container *ngIf="activeBenefitDetails?.isReturnEligible === true">
+<!--          this.benefitType !== BenefitType.nonSaudiLumpsum-->
+          <ng-container [ngTemplateOutlet]="eligibleForPensionReform ? eprTemplate : notEprTemplate"></ng-container>
+          <ng-template #eprTemplate>
+            <gosi-alert-dc
+              [dismissible]="false"
+              [message]="'BENEFITS.CONTRIBUTOR-ELIGIBLE-NEW-SOCIAL-INSURANCE-LAW' | translate"
+              type="warning"
+            >
+              <gosi-button-dc
+                actOnAlert
+                *gosiShow="returnLumpsumAccess"
+                [disabled]="true"
+                size="sm"
+              >
+                {{ 'BENEFITS.RETURN-BENEFIT-AMOUNT' | translate }}
+              </gosi-button-dc>
+            </gosi-alert-dc>
+          </ng-template>
+          <ng-template #notEprTemplate>
+              <div class="flex-row statusMessage">
+                <div class="d-flex">
+                  <fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon>
+                  <span> {{ 'BENEFITS.RETURN-LUMPSUM-MSG-TXT' | translate }}</span>
+                </div>
+                <br/>
+                <div class="col-md-12 ml-3 contribution-month">
+                  <gosi-label-dc
+                    id="contributionMonths"
+                    label="{{ 'BENEFITS.CONTRIBUTION-MONTHS-CREDITED' | translate }}"
+                    [value]="activeBenefitDetails?.contributionMonthsToBeCredited || 0"
+                  ></gosi-label-dc>
+                </div>
+                <div class="col-md-12 ml-3 return-btn">
+                  <!-- *gosiShow="!noAccessRoles" -->
+                  <ng-container *gosiShow="returnLumpsumAccess">
+                    <gosi-button-dc
+                      size="sm"
+                      (click)="navigateToReturnLumpsum()">
+                      {{ 'BENEFITS.RETURN-BENEFIT-AMOUNT' | translate }}
+                    </gosi-button-dc>
+                  </ng-container>
+                </div>
+              </div>
+          </ng-template>
+        </ng-container>
+
+      </gosi-card-dc>
+    </div>
+    <!-- Benefit Details -->
+    <div class="col-md-12 mt-3" *ngIf="activeBenefitDetails">
+      <bnt-benefit-detail-dc
+        [acitveBenefit]="acitveBenefit"
+        [benefitDetails]="benefitHistoryDetails"
+        [activeBenefitDetails]="activeBenefitDetails"
+        [benefeciaryStatus]="benefeciaryStatus"
+        [disabilityDetails]="disabilityDetails"
+        [isHeir]="isHeir"
+        [isLumpsum]="isLumpsum"
+        [isSaned]="isSaned"
+        [benefitType]="benefitType"
+        [lang]="lang"
+        (showModalEvent)="showModal($event)"
+        (close)="hideModal()"
+        [benefitCalculation]="benefitCalculation"
+        [eligibleForPensionReform]="eligibleForPensionReform"
+      ></bnt-benefit-detail-dc>
+    </div>
+
+    <div class="col-sm-12" *ngIf="acitveBenefit?.warningMessages && acitveBenefit?.warningMessages.length">
+      <div *ngFor="let warningMessage of acitveBenefit?.warningMessages">
+        <gosi-alert-dc [bilingualMessage]="warningMessage" type="warning" [dismissible]="false"></gosi-alert-dc>
+      </div>
+    </div>
+    <!--Medical assessment-->
+
+    <div class="col-md-12 mt-3">
+      <gosi-card-dc
+        *ngIf="assessment"
+        type="secondary"
+        [heading]="'OCCUPATIONAL-HAZARD.MEDICALBOARD-ASSESSMENT' | translate"
+        headingSize="md"
+      >
+        <gosi-ui-medicalboard-assessment-schedule-dc
+          *ngIf="assessment"
+          [assessmentDetails]="assessment"
+          (show)="showModalAccept($event)"
+          (cancelassessment)="hideassessmentModal()"
+          [temp]="att"
+          (confirmassessment)="confirmInvitation($event)"
+          (showreschedule)="showreschedule($event)"
+          [heading]="'OCCUPATIONAL-HAZARD.RESCHEDULE-ASSESSMENT'"
+        ></gosi-ui-medicalboard-assessment-schedule-dc>
+      </gosi-card-dc>
+    </div>
+    <ng-template #att>
+      <gosi-ui-medicalboard-reschedule-dc
+        [heading]="'OCCUPATIONAL-HAZARD.RESCHEDULE-ASSESSMENT'"
+        (showrescheduleModal)="showModalReschedule($event)"
+        (finalconfirmReschedule)="confirmrescheduleInvitation()"
+        (finalCancelreschedule)="finalCancelreschedule()"
+        [locationList]="fieldOfficeList$ | async"
+        [minDateValue]="minDate"
+        [sessionnumber]="sessionnumber"
+        (locationListModified)="onLocationListModified($event)"
+        [invitenumber]="invitenumber"
+        [maxDateValue]="maxDate"
+        [availableArray]="availableArray"
+        [unavailableArray]="unavailableArray"
+        (locationChange)="getLocation($event)"
+        (dateChange)="onDateChange($event)"
+        (eventChange)="onEventChange($event)"
+        [parentForm]="parentForm"
+        [sessionTimeList]="sessionTimeList"
+        [isDisabled]="isDisabled"
+        (setTime)="BindAssessmentTime($event)"
+        [fullyFilled]="fullyFilled"
+        [noSessions]="noSessions"
+        [onHold]="onHold"
+        [noSessionscalendar]="noSessionscalendar"
+        (onCancelreschedule)="hiderescheduleModal()"
+        [virtual]="virtual"
+        [assessmentDetailsreschedule]="assessment"
+      >
+      </gosi-ui-medicalboard-reschedule-dc>
+    </ng-template>
+    <!-- Adjustments -->
+    <div
+      class="col-md-12"
+      *ngIf="!isIndividualApp && !isHeir && benefitType !== BenefitType.funeralGrant && adjustmentDetailsData"
+    >
+      <bnt-adjustment-details-dc
+        [adjustmentsDetails]="adjustmentDetailsData"
+        [adjustmentEligibility]="adjustmentEligibility"
+        (navigateToAdd)="navigateToAddModify()"
+        (navigateToAddModify)="navigateToAddModify()"
+        (navigateToAdjustmentById)="navigateToAdjustment($event)"
+        (showEligibilityModal)="showEligibilityPopup()"
+      ></bnt-adjustment-details-dc>
+    </div>
+    <!-- Imprisonment Details Modify -->
+    <div *ngIf="imprisonmentDetails?.imprisonmentPeriod" class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        class="custom-card"
+        heading="{{ 'BENEFITS.IMPRISONMENT-DETAILS' | translate }}"
+        lessPadding="true"
+        [accessRoles]="isIndividualApp ? individualAppAccess : true"
+        [canEdit]="isImprisonment && isImprisonEdit"
+        (edit)="navigateToModifyImprisonment()"
+      >
+        <div
+          class="row"
+          *ngIf="
+            imprisonmentDetails?.imprisonmentPeriod?.enteringDate?.gregorian &&
+            imprisonmentDetails?.imprisonmentPeriod?.releaseDate?.gregorian
+          "
+        >
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="imprisonmentPeriod"
+              label="{{ 'BENEFITS.IMPRISONMENT-PERIOD' | translate }}"
+              value="{{ imprisonmentDetails?.imprisonmentPeriod?.enteringDate | dateType }} {{ '>' }}
+                  {{ imprisonmentDetails?.imprisonmentPeriod?.releaseDate | dateType }} "
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div
+          class="row"
+          *ngIf="
+            imprisonmentDetails?.imprisonmentPeriod?.enteringDate?.gregorian &&
+            !imprisonmentDetails?.imprisonmentPeriod?.releaseDate?.gregorian
+          "
+        >
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="imprisonmentPeriod"
+              label="{{ 'BENEFITS.IMPRISONMENT-PERIOD' | translate }}"
+              value="{{ imprisonmentDetails?.imprisonmentPeriod?.enteringDate | dateType }} {{ '>' }}
+                  {{ 'BENEFITS.ONWARDS' | translate }} "
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <tabset [justified]="false" type="tabs" *ngIf="!isHeir" class="pension-listing-tabset">
+    <!-- payment tab section -->
+    <tab
+      [active]="currentTab === 0"
+      heading="{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}"
+      id="paymentTab"
+      (selectTab)="onPaymentHistoryTabSelected()"
+    >
+      <div class="row no-gutters my-4">
+        <div class="col-md-12">
+          <ng-container
+            *ngIf="benefitPaymentDetails && benefitPaymentDetails.message && benefitPaymentDetails.messageType"
+          >
+            <ng-container *ngIf="benefitPaymentDetails.messageType === 'info'">
+              <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="info" [dismissible]="false">
+              </gosi-alert-dc>
+            </ng-container>
+            <ng-container *ngIf="benefitPaymentDetails.messageType === 'success'">
+              <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="success" [dismissible]="false">
+              </gosi-alert-dc>
+            </ng-container>
+            <ng-container *ngIf="benefitPaymentDetails.messageType === 'warning'">
+              <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="warning" [dismissible]="false">
+              </gosi-alert-dc>
+            </ng-container>
+            <ng-container *ngIf="benefitPaymentDetails.messageType === 'error'">
+              <gosi-alert-dc [bilingualMessage]="benefitPaymentDetails.message" type="danger" [dismissible]="false">
+              </gosi-alert-dc>
+            </ng-container>
+          </ng-container>
+          <bnt-payment-tab-details-dc
+            [benefitPaymentDetails]="benefitPaymentDetails"
+            [benefitCalculation]="benefitCalculation"
+            [benefitDetails]="benefitHistoryDetails"
+            [activeBenefitDetails]="activeBenefitDetails"
+            [isAppPrivate]="isAppPrivate"
+            [isIndividualApp]="isIndividualApp"
+            [benefitType]="benefitType"
+            [paymentEventsList]="paymentEventsList$ | async"
+            [paymentStatusList]="paymentStatusList$ | async"
+            [isLumpsum]="isLumpsum"
+            [isSaned]="isSaned"
+            [simisPaymentHistory$]="simisPaymentHistory$"
+            [mainframePaymentHistory$]="mainframePaymentHistory$"
+            [simisSanedPaymentHistory$]="simisSanedPaymentHistory$"
+            [personDetails]="personDetails"
+            [lang]="lang"
+            (edit)="navigateToModifyCommitment()"
+            (add)="showCommitment(addCommitment)"
+            (view)="showCommitment(viewCommitment)"
+            (remove)="removeCommitment()"
+            (paymentFilterEvent)="filterPaymentHistory($event)"
+            (navigateToAdjustmentDetails)="navigateToAdjustmentDetails()"
+            (showAdjustmentPopUp)="viewAdjustmentModal($event)"
+          ></bnt-payment-tab-details-dc>
+        </div>
+      </div>
+    </tab>
+    <tab
+      *ngIf="isSaned"
+      heading="{{ 'BENEFITS.SANED-HISTORY' | translate }}"
+      id="saned-history"
+      (selectTab)="loadSanedHistory()"
+    >
+      <bnt-saned-history-dc *ngIf="sanedHistory" [lang]="lang" [history]="sanedHistory"></bnt-saned-history-dc>
+    </tab>
+    <tab
+      [active]="currentTab === 1"
+      heading="{{ 'BENEFITS.DEP-DETAILS' | translate }}"
+      id="dependenttab"
+      *ngIf="!isLumpsum && !isSaned && benefitType !== BenefitType.funeralGrant && eligibleForDependentComponent"
+      (selectTab)="onDependentTabSelected()"
+    >
+      <div class="row no-gutters my-4">
+        <div class="col-md-12 d-flex align-items-center">
+          <span class="dep-heading">{{ 'BENEFITS.ALL-DEPENDENTS' | translate }}</span>
+          <span class="ml-auto option-model" *ngIf="eligibleForDependentComponent && !isIndividualApp">
+            <!--  <gosi-button-dc
+              type="primary"
+              id="addModifyDependent"
+              size="sm"
+              (click)="navigateToModify()"
+              class="d-flex btn text-left option-button"
+            >
+              {{ 'BENEFITS.ADD-MODIFY-DEP' | translate }}
+            </gosi-button-dc> -->
+            <ng-container *gosiShow="accessForActionPrivate">
+              <gosi-button-dc
+                [disabled]="actionButtonDisabled || isPersonWithoutId"
+                [popover]="!(actionButtonDisabled || isPersonWithoutId) ? dependentOptionsModal : ''"
+                type="primary"
+                id="actionButton"
+                placement="bottom right"
+                size="sm"
+              >
+                {{ 'BENEFITS.ACTIONS' | translate }}
+                <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+      <div class="table-worklist">
+        <table class="table table-condensed overflow-auto w-100" *ngIf="!isHeir && dependentDetails">
+          <thead class="table-header">
+          <tr>
+            <th>
+              {{ 'BENEFITS.DEPENDENT-NAME' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.DATE-OF-BIRTH-AGE' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.DEPENDENT-STATUS' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.LAST-STATUS-DATE' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.ELIGIBLITY-STATUS' | translate }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr
+            *ngFor="let eachDepenent of dependentDetails"
+            (click)="onDependentEntryCLick(eachDepenent)"
+            class="data-row"
+          >
+            <td>
+              <span class="name-value">{{ eachDepenent.name | nameToString: true }}</span>
+              <div *ngIf="eachDepenent.identity[eachDepenent?.identity?.length - 1]" class="d-block nin-text">
+                <span>{{ getIdLabel(eachDepenent.identity[eachDepenent?.identity?.length - 1]) | translate }} :</span>
+                {{ eachDepenent.dependentIdentifier?.id }}
+              </div>
+            </td>
+            <td class="vAlign">
+              {{ eachDepenent.relationship | bilingualText }}
+            </td>
+            <td *ngIf="eachDepenent.birthDate">
+              {{ eachDepenent.birthDate?.gregorian | date: 'dd/MM/yyyy' }} ({{ eachDepenent.gregorianAge | number }})
+              <div class="d-block">
+                {{ eachDepenent.birthDate?.hijiri | date: 'dd/MM/yyyy' }} ({{ eachDepenent.age | number }})
+              </div>
+            </td>
+            <td *ngIf="!eachDepenent.birthDate">-</td>
+            <td class="vAlign">
+              {{ eachDepenent.heirStatus | bilingualText }}
+            </td>
+            <td class="vAlign">
+              <span>{{ (eachDepenent.lastStatusDate | dateType) || '-' }} </span>
+            </td>
+            <td class="vAlign no-space">
+                <span
+                  [ngClass]="
+                    eachDepenent?.status?.english === 'Active'
+                      ? 'status-active'
+                      : eachDepenent?.status?.english === 'Inactive'
+                      ? 'status-inactive'
+                      : 'status-inactive'
+                  "
+                >{{ eachDepenent.status | bilingualText }}</span
+                >
+              <span *ngIf="eachDepenent.status?.english === 'On Hold' || eachDepenent.status?.english === 'OnHold'">
+                  <!-- Defect 555922 : info icon is completely missing in Mobile view -->
+                <!-- [ngClass]="isSmallScreen ? 'info-icon' : ''" -->
+                  <fa-icon
+                    class="blue-info"
+                    icon="info-circle"
+                    [placement]="lang === 'en' ? 'right' : 'left'"
+                    [tooltip]="toolTipTemplate"
+                  ></fa-icon>
+                  <ng-template #toolTipTemplate
+                  >{{ 'BENEFITS.HOLD-REASON' | translate }} :
+                    {{ eachDepenent?.holdStopDetails?.reason || '-' | bilingualText }}
+                  </ng-template>
+                </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row no-gutters">
+        <div class="col-sm-12 col-md-12">
+          <bnt-dependent-history-dc
+            *ngIf="dependentDetails"
+            [lang]="lang"
+            [isIndividualApp]="isIndividualApp"
+            [dependentHistory]="dependentHistory"
+            [systemRunDate]="systemRunDate"
+            [systemParameter]="systemParameter"
+            [dependentEventsList]="dependentEventsList$ | async"
+            [dependentDetails]="dependentDetails"
+            (dependentFilterEvent)="filterDependentHistory($event)"
+            (showDisabilityPopup)="showDisabilityPopup(disabilityPopupTemplate, $event)"
+          >
+          </bnt-dependent-history-dc>
+        </div>
+      </div>
+    </tab>
+    <tab
+      *ngIf="
+        (benefitType === BenefitType.occPension ||
+          benefitType === BenefitType.nonOccPensionBenefitType ||
+          benefitType === BenefitType.nonOccPensionBenefit ||
+          benefitType === BenefitType.nonOcc ||
+          benefitType === BenefitType.nonOccPensionType ||
+          benefitType === BenefitType.occLumpsum ||
+          benefitType === BenefitType.nonOccLumpsumBenefitType) &&
+        (isAppPrivate || isIndividualApp) &&
+        disabilityDetails?.length
+      "
+      heading="{{ 'BENEFITS.DISABILITY-ASSESSMENT-DETAILS' | translate }}"
+      id="disabilityAssessmentTab"
+    >
+      <div class="row no-gutters">
+        <div class="col-sm-12 col-md-12 mt-2 mb-0 pt-4 pb-0">
+          <bnt-disability-assessment-timeline-dc
+            [disabilityDetails]="disabilityDetails"
+            [isIndividualApp]="isIndividualApp"
+            (accept)="onAccept($event)"
+            [benefitType]="benefitType"
+            [lang]="lang"
+            [mbAllowanceDto]="mbAllowanceDto"
+            (appeal)="onAppeal($event)"
+            (onInjuryIdClicked)="navigateToInjurypage()"
+            (onNavigateDisabilityAssessment)="onNavigateDisabilityAssessment($event)"
+            (clickPaymentId)="getAllowance($event)"
+          >
+          </bnt-disability-assessment-timeline-dc>
+        </div>
+      </div>
+    </tab>
+    <tab
+      *ngIf="isAppPrivate"
+      heading="{{ 'BENEFITS.TRANSACTION-HISTORY' | translate }}"
+      id="transactionHistoryTab"
+      (selectTab)="onTransactionTabSelected()"
+    >
+      <bnt-transaction-history-dc
+        [transactionStatusList]="transactionStatusList$ | async"
+        [transactions]="transactions"
+        [ifTransactionHistory]="ifTransactionHistory"
+        (onSearchTransactionId)="onSearchTransactionId($event)"
+        (transactionFilterEvent)="transactionHistoryFilter($event)"
+        (goToTransaction)="goToTransaction($event)"
+      ></bnt-transaction-history-dc>
+    </tab>
+    <tab
+      *ngIf="isAppPrivate"
+      heading="{{ 'BENEFITS.DOCUMENTS_REGISTER' | translate }}"
+      id="documentsTab"
+      class="pt-4"
+      (selectTab)="onDocumentTabSelected()"
+    >
+      <bnt-documents-tab-dc
+        [scannedDocuments]="scannedDocuments"
+        (addDocumentEvent)="navigateToAddDocuments()"
+      ></bnt-documents-tab-dc>
+    </tab>
+  </tabset>
+  <!--Heir details with tabs-->
+  <tabset [justified]="false" type="tabs" *ngIf="isHeir" class="pension-listing-tabset">
+    <tab heading="{{ 'BENEFITS.HEIR_DETAILS' | translate }}" id="heirtab">
+      <div class="row mb-4 mt-4">
+        <div class="col-md-12 d-flex align-items-center">
+          <span class="ml-auto option-model">
+            <ng-container *gosiShow="accessForActionPrivate">
+              <gosi-button-dc
+                [disabled]="actionButtonDisabled || isPersonWithoutId"
+                [popover]="!(actionButtonDisabled || isPersonWithoutId) ? optionsModal : ''"
+                type="primary"
+                id="actionButton"
+                placement="bottom right"
+                size="sm"
+              >
+                {{ 'BENEFITS.ACTIONS' | translate }}
+                <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+              </gosi-button-dc>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+      <div class="table-worklist" *ngIf="heirDetails">
+        <table class="table table-condensed overflow-auto w-100">
+          <thead>
+          <tr>
+            <th>
+              {{ 'BENEFITS.HEIR_NAME' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.RELATIONSHIP-WITH-CONTRI' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.DATE-OF-BIRTH-AGE-CAP' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.HEIR-STATUS-CAP' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.LAST-STATUS-DATE-CAP' | translate }}
+            </th>
+            <th>
+              <ng-template #toolTipTemplate>{{ 'BENEFITS.LAST-BENEFIT-DATE-INFO' | translate }}</ng-template>
+
+              {{ 'BENEFITS.LAST-BENEFIT-PAYMENT-DATE-CAP' | translate }}
+              <fa-icon
+                [ngClass]="isSmallScreen ? 'info-icon' : ''"
+                [icon]="['fas', 'info-circle']"
+                [placement]="lang === 'en' ? 'right' : 'left'"
+                [tooltip]="toolTipTemplate"
+              ></fa-icon>
+            </th>
+            <th>
+              {{ 'BENEFITS.BENEFIT-AMOUNT-SAR-MONTH' | translate }}
+            </th>
+            <th>
+              {{ 'BENEFITS.ELIGIBLITY-STATUS-CAP' | translate }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let eachDepenent of heirDetails; let i = index" class="data-row">
+            <td>
+              <div class="d-block">
+                {{ eachDepenent?.name | nameToString: true }}
+              </div>
+              <div *ngIf="eachDepenent?.identity?.length > 0" class="d-block nin-text">
+                <!-- <span>{{ 'BENEFITS.NIN-ID' | translate }} :</span>
+                {{ eachDepenent.identity[0]?.newNin }} -->
+                <span>{{ checkIdentityLabel(i) | translate }} : {{ checkIdentity(i) }}</span>
+              </div>
+              <div *ngIf="(eachDepenent?.identity)[0]?.iqamaNo" class="d-block nin-text">
+                <span>{{ 'BENEFITS.IQAMA-NUMBER' | translate }} :</span>
+                {{ (eachDepenent?.identity)[0]?.iqamaNo }}
+              </div>
+            </td>
+            <td>
+              {{ eachDepenent.relationship | bilingualText }}
+            </td>
+            <td *ngIf="eachDepenent.birthDate">
+              {{ eachDepenent.birthDate?.gregorian | date: 'dd/MM/yyyy' }}({{ eachDepenent.gregorianAge | number }})
+              <div class="d-block">
+                {{ eachDepenent.birthDate?.hijiri | date: 'dd/MM/yyyy' }}({{ eachDepenent.age | number }})
+              </div>
+            </td>
+            <td *ngIf="!eachDepenent.birthDate">-</td>
+            <td>
+              {{ eachDepenent.heirStatus | bilingualText }}
+            </td>
+            <td>
+              <span>{{ (eachDepenent.lastStatusDate | dateType) || '-' }} </span>
+            </td>
+            <td>
+              {{ (eachDepenent.lastPaidDate | dateType) || '-' }}
+            </td>
+            <td>
+              {{ eachDepenent.benefitAmount || '-' }}
+            </td>
+            <td>
+                <span
+                  [ngClass]="
+                    eachDepenent?.status?.english === 'Active'
+                      ? 'status-active'
+                      : eachDepenent?.status?.english === 'Inactive'
+                      ? 'status-inactive'
+                      : 'status-inactive'
+                  "
+                >{{ eachDepenent.status | bilingualText }}</span
+                >
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </tab>
+    <tab heading="{{ 'BENEFITS.HEIR-BENEFIT-HISTORY' | translate }}" id="historytab">
+      <div class="row mt-4">
+        <div class="col-md-12">
+          <!-- <bnt-applied-filters-dc [filters]="ownerFilters" (clearFilter)="filterOwners($event)"></bnt-applied-filters-dc> -->
+        </div>
+        <div class="col-md-12 d-flex align-items-center">
+          <span class="ml-auto">
+            <bnt-benefit-history-filter-dc
+              [heirList]="heirList | async"
+              (heirDetailsFilter)="filterTransactions($event)"
+            >
+            </bnt-benefit-history-filter-dc>
+          </span>
+        </div>
+      </div>
+      <div class="row" *ngIf="heirHistoryDetails && heirHistoryDetails.length > 0">
+        <div class="col-md-12" *ngFor="let heirHistory of heirHistoryDetails; let i = index">
+          <bnt-timeline-dc *ngIf="heirHistory" [isFirstItem]="i === 0">
+            <div class="row" *ngIf="heirHistory?.startDate" timeline-date>
+              <div class="col-md-12 flag-timeline">
+                <span class="flag-date">{{ heirHistory?.startDate | dateType }}</span>
+                <span class="pr-1 pl-2 arrow-icons">
+                  <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                  <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                </span>
+                <span class="pl-1 flag-date" *ngIf="heirHistory?.stopDate">{{ heirHistory?.stopDate | dateType }}</span>
+                <span class="flag-endDate" *ngIf="!heirHistory?.stopDate"> {{ 'BENEFITS.ONWARDS' | translate }}</span>
+              </div>
+            </div>
+            <div class="row" *ngIf="!heirHistory?.amount && heirHistory?.statusDate" timeline-date>
+              <div class="col-md-12 flag-timeline">
+                <span class="flag-date">{{ heirHistory?.statusDate | dateType }}</span>
+              </div>
+            </div>
+            <div class="row" timeline-content>
+              <gosi-card-dc class="col-lg-12" type="secondary" class="custom-card" [lessPadding]="true">
+                <div class="row pt-3">
+                  <div class="col-md-5">
+                    <span class="dependents-type">{{ heirHistory.name | bilingualText }}</span>
+                    <span *ngIf="heirHistory.nin" class="relation"> ({{ 'BENEFITS.RELATION' | translate }}</span>
+                    <span *ngIf="heirHistory.nin" class="relation">
+                      : {{ heirHistory.relationship | bilingualText }})</span
+                    >
+                    <div class="d-block mt-2" *ngIf="heirHistory && heirHistory.amount">
+                      <span *ngIf="heirHistory.nin" class="relation"> {{ 'BENEFITS.NIN-ID' | translate }}</span>
+                      <span *ngIf="heirHistory.nin" class="relation"> : {{ heirHistory.nin }}</span>
+                    </div>
+                    <div
+                      class="d-block mt-2"
+                      *ngIf="heirHistory && !heirHistory.amount && heirHistory.modificationReason"
+                    >
+                      <div *ngIf="heirHistory.benefitStarted" class="green-circle"></div>
+                      <div *ngIf="!heirHistory.benefitStarted" class="orange-circle"></div>
+                      <div *ngIf="heirHistory.benefitStarted" class="ml-4">
+                        {{ 'BENEFITS.BENEFIT-STARTED' | translate }}
+                      </div>
+                      <div *ngIf="!heirHistory.benefitStarted" class="ml-4">
+                        {{ 'BENEFITS.BENEFIT-STOPPED' | translate }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2" *ngIf="heirHistory && !heirHistory.amount && heirHistory.modificationReason">
+                    <gosi-label-dc
+                      id="modificationReason"
+                      [value]="heirHistory.modificationReason | bilingualText"
+                      label="{{ 'BENEFITS.EVENT-TYPE' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-md-2" *ngIf="heirHistory?.amount">
+                    <gosi-label-dc
+                      id="heir-benefit-type"
+                      [value]="benefit | translate"
+                      label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-md-2" *ngIf="heirHistory?.amount">
+                    <gosi-label-dc
+                      id="heir-history-status"
+                      [value]="heirHistory?.heirStatus | bilingualText"
+                      label="{{ 'BENEFITS.HEIR-STATUS' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-md-2" *ngIf="heirHistory?.amount">
+                    <gosi-label-dc
+                      id="heir-history-amt"
+                      [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: heirHistory.amount | number: '1.2-2' }"
+                      label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+                    ></gosi-label-dc>
+                  </div>
+                  <div
+                    *ngIf="heirHistory.status"
+                    [ngClass]="
+                      heirHistory.status?.english === 'Active'
+                        ? 'status-active'
+                        : heirHistory.status?.english === 'Stopped'
+                        ? 'status-inactive'
+                        : heirHistory.status?.english === 'On Hold'
+                        ? 'status-onhold'
+                        : heirHistory.status?.english === 'Paid Up'
+                        ? 'status-paidup'
+                        : ''
+                    "
+                    class="col-md-1 d-flex mt-2 flex-column justify-content-center text-center heir-history-status"
+                  >
+                    {{ heirHistory?.status | bilingualText }}
+                  </div>
+                </div>
+              </gosi-card-dc>
+            </div>
+          </bnt-timeline-dc>
+        </div>
+      </div>
+    </tab>
+  </tabset>
+</div>
+
+<!-- Modal -->
+<ng-template #optionsModal>
+  <div *ngIf="isHeir">
+    <button *ngIf="!eligibleForPensionReform" type="button" id="addModifyHeir" (click)="navigateToModify()" class="d-flex btn text-left option-button">
+      {{ 'BENEFITS.ADD-MODIFY-HEIR' | translate }}
+    </button>
+    <button
+      [disabled]="!isModifyEligible || activeBenefitDetails?.status?.english === statusEnums.STOPPED"
+      type="button"
+      id="modifyBenefitPayment"
+      (click)="modifyBenefit()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.MODIFY-BENEFIT-PAYMENT-DETAILS' | translate }}
+    </button>
+    <button
+      [disabled]="!dependentHeirStatusCount[statusEnums.ACTIVE] || isLumpsum || modifyBenefitInProgress"
+      type="button"
+      id="hold-heir"
+      (click)="holdHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.REQ-HOLD-BENEFIT' | translate }}
+    </button>
+    <button
+      [disabled]="!dependentHeirStatusCount[statusEnums.ONHOLD] || modifyBenefitInProgress"
+      type="button"
+      id="restartBenefit"
+      (click)="restartHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.RESTART-BENEFIT' | translate }}
+    </button>
+    <button
+      [disabled]="
+        (!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.ACTIVE]) || isLumpsum || modifyBenefitInProgress
+      "
+      type="button"
+      id="stop-dependent"
+      (click)="stopHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.STOP-BENEFIT' | translate }}
+    </button>
+  </div>
+  <!--dependent section-->
+  <ng-container *gosiShow="isIndividualApp ? false : true">
+    <div *ngIf="!isHeir">
+      <!-- <button
+        [disabled]="!dependentHeirStatusCount[statusEnums.ACTIVE] || isLumpsum"
+        type="button"
+        id="holdHeirDependent"
+        (click)="holdHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.REQ-HOLD-DEPENDENT' | translate }}
+      </button> -->
+      <button
+        [disabled]="benefeciaryStatus !== 'Active' || isLumpsum || isSaned || modifyBenefitInProgress"
+        type="button"
+        id="holdBenefit"
+        (click)="holdBenefit()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.HOLD-BENEFIT' | translate }}
+        <!-- Label chnged Request Hold Benefit to Hold Benefit on defectid 462460 -->
+      </button>
+      <button
+        [disabled]="
+          (benefeciaryStatus !== 'Active' && benefeciaryStatus !== 'On Hold' && benefeciaryStatus === 'Stopped') ||
+          isLumpsum ||
+          isSaned ||
+          activeBenefitDetails?.status?.english === 'Stopped'
+          || modifyBenefitInProgress
+        "
+        type="button"
+        id="stopBenefit"
+        (click)="stopBenefit()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.STOP-BENEFIT' | translate }}
+      </button>
+      <!-- <button
+        [disabled]="
+          (!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.ACTIVE]) || isLumpsum
+        "
+        type="button"
+        id="stop-dependent"
+        (click)="stopHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.STOP-DEP' | translate }}
+      </button> -->
+      <button
+        type="button"
+        id="restartBenefit"
+        [disabled]="!(benefeciaryStatus === 'On Hold') || isSaned || modifyBenefitInProgress || restartInProgress"
+        (click)="restartBenefit()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.RESTART-BENEFIT' | translate }}
+      </button>
+      <!-- <button
+        type="button"
+        id="restart-dependent"
+        [disabled]="!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.STOPPED]"
+        (click)="restartHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.RESTART-DEP' | translate }}
+      </button> -->
+      <ng-container *gosiShow="accessForActionPrivate">
+        <button
+          *ngIf="isSaned"
+          type="button"
+          id="suspendSanedBenefit"
+          [disabled]="!(activeBenefitDetails?.status?.english === 'Active')"
+          (click)="suspendSanedBenefit()"
+          class="d-flex btn text-left option-button"
+        >
+          {{ 'BENEFITS.SUSPEND-UNEMPLOYMENT-INSURANCE' | translate }}
+        </button>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!--  <button-->
+  <!--    [disabled]="-->
+  <!--      (!isHeir && activeBenefitDetails?.beneficiaryBenefitStatus?.english === statusEnums.WAIVED) ||-->
+  <!--      (isHeir && !dependentHeirStatusCount[statusEnums.ACTIVE]) ||-->
+  <!--      benefitHistoryDetails?.status?.english === statusEnums.STOPPED-->
+  <!--    "-->
+  <!--    type="button"-->
+  <!--    id="startBenefitWaive"-->
+  <!--    (click)="startBenefitWaive()"-->
+  <!--    class="d-flex btn text-left option-button"-->
+  <!--  >-->
+  <!--    {{ 'BENEFITS.START-BENEFIT-WAIVE' | translate }}-->
+  <!--  </button>-->
+  <!--  <button-->
+  <!--    [disabled]="-->
+  <!--      (!isHeir && activeBenefitDetails?.beneficiaryBenefitStatus?.english !== statusEnums.WAIVED) ||-->
+  <!--      (isHeir && !dependentHeirStatusCount[statusEnums.WAIVED])-->
+  <!--    "-->
+  <!--    type="button"-->
+  <!--    id="stopBenefitWaive"-->
+  <!--    (click)="stopBenefitWaive()"-->
+  <!--    class="d-flex btn text-left option-button"-->
+  <!--  >-->
+  <!--    &lt;!&ndash;show if atleast one is waived&ndash;&gt;-->
+  <!--    {{ 'BENEFITS.STOP-BENEFIT-WAIVE' | translate }}-->
+  <!--  </button>-->
+</ng-template>
+<ng-template #dependentOptionsModal>
+  <div *ngIf="!isHeir">
+    <ng-container *gosiShow="isIndividualApp ? individualAppAccess : true">
+      <button
+        [disabled]="activeBenefitDetails?.status?.english === statusEnums.STOPPED"
+        type="button"
+        id="addModifyDependent"
+        (click)="navigateToModify()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.ADD-MODIFY-DEP' | translate }}
+      </button>
+    </ng-container>
+    <ng-container *gosiShow="isIndividualApp ? false : true">
+      <button
+        [disabled]="!dependentHeirStatusCount[statusEnums.ACTIVE] || isLumpsum || modifyBenefitInProgress"
+        type="button"
+        id="holdHeirDependent"
+        (click)="holdHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.REQ-HOLD-DEPENDENT' | translate }}
+      </button>
+      <button
+        type="button"
+        id="restart-dependent"
+        [disabled]="!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.STOPPED]"
+        (click)="restartHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.RESTART-DEP' | translate }}
+      </button>
+      <button
+        [disabled]="true"
+        type="button"
+        id="stop-dependent"
+        (click)="stopHeirDependent()"
+        class="d-flex btn text-left option-button"
+      >
+        {{ 'BENEFITS.STOP-DEP' | translate }}
+      </button>
+    </ng-container>
+    <!-- [disabled]="
+    (!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.ACTIVE]) || isLumpsum" -->
+    <!-- Request stop dependent always disabled as per discussion with Sulthana -->
+    <!-- stop option for dependent not required as dependent can be modified to be ineligible -->
+  </div>
+</ng-template>
+<ng-template #addCommitment>
+  <bnt-add-bank-template-dc
+    (confirm)="confirmAddCommitemnt()"
+    (cancel)="hideModal()"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+  >
+  </bnt-add-bank-template-dc>
+</ng-template>
+<ng-template #viewCommitment>
+  <bnt-view-bank-template-dc
+    [documentList]="addCommitmentDocs"
+    (open)="openImage()"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+    [lang]="lang"
+    (close)="hideModal()"
+  ></bnt-view-bank-template-dc>
+</ng-template>
+<ng-template #disabilityPopupTemplate>
+  <bnt-disability-assessment-timeline-dc
+    [disabilityDetails]="disabilityDetails"
+    [headingRequired]="true"
+    (accept)="onAccept($event)"
+    [benefitType]="benefitType"
+    [lang]="lang"
+    (appeal)="onAppeal($event)"
+    (closeModal)="closePopup()"
+  >
+  </bnt-disability-assessment-timeline-dc>
+</ng-template>
+<ng-template #dependentOptionsModal>
+  <div *ngIf="!isHeir">
+    <button
+      [disabled]="activeBenefitDetails?.status?.english === statusEnums.STOPPED"
+      type="button"
+      id="addModifyDependent"
+      (click)="navigateToModify()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.ADD-MODIFY-DEP' | translate }}
+    </button>
+    <button
+      [disabled]="!dependentHeirStatusCount[statusEnums.ACTIVE] || isLumpsum"
+      type="button"
+      id="holdHeirDependent"
+      (click)="holdHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.REQ-HOLD-DEPENDENT' | translate }}
+    </button>
+    <button
+      type="button"
+      id="restart-dependent"
+      [disabled]="!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.STOPPED]"
+      (click)="restartHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.RESTART-DEP' | translate }}
+    </button>
+    <!-- [disabled]="
+    (!dependentHeirStatusCount[statusEnums.ONHOLD] && !dependentHeirStatusCount[statusEnums.ACTIVE]) || isLumpsum" -->
+    <!-- Request stop dependent always disabled as per discussion with Sulthana -->
+    <!-- stop option for dependent not required as dependent can be modified to be ineligible -->
+    <button
+      [disabled]="true"
+      type="button"
+      id="stop-dependent"
+      (click)="stopHeirDependent()"
+      class="d-flex btn text-left option-button"
+    >
+      {{ 'BENEFITS.STOP-DEP' | translate }}
+    </button>
+  </div>
+</ng-template>
+<ng-template #addCommitment>
+  <bnt-add-bank-template-dc
+    (confirm)="confirmAddCommitemnt()"
+    (cancel)="hideModal()"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+  >
+  </bnt-add-bank-template-dc>
+</ng-template>
+<ng-template #viewCommitment>
+  <bnt-view-bank-template-dc
+    [documentList]="addCommitmentDocs"
+    (open)="openImage()"
+    [benefitDetails]="benefitPaymentDetails?.benefitDetails"
+    [lang]="lang"
+    (close)="hideModal()"
+  ></bnt-view-bank-template-dc>
+</ng-template>
+<ng-template #disabilityPopupTemplate>
+  <bnt-disability-assessment-timeline-dc
+    [disabilityDetails]="disabilityDetails"
+    [headingRequired]="true"
+    (accept)="onAccept($event)"
+    [benefitType]="benefitType"
+    [lang]="lang"
+    (appeal)="onAppeal($event)"
+    (closeModal)="closePopup()"
+  >
+  </bnt-disability-assessment-timeline-dc>
+</ng-template>

@@ -1,0 +1,459 @@
+<gosi-card-dc type="secondary" heading="{{ 'BENEFITS.MEDICAL-BOARD-DECISION' | translate }}" lessPadding="true">
+  <div class="row" [formGroup]="boardDecisonForm">
+    <div class="col-lg-6">
+      <div class="d-flex">
+        <span class="d-flex align-items-center">{{
+          'MEDICAL-BOARD.REQUIRE-ATTENDANCE-PARTICIPANT ? ' | translate
+        }}</span>
+        <div class="mx-auto"></div>
+        <gosi-input-toggle-dc
+          id="isParticipantPresent"
+          [name]="'isParticipantPresent'"
+          [control]="boardDecisonForm?.get('isParticipantPresent')"
+          [ignoreLabel]="true"
+          [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+          (changeEvent)="onParticipantPresent($event)"
+        >
+        </gosi-input-toggle-dc>
+      </div>
+    </div>
+    <div class="col-lg-6"></div>
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.ASSESSMENT-CHANNEL' | translate"
+        (select)="selectChannel($event)"
+        [id]="'assessmentChannel'"
+        [list]="
+          boardDecisonForm?.get('isParticipantPresent')?.value
+            ? assessmentChannelList
+            : assessmentChannelListParticipantNo
+        "
+        [control]="boardDecisonForm.get('assessmentChannel')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.ASSESSMENT-CHANNEL' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="channel === 'Virtual'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.LOCATION-TYPE' | translate"
+        (select)="selectLocationType($event)"
+        [id]="'locationType'"
+        [list]="locationTypeList"
+        [control]="boardDecisonForm.get('locationType')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.LOCATION-TYPE' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="type === 'Other GOSI  Office'">
+      <gosi-input-select-dc
+        id="officeLocation"
+        [label]="'MEDICAL-BOARD.OFFICE-LOCATION' | translate"
+        [list]="offices"
+        [control]="boardDecisonForm.get('officeLocation')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.OFFICE-LOCATION' | translate"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="type === 'Healthcare Provider'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.HEALTHCARE-PROVIDER' | translate"
+        [id]="'healthcareProvider'"
+        [list]="hospital$ | async"
+        [control]="boardDecisonForm.get('healthcareProvider')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.HEALTHCARE-PROVIDER' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+
+    <div class="col-lg-6" *ngIf="channel !== 'Reschedule Assessment'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.ASSESSMENT-RESULT' | translate"
+        (select)="selectResult($event)"
+        [id]="'assessmentResult'"
+        [list]="
+          assessmentType === 'Occupational Disability' ||
+          assessmentType === 'Occupational Disability Assessment' ||
+          assessmentType === 'Reassessment Occupational Disability' ||
+          assessmentType === 'Occupational Disability Reassessment'
+            ? assessmentResultList
+            : nonOccAssessmentResultList
+        "
+        [control]="boardDecisonForm.get('assessmentResult')"
+        [placeholder]="'MEDICAL-BOARD.ASSESSMENT-RESULT' | translate"
+        [disabled]="isReturn || conveyanceRequired"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <!-- <div
+      class="col-lg-6"
+      *ngIf="
+        (assessmentType === 'Non-Occupational Disability' ||
+          assessmentType === 'Reassessment Non-Occupational Disability' ||
+          assessmentType === 'Non-Occupational Disability Reassessment' ||
+          assessmentType === 'Dependent Disability' ||
+          assessmentType === 'Heir Disability' ||
+          assessmentType === 'Reassessment Heir Disability' ||
+          assessmentType === 'Heir Disability Reassessment' ||
+          assessmentType === 'Reassessment Dependent Disability' ||
+          assessmentType === 'Dependent Disability Reassessment') &&
+        result === 'Disabled'
+      "
+    >
+      <gosi-input-date-dc
+        id="disabilityDate"
+        label="{{ 'MEDICAL-BOARD.DISABLED-DATE' | translate }}"
+        [hideOptionalLabel]="true"
+        [control]="boardDecisonForm?.get('disabilityDate')?.get('gregorian')"
+        [disabled]="
+          (isGosiDoctor && gosiDoctorAssessDetails?.disabilityDate) ||
+          isReturn ||
+          conveyanceRequired ||
+          isNonOccReassessment
+        "
+        [maxDate]="today"
+        (changeEvent)="selectDisabilityDate()"
+      >
+      </gosi-input-date-dc>
+    </div> -->
+    <!-- <div
+      class="col-lg-6"
+      *ngIf="
+        (assessmentType === 'Non-Occupational Disability' ||
+          assessmentType === 'Dependent Disability' ||
+          assessmentType === 'Heir Disability' ||
+          assessmentType === 'Reassessment Non-Occupational Disability' ||
+          assessmentType === 'Reassessment Heir Disability' ||
+          assessmentType === 'Reassessment Dependent Disability' ||
+          assessmentType === 'Non-Occupational Disability Reassessment' ||
+          assessmentType === 'Heir Disability Reassessment' ||
+          assessmentType === 'Dependent Disability Reassessment') &&
+        result === 'End of Disability'
+      "
+    >
+      <gosi-input-date-dc
+        id="disabledEndDate"
+        label="{{ 'MEDICAL-BOARD.DISABLITY-END-DATE' | translate }}"
+        [hideOptionalLabel]="true"
+        [control]="boardDecisonForm?.get('disabilityEndDate')?.get('gregorian')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [minDate]="disabilityEndMinDate"
+        [maxDate]="disabilityEndMaxDate"
+      >
+      </gosi-input-date-dc>
+    </div> -->
+    <!-- <div class="col-lg-6" *ngIf="result === 'Cured With Disability'">
+      <gosi-input-number-dc
+        id="disabledPercentage"
+        [maxLength]="3"
+        [label]="'MEDICAL-BOARD.DISABILTY-PERCENTAGE'"
+        [placeholder]="'MEDICAL-BOARD.DISABILTY-PERCENTAGE' | translate"
+        [control]="boardDecisonForm?.get('disabilityPercentage')"
+        (blur)="disabledPercentageChange($event.target.value)"
+        [disabled]="isReturn || conveyanceRequired"
+      >
+      </gosi-input-number-dc>
+      (keyup)="inputPercentage($event.target.value)" 
+    </div> -->
+    <div class="col-lg-6" *ngIf="result === 'Reschedule Assessment'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.RESCHEDULE-REASON' | translate"
+        [id]="'rescheduleReason'"
+        [list]="rescheduleReasonList"
+        [control]="boardDecisonForm.get('rescheduleReason')"
+        (select)="selectRescheduleReason($event)"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.RESCHEDULE-REASON' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div
+      class="col-lg-6"
+      *ngIf="
+        rescheduleReason === 'Other speciality required for the assessment' &&
+        otherSpecialityList &&
+        boardDecisonForm.get('otherSpeciality')
+      "
+    >
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.OTHER-SPECIALITY' | translate"
+        [id]="'otherSpeciality'"
+        [list]="otherSpecialityList"
+        [control]="boardDecisonForm.get('otherSpeciality')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        [placeholder]="'MEDICAL-BOARD.OTHER-SPECIALITY' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-12" *ngIf="result === 'Reschedule Assessment' && rescheduleReason === 'Transferred to TPA'">
+      <gosi-input-text-area-dc
+        id="rescheduleComments"
+        [disabled]="isReturn || conveyanceRequired"
+        label="MEDICAL-BOARD.COMMENTS"
+        [control]="boardDecisonForm.get('comments')"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="result && result !== '' && result !== 'Reschedule Assessment'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.MAIN-REASON' | translate"
+        [id]="'mainReason'"
+        [list]="mainReasonList"
+        [control]="boardDecisonForm.get('mainReason')"
+        [placeholder]="'MEDICAL-BOARD.MAIN-REASON' | translate"
+        (selectLov)="selectMainReason($event)"
+        [disabled]="isReturn || conveyanceRequired"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="result && result !== '' && result !== 'Reschedule Assessment'">
+      <gosi-input-select-dc
+        [label]="'MEDICAL-BOARD.SECONDARY-REASON' | translate"
+        [id]="'secondaryReason'"
+        [list]="secondaryReasonList"
+        [control]="boardDecisonForm.get('secondaryReason')"
+        [placeholder]="'MEDICAL-BOARD.SECONDARY-REASON' | translate"
+        [disabled]="isReturn || conveyanceRequired"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <!-- <div class="col-lg-12" *ngIf="result === 'Cured With Disability'">
+      <div id="addBodyParts">
+        <oh-disabled-body-parts-dc
+          *ngIf="bodyPartsCategoryList && parentForm"
+          [parentForm]="parentForm"
+          [bodyPartsCategoryList]="bodyPartsCategoryList"
+          [injuredPerson]="injuredBodyParts"
+          [isReturn]="isReturn"
+          [isValidator]="false"
+          [conveyanceRequired]="conveyanceRequired"
+        >
+        </oh-disabled-body-parts-dc>
+      </div>
+    </div> -->
+    <div class="col-lg-12" *ngIf="channel !== 'Reschedule Assessment'">
+      <gosi-input-text-area-dc
+        [label]="'MEDICAL-BOARD.CASE-DESCRIPTION' | translate"
+        id="caseDescription"
+        name="caseDescription"
+        [maxLength]="caseMaxLength"
+        [disabled]="isReturn || conveyanceRequired"
+        [control]="boardDecisonForm.get('caseDescription')"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+    <!-- <div
+      class="col-lg-6"
+      *ngIf="
+        ((assessmentType === 'Occupational Disability' ||
+          assessmentType === 'Reassessment Occupational Disability' ||
+          assessmentType === 'Occupational Disability Reassessment') &&
+          assessmentResponseDateDto?.nextAssessmentRequired &&
+          result === 'Cured With Disability') ||
+        ((assessmentType === 'Non-Occupational Disability' ||
+          assessmentType === 'Reassessment Non-Occupational Disability' ||
+          assessmentType === 'Non-Occupational Disability Reassessment') &&
+          result === 'Disabled')
+      "
+    >
+      <gosi-input-radio-dc
+        [label]="'MEDICAL-BOARD.HELPER-REQUIRED' | translate"
+        id="helperRequired"
+        name="helperRequired"
+        [control]="boardDecisonForm.get('isHelperRequired')"
+        [list]="listYesNo$ | async"
+        (select)="selectHelperRequired($event)"
+        [disabled]="
+          (isGosiDoctor && gosiDoctorAssessDetails?.isHelperRequired?.english === 'Yes') ||
+          isReturn ||
+          conveyanceRequired
+        "
+      >
+      </gosi-input-radio-dc>
+    </div> -->
+    <!-- <div class="col-lg-6" *ngIf="boardDecisonForm.get('helperStartDate')">
+      <gosi-input-date-dc
+        id="helperStartDate"
+        label="{{ 'MEDICAL-BOARD.HELPER-START-DATE' | translate }}"
+        [hideOptionalLabel]="true"
+        [control]="boardDecisonForm?.get('helperStartDate')?.get('gregorian')"
+        [disabled]="
+          (isGosiDoctor && gosiDoctorAssessDetails?.isHelperRequired?.english === 'Yes') ||
+          isReturn ||
+          conveyanceRequired
+        "
+        [minDate]="startDate"
+        [maxDate]="endDate"
+      >
+      </gosi-input-date-dc>
+    </div> -->
+    <!-- <div class="col-lg-6 multiSelectAlign" *ngIf="boardDecisonForm.get('helperStartDate')">
+      <gosi-input-multi-select-dropdown-dc
+        name="'helperReason'"
+        [id]="'helperReason'"
+        [label]="'MEDICAL-BOARD.REASON-HELPER' | translate"
+        [searchPlaceholder]="'MEDICAL-BOARD.REASON-HELPER' | translate"
+        [control]="boardDecisonForm?.get('reasonForHelper')"
+        [list]="helperReasonList"
+        [selectedValues]="reasonsForHelp"
+        [ignoreLabel]="false"
+        [disabled]="
+          (isGosiDoctor && gosiDoctorAssessDetails?.isHelperRequired?.english === 'Yes') ||
+          isReturn ||
+          conveyanceRequired
+        "
+      >
+      </gosi-input-multi-select-dropdown-dc>
+    </div> -->
+    <div
+      class="col-lg-6"
+      *ngIf="
+        isSaudi &&
+        (((assessmentType === 'Occupational Disability' ||
+          assessmentType === 'Reassessment Occupational Disability' ||
+          assessmentType === 'Occupational Disability Reassessment') &&
+          assessmentResponseDateDto?.nextAssessmentRequired &&
+          result === 'Cured With Disability') ||
+          ((((assessmentType === 'Reassessment Non-Occupational Disability' ||
+            assessmentType === 'Non-Occupational Disability Reassessment' ||
+            assessmentType === 'Non-Occupational Disability') &&
+            ((boardDecisonForm.get('isHelperRequired')?.value?.english === 'Yes' &&
+              heirPersonDetails?.ageInHijiri <= 65) ||
+              (boardDecisonForm.get('isHelperRequired')?.value?.english === 'No' &&
+                heirPersonDetails?.ageInHijiri <= 60))) ||
+            ((assessmentType === 'Dependent Disability' ||
+              assessmentType === 'Heir Disability' ||
+              assessmentType === 'Reassessment Heir Disability' ||
+              assessmentType === 'Reassessment Dependent Disability' ||
+              assessmentType === 'Heir Disability Reassessment' ||
+              assessmentType === 'Dependent Disability Reassessment') &&
+              heirPersonDetails?.ageInHijiri <= 60)) &&
+            result === 'Disabled'))
+      "
+    >
+      <gosi-input-date-dc
+        id="nextAssessmentDate"
+        label="{{ 'MEDICAL-BOARD.NEXT-ASSESSMENT-DATE' | translate }}"
+        [hideOptionalLabel]="false"
+        [control]="boardDecisonForm?.get('nextAssessmentDate')?.get('gregorian')"
+        [disabled]="(isGosiDoctor && gosiDoctorAssessDetails?.nextAssessmentDate) || isReturn || conveyanceRequired"
+        [minDate]="nextAssessmentMinDate"
+        [maxDate]="nextAssessmentMaxDate"
+      >
+      </gosi-input-date-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="result && result !== '' && result !== 'Reschedule Assessment' && !isAmb">
+      <gosi-input-select-dc
+        label="{{ 'MEDICAL-BOARD.ASSESSED-BY' | translate }}({{ 'MEDICAL-BOARD.MAIN' | translate }})"
+        [id]="'primaryAssessedBy'"
+        [list]="sessionGosiDrLovList"
+        [control]="boardDecisonForm.get('primaryGosiDr')"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+        (selectLov)="selectedDoctor($event)"
+        [placeholder]="'MEDICAL-BOARD.ASSESSED-BY' | translate"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6 multiSelectAlign" *ngIf="result && result !== '' && result !== 'Reschedule Assessment'">
+      <gosi-input-multi-select-dropdown-dc
+        name="'assessedBy'"
+        [id]="'assessedBy'"
+        [label]="'MEDICAL-BOARD.ASSESSED-BY' | translate"
+        [searchPlaceholder]="'MEDICAL-BOARD.ASSESSED-BY' | translate"
+        [control]="boardDecisonForm?.get('assessedBy')"
+        [list]="sessionDataLovListTemp"
+        [selectedValues]="assessedDoctors"
+        [ignoreLabel]="false"
+        [disabled]="isGosiDoctor || isReturn || conveyanceRequired"
+      >
+      </gosi-input-multi-select-dropdown-dc>
+      <!-- [list]="sessionDataLovListTemp" -->
+    </div>
+    <!-- To get ASK contriutor Modal -->
+    <ng-template #contributorModal>
+      <gosi-modal-dc [modalHeader]="'MEDICAL-BOARD.ASK-CONTRIBUTOR' | translate">
+        <div class="row" modalContent>
+          <div class="col-lg-12">
+            <div class="row message-style">
+              <div class="col-lg-12">
+                <gosi-input-multi-select-dropdown-dc
+                  id="requestedDocs"
+                  [hideOptionalLabel]="true"
+                  [searchPlaceholder]="'MEDICAL-BOARD.REQ-DOCUMENTS' | translate"
+                  [control]="boardDecisonForm?.get('requestedDocs')"
+                  [label]="'MEDICAL-BOARD.REQ-DOCUMENTS' | translate"
+                  (selected)="docsSelected($event)"
+                  [list]="docsLists"
+                >
+                </gosi-input-multi-select-dropdown-dc>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-input-text-area-dc
+                  id="comments"
+                  label="MEDICAL-BOARD.COMMENTS"
+                  [control]="boardDecisonForm.get('comments')"
+                >
+                </gosi-input-text-area-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12" modalAction>
+          <div class="btn-section float-left">
+            <gosi-button-dc name="cancelSubmit" type="secondary" (click)="hideModal()">
+              {{ 'MEDICAL-BOARD.CANCEL' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="btn-section float-right">
+            <gosi-button-dc name="savenext" type="primary" (click)="addClarification()">{{
+              'MEDICAL-BOARD.CONFIRM' | translate
+            }}</gosi-button-dc>
+          </div>
+        </div>
+      </gosi-modal-dc>
+    </ng-template>
+  </div>
+</gosi-card-dc>
+<div
+  class="my-3"
+  *ngIf="
+    (channel &&
+      channel !== 'Reschedule Assessment' &&
+      !isGosiDoctor &&
+      (channel === 'In Office' || type === 'Other GOSI  Office')) ||
+    gosiDoctorAssessDetails?.originLatitude
+  "
+>
+  <gosi-card-dc type="secondary" heading="{{ 'MEDICAL-BOARD.ALLOWANCE-DETAILS' | translate }}" lessPadding="true">
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="form-group">
+          <label for="originLocation">{{ 'MEDICAL-BOARD.ORIGIN-LOCATION' | translate }}</label>
+          <input
+            type="text"
+            class="form-control"
+            id="autocomplete"
+            [(ngModel)]="autocompleteInput"
+            (focus)="onOriginFocus()"
+            #addresstext
+          />
+        </div>
+      </div>
+      <div class="col-lg-6" *ngIf="boardDecisonForm.get('isConveyanceRequired')">
+        <gosi-input-radio-dc
+          [label]="'MEDICAL-BOARD.COMPANION-CONVEYANCE' | translate"
+          id="isConveyanceRequired"
+          name="isConveyanceRequired"
+          [control]="boardDecisonForm.get('isConveyanceRequired')"
+          [list]="listYesNo$ | async"
+          [disabled]="false"
+        >
+        </gosi-input-radio-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+</div>

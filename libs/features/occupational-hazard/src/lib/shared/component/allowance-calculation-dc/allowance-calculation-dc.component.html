@@ -1,0 +1,470 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="accordion-details" *ngIf="allowances">
+  <gosi-alert-dc
+    *ngIf="allowances && allowances.allowanceType?.english === 'Conveyance Allowance' && allowances?.injuryIdList[0]"
+    [message]="
+      'OCCUPATIONAL-HAZARD.CONVEYANCE-PERIOD-FULL-OVERLAP'
+        | translate
+          : {
+              StartDate: allowances.benefitStartDate?.gregorian | gosiDate,
+              InjuryId: allowances.injuryIdList[0],
+              EndDate: allowances.benefitEndDate?.gregorian | gosiDate
+            }
+    "
+    type="info"
+    [dismissible]="false"
+  >
+  </gosi-alert-dc>
+  <div class="row details-heading" *ngIf="!validatorView">
+    {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ADDITIONAL-DETAILS' | translate }}
+  </div>
+  <div class="row" *ngIf="calculationWrapper && calculationWrapper.paymentDetails && !validatorView">
+    <div class="col-md-3 col-lg-3 col-sm-3">
+      <gosi-label-dc
+        id="transactionId"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.TRANSACTION-ID"
+        [value]="
+          allowances.transactionId ? allowances.transactionId : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)
+        "
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3"
+      *ngIf="
+        allowances?.actualPaymentStatus?.english === 'Paid' || allowances?.actualPaymentStatus?.english === 'Approved'
+      "
+    >
+      <label for="paymentMethod" placement="top" class="label-margin" triggers="mouseenter:mouseleave"
+        >{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.PAYMENT-METHOD' | translate }}
+        <div class="row treatment-period" *ngIf="allowances?.paymentMethod?.english !== 'Establishment bill'">
+          {{ paymentMethod | translate }}<span class="secondLbel">{{ secondLabel | translate }}</span>
+        </div>
+        <div class="row treatment-period" *ngIf="allowances?.paymentMethod?.english === 'Establishment bill'">
+          {{ allowances?.paymentMethod | bilingualText }}
+        </div>
+      </label>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3" *ngIf="allowances.accountNumber">
+      <gosi-label-dc
+        id="accountNumber"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+        value="{{ 'XXX XXX' + ' ' + [allowances.accountNumber.toString().slice(-4)] }}"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3"
+      *ngIf="
+        (allowances?.actualPaymentStatus?.english === 'Paid' ||
+          allowances?.actualPaymentStatus?.english === 'Approved') &&
+        allowances?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeNo"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-NUMBER"
+        [value]="calculationWrapper.paymentDetails.chequeNo"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3"
+      *ngIf="
+        (allowances?.actualPaymentStatus?.english === 'Paid' ||
+          allowances?.actualPaymentStatus?.english === 'Approved') &&
+        allowances?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeIssueDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-ISSUE-DATE"
+        [value]="calculationWrapper.paymentDetails?.paymentDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3 cheque-display"
+      *ngIf="
+        (allowances?.actualPaymentStatus?.english === 'Paid' ||
+          allowances?.actualPaymentStatus?.english === 'Approved') &&
+        allowances?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeCashedData"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-CASH-DATE"
+        [value]="calculationWrapper.paymentDetails?.cashedDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3"
+      *ngIf="
+        (allowances?.actualPaymentStatus?.english === 'Paid' ||
+          allowances?.actualPaymentStatus?.english === 'Approved') &&
+        allowances?.paymentMethod?.english !== 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="paymentDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.PAYMENT-DATE"
+        [control]="calculationWrapper.paymentDetails?.paymentDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3" *ngIf="allowances?.actualPaymentStatus?.english === 'Recovery in Progress'">
+      <gosi-label-dc
+        id="recoveryMethod"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.RECOVERY-METHOD"
+        [value]="allowances?.recoveryMethod | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <!--Validator Details-->
+  <div class="row" *ngIf="validatorView && calculationWrapper">
+    <div class="col-lg-6" type="secondary" class="col-lg-6 treatment-period-header">
+      <label
+        for="allowancePeriod"
+        popover="{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PERIOD' | translate }}"
+        placement="top"
+        class="label-margin"
+        triggers="mouseenter:mouseleave"
+        >{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PERIOD' | translate }}
+        <div class="row treatment-period">
+          {{ calculationWrapper.allowanceBreakup.startDate?.gregorian | gosiDate }}
+          <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment"></fa-icon>
+          <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+          {{ calculationWrapper.allowanceBreakup.endDate?.gregorian | gosiDate }}
+          <span [ngClass]="validatorView ? ' view-details-validator' : 'view-details'">
+            ({{ calculationWrapper.allowanceBreakup.differenceinDay }}
+            {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span
+          >
+        </div>
+      </label>
+    </div>
+    <div class="col-lg 6">
+      <gosi-label-dc
+        id="allowancePayee"
+        class="payee"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE"
+        [value]="paymentDetails?.payeeDetails?.payableTo | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row payment-validator" *ngIf="validatorView && calculationWrapper">
+    <div type="secondary" class="col-lg-6 payment-header">
+      <label for="paymentMethod" placement="top" class="label-margin" triggers="mouseenter:mouseleave"
+        >{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.PAYMENT-METHOD' | translate }}
+        <div class="row treatment-period" *ngIf="allowances?.paymentMethod?.english !== 'Establishment bill'">
+          {{ paymentMethod | translate }}<span class="secondLbel">{{ secondLabel | translate }}</span>
+        </div>
+        <div class="row treatment-period" *ngIf="allowances?.paymentMethod?.english === 'Establishment bill'">
+          {{ allowances?.paymentMethod | bilingualText }}
+        </div>
+      </label>
+    </div>
+    <div class="col-lg 6" *ngIf="paymentDetails.accountNumber">
+      <gosi-label-dc
+        id="accountNumber"
+        class="payee"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+        value="{{ 'XXX XXX  ' + ' ' + [paymentDetails.accountNumber.toString().slice(-4)] }}"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <!--Companion Details-->
+  <div
+    class="row companion-details"
+    *ngIf="
+      (calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Daily Allowance' ||
+        calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Conveyance Allowance') &&
+      companionDetails &&
+      !validatorView
+    "
+  >
+    <div class="col-md-3 col-lg-3 col-sm-3">
+      <gosi-label-dc
+        id="companionName"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-NAME"
+        [value]="companionDetails.name"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3">
+      <gosi-label-dc
+        id="companionType"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-TYPE"
+        [value]="companionDetails.type | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3">
+      <gosi-label-dc
+        id="companionStartDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-START-DATE"
+        [value]="companionDetails.startDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3">
+      <gosi-label-dc
+        id="companionEndDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-END-DATE"
+        [value]="companionDetails.endDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <!--Companion Details Validator View-->
+  <div
+    [ngClass]="validatorView ? 'row companion-details-validator' : 'row companion-details'"
+    *ngIf="
+      (calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Daily Allowance' ||
+        calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Conveyance Allowance') &&
+      companionDetails &&
+      validatorView
+    "
+  >
+    <div class="col-md-6 col-lg-6 col-sm-6">
+      <gosi-label-dc
+        id="companionName"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-NAME"
+        [value]="companionDetails.name"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-6 col-lg-6 col-sm-6">
+      <gosi-label-dc
+        id="companionType"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-TYPE"
+        [value]="companionDetails.type | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div
+    [ngClass]="validatorView ? 'row companion-details-validator' : 'row companion-details'"
+    *ngIf="
+      (calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Daily Allowance' ||
+        calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Conveyance Allowance') &&
+      companionDetails &&
+      validatorView
+    "
+  >
+    <div class="col-md-6 col-lg-6 col-sm-6">
+      <gosi-label-dc
+        id="companionStartDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-START-DATE"
+        [value]="companionDetails.startDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-6 col-lg-6 col-sm-6">
+      <gosi-label-dc
+        id="companionEndDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-END-DATE"
+        [value]="companionDetails.endDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <!--Companion Conveyance Allowance Details-->
+  <div
+    [ngClass]="validatorView ? 'row companion-details-validator' : 'row companion-details'"
+    *ngIf="
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english == 'Companion Conveyance Allowance' &&
+      companionDetails
+    "
+  >
+    <div [ngClass]="validatorView ? 'col-md-6 col-lg-6 col-sm-6 ' : 'col-md-3 col-lg-3 col-sm-3'">
+      <gosi-label-dc
+        id="distanceTravelled"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.DISTANCE-TRAVELLED"
+        [control]="getDistance()"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <!--Daily Allowance Adjustment-->
+  <div
+    class="row companion-details"
+    *ngIf="
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Reversal'
+    "
+  >
+    <div [ngClass]="validatorView ? 'col-md-6 col-lg-6 col-sm-6 reason-adjustment' : 'col-md-3 col-lg-3 col-sm-3'">
+      <gosi-label-dc
+        id="companionName"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.REASON-FOR-ADJUSTMENT"
+        [value]="wageChange | bilingualText"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div
+    class="accordion-separation"
+    *ngIf="!validatorView && !allowances?.reissue && calculationWrapper?.allowanceBreakup !== null"
+  ></div>
+  <ng-container *ngIf="isConveyanceCap && !allowances?.reissue">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-lg-12 exclusion-message">
+        <gosi-alert-dc message="OCCUPATIONAL-HAZARD.ALLOWANCE.CONVEYANCE-CAP" type="info" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isAllowanceZero && !allowances?.reissue">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-lg-12 exclusion-message">
+        <gosi-alert-dc message="OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-ZERO" type="info" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isExclusionSame && !allowances?.reissue">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-lg-12 exclusion-message">
+        <gosi-alert-dc message="OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-NEXT-DAY" type="info" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isExclusionLesser && !allowances?.reissue">
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-lg-12 exclusion-message">
+        <gosi-alert-dc message="OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-SAME-DAY" type="info" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+    </div>
+  </ng-container>
+
+  <!--Daily Wage Allowance Calculation-->
+  <ng-container
+    *ngIf="
+      (!validatorView &&
+        !isAllowanceZero &&
+        !allowances?.reissue &&
+        calculationWrapper &&
+        calculationWrapper?.allowanceBreakup &&
+        calculationWrapper?.allowanceBreakup?.allowanceType &&
+        calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance') ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Reversal' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Reversal'
+    "
+  >
+    <oh-daily-wage-calculation-dc
+      *ngIf="!validatorView && !isAllowanceZero && !isSimisAllowanceTrue"
+      [calculationWrapper]="calculationWrapper"
+      [contributorWage]="contributorWage"
+      [day]="day"
+    ></oh-daily-wage-calculation-dc>
+  </ng-container>
+  <!--End of Daily Wage Allowance Calculation-->
+  <!--Daily Wage Allowance Calculation Validator view-->
+  <ng-container
+    *ngIf="
+      (validatorView &&
+        !isAllowanceZero &&
+        calculationWrapper &&
+        calculationWrapper?.allowanceBreakup &&
+        calculationWrapper?.allowanceBreakup?.allowanceType &&
+        calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance') ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'InPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'OutPatient Daily Allowance Adjustment' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Reversal' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Allowance' ||
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Balance Settlement Adjustment Reversal'
+    "
+  >
+    <oh-daily-wage-validator-widget
+      *ngIf="validatorView && !isAllowanceZero"
+      [calculationWrapper]="calculationWrapper"
+      [contributorWage]="contributorWage"
+      [day]="day"
+    ></oh-daily-wage-validator-widget>
+  </ng-container>
+  <!--End of Daily Wage Allowance Calculation-->
+  <!--Conveyance Allowance Calculation-->
+  <div
+    *ngIf="
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Conveyance Allowance' &&
+      !allowances?.reissue &&
+      !isSimisAllowanceTrue
+    "
+  >
+    <oh-conveyance-allowance-dc
+      [calculationWrapper]="calculationWrapper"
+      [treatmentType]="allowances.treatmentType"
+      [validatorView]="validatorView"
+    >
+    </oh-conveyance-allowance-dc>
+  </div>
+  <!--  Companion  Allowance Details-->
+  <div
+    *ngIf="
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Daily Allowance' &&
+      !allowances?.reissue
+    "
+  >
+    <oh-companion-allowance-details-dc
+      [calculationWrapper]="calculationWrapper"
+      [tabView]="tabView"
+      [validatorView]="validatorView"
+      [companionDetails]="companionDetails"
+    >
+    </oh-companion-allowance-details-dc>
+  </div>
+
+  <!--Companion Conveyance Calculation-->
+  <div
+    *ngIf="
+      calculationWrapper?.allowanceBreakup?.allowanceType?.english === 'Companion Conveyance Allowance' &&
+      companionDetails &&
+      !isSimisAllowanceTrue &&
+      !allowances?.reissue
+    "
+  >
+    <oh-companion-conveyance-dc
+      [calculationWrapper]="calculationWrapper"
+      [isGreater]="companionDetails.isGreater"
+      [validatorView]="validatorView"
+      [distance]="companionDetails.distanceTravelled"
+    ></oh-companion-conveyance-dc>
+  </div>
+</div>

@@ -1,0 +1,373 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="table-responsive-md">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th>{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE' | translate }}</th>
+        <th>{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.REJECTED-VISITS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let allowance of selectedAllowancelist; let i = index" class="border-style">
+        <td>
+          <span *ngIf="allowance.allowanceSubType.english === 'InPatient Daily Allowance'">
+            {{ allowance.allowanceType | bilingualText }}
+            <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})</span>
+          </span>
+          <span *ngIf="allowance.allowanceSubType.english === 'OutPatient Daily Allowance'">
+            {{ allowance.allowanceType | bilingualText }}
+            <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span>
+          </span>
+          <span *ngIf="allowance.allowanceSubType.english === 'OutPatient Allowance'">
+            {{ allowance.allowanceType | bilingualText }}
+            <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span>
+          </span>
+          <span
+            *ngIf="
+              allowance.allowanceSubType.english === 'Balance Settlement Allowance' ||
+              allowance.allowanceSubType.english === 'Balance Settlement Reversal'
+            "
+          >
+            {{ allowance.allowanceType | bilingualText }}
+            <span class="description">( {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.BALANCE-SETTLEMENT' | translate }})</span>
+          </span>
+          <span
+            *ngIf="
+              (allowance && allowance.allowanceSubType.english === 'InPatient Daily Allowance Adjustment') ||
+              allowance.allowanceSubType.english === 'OutPatient Daily Allowance Adjustment' ||
+              allowance.allowanceSubType.english === 'Balance Settlement Adjustment Allowance' ||
+              allowance.allowanceSubType.english === 'Balance Settlement Reversal Adjustment'
+            "
+          >
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE-ADJUSTMENT' | translate }}
+            <span
+              class="description"
+              *ngIf="
+                allowance.allowanceSubType.english === 'Balance Settlement Adjustment Allowance' ||
+                allowance.allowanceSubType.english === 'Balance Settlement Reversal Adjustment'
+              "
+              >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.BALANCE-SETTLEMENT' | translate }})</span
+            >
+            <span
+              class="description"
+              *ngIf="allowance.allowanceSubType.english === 'InPatient Daily Allowance Adjustment'"
+              >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})</span
+            >
+            <span
+              class="description"
+              *ngIf="allowance.allowanceSubType.english === 'OutPatient Daily Allowance Adjustment'"
+              >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span
+            >
+          </span>
+          <span *ngIf="allowance.allowanceSubType.english === 'Companion Daily Allowance'">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-ALLOWANCES' | translate }}
+          </span>
+          <span *ngIf="allowance.allowanceSubType.english === 'Companion Conveyance Allowance'">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-CONVEYANCE-ALLOWANCE' | translate }}
+          </span>
+          <span *ngIf="allowance.allowanceSubType.english === 'Conveyance Allowance'">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.CONVEYANCE-ALLOWANCES' | translate }}
+          </span>
+          <span *ngIf="allowance.allowanceType.english === 'Dead Body Repatriation Expenses'">
+            {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DEAD-BODY' | translate }}
+          </span>
+          <span *ngIf="allowance.allowanceType.english === 'Total Disability Repatriation Expenses'">
+            {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-DISABILITY' | translate }}
+          </span>
+          <br />
+          <span class="label-value">
+            {{ allowance?.allowanceDates?.startDate?.gregorian | gosiDate }}
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment-arrow"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment-arrow" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+            {{ allowance?.allowanceDates?.endDate?.gregorian | gosiDate }}
+          </span>
+        </td>
+        <td
+          class="row"
+          *ngIf="
+            arrayControlStart &&
+            allowance.allowanceSubType.english !== 'Conveyance Allowance' &&
+            allowance.allowanceSubType.english !== 'Companion Conveyance Allowance' &&
+            allowance.allowanceType.english !== 'Dead Body Repatriation Expenses' &&
+            allowance.allowanceType.english !== 'Total Disability Repatriation Expenses'
+          "
+        >
+          <div class="table-style-mobile">
+            <gosi-input-date-dc
+              id="StartDate"
+              noMargin="true"
+              [control]="arrayControlStart.at(i).get('gregorian')"
+              [hideOptionalLabel]="true"
+              [disabled]="
+                allowance.allowanceSubType.english !== 'InPatient Daily Allowance' &&
+                allowance.allowanceSubType.english !== 'OutPatient Daily Allowance' &&
+                allowance.allowanceSubType.english === 'Companion Daily Allowance' &&
+                allowance.repatriation === true
+                  ? true
+                  : false
+              "
+              [minDate]="allowance.minDate"
+              [maxDate]="allowance.maxDate"
+              (changeEvent)="rejectionPeriodChanges()"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-md-1 style-icon">
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment-arrow"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment-arrow" [icon]="['fas', 'arrow-left']"></fa-icon>
+          </div>
+          <div class="table-style-mobile">
+            <gosi-input-date-dc
+              id="EndDate"
+              [ignoreLabel]="true"
+              noMargin="true"
+              [control]="arrayControlEnd.at(i).get('gregorian')"
+              [disabled]="
+                allowance.allowanceSubType.english !== 'InPatient Daily Allowance' &&
+                allowance.allowanceSubType.english !== 'OutPatient Daily Allowance' &&
+                allowance.allowanceSubType.english === 'Companion Daily Allowance' &&
+                allowance.repatriation === true
+                  ? true
+                  : false
+              "
+              [minDate]="allowance.minEndDate"
+              [maxDate]="allowance.maxDate"
+              (changeEvent)="rejectionPeriodChanges()"
+            >
+            </gosi-input-date-dc>
+          </div>
+        </td>
+        <td
+          *ngIf="
+            allowance.allowanceSubType.english === 'Conveyance Allowance' &&
+            allowanceRejectForm &&
+            arrayControlVisits?.controls[i]
+          "
+        >
+          <div class="col-md-3 style-con">
+            <gosi-input-select-dc
+              id="Conveyance"
+              [name]="'Conveyance'"
+              [control]="arrayControlVisits?.controls[i]?.get('visits')"
+              [disabled]="true"
+              (select)="setVisits($event, allowance)"
+              [list]="allowance.visitList"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </td>
+        <td *ngIf="allowance.allowanceSubType.english === 'Companion Conveyance Allowance'">
+          {{ getDistance(allowance.distanceTravelled) }}
+        </td>
+        <td
+          *ngIf="
+            allowance.allowanceType.english === 'Dead Body Repatriation Expenses' ||
+            allowance.allowanceType.english === 'Total Disability Repatriation Expenses'
+          "
+        >
+          {{ getAmount(allowance.amount) }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h6 class="heading-style" *ngIf="showHeadings === true && !hideChanges">
+    <span>
+      {{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.CHANGES' | translate }}
+      <fa-icon [icon]="['fas', 'info-circle']" placement="top" [tooltip]="toolTemplateInfoEnable"></fa-icon>
+    </span>
+  </h6>
+  <table class="table table-borderless" *ngIf="allAllowanceDetails.length > 0 && !hideChanges && showHeadings === true">
+    <thead class="thead-light">
+      <tr>
+        <th>{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE' | translate }}</th>
+        <th>{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.CURRENT-VISITS' | translate }}</th>
+        <th>{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.REJECTED-VISITS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody *ngFor="let allowItem of allAllowanceDetails; let i = index" class="border-style">
+      <tr *ngIf="allowItem.checked === true">
+        <td>
+          <div class="row m-1">
+            <gosi-input-checkbox-dc
+              id="check{{ i }}"
+              class="input-check-class"
+              [noSpacing]="true"
+              [disabled]="allowItem?.disabled"
+              [control]="allowanceListValue.controls[i].get('checkBoxFlag')"
+            >
+            </gosi-input-checkbox-dc>
+            <span *ngIf="allowItem.allowanceSubType.english === 'InPatient Daily Allowance'">
+              {{ allowItem.allowanceType | bilingualText }}
+              <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})</span>
+            </span>
+            <span *ngIf="allowItem.allowanceSubType.english === 'OutPatient Daily Allowance'">
+              {{ allowItem.allowanceType | bilingualText }}
+              <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span>
+            </span>
+            <span
+              *ngIf="
+                allowItem.allowanceSubType.english === 'Balance Settlement Allowance' ||
+                allowItem.allowanceSubType.english === 'Balance Settlement Reversal'
+              "
+            >
+              {{ allowItem.allowanceType | bilingualText }}
+              <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.BALANCE-SETTLEMENT' | translate }})</span>
+            </span>
+            <span
+              *ngIf="
+                (allowItem && allowItem.allowanceSubType.english === 'InPatient Daily Allowance Adjustment') ||
+                allowItem.allowanceSubType.english === 'OutPatient Daily Allowance Adjustment' ||
+                allowItem.allowanceSubType.english === 'Balance Settlement Adjustment Allowance' ||
+                allowItem.allowanceSubType.english === 'Balance Settlement Reversal Adjustment'
+              "
+            >
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE-ADJUSTMENT' | translate }}
+              <span
+                class="description"
+                *ngIf="
+                  allowItem.allowanceSubType.english === 'Balance Settlement Adjustment Allowance' ||
+                  allowItem.allowanceSubType.english === 'Balance Settlement Reversal Adjustment'
+                "
+                >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.BALANCE-SETTLEMENT' | translate }})</span
+              >
+              <span
+                class="description"
+                *ngIf="allowItem.allowanceSubType.english === 'InPatient Daily Allowance Adjustment'"
+                >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }})</span
+              >
+              <span
+                class="description"
+                *ngIf="allowItem.allowanceSubType.english === 'OutPatient Daily Allowance Adjustment'"
+                >({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span
+              >
+            </span>
+            <span *ngIf="allowItem.allowanceSubType.english === 'OutPatient Allowance'">
+              {{ allowItem.allowanceType | bilingualText }}
+              <span class="description">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }})</span>
+            </span>
+            <span *ngIf="allowItem.allowanceSubType.english === 'Conveyance Allowance'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.CONVEYANCE-ALLOWANCES' | translate }}
+            </span>
+            <span *ngIf="allowItem.allowanceSubType.english === 'Companion Daily Allowance'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-ALLOWANCES' | translate }}
+            </span>
+            <span *ngIf="allowItem.allowanceSubType.english === 'Companion Conveyance Allowance'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-CONVEYANCE-ALLOWANCE' | translate }}
+            </span>
+            <span *ngIf="allowItem.allowanceType.english === 'Dead Body Repatriation Expenses'">
+              {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DEAD-BODY' | translate }}
+            </span>
+            <span *ngIf="allowItem.allowanceType.english === 'Total Disability Repatriation Expenses'">
+              {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-DISABILITY' | translate }}
+            </span>
+          </div>
+        </td>
+        <td
+          *ngIf="
+            allowItem.allowanceSubType.english !== 'Conveyance Allowance' &&
+            allowItem.allowanceSubType.english !== 'Companion Conveyance Allowance' &&
+            allowItem.allowanceType.english !== 'Dead Body Repatriation Expenses' &&
+            allowItem.allowanceType.english !== 'Total Disability Repatriation Expenses'
+          "
+        >
+          <span class="label-value">
+            {{ allowItem?.allowanceDates?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment-arrow"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment-arrow" [icon]="['fas', 'arrow-left']"></fa-icon>
+            {{ allowItem?.allowanceDates?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+          </span>
+        </td>
+        <td
+          *ngIf="
+            allowItem.allowanceSubType.english !== 'Conveyance Allowance' &&
+            allowItem.allowanceSubType.english !== 'Companion Conveyance Allowance' &&
+            allowItem.allowanceType.english !== 'Dead Body Repatriation Expenses' &&
+            allowItem.allowanceType.english !== 'Total Disability Repatriation Expenses'
+          "
+        >
+          <span class="label-value">
+            {{ allowItem?.rejectionDates?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment-arrow"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment-arrow" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+            {{ allowItem?.rejectionDates?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+          </span>
+        </td>
+        <td *ngIf="allowItem.allowanceSubType.english === 'Conveyance Allowance'">
+          {{ allowItem?.visits }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.VISITS' | translate }}
+        </td>
+        <td *ngIf="allowItem.allowanceSubType.english === 'Companion Conveyance Allowance'">
+          {{ getDistance(allowItem.distanceTravelled) }}
+        </td>
+        <td
+          *ngIf="
+            allowItem.allowanceType.english === 'Dead Body Repatriation Expenses' ||
+            allowItem.allowanceType.english === 'Total Disability Repatriation Expenses'
+          "
+        >
+          {{ getAmount(allowItem.amount) }}
+        </td>
+        <td *ngIf="allowItem.allowanceSubType.english === 'Conveyance Allowance'">
+          {{ allowItem?.rejectedVisits }}{{ visits ? visits : null }}
+        </td>
+        <td *ngIf="allowItem.allowanceSubType.english === 'Companion Conveyance Allowance'">
+          {{ getDistance(allowItem.distanceTravelled) }}
+        </td>
+        <td
+          *ngIf="
+            allowItem.allowanceType.english === 'Dead Body Repatriation Expenses' ||
+            allowItem.allowanceType.english === 'Total Disability Repatriation Expenses'
+          "
+        >
+          {{ getAmount(allowItem.amount) }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="row" *ngIf="allowanceRejectForm">
+    <div class="col-lg-12 col-sm-12 col-md-12 allowance-style">
+      <gosi-input-select-dc
+        (select)="commentsSelection()"
+        id="rejectionReason"
+        [placeholder]="'OCCUPATIONAL-HAZARD.AUDITOR.SELECT-REASON' | translate"
+        [label]="'OCCUPATIONAL-HAZARD.AUDITOR.REJECTION-REASON' | translate"
+        [control]="allowanceRejectForm.get('rejectionReason')"
+        [list]="rejectReasonList$ | async"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="allowanceRejectForm">
+    <div class="col-lg-12 col-sm-12 col-md-12">
+      <gosi-input-text-area-dc
+        id="validatorComments"
+        [label]="'CORE.COMMENTS' | translate"
+        [name]="'auditComments'"
+        [control]="allowanceRejectForm.get('comments')"
+        [maxLength]="commentsMaxlength"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+  </div>
+  <div class="button-style">
+    <div class="float-left">
+      <gosi-button-dc id="cancelAuditBtn" type="secondary" (submit)="cancelRejection()">
+        {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="float-right">
+      <gosi-button-dc id="confirmAuditBtn" (submit)="confirmRejectionDetails()" type="primary">
+        {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+  <ng-template #toolTemplateInfoEnable>
+    <div class="d-flex flex-column">
+      <div>{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.CHECKBOX-INFO' | translate }}</div>
+    </div>
+  </ng-template>
+</div>

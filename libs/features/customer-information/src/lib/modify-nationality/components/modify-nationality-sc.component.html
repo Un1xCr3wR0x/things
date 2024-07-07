@@ -1,0 +1,230 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+
+  <!-- Heading -->
+  <div class="row">
+    <a (click)="routeBack()" class="arrow-links">
+      <fa-icon *ngIf="lang === 'ar'" [icon]="['far', 'arrow-alt-circle-right']" size="2x"></fa-icon>
+      <fa-icon *ngIf="lang === 'en'" [icon]="['far', 'arrow-alt-circle-left']" size="2x"></fa-icon>
+    </a>
+    <!-- <div class="col-lg-12"> -->
+      <div class="header-value">
+        {{ 'CUSTOMER-INFORMATION.MODIFY-NATIONALITY' | translate }}
+      </div>
+      <!-- </div> -->
+      </div>
+   
+    <gosi-alert-sc></gosi-alert-sc>
+  <!-- Contributor details banner -->
+  <div class="row mt-4">
+
+
+    <div class="col-lg-12">
+
+      <div class="row no-gutters banner">
+        <div class="col">
+          <gosi-label-dc id="contributorName" [label]="'CUSTOMER-INFORMATION.NAME' | translate"
+            [value]="lang=='en' ? nameEnglish : name ">
+          </gosi-label-dc>
+        </div>
+
+        <div class="col">
+          <gosi-label-dc id="sinNo" [label]="'CUSTOMER-INFORMATION.NATIONALITY' | translate" [value]="nationality | bilingualText"> </gosi-label-dc>
+        </div>
+        <div class="col" *ngIf="!isOldGcc">
+          <gosi-label-dc id="sinNo" [label]="'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate" [value]="iqmaNUmber?.iqamaNo"> </gosi-label-dc>
+        </div>
+        <div class="col" *ngIf="isOldGcc">
+          <gosi-label-dc id="sinNo" [label]="'CUSTOMER-INFORMATION.GCCID' | translate" [value]="gccId?.id"> </gosi-label-dc>
+        </div>
+        <div class="col">
+          <gosi-label-dc id="sinNo" [label]="'CUSTOMER-INFORMATION.PASSPORT-NO' | translate" [value]="passportNumber?.passportNo"> </gosi-label-dc>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <gosi-progress-wizard-dc *ngIf="!isValidatorEdit" [wizardItems]="wizardItems" (clickWizard)="selectWizard($event)" #changePersonalWizard>
+  </gosi-progress-wizard-dc>
+  <ng-container *ngIf="currentTab==0">
+    <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.PERSONAL-DETAILS' | translate">
+        <div class="row ">
+        <div class="col-lg-6">
+          <gosi-input-select-dc [label]="'CUSTOMER-INFORMATION.NATIONALITY' | translate" [list]="nationalityList$ | async"
+            [control]="modifyDetailsForm?.get('nationality')" (select)="selectIdForm($event)"
+            [disabled]="isValidatorEdit">
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-6" *ngIf="isGcc || (isValidatorEdit && showGccValidator)">
+          <gosi-input-number-dc id="gccId" [maxLength]="gccIdLength" [label]="'CUSTOMER-INFORMATION.GCCID' | translate" [control]="modifyDetailsForm?.get('gccId')"
+          [hideOptionalLabel]="true">
+          </gosi-input-number-dc>
+        </div>
+        <div class="col-lg-6">
+          <gosi-input-text-dc id="passportNo" [maxLength]="passportMaxLength" [label]="'CUSTOMER-INFORMATION.PASSPORT-NO' | translate" [control]="modifyDetailsForm?.get('passportNumber')" (input)="enableIssueDateField()"
+          [hideOptionalLabel]="isImmigratedTribes || isEditNationality ? false : true">
+          </gosi-input-text-dc>
+        </div>
+
+        <div class="col-lg-6">
+          <gosi-input-date-dc  id="passportIssueDate" [control]="modifyDetailsForm?.get('passportIssueDate').get('gregorian')"
+            [label]="'CUSTOMER-INFORMATION.PASSPORT-ISSUE-DATE' | translate" [disabled]="issueDateDisabled" [maxDate]="currentDate" (changeEvent)="issueDateSelected()" (input)="enableExpiryDateField()"
+            [hideOptionalLabel]="isImmigratedTribes || isEditNationality ? false : true"></gosi-input-date-dc>
+        </div>
+
+        <div class="col-lg-6">
+          <gosi-input-date-dc id="passportExpiryDate" [control]="modifyDetailsForm?.get('passportExpiryDate').get('gregorian')"
+            [label]="'CUSTOMER-INFORMATION.PASSPORT-EXPIRY-DATE' | translate" [disabled]="isDisabled" [minDate]="minDate"
+            [hideOptionalLabel]="isImmigratedTribes || isEditNationality ? false : true"></gosi-input-date-dc>
+        </div>
+
+        <div class="col-lg-6" *ngIf="!isOldImmigratedTribes || !isImmigratedTribes">
+          <gosi-input-number-dc id="iqamaNo" [maxLength]="iqamaMaxLength" [label]="'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate" [control]="modifyDetailsForm?.get('iqamaNo')"
+          [hideOptionalLabel]="false" [disabled]="true">
+          </gosi-input-number-dc>
+        </div>
+        <div class="col-lg-6" *ngIf="!isOldImmigratedTribes || !isImmigratedTribes">
+          <gosi-input-number-dc id="borderNo" [maxLength]="borderMaxLength" [label]="'CUSTOMER-INFORMATION.BORDER-NUMBER' | translate" [control]="modifyDetailsForm?.get('borderNo')"
+          [hideOptionalLabel]="false" [disabled]="true">
+          </gosi-input-number-dc>
+        </div>
+    </div>
+      
+      <div class="row checkbox" *ngIf="isOldGcc">
+        <gosi-label-dc id="gccId" [label]="'CUSTOMER-INFORMATION.GCCID' | translate" [value]="gccId?.id">
+        </gosi-label-dc>
+     <div class="tikbox">
+      <gosi-input-checkbox-dc
+      label="CUSTOMER-INFORMATION.REMOVE-GCCID"
+      [control]="modifyDetailsForm?.get('checkBoxFlag')"
+      [disabled]="true"
+    ></gosi-input-checkbox-dc>
+  </div>
+  </div>
+    </gosi-card-dc>
+    <gosi-card-dc *ngIf="modifyDetailsForm?.get('nationality').get('english').value && !isValidatorEdit" type="secondary" [heading]="''">
+
+
+      <div class="row">
+        <div class="col-12">
+          <cim-documents-dc  [parentForm]="modifyDetailsForm" [documents]="documents" (refreshDocument)="refreshDocument($event)" [transactionId]="transactionID"
+            [referenceNo]="referenceNo" [uuid]="uuid" (onUploadDocument)="upload($event)"></cim-documents-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+
+
+  </ng-container>
+  <ng-container *ngIf="currentTab==1">
+    <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.PERSONAL-DETAILS-MODIFICATIONS' | translate">
+      <div class="wage-block">
+
+        <div class="wage-card">
+
+          <table class="table-dd table-responsive">
+            <table>
+              <tr>
+                <th></th>
+                <th scope="col">{{'CUSTOMER-INFORMATION.BEFORE-MODIFICATION' | translate}}</th>
+                <th scope="col">{{'CUSTOMER-INFORMATION.AFTER-MODIFICATION' | translate}}</th>
+
+
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.NATIONALITY' | translate}}</th>
+                <td class="data-row">{{nationality | bilingualText}}</td>
+                <td class="data-row">{{nationalityDetails?.nationality | bilingualText }}</td>
+
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-NO' | translate}}</th>
+                <td class="data-column">{{passportNumber?.passportNo}}</td>
+                <td class="data-column">{{nationalityDetails?.passportNumber}}</td>
+
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-ISSUE-DATE' | translate}}</th>
+                <td class="data-row">{{passportNumber?.issueDate?.gregorian | gosiDate}}</td>
+                <td class="data-row">{{nationalityDetails?.passportIssueDate?.gregorian | gosiDate}}</td>
+
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.PASSPORT-EXPIRY-DATE' | translate}}</th>
+                <td class="data-column">{{passportNumber?.expiryDate?.gregorian | gosiDate}}</td>
+                <td class="data-column">{{nationalityDetails?.passportExpiryDate
+                  ?.gregorian | gosiDate}}</td>
+
+              </tr>
+              <tr *ngIf="modifyDetailsForm?.get('gccId').value || gccId?.id">
+                <th scope="row">{{'CUSTOMER-INFORMATION.GCCID' | translate}}</th>
+                <td class="data-row">{{gccId?.id}}</td>
+                <td class="data-row">{{modifyDetailsForm?.get('gccId').value}}</td>
+
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate}}</th>
+                <td [ngClass]="modifyDetailsForm?.get('gccId').value || gccId?.id ? 'data-column' : 'data-row'">{{iqmaNUmber?.iqamaNo}}</td>
+                <td [ngClass]="modifyDetailsForm?.get('gccId').value || gccId?.id ? 'data-column' : 'data-row'">{{modifyDetailsForm?.get('iqamaNo').value}}</td>
+              </tr>
+              <tr>
+                <th scope="row">{{'CUSTOMER-INFORMATION.BORDER-NUMBER' | translate}}</th>
+                <td [ngClass]="modifyDetailsForm?.get('gccId').value || gccId?.id ? 'data-row' : 'data-column'">{{borderNo?.id}}</td>
+                <td [ngClass]="modifyDetailsForm?.get('gccId').value || gccId?.id ? 'data-row' : 'data-column'">{{modifyDetailsForm?.get('borderNo').value}}</td>
+              </tr>
+            </table>
+          </table>
+        </div>
+
+      </div>
+
+    </gosi-card-dc>
+  </ng-container>
+  <div class="row form-action">
+    <div class="col-lg-12" *ngIf="currentTab==0">
+      <div class="btn-section float-left btn-margins">
+        <gosi-button-dc id="modifycancel" type="secondary" (submit)="showCancelTemplate(confirmid)">
+          {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc>
+      </div>
+      <div class="custom-float-lg float-right btn-section" *ngIf="!isValidatorEdit">
+        
+        <cim-footer-button-dc [primaryLabel]="'CUSTOMER-INFORMATION.SAVE-AND-NEXT' | translate" [showPrevious]="false" [showCancel]="false" (submit)="next()">
+        </cim-footer-button-dc>
+      </div>
+      <div class="custom-float-lg float-right btn-section" *ngIf="isValidatorEdit">
+        
+        <cim-footer-button-dc [primaryLabel]="'CUSTOMER-INFORMATION.SUBMIT' | translate" [showPrevious]="false" [showCancel]="false" (submit)="validatorEditSubmit()">
+        </cim-footer-button-dc>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row form-action" *ngIf="currentTab==1">
+    <div class="col-lg-12">
+      <div class="btn-section float-right btn-margins">
+        <gosi-button-dc id="finalsave" type="primary" (submit)="submit()">
+          {{ 'ESTABLISHMENT.SUBMIT' | translate }}</gosi-button-dc>
+      </div>
+      
+      <div class="btn-section float-left btn-margins">
+        <gosi-button-dc id="modifycancel" type="secondary" (submit)="showCancelTemplate(confirmid)">
+          {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc>
+      </div>
+      <div class="btn-section float-left btn-margins">
+        <gosi-button-dc id="previousback" type="secondary" (submit)="previousClick()">
+          {{ 'BILLING.PREVIOUS-SECTION' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+
+
+
+
+</div>
+
+<!-- Confirmation Modal-->
+<ng-template #confirmid>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

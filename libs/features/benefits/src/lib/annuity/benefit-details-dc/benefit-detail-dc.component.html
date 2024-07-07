@@ -1,0 +1,454 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-card-dc type="secondary" class="custom-card" headingSize="md" *ngIf="isHeir">
+  <div class="row">
+    <div class="col-12">
+      <div class="benefit-detail-section">
+        <div>
+          <span class="annuity-type">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</span>
+        </div>
+        <div>
+          <div class="contribution-button">
+            <gosi-button-dc
+              *ngIf="benefitCalculation"
+              [size]="isSmallScreen ? 'sm' : 'md'"
+              type="secondary"
+              [outlineOnly]="true"
+              (click)="showModal(calculationDetails)"
+            >
+              {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+            </gosi-button-dc>
+          </div>
+          <gosi-button-dc
+            *ngIf="benefitCalculation"
+            [size]="isSmallScreen ? 'sm' : 'md'"
+            class="calculation-button"
+            type="secondary"
+            [outlineOnly]="true"
+            (click)="showModal(moreDetails)"
+          >
+            {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="requestDate"
+        [value]="benefitDetails?.requestDate | dateType"
+        label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="benefitType"
+        [value]="benefitDetails?.benefitType | bilingualText"
+        label="{{ 'BENEFITS.HEIR-BENEFIT-TYPE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefitDetails?.missingDateStr">
+      <gosi-label-dc
+        id="missingReportDate"
+        [value]="benefitDetails?.missingDateStr"
+        label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+        [noMargin]="true"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefitDetails?.deathDate">
+      <gosi-label-dc
+        id="deathDate"
+        [value]="benefitDetails?.deathDate | dateType"
+        label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="benefitStartDate"
+        [value]="acitveBenefit?.benefitStartDate | dateType"
+        label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4" *ngIf="benefitDetails?.status">
+      <gosi-label-dc
+        id="benefitStatus"
+        [value]="benefitDetails?.status | bilingualText"
+        label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefitDetails?.benefitReason">
+      <gosi-label-dc
+        id="reason"
+        [value]="benefitDetails?.benefitReason | bilingualText"
+        label="{{ 'BENEFITS.REASON_BENEFIT' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div
+      class="col-md-4 col-lg-4"
+      *ngIf="benefeciaryStatus === 'On Hold' && benefitDetails?.holdStopDetails?.eventDate"
+    >
+      <gosi-label-dc
+        *ngIf="benefeciaryStatus === 'On Hold'"
+        id="holdDate"
+        [value]="benefitDetails?.holdStopDetails?.eventDate | dateType"
+        label="{{ 'BENEFITS.BENEFIT-HOLD-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefeciaryStatus === 'On Hold' && benefitDetails?.holdStopDetails?.reason">
+      <gosi-label-dc
+        *ngIf="benefeciaryStatus === 'On Hold'"
+        id="reasonForHold"
+        [value]="benefitDetails?.holdStopDetails?.reason | bilingualText"
+        label="{{ 'BENEFITS.HOLD-REASON' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="benefitDetails?.amount">
+      <gosi-label-dc
+        id="amount"
+        [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: (benefitDetails?.amount | number: '1.2-2') || '0' }"
+        label="{{ 'BENEFITS.CURRENT-BENEFIT-AMOUNT' | translate }}"
+        [noMargin]="true"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc type="secondary" class="custom-card" headingSize="md" *ngIf="!isHeir">
+  <div class="row">
+    <div class="col-12">
+      <div class="benefit-detail-section">
+        <div>
+          <div class="annuity-type">{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}</div>
+        </div>
+        <div *ngIf="benefitType !== BenefitType.funeralGrant">
+          <!-- Defect 557465: Contribution details pop is not required for Occ benefit -->
+          <div class="contribution-button" *ngIf="!isOccLumpsum && !isOccPension">
+            <gosi-button-dc
+              [size]="isSmallScreen ? 'sm' : 'md'"
+              type="secondary"
+              [outlineOnly]="true"
+              (click)="showModal(calculationDetails)"
+            >
+              {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+            </gosi-button-dc>
+          </div>
+          <!-- defect_539770 *ngIf="!isOccPension" -->
+          <gosi-button-dc
+            [size]="isSmallScreen ? 'sm' : 'md'"
+            class="calculation-button"
+            type="secondary"
+            [outlineOnly]="true"
+            (click)="isOccCalc ? showModal(occCalcDetails) : showModal(moreDetails)"
+          >
+            {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4 col-lg-4" *ngIf="!isSaned">
+      <gosi-label-dc
+        id="requestDate"
+        [value]="activeBenefitDetails?.requestDate | dateType"
+        label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <!--    <div class="col-md-4 col-lg-4" *ngIf="isOccPension && activeBenefitDetails?.disabilityPercentage > 0">
+      <gosi-label-dc
+        id="disabilityPercentage"
+        [value]="activeBenefitDetails?.disabilityPercentage"
+        label="{{ 'BENEFITS.DISABILITY-PERCENTAGE' | translate }}"
+      ></gosi-label-dc>
+    </div>-->
+    <ng-container *ngIf="isSaned">
+      <div class="col-md-4 col-lg-4">
+        <!-- Defect 468931  First benefit start date to Benefit start date -->
+        <gosi-label-dc
+          id="startDate"
+          [value]="acitveBenefit?.benefitStartDate | dateType"
+          label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="benefitStatus"
+          [value]="activeBenefitDetails?.status | bilingualText"
+          label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- Defect 642628 remove stop reason showing as termination reason -->
+      <!-- <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.status?.english === 'Stopped'">
+        <gosi-label-dc
+          id="benefitStatus"
+          [value]="activeBenefitDetails?.terminationReason | bilingualText"
+          label="{{ 'BENEFITS.STOP-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div> -->
+      <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.endDate">
+        <gosi-label-dc
+          id="endDate"
+          [value]="activeBenefitDetails?.endDate | dateType"
+          label="{{ 'BENEFITS.END-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="sanedType"
+          [value]="activeBenefitDetails?.type | bilingualText"
+          label="{{ 'BENEFITS.SANED-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="noOfContributionMonths"
+          [value]="activeBenefitDetails?.noContributionMonths | number"
+          label="{{ 'BENEFITS.SANED-CONTRIBUTION-MONTHS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- Added as a part of Defect 465430 -->
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="sanedAmount"
+          [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefitDetails?.benefitAmount || 0 | number }"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+          [noMargin]="true"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-md-4 col-lg-4"
+        *ngIf="activeBenefitDetails?.ineligibilityReasons && activeBenefitDetails?.ineligibilityReasons?.length"
+      >
+        <gosi-label-dc
+          id="reasonForSuspension"
+          [value]="getIneligibilityReasons(activeBenefitDetails?.ineligibilityReasons) | bilingualText"
+          label="{{ 'BENEFITS.INELIGIBILITY-REASON' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!isLumpsum && !isSaned && benefitType !== BenefitType.funeralGrant">
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="benefitStartDate"
+          [value]="activeBenefitDetails?.benefitStartDate | dateType"
+          label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="benefitStatus"
+          value="{{
+            acitveBenefit.beneficiaryBenefitStatus?.english === statusEnums.WAIVED
+              ? (acitveBenefit.beneficiaryBenefitStatus | bilingualText)
+              : (activeBenefitDetails?.status | bilingualText)
+          }}"
+          label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-md-4 col-lg-4"
+        *ngIf="
+          (benefeciaryStatus === 'On Hold' || benefeciaryStatus === 'Stopped') && activeBenefitDetails?.reasonForHold
+        "
+      >
+        <gosi-label-dc
+          *ngIf="benefeciaryStatus === 'On Hold'"
+          id="reasonForHold"
+          [value]="activeBenefitDetails?.reasonForHold | bilingualText"
+          [label]="(benefeciaryStatus === 'On Hold' ? 'BENEFITS.HOLD-REASON' : 'BENEFITS.STOP-REASON') | translate"
+        >
+        </gosi-label-dc>
+      </div>
+
+      <div
+        class="col-md-4 col-lg-4"
+        *ngIf="benefeciaryStatus === 'On Hold' && benefitDetails?.holdStopDetails?.eventDate"
+      >
+        <gosi-label-dc
+          id="holdDate"
+          [value]="benefitDetails?.holdStopDetails?.eventDate | dateType"
+          label="{{ 'BENEFITS.BENEFIT-HOLD-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+
+      <div
+        class="col-md-4 col-lg-4"
+        *ngIf="
+          (benefeciaryStatus === 'On Hold' || benefeciaryStatus === 'Stopped') &&
+          benefitDetails?.holdStopDetails?.reason
+        "
+      >
+        <gosi-label-dc
+          id="reasonForHold"
+          [value]="benefitDetails?.holdStopDetails?.reason | bilingualText"
+          [label]="(benefeciaryStatus === 'On Hold' ? 'BENEFITS.HOLD-REASON' : 'BENEFITS.STOP-REASON') | translate"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4" *ngIf="!isLumpsum">
+        <gosi-label-dc
+          id="amount"
+          [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefitDetails?.benefitAmount || 0 | number: '1.2-2' }"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.benefitStopDate">
+        <gosi-label-dc
+          id="stopDate"
+          [value]="activeBenefitDetails?.benefitStopDate | dateType"
+          label="{{ 'BENEFITS.BENEFIT-STOP-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4" *ngIf="isLumpsum">
+        <gosi-label-dc
+          id="amount"
+          [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: activeBenefitDetails?.benefitAmount || 0 | number }"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+          [noMargin]="true"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.dependentAmount && isHoldStopEligible">
+        <gosi-label-dc
+          id="dependentAmount"
+          [value]="
+            'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefitDetails?.dependentAmount || 0 | number }
+          "
+          label="{{ 'BENEFITS.DEPENDENT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!-- commented as per Defect 453428 -->
+      <div
+        class="col-md-4 col-lg-4"
+        *ngIf="
+          activeBenefitDetails?.finalBenefitAmount !== activeBenefitDetails?.benefitAmount &&
+          isHoldStopEligible &&
+          !isDisabilityPension
+        "
+      >
+        <gosi-label-dc
+          id="totalBenefitAmount"
+          [value]="
+            'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefitDetails?.finalBenefitAmount || 0 | number }
+          "
+          label="{{ 'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate }}"
+          [noMargin]="true"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="benefitType === BenefitType.funeralGrant">
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="amount"
+          [value]="'BENEFITS.AMOUNT-MONTHS' | translate: { amount: activeBenefitDetails?.benefitAmount || 0 | number }"
+          label="{{ 'BENEFITS.FUNERAL-GRANT-AMOUNT' | translate }}"
+          [noMargin]="true"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <!-- lumpusm -->
+    <div class="col-md-4 col-lg-4" *ngIf="isLumpsum">
+      <gosi-label-dc
+        id="amount"
+        [value]="'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: benefitDetails?.amount || 0 | number }"
+        label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4 col-lg-4" *ngIf="isLumpsum">
+      <!-- Defect 483452  -->
+      <gosi-label-dc
+        id="startDate"
+        [value]="activeBenefitDetails?.benefitStartDate | dateType"
+        label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4" *ngIf="isLumpsum">
+      <gosi-label-dc
+        id="benefitStatus"
+        [value]="activeBenefitDetails?.status | bilingualText"
+        label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <ng-container *ngIf="(isDisabilityPension || isOccLumpsum) && activeBenefitDetails?.helperAllowanceAmount > 0">
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="amount"
+          value="{{
+            (isLumpsum ? 'BENEFITS.AVERAGE-AMOUNT' : 'BENEFITS.AMOUNT-MONTHS')
+              | translate: { amount: activeBenefitDetails?.helperAllowanceAmount || 0 | number }
+          }}"
+          label="{{ 'BENEFITS.HLP-ALWNCE-AMT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+
+      <div class="col-md-4 col-lg-4">
+        <gosi-label-dc
+          id="amount"
+          value="{{
+            (isLumpsum ? 'BENEFITS.AVERAGE-AMOUNT' : 'BENEFITS.AMOUNT-MONTHS')
+              | translate: { amount: activeBenefitDetails?.finalBenefitAmount || 0 | number }
+          }}"
+          label="{{ 'BENEFITS.FINAL-BENEFIT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <ng-container
+      *ngIf="
+        (isDisabilityPension && activeBenefitDetails?.helperAllowanceAmount > 0) ||
+        (!isLumpsum && !isSaned && benefitType !== BenefitType.funeralGrant)
+      "
+    >
+      <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.injuryId">
+        <gosi-label-dc
+          id="injuryId"
+          [value]="activeBenefitDetails?.injuryId"
+          label="{{ 'BENEFITS.INJURY-ID' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-4 col-lg-4" *ngIf="activeBenefitDetails?.injuryDate">
+        <gosi-label-dc
+          id="injuryDate"
+          [value]="activeBenefitDetails?.injuryDate | dateType"
+          label="{{ 'BENEFITS.INJURY-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-md-4 col-lg-4" *ngIf="acitveBenefit.beneficiaryBenefitStatus?.english === statusEnums.WAIVED">
+      <gosi-label-dc
+        id="waive-start-date"
+        [value]="acitveBenefit?.waiveStartDate | dateType"
+        label="{{ 'BENEFITS.WAIVE-START-DATE' | translate }}"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc 
+  [benefitDetails]="benefitCalculation" 
+  [eligibleForPensionReform]="eligibleForPensionReform" 
+  (close)="hideModal()">
+  </bnt-amw-view-dc>
+</ng-template>
+<ng-template #moreDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [isSaned]="isSaned"
+    [benefitCalculationDetails]="benefitCalculation"
+    [averageMonthlyWagePeriods]="benefitCalculation?.averageMonthlyWagePeriods"
+    [isLumpsum]="benefitType.includes('Lumpsum')"
+    [eligibleForPensionReform]="eligibleForPensionReform" 
+    [lang]="lang"
+  ></bnt-annuity-calculation-details-dc>
+</ng-template>
+<ng-template #occCalcDetails>
+  <bnt-benefit-calc-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculation"
+    [averageMonthlyWagePeriods]="benefitCalculation?.averageMonthlyWagePeriods"
+    [activeBenefitDetails]="activeBenefitDetails"
+    [eligibleForPensionReform]="eligibleForPensionReform" 
+
+  >
+  </bnt-benefit-calc-details-dc>
+</ng-template>

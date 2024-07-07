@@ -1,0 +1,95 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc #brdcmb> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">{{'BENEFITS.MAKE-DIRECT-PAYMENT' | translate}}</div>
+  </div>
+  <div [ngClass]="{ hide: wizards.length <= 1 }">
+    <gosi-progress-wizard-dc (clickWizard)="selectWizard($event)" [wizardItems]="wizards" #benefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="hide-tab">
+    <tabset class="pills">
+      <tab [active]="currentTab === 0">
+        <div class="row" *ngIf="activeBenefit">
+          <div class="col-md-12">
+            <bnt-select-heir-payment-sc #selectPaymentComponent
+              [directPaymentForm]="directPaymentForm"
+              [activeBenefit]="activeBenefit"
+              [isEditMode]="isEditMode"
+              [referenceNo]="referenceNo"
+            ></bnt-select-heir-payment-sc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="this.activeBenefit?.sin"
+              [referenceNo]="referenceNo"
+              [documentList]="requiredDocs"
+              [isEditMode]="isEditMode || isPrevious"
+              [isWorkflow]="false"
+              [parentForm]="documentForm"
+              [requestTransactionId]="transactionId"
+              (refresh)="refreshDocument($event)"
+              (previous)="previousFormDetails()"
+              (documentFormDetails)="showFormValidation()"
+              (uploadSuccess)="submitPayment($event)"
+              (uploadFailed)="showErrorMessages($event)"
+              (cancelDoc)="cancelTransactions(cancelTemplate)"
+              (decline)="decline()"
+              (confirmCancelAction)="confirm()"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+
+  <div class="row" *ngIf="currentTab === 0">
+    <div class="col-lg-12 mt-4">
+      <div class="float-right btn-section">
+        <gosi-button-dc  id="save" type="primary" (submit)="saveAndNext()"
+        >{{
+          'BENEFITS.SAVE-AND-NEXT' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButton" type="secondary" (submit)="showModal(cancelTemplate)">{{
+          'BENEFITS.CANCEL' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

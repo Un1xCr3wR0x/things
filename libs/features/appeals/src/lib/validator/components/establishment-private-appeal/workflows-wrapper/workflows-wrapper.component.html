@@ -1,0 +1,126 @@
+<!------------ Appeal Reason ------------>
+<gosi-label-dc [label]="'VIOLATIONS.APPEAL-REASON'" [value]="appealDetailNew?.reason"></gosi-label-dc>
+<span class="form-separator my-4"></span>
+
+<!-- <span class="form-separator mb-4"></span> -->
+
+<!-------------   Reviewer 1.1:  Form ------------->
+<appeals-reviewer
+  *ngIf="
+    appealValidatorRoles.IS_reviewer_private === assignedRole ||
+    appealValidatorRoles.IS_reviewer_public === assignedRole ||
+    reviewerModel.reviewerDecision
+  "
+  [approveOrRejectList]="approveOrRejectList"
+  [legalOpinionsList]="legalOpinionsList"
+  [assignedRole]="assignedRole"
+  [reviewModel]="reviewerModel"
+>
+</appeals-reviewer>
+
+<!-------------legal reviewer Approver 1.1,2:  الدارس ------------->
+<ng-container *ngIf="canViewLegalReviewer">
+  <span class="form-separator my-4"></span>
+  <appeals-approval-one
+    [appealSearchList]="appealSearchList"
+    [legalOpinionsList]="legalOpinionsList"
+    [assignedRole]="assignedRole"
+    [approvalModel]="legalReviewerModel"
+  ></appeals-approval-one>
+</ng-container>
+
+<!-------------   Legal_manager: المدير للقانونيه  ------------->
+
+<ng-container
+  *ngIf="
+    appealValidatorRoles.Legal_manager_private === assignedRole ||
+    appealValidatorRoles.Legal_manager_public === assignedRole ||
+    legalManagerModel.finalLegalOpinion
+  "
+>
+  <span class="form-separator my-4"></span>
+  <appeals-legal-manager
+    [appealSearchList]="appealSearchList"
+    [legalOpinionsList]="legalOpinionsList"
+    [assignedRole]="assignedRole"
+    [legalReviewerModel]="legalReviewerModel"
+    [legalManagerModel]="legalManagerModel"
+  >
+  </appeals-legal-manager>
+</ng-container>
+
+<!-------------  Legal_auditor   Approver 2.1:  المراجع ------------->
+<ng-container
+  *ngIf="
+    appealValidatorRoles.Legal_auditor_private === assignedRole ||
+    appealValidatorRoles.Legal_auditor_public === assignedRole ||
+    legalAuditorModel.auditorDecision != null
+  "
+>
+  <span class="form-separator my-4"></span>
+  <appeals-approval-two
+    [agreeOrDisagreeList]="agreeOrDisagreeList"
+    [assignedRole]="assignedRole"
+    [legalAuditor]="legalAuditorModel"
+    [isLegalRejected]="legalReviewerModel?.legalOpinion?.english === 'Reject'"
+  >
+  </appeals-approval-two>
+</ng-container>
+
+<!------------- #  Preparation Team: فريق التحضير ------------->
+<ng-container
+  *ngIf="
+    appealValidatorRoles.Preparation_team_public === assignedRole ||
+    appealValidatorRoles.Preparation_team_private === assignedRole ||
+    appealDetailNew?.summary
+  "
+>
+  <span class="form-separator my-4"></span>
+  <gosi-input-text-area-dc
+    label="APPEALS.NOTES"
+    [hideOptionalLabel]="true"
+    [rowSize]="4"
+    [maxLength]="maxCharLength"
+    [control]="preparationForm.get('summary')"
+  >
+  </gosi-input-text-area-dc>
+</ng-container>
+
+<!-------------- #appeal 1st Level ==> Appeal Clerk 1.1 ----------------------------->
+<ng-container
+  *ngIf="
+    appealValidatorRoles.Appeal_clerk_private === assignedRole ||
+    appealValidatorRoles.Appeal_clerk_public === assignedRole ||
+    appealClerkModel.finalDecision
+  "
+>
+  <span class="form-separator my-4"></span>
+  <appeal-clerk
+    [appealFinalDecisionList]="legalOpinionsList"
+    [appealClerkModel]="appealClerkModel"
+    [assignedRole]="assignedRole"
+  ></appeal-clerk>
+</ng-container>
+
+<!-- Specialist Role -->
+<ng-container *ngIf="isSpecialist">
+  <form [formGroup]="specialistForm">
+    <gosi-input-text-area-dc
+      label="APPEALS.NOTES"
+      [hideOptionalLabel]="true"
+      [rowSize]="4"
+      [control]="specialistForm.get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </form>
+</ng-container>
+
+<!-------------- #appeal Executor ----------------------------->
+<div
+  class="executor"
+  *ngIf="
+    appealValidatorRoles.Executor_private === assignedRole || appealValidatorRoles.Executor_public === assignedRole
+  "
+>
+  <appeals-executor [processedList]="processedList"></appeals-executor>
+</div>

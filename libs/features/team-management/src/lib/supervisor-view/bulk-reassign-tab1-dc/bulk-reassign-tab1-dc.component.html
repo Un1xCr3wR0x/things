@@ -1,0 +1,235 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
+<div class="mt-3">
+    <gosi-card-dc type="secondary">
+        <div>
+            <gosi-input-radio-dc id="reassignType" [label]="'TEAM-MANAGEMENT.REASSIGN-TYPE' | translate"
+                [list]="bulkReassignTypes" [control]="reassignDetailsForm.get('reassignType')"
+                (select)="getBulkReassignType($event)"></gosi-input-radio-dc>
+        </div>
+        <div class="div-margin" *ngIf="showEmployeeDetails">
+            <span class="emp-det">{{ 'TEAM-MANAGEMENT.EMPLOYEE-DETAILS' | translate }}</span>
+            <div class="row" style="margin-top: 24px;">
+                <div class="col-lg-5"> <gosi-input-text-dc id="empID"
+                        [label]="'TEAM-MANAGEMENT.SOURCE-EMPLOYEE-ID' | translate" [maxLength]="10"
+                        [onlyAlphaNumerics]="true" [control]="reassignDetailsForm.get('empID')"
+                        (input)="onChange($event)" [hideOptionalLabel]="true" gosiSpecialCharacters>
+                    </gosi-input-text-dc>
+                </div>
+                <div class="col-lg-5"> <gosi-input-text-dc id="targetEmpID"
+                        [label]="'TEAM-MANAGEMENT.TARGET-EMPLOYEE-ID' | translate" [maxLength]="10"
+                        [control]="reassignDetailsForm.get('targetEmpID')" (input)="onTargetChange($event)"
+                        gosiSpecialCharacters>
+                    </gosi-input-text-dc>
+                </div>
+                <div class="col-lg-2">
+                    <gosi-button-dc *ngIf="!lookupClicked" id="verify" type="primary" (click)="onLookUp()">{{
+                        'TEAM-MANAGEMENT.LOOK-UP' |
+                        translate }}</gosi-button-dc>
+                    <gosi-button-dc *ngIf="lookupClicked" id="verify" type="secondary">{{ 'TEAM-MANAGEMENT.LOOK-UP' |
+                        translate }}</gosi-button-dc>
+                </div>
+                <div *ngIf="isErrorOnProfile && invalidTarget" style="max-width: 40rem !important;"
+                    [ngClass]="invalidTarget && !invalidSource ? 'invalid ' : 'emp-margin' ">
+                    <gosi-alert-dc type="danger" [noPadding]="true" [message]="errorMessage" [dismissible]="false">
+
+                    </gosi-alert-dc>
+                </div>
+                <div *ngIf="isErrorOnProfile && invalidSource" class="emp-margin" style="max-width: 40rem !important;">
+                    <gosi-alert-dc type="danger" [noPadding]="true" [message]="errorMessage" [dismissible]="false">
+
+                    </gosi-alert-dc>
+                </div>
+                <!-- <div *ngIf="openEmployeeDetails"> -->
+
+                <div class="row col-lg-5 source-details" [ngClass]="invalidTarget ? 'invalid-margin' : '' "
+                    *ngIf="openEmployeeDetails">
+                    <div class="source-emp source-emp-bold">{{ 'TEAM-MANAGEMENT.SOURCE-EMPLOYEE-DETAILS' | translate }}
+                        <div class="source-emp source-emp-display">
+                            <div style="margin-top: 1rem;">
+                                <span>{{ 'TEAM-MANAGEMENT.EMPLOYEE-NAME' | translate }} :
+                                </span>
+                                <span class="name-style">{{empName}}</span>
+                            </div>
+                            <div style="margin-top: .4rem;">
+                                <span>{{ 'TEAM-MANAGEMENT.ROLES' | translate }} :
+                                </span>
+                                <span class="name-style">{{roles}}</span>
+                            </div>
+                            <div style="margin-top: .4rem;">
+                                <span>{{ 'TEAM-MANAGEMENT.NO-OF-TRANSACTIONS' | translate }} :
+                                </span>
+                                <span class="name-style">{{count}}</span>
+                            </div>
+                            <!-- <div *ngIf="isRoles && roleList?.items.length > 0" style="margin-top: 2rem;">{{ 'TEAM-MANAGEMENT.ROLES-OF-THE-TRANSACTIONS' | translate }}</div>
+                        <div *ngIf="roleList?.items.length > 0">
+                            <gosi-input-multi-select-dropdown-dc id="yearSelection" name="yearSelection"
+                                [control]="reassignDetailsForm.get('roleSelection')" [list]="roleList"
+                                [hideOptionalLabel]="true" (selected)="roleDetailsSelected = $event">
+                            </gosi-input-multi-select-dropdown-dc>
+                            <span *ngIf="noRole == true" style="color: #ff4040;">Please select roles of the transactons to be reassigned</span>
+                        </div>
+
+                        <div *ngIf="isRoles && roleList?.items.length > 0">
+                        <gosi-button-dc type="primary" class="button-style" (click)="reassignTransaction()">{{
+                            'TEAM-MANAGEMENT.REASSIGN-TRANSACTIONS' |
+                            translate }}</gosi-button-dc></div> -->
+                        </div>
+                    </div>
+                </div>
+                <div [ngClass]="!openEmployeeDetails ? 'row col-lg-5 full-target' : 'row col-lg-5 target-details' "
+                    *ngIf="openTargetEmployeeDetails">
+                    <div class="source-emp source-emp-bold">{{ 'TEAM-MANAGEMENT.TARGET-EMPLOYEE-DETAILS' | translate }}
+                        <div class="source-emp source-emp-display">
+                            <span style="margin-top: 1rem;">{{ 'TEAM-MANAGEMENT.EMPLOYEE-NAME' | translate }} :
+                                {{targetEmpName}}</span>
+                            <span style="margin-top: .4rem;" class="name-style">{{ 'TEAM-MANAGEMENT.ROLES' | translate
+                                }} : {{targetRoles}}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- </div> -->
+            </div>
+            <div *ngIf="roleList?.items.length > 0 && openEmployeeDetails " style="margin-top: 2rem; font-size: 16px;">
+                {{ 'TEAM-MANAGEMENT.ROLES-OF-THE-TRANSACTIONS' | translate }}</div>
+            <div *ngIf="roleList?.items.length > 0 && openEmployeeDetails">
+                <gosi-input-multi-select-dropdown-dc id="yearSelection" name="yearSelection"
+                    [control]="reassignDetailsForm.get('roleSelection')" [list]="roleList" [hideOptionalLabel]="true"
+                    (selected)="roleDetailsSelected = $event">
+                </gosi-input-multi-select-dropdown-dc>
+                <span *ngIf="noRole == true" style="color: #ff4040;">{{'TEAM-MANAGEMENT.SELECTROLE' |
+                    translate }}</span>
+            </div>
+
+            <div *ngIf="roleList?.items.length > 0 && openEmployeeDetails">
+                <gosi-button-dc type="primary" class="button-style" (click)="reassignTransaction()"
+                    [disabled]="isCount">{{
+                    'TEAM-MANAGEMENT.REASSIGN-TRANSACTIONS' |
+                    translate }}</gosi-button-dc>
+            </div>
+            <div *ngIf="!isCommonValue && openTargetEmployeeDetails && !isErrorOnProfile" style="margin-top: 2rem;">
+                <gosi-alert-dc type="danger" [noPadding]="true" [message]="'TEAM-MANAGEMENT.ERROR-NO-MATCHING'"
+                    [dismissible]="false">
+
+                </gosi-alert-dc>
+            </div>
+        </div>
+        <div class="div-margin" *ngIf="showCSVFile">
+            <span class="emp-det">{{ 'TEAM-MANAGEMENT.UPLOAD-CSV-FILE' | translate }}</span>
+            <div class="csv-download" (click)="onDownload()">{{ 'TEAM-MANAGEMENT.DOWNLOAD-CSV-FILE' | translate }}</div>
+            <div class="csv-margin">
+
+                <gosi-input-csv-sc [documentName]=" 'TEAM-MANAGEMENT.BULK-REASSIGN-DOCUMENT' | translate "
+                    invalidTypeKey="TEAM-MANAGEMENT.INVALID-FILE-TYPE"
+                    sizeExceededError="TEAM-MANAGEMENT.SIZE-EXCEEDED-ERROR" [fileDetails]="bulkFile"
+                    [actionKey]="'TEAM-MANAGEMENT.PROCEED'" [isProcessing]="false" [showProceed]="false"
+                    [isWorkflowInProgress]="false" [uploadFailed]="uploadFailed" [isReset]="isReset"
+                    (deleted)="csvDeleted()" (change)="onFileSelected($event)"></gosi-input-csv-sc>
+            </div>
+            <gosi-button-dc type="primary" class="button-style" [disabled]="isCSVUploaded"
+                (submit)="uploadCSVFile($event)">{{ 'TEAM-MANAGEMENT.REASSIGN-TRANSACTIONS' |
+                translate }}</gosi-button-dc>
+        </div>
+
+        <div class="div-margin" *ngIf="showReassignUsingTransactionID">
+            <div   class="pb-2"  >
+               <div *ngFor="let transaction of transactions;let i = index" class="d-flex flex-row pt-2">
+                    <div class="d-flex flex-column"> 
+                        <div *ngIf="i == 0">  <label>{{ 'TEAM-MANAGEMENT.BULK-REASSIGN-TRN-ID' | translate }}  </label> </div>       
+                        <div><input   [(ngModel)]="transactions[i].transactionValue" *ngIf="transaction.valid" autocomplete="off" class="form-control trn-input valid-trn" placeholder="{{'TEAM-MANAGEMENT.BULK-REASSIGN-TRN-ID-PLACEHOLDER' | translate}}" name="trnInput"   type="text" maxlength="10"  (input)="checkTrnValue($event)" ></div>
+                        <div><input   [(ngModel)]="transactions[i].transactionValue" *ngIf="! transaction.valid" autocomplete="off" class="form-control trn-input invalid-trn" placeholder="{{'TEAM-MANAGEMENT.BULK-REASSIGN-TRN-ID-PLACEHOLDER' | translate}}" name="trnInput"   type="text" maxlength="10"  (input)="checkTrnValue($event)" ></div>
+                    </div>
+                    <div class="d-flex flex-column pl-5 pr-5">
+                        <div *ngIf="i == 0"> <label>{{ 'TEAM-MANAGEMENT.BULK-REASSIGN-EMP-ID' | translate }}  </label>  </div>
+                        <div><input   [(ngModel)]="transactions[i].employeeValue" autocomplete="off" class="form-control trn-input" placeholder="{{'TEAM-MANAGEMENT.BULK-REASSIGN-USER-ID-PLACEHOLDER' | translate}}"     type="text" maxlength="10"  (input)="checkEmpValue($event)"></div>
+                    </div>
+                    <div *ngIf="i > 0 " (click)="removeTrn(i)" class="pt-3" > <fa-icon icon="trash-alt"></fa-icon></div>
+               </div>
+            </div>
+            <div  class="pt-3 d-flex justify-content-center">
+                <gosi-button-dc type="primary" class="button-style" (click)="addNewTransaction()"
+                [disabled]="transactionSaved">{{'TEAM-MANAGEMENT.ADD-TRN' |  translate }} &nbsp; <fa-icon icon="plus"></fa-icon> </gosi-button-dc>
+            </div>
+            <div>
+                <gosi-button-dc type="primary" class="button-style" (click)="reassignTransactionByTrnNumber()"
+                [disabled]="transactionSaved">{{'TEAM-MANAGEMENT.REASSIGN-TRANSACTIONS' |  translate }}</gosi-button-dc>
+            </div>
+        </div>
+
+  
+        <div class="div-margin" *ngIf="showTranactionInquiry">
+            <div class="row" >
+                <div class="col-lg-5"> <gosi-input-text-dc id="empID"
+                    [label]="'TEAM-MANAGEMENT.STOP-EMAIL-LABEL' | translate" [maxLength]="10"
+                        [onlyAlphaNumerics]="true" [control]="reassignDetailsForm.get('empID')"
+                        (input)="onChange($event)" [hideOptionalLabel]="true" gosiSpecialCharacters>
+                    </gosi-input-text-dc>
+                </div>
+                <div class="col-lg-2">  </div>
+                
+                <div class="col-lg-2">
+                    <gosi-button-dc *ngIf="!lookupClicked" id="verify" type="primary" (click)="onLookUp()">{{
+                        'TEAM-MANAGEMENT.LOOK-UP' |
+                        translate }}</gosi-button-dc>
+                    <gosi-button-dc *ngIf="lookupClicked" id="verify" type="secondary">{{ 'TEAM-MANAGEMENT.LOOK-UP' |
+                        translate }}</gosi-button-dc>
+                </div>
+               <div *ngIf="isErrorOnProfile && invalidTarget" class="user-error"
+                    [ngClass]="invalidTarget && !invalidSource ? 'invalid ' : 'emp-margin' ">
+                    <gosi-alert-dc type="danger" [noPadding]="true" [message]="errorMessage" [dismissible]="false">
+
+                    </gosi-alert-dc>
+                </div>
+                <div *ngIf="isErrorOnProfile && invalidSource" class="emp-margin" class="user-error">
+                    <gosi-alert-dc type="danger" [noPadding]="true" [message]="errorMessage" [dismissible]="false">
+
+                    </gosi-alert-dc>
+                </div> 
+                 
+
+                <div class="row col-lg-5 source-details" [ngClass]="invalidTarget ? 'invalid-margin' : '' "
+                    *ngIf="openEmployeeDetails">
+                    <div class="source-emp source-emp-bold">{{ 'TEAM-MANAGEMENT.SOURCE-EMPLOYEE-DETAILS' | translate }}
+                        <div class="source-emp source-emp-display">
+                            <div class="mt-4">
+                                <span>{{ 'TEAM-MANAGEMENT.EMPLOYEE-NAME' | translate }} :
+                                </span>
+                                <span class="name-style">{{empName}}</span>
+                            </div>
+                            <div  class="mt-2">
+                                <span>{{ 'TEAM-MANAGEMENT.ROLES' | translate }} :
+                                </span>
+                                <span class="name-style">{{roles}}</span>
+                            </div>
+                            <div  class="mt-2">
+                                <span>{{ 'TEAM-MANAGEMENT.NO-OF-TRANSACTIONS' | translate }} :
+                                </span>
+                                <span class="name-style">{{count}}</span>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+              
+            </div>
+            
+
+            <div *ngIf="openEmployeeDetails" class="pt-4">
+                <gosi-button-dc type="primary" class="button-style" (click)="downloadExcelSheet()"
+                    >{{
+                        'TEAM-MANAGEMENT.DOWNLOAD-TRANSACTIONS' |
+                        translate }}</gosi-button-dc>
+            </div>
+            <div *ngIf="!isCommonValue && openTargetEmployeeDetails && !isErrorOnProfile" style="margin-top: 2rem;">
+                <gosi-alert-dc type="danger" [noPadding]="true" [message]="'TEAM-MANAGEMENT.ERROR-NO-MATCHING'"
+                    [dismissible]="false">
+
+                </gosi-alert-dc>
+            </div>
+        </div>
+    </gosi-card-dc>
+</div>

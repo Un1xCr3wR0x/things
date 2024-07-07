@@ -1,0 +1,221 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row" [formGroup]="ownerForms">
+  <div class="col-md-12">
+    <alert type="info" [dismissible]="false">
+      <div class="alert-content">
+        <div class="alert-icon">
+          <fa-icon icon="info-circle" size="lg"></fa-icon>
+          <div class="alert-details">
+            {{ 'ESTABLISHMENT.OWNER-INFO' | translate }}
+          </div>
+        </div>
+      </div>
+    </alert>
+    <ng-container *ngIf="estOwners && estOwners.length > 0">
+      <div class="wrapper">
+        <accordion class="wrapper-accordion">
+          <ng-container *ngFor="let estOwner of estOwners; let j = index">
+            <accordion-group class="wrapper-accordion-group" heading="{{ estOwners[j]?.name }}">
+              <div class="header-wrapper" accordion-heading>
+                <span class="arrow-down" accordion-heading>
+                  <fa-icon icon="angle-down" size="2x"></fa-icon>
+                </span>
+                <span class="arrow-up" accordion-heading>
+                  <fa-icon icon="angle-up" size="2x"></fa-icon>
+                </span>
+              </div>
+              <div class="accordian-wrapper">
+                <div class="row">
+                  <div class="col-sm-6 col-md-6 col-lg-4">
+                    <gosi-label-dc
+                      id="name"
+                      [control]="estOwners[j]?.name"
+                      label="ESTABLISHMENT.ESTABLISHMENT-OWNER-NAME"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-4">
+                    <gosi-label-dc id="partyId" [control]="estOwners[j]?.partyId" label="ESTABLISHMENT.PARTY-ID">
+                    </gosi-label-dc>
+                  </div>
+                </div>
+                <h3 class="section-heading">
+                  {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+                </h3>
+                <div class="row">
+                  <div class="col-sm-6 col-md-6 col-lg-4">
+                    <gosi-label-dc id="mobileNo" [control]="estOwners[j]?.mobileNo" label="ESTABLISHMENT.MOBILE-NUMBER">
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-6 col-md-6 col-lg-4">
+                    <gosi-label-dc id="email" [control]="estOwners[j]?.emailId" label="ESTABLISHMENT.EMAIL-ID">
+                    </gosi-label-dc>
+                  </div>
+                </div>
+              </div>
+            </accordion-group>
+          </ng-container>
+        </accordion>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="ownerForms && ownerForms.get('owners') && persons && persons.length > 0">
+      <div class="wrapper" formArrayName="owners">
+        <accordion #addOwnerAccordian class="wrapper-accordion">
+          <ng-container *ngFor="let form of ownerFormArray.controls; let i = index">
+            <accordion-group
+              class="wrapper-accordion-group"
+              id="owner{{ i }}"
+              (isOpenChange)="selectPanel($event, i + 1)"
+              [isOpen]="currentTab === i + 1"
+            >
+              <div accordion-heading>
+                <ng-container *ngIf="verifyPersonStatus[i] && getOwnerName(i) ? true : false; else defaultHeading">
+                  {{ getOwnerName(i) }}
+                </ng-container>
+                <ng-template #defaultHeading>
+                  {{ 'ESTABLISHMENT.OWNER-INDEX' | translate: { index: i + estOwners.length + 1 } }}
+                </ng-template>
+              </div>
+              <div class="header-wrapper" accordion-heading>
+                <span *ngIf="mciOwnerMismatch(i) || !verifyPersonStatus[i]" class="trash">
+                  <a id="deleteOwner{{ i }}" class="last-icon" (click)="popUp(deleteOwner)">
+                    <fa-icon class="icon-wrapper-trash-alt" [icon]="['far', 'trash-alt']" size="xs"></fa-icon>
+                  </a>
+                </span>
+
+                <span class="arrow-up">
+                  <fa-icon icon="angle-up" size="2x"></fa-icon>
+                </span>
+                <span class="arrow-down" accordion-heading>
+                  <fa-icon icon="angle-down" size="2x"></fa-icon>
+                </span>
+                <ng-template #deleteOwner>
+                  <gosi-confirm-modal-dc
+                    [message]="'ESTABLISHMENT.CONFIRM-DELETE-OWNER'"
+                    (onConfirm)="deleteOwnerForm(i)"
+                    (onCancel)="decline()"
+                    iconName="warning"
+                  >
+                  </gosi-confirm-modal-dc>
+                </ng-template>
+              </div>
+              <div class="accordian-wrapper">
+                <div class="row">
+                  <div class="col-md-12 col-lg-12">
+                    <est-search-employee-dc
+                      [isResetRequired]="!isOwnerSaved[i]"
+                      [idValue]="'owner' + i"
+                      [label]="'ESTABLISHMENT.VERIFY-OWNER'"
+                      [person]="persons[i]"
+                      (formChanged)="resetOwnerForm(i)"
+                      (submit)="verifyOwner($event, i)"
+                      (progress)="checkForValuesChanges(i)"
+                      [nationalityList]="nationalityList$ | async"
+                      [noPadding]="true"
+                    >
+                    </est-search-employee-dc>
+                  </div>
+                </div>
+                <hr class="pb-3 mb-3" *ngIf="verifyPersonStatus[i]" />
+                <div class="row">
+                  <div class="col-md-12 col-lg-12">
+                    <est-employee-details-dc
+                      [canSave]="false"
+                      [idValue]="'owner' + i"
+                      #establishmentPersonComp
+                      [cityList]="cityList$ | async"
+                      [gccCountryList]="gccCountryList$ | async"
+                      [genderList]="genderList$ | async"
+                      [editPersonDetails]="editPersonDetails[i]"
+                      [verifyPersonStatus]="verifyPersonStatus[i]"
+                      (progress)="checkForValuesChanges(i)"
+                      [gccEstablishment]="gccEstablishment"
+                      [person]="persons[i]"
+                      [isProActive]="isProActive"
+                      [enable]="!isOwnerSaved[i]"
+                      [noPadding]="true"
+                    >
+                    </est-employee-details-dc>
+                  </div>
+                </div>
+              </div>
+              <ng-container *ngIf="verifyPersonStatus[i]">
+                <ng-container *ngIf="showOwnerAsAdmin">
+                  <hr class="section-break" />
+                  <div class="navigation-panel">
+                    <span>
+                      {{ 'ESTABLISHMENT.EST-OWNER-AS-ADMIN' | translate }}
+                    </span>
+                    <span class="float-right push">
+                      <ng-container *ngIf="ownerForms.controls.owners && form.get('isAdmin')">
+                        <gosi-input-toggle-dc
+                          [id]="'owner' + i + 'isAdmin'"
+                          (changeEvent)="choseAdmin($event, i)"
+                          [control]="form.get('isAdmin')"
+                        ></gosi-input-toggle-dc>
+                      </ng-container>
+                    </span>
+                  </div>
+                </ng-container>
+                <div class="row ml-3 mr-3 mb-4" *ngIf="adminIndex === i ? !ownerSavedAsAdmin : !isOwnerSaved[i]">
+                  <div class="col-md-12">
+                    <est-footer-buttons-dc
+                      [noMarginTop]="true"
+                      size="md"
+                      [showPrimary]="true"
+                      [primaryLabel]="'ESTABLISHMENT.SAVE-OWNER' | translate"
+                      [primaryId]="'saveOwner' + i"
+                      (submit)="saveOwner(i)"
+                      [showPrevious]="false"
+                      [showCancel]="true"
+                      [cancelId]="'cancelOwner' + i"
+                      (cancel)="popUp(cancelOwnerTemplate)"
+                    >
+                    </est-footer-buttons-dc>
+                    <ng-template #cancelOwnerTemplate>
+                      <gosi-confirm-modal-dc
+                        [message]="'ESTABLISHMENT.CONFIRM-DELETE-OWNER'"
+                        (onConfirm)="deleteOwnerForm(i)"
+                        (onCancel)="decline()"
+                        iconName="warning"
+                      >
+                      </gosi-confirm-modal-dc>
+                    </ng-template>
+                  </div>
+                </div>
+              </ng-container>
+            </accordion-group>
+          </ng-container>
+        </accordion>
+        <div class="text-center mt-4 pt-4" *ngIf="enableAddOwner()">
+          <gosi-button-dc id="addOwnerButton" (submit)="addOwnerForm()" size="lg" [outlineOnly]="true">
+            <fa-icon class="pl-2 pr-2 icon-wrapper-plus" icon="plus"></fa-icon
+            >{{ 'ESTABLISHMENT.ADD-OWNER' | translate }}
+          </gosi-button-dc>
+        </div>
+
+        <hr class="section-end" />
+      </div>
+    </ng-container>
+    <est-footer-buttons-dc
+      primaryLabel="{{ isSubmit ? 'ESTABLISHMENT.SUBMIT' : 'ESTABLISHMENT.SAVE-AND-NEXT' }}"
+      primaryId="ownerSaveAndNext"
+      cancelId="cancel"
+      previousId="previousBtn"
+      (submit)="nextScreen()"
+      (previous)="previousSection()"
+      (cancel)="popUp(draftTemplate)"
+    ></est-footer-buttons-dc>
+  </div>
+</div>
+<ng-template #draftTemplate>
+  <est-draft-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="decline()"
+    (onCancel)="confirmCancel()"
+  ></est-draft-popup-dc>
+</ng-template>

@@ -1,0 +1,89 @@
+<form [formGroup]="appealClerkForm">
+  <div class="form-label mb-4">
+    {{ 'APPEALS.RESULT-OF-OBJECTION' | translate }}
+  </div>
+
+  <!-- Appeal Final Decision -->
+  <ng-container *ngIf="appealFinalDecisionList">
+    <gosi-input-select-dc
+      id="finalDecision"
+      name="finalDecision"
+      [label]="'APPEALS.FINAL-DECISION' | translate"
+      [lookup]="appealFinalDecisionList"
+      [placeholder]="'APPEALS.FINAL-DECISION' | translate"
+      [control]="appealClerkForm.get('finalDecision')"
+      [bindValueIsCode]="true"
+      [canValidateData]="false"
+    >
+    </gosi-input-select-dc>
+  </ng-container>
+
+  <!-- Appeal Final Decision Date -->
+  <gosi-input-date-dc
+    id="finalDecisionDate"
+    [label]="'APPEALS.FINAL-DECISION-DATE' | translate"
+    [control]="appealClerkForm.get('finalDecisionDate').get('gregorian')"
+    [hideOptionalLabel]="true"
+    [maxDate]="maxStartDate"
+  >
+  </gosi-input-date-dc>
+
+  <!-- Appeal Final Decision Comment -->
+  <gosi-input-text-area-dc
+    id="finalDecisionComments"
+    name="finalDecisionComments"
+    [label]="'APPEALS.FINAL-DECISION-COMMENTS' | translate"
+    [rowSize]="4"
+    [maxLength]="maxCharLength"
+    [hideOptionalLabel]="true"
+    [control]="appealClerkForm.get('finalDecisionComments')"
+  >
+  </gosi-input-text-area-dc>
+
+  <!-- File Input -->
+  <div
+    *ngIf="
+      !appealClerkModel?.finalDecision ||
+      appealValidatorRoles.Appeal_clerk_private === assignedRole ||
+      appealValidatorRoles.Appeal_clerk_public === assignedRole
+    "
+  >
+    <div class="form-label mb-4">
+      {{ 'APPEALS.UPLOAD-FILE' | translate }}
+    </div>
+
+    <!-- File - Result of Objection -->
+    <div class="document-container upload-docs">
+      <gosi-input-file-sc
+        *ngFor="let document of uploadResultofObjectionDocuments; let i = index"
+        [document]="document"
+        [index]="i"
+        [isSequenceNo]="true"
+        [noFilesError]="noFilesError"
+        [uuid]="uuid"
+        [label]="'APPEALS.UPLOAD-RESULT-OF-OBJECTIONS' | translate"
+        [transactionId]="appealTransactionNumber"
+        [byPassDeleteAPI]="true"
+        [referenceNo]="transactionRefNumber"
+        (uploadedEvent)="uploadFileofResultObjection($event, document)"
+      ></gosi-input-file-sc>
+    </div>
+
+    <!-- File - Minutes of Meeting -->
+    <!-- <div class="document-container upload-docs">
+      <gosi-input-file-sc
+        *ngFor="let document of uploadMinutesofMeetingDocuments; let i = index"
+        [document]="document"
+        [index]="i"
+        [isSequenceNo]="true"
+        [uuid]="uuid"
+        [label]="'APPEALS.UPLOAD-MINUTES-OF-MEETING' | translate"
+        [transactionId]="appealTransactionNumber"
+        [byPassDeleteAPI]="true"
+        [referenceNo]="transactionRefNumber"
+        [isScan]="isScan"
+        (uploadedEvent)="uploadMinutesofMeeting($event, document)"
+      ></gosi-input-file-sc>
+    </div> -->
+  </div>
+</form>

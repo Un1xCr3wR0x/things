@@ -1,0 +1,76 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="profile-container">
+  <div class="back d-flex align-items-center">
+    <a (click)="navigateToSearchResults()">
+      <fa-icon
+        class="back-icon pr-2"
+        [icon]="['far', selectedLangage === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']"
+      ></fa-icon>
+    </a>
+    <span class="back-text"> {{ 'DASHBOARD.BACK-TO-SEARCH-RESULTS' | translate }}</span>
+  </div>
+  <div class="pt-4 pb-4" *ngIf="isLoaded && establishmentDetails && !isError">
+    <ng-container *ngIf="!establishmentDetails?.name; else estName">{{
+      'DASHBOARD.NOT-AVAILABLE' | translate
+    }}</ng-container>
+    <ng-template #estName>
+      <div class="title-section">
+        <span class="heading">
+          {{
+            establishmentDetails?.name.english === null
+              ? establishmentDetails?.name.arabic
+              : (establishmentDetails?.name | bilingualText)
+          }}
+        </span>
+        <span
+          *ngIf="establishmentDetails?.gccCountry && establishmentDetails?.gccEstablishment?.country?.english"
+          class="gcc-tag"
+          placement="{{ selectedLangage === languageEnumValue.ARABIC ? 'left' : 'right' }}"
+          container="body"
+          containerClass="gcc-tooltip-wrapper"
+          tooltip="{{ 'DASHBOARD.GCC-TOOLTIP' | translate }}"
+        >
+          <span class="flag-icon {{ getFlag(establishmentDetails?.gccEstablishment?.country?.english) }}"></span>
+          <span> {{ 'DASHBOARD.GCC' | translate | uppercase }}</span>
+        </span>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="row" *ngIf="establishmentDetails && isLoaded && !isError">
+    <div [ngClass]="fromIndividualProfile ? 'col-lg-12' : 'col-lg-8'">
+      <dsb-profile-summary-dc
+        [isLoaded]="isLoaded"
+        [establishmentDetails]="establishmentDetails"
+        [billingDetails]="billingDetails"
+        [eligibilityStatus]="eligibilityStatus"
+        (navigate)="navigateTo($event)"
+      ></dsb-profile-summary-dc>
+
+      <dsb-transaction-in-workflow-dc
+        [transactionDetails]="transactionDetails"
+        [totalRecords]="totalRecords"
+        (navigate)="navigateToList()"
+        (limit)="onSelectPage($event)"
+        [limitItem]="searchRequest?.limit"
+      ></dsb-transaction-in-workflow-dc>
+    </div>
+    <div *ngIf="!fromIndividualProfile" class="col-lg-4">
+      <dsb-quick-actions-dc
+        [quickAction]="quickAction"
+        [registrationNo]="registrationNo"
+        (navigate)="navigateTo($event)"
+      ></dsb-quick-actions-dc>
+    </div>
+  </div>
+</div>
+<div *ngIf="isError" class="no-results-wrapper d-flex justify-content-center align-items-center">
+  <dsb-reload-dc (reload)="getProfileDetails()"></dsb-reload-dc>
+</div>
+<div *ngIf="establishmentDetails === null" class="no-results-wrapper d-flex justify-content-center align-items-center">
+  <gosi-no-result-dc></gosi-no-result-dc>
+</div>

@@ -1,0 +1,184 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto custom-heading header">
+      {{ 'ADJUSTMENT.PAY-ADJUSTMENTS' | translate }}
+    </div>
+  </div>
+  <gosi-progress-wizard-dc [wizardItems]="adjustmentWizards" #adjustmentWizard> </gosi-progress-wizard-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-card-dc type="secondary" lessPadding="true">
+    <!-- SADAD/ other payment toggler -->
+    <div class="payment-options pt-2">
+      <span>{{ 'ADJUSTMENT.NET-AMOUNT-TO-BE-PAID' | translate }}</span>
+      <span class="net-value d-block mt-1"
+        >{{ totalAmountToBePaid | number: '1.2-2' }} {{ 'ADJUSTMENT.SAR' | translate }}</span
+      >
+      <div class="payment-method-heading">{{ 'ADJUSTMENT.SELECT-PAYMENT-METHOD' | translate }}</div>
+      <!-- <div class="d-inline-block pt-2 payment-type">
+        <div class="payment-method-toggler">
+          <div
+            class="column-left payment-text"
+            [ngClass]="{
+              'payment-type-selected': paymentType == 'sadad',
+              'payment-type-unselected ': paymentType == 'other'
+            }"
+            [class.sadad-btn-disabled]="inEditMode"
+            (click)="paymentTypeChange('sadad')"
+          >
+            {{ 'ADJUSTMENT.SADAD' | translate }}
+          </div>
+          <div
+            class="column-right payment-text"
+            [ngClass]="{
+              'payment-type-selected': paymentType == 'other',
+              'payment-type-unselected ': paymentType == 'sadad'
+            }"
+            (click)="paymentTypeChange('other')"
+          >
+            {{ 'ADJUSTMENT.OTHER-OPTIONS' | translate }}
+          </div>
+        </div>
+      </div> -->
+    </div>
+    <!-- SADAD payment options -->
+    <div class="sadad-payment" *ngIf="paymentType === 'sadad'">
+      <pmt-sadad-option-dc
+        [isDisplaySadadDetails]="isDisplaySadadDetails"
+        [referenceNo]="referenceNumber"
+        [parentForm]="sadadPaymentForm"
+        (sadadProceedTopay)="sadadProceedTopay($event)"
+      ></pmt-sadad-option-dc>
+    </div>
+    <!-- OTHER payment options -->
+    <div class="other-payment" *ngIf="paymentType === 'other'">
+      <div class="payment-other-content">
+        <div class="read-payment-options pt-3">
+          <a id="paymentoptions" routerLinkActive="active" (click)="showModal(otherPaymentOptions)">
+            <u>{{ 'BENEFITS.OTHER-PAYMENT-OPTIONS-AVAILABLE' | translate }}</u>
+          </a>
+        </div>
+        <div class="already-paid">
+          <div class="alreadypaid-heading">{{ 'BENEFITS.ALREADY-PAID' | translate }}</div>
+          <div class="already-paid-description pt-2">{{ 'BENEFITS.PLEASE-SUBMIT-DETAILS-PAYMENT' | translate }}</div>
+        </div>
+      </div>
+      <div class="row other-payment-form">
+        <div class="col-lg-12">
+          <pmt-payment-details-dc
+            [receiptMode]="receiptModesFiltered$"
+            [systemRunDate]="systemRunDate"
+            [referenceNo]="referenceNumber"
+            [saudiBankList]="saudiBankListSorted"
+            [receiptDetails]="receiptDetails"
+            [benefitAmount]="benefitAmount"
+            [parentForm]="receiveContributionMainForm"
+            [otherPaymentReqDocument]="otherPaymentReqDocument"
+            [isAppPrivate]="isAppPrivate"
+            [inEditMode]="inEditMode"
+            [isAdjFormModified]="isAdjFormModified"
+            [documentuuid]="documentuuid"
+            [adjustmentRepayId]="adjustmentRepayId"
+            (getDocument)="getDocumentRelatedValues()"
+            (refresh)="refreshDocument($event)"
+            (uploadFailed)="showErrorMessage($event)"
+            (submit)="submitOtherPaymentDetails()"
+            (onCancelPayment)="cancelForm()"
+          >
+          </pmt-payment-details-dc>
+          <!-- <pmt-payment-details-dc [receiptMode]="receiptModesFiltered$ | async"
+            [saudiBankList]="saudiBankListSorted" [parentForm]="receiveContributionMainForm" [otherPaymentReqDocument]="otherPaymentReqDocument"
+            [isAppPrivate]="isAppPrivate" [documentuuid]="documentuuid" [ninContributor]="nin"
+            (getDocument)="getDocumentRelatedValues()" (refresh)="refreshDocument($event)"
+            (uploadFailed)="showErrorMessage($event)" (submit)="submitOtherPaymentDetails()" (cancel)="cancelForm()">
+          </pmt-payment-details-dc> -->
+        </div>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <!-- Action buttons for sadad-->
+  <!-- <div class="row pl-1 pt-5">
+    <div class="col-lg-12" *ngIf="paymentType === 'sadad'">
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">
+          {{ 'ADJUSTMENT.CANCEL' | translate }}</gosi-button-dc>
+      </div>
+      <div class="float-left mx-3 btn-section">
+        <gosi-button-dc id="prevActionButton" type="secondary" (submit)="goToPrevAction()">
+          {{ 'BENEFITS.PREVIOUS-SECTION' | translate }}</gosi-button-dc>
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc id="submit" type="primary" [disabled]="!this.sadadPaymentForm.value.transactionDate.gregorian"
+          (submit)="sadadPaymentSubmit()">
+          {{ 'ADJUSTMENT.SUBMIT' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+  </div> -->
+
+  <div class="row form-action" *ngIf="paymentType === 'sadad'">
+    <div class="col-auto form-action-btn">
+      <ng-container>
+        <gosi-button-dc
+          [ngClass]="isSmallScreen ? '' : 'float-left'"
+          [isFullWidth]="isSmallScreen"
+          id="cancelButton"
+          type="secondary"
+          (submit)="popUp(cancelTemplate)"
+        >
+          {{ 'ADJUSTMENT.CANCEL' | translate }}</gosi-button-dc
+        >
+      </ng-container>
+    </div>
+    <div class="col-auto form-action-btn" [ngClass]="!isSmallScreen ? 'float-right' : ''">
+      <gosi-button-dc
+        id="prevActionButton"
+        name="prevActionButton"
+        [isFullWidth]="isSmallScreen"
+        type="secondary"
+        (submit)="goToPrevAction()"
+      >
+        {{ 'BENEFITS.PRE-SECTION' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="ml-auto col-auto form-action-btn">
+      <gosi-button-dc
+        [ngClass]="!isSmallScreen ? 'float-right' : ''"
+        id="apply"
+        type="primary"
+        [isFullWidth]="isSmallScreen"
+        [disabled]="!this.sadadPaymentForm.value.transactionDate.gregorian"
+        (submit)="sadadPaymentSubmit()"
+      >
+        {{ 'ADJUSTMENT.SUBMIT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<!-- Pop up template -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BENEFITS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #otherPaymentOptions>
+  <pmt-payment-options-dc (close)="hideModal()"></pmt-payment-options-dc>
+</ng-template>

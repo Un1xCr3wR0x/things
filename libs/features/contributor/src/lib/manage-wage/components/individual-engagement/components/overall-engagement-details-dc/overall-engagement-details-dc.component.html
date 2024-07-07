@@ -1,0 +1,119 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="row">
+  <div *ngIf="!individualApp" class="col-md-12 pt-4 pb-4">
+    <fa-icon class="admin-icon" [icon]="['fas', 'briefcase']" size="2x"></fa-icon
+    ><span class="heading">
+      {{ 'CONTRIBUTOR.WAGE.OVERALL-ENGAGEMENT-DETAILS' | translate }}
+    </span>
+  </div>
+  <div class="col-md-12 accordion-holder">
+    <ng-container *ngFor="let engagement of engagementDetails">
+      <gosi-accordion-dc [isOpen]="true">
+        <div header>
+          <div class="heading-wrapper">
+            <div class="row align-items-center d-md-flex justify-content-between">
+              <div class="accordion-heading-type col-lg-11 col-auto">
+                <div class="type-label">
+                  {{
+                    engagement?.establishmentName?.english === null
+                      ? engagement.establishmentName?.arabic
+                      : (engagement.establishmentName | bilingualText | titlecase)
+                  }}
+                  <span class="number"
+                    >{{ 'CONTRIBUTOR.REGISTRATION-NO' | translate }} : {{ engagement?.registrationNo }}</span
+                  >
+                </div>
+                <div class="type-value">
+                  <div class="row">
+                    <div class="col-3 date-value">
+                      {{ engagement?.joiningDate | dateType }}
+                      <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                      <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                      <ng-container *ngIf="engagement?.leavingDate?.gregorian; else onwards">{{
+                        engagement?.leavingDate | dateType
+                      }}</ng-container>
+                    </div>
+                    <div class="col-2 border-value">
+                      {{
+                        'CONTRIBUTOR.NO-OF-MONTHS' | translate: { months: engagement.engagementDuration?.noOfMonths }
+                      }}
+                      , {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: engagement.engagementDuration?.noOfDays } }}
+                    </div>
+                    <div class="col-2">{{ engagement?.workType | bilingualText }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-1 col-auto d-flex justify-content-end">
+                <div *ngIf="individualApp" class="col-lg-3 flex-column">
+                  <cnt-dropdown-dc [list]="actionList" (selectedItem)="selectedItem(engagement)">
+                    <fa-icon class="dropdown-icon" style="color: #999999" icon="ellipsis-v"> </fa-icon>
+                  </cnt-dropdown-dc>
+                </div>
+                <span class="arrow-up">
+                  <fa-icon icon="angle-up" size="lg"></fa-icon>
+                </span>
+                <span class="arrow-down">
+                  <fa-icon icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div body>
+          <div class="row d-flex pt-2 pb-4">
+            <div class="col-lg-3 flex-column">
+              <div class="label">{{ 'CONTRIBUTOR.EMPLOYEE-ID' | translate }}</div>
+              <ng-container *ngIf="engagement?.companyWorkerNumber; else nullValue">
+                <div class="value">{{ engagement?.companyWorkerNumber }}</div>
+              </ng-container>
+            </div>
+            <div class="col-lg-3 flex-column">
+              <div class="label">{{ 'CONTRIBUTOR.CONTRACT-STATUS' | translate }}</div>
+              <ng-container
+                *ngIf="engagement?.contracts?.length > 0 || engagement?.contractWorkflow?.length > 0; else nullValue"
+              >
+                <div class="value">
+                  <fa-icon class="eligible-icon" icon="check-circle"></fa-icon>
+                  <span>{{ engagement?.contracts[0]?.status | translate }}</span>
+                </div>
+              </ng-container>
+            </div>
+            <div class="col-lg-3 flex-column">
+              <div class="label">{{ 'CONTRIBUTOR.ENGAGEMENT-STATUS' | translate }}</div>
+              <div class="value">
+                <fa-icon class="eligible-icon" icon="check-circle"></fa-icon>
+                <span>{{
+                  ENGAGEMENTS_ACTIVE.includes(engagement?.status) ||
+                  (engagement?.status === CANCEL_IN_PROGRESS && !engagement?.leavingDate?.gregorian)
+                    ? ('CONTRIBUTOR.ACTIVE' | translate)
+                    : ENGAGEMENTS_INACTIVE.includes(engagement?.status) ||
+                      (engagement?.status === CANCEL_IN_PROGRESS && engagement?.leavingDate?.gregorian)
+                    ? ('CONTRIBUTOR.INACTIVE' | translate)
+                    : ('CONTRIBUTOR.CANCELLED' | translate)
+                }}</span>
+              </div>
+            </div>
+            <div *ngIf="!individualApp" class="col-lg-3 flex-column">
+              <gosi-button-dc [outlineOnly]="true" type="primary" size="md">
+                <div class="button-label">{{ 'CONTRIBUTOR.CONTRACT-DETAILS' | translate }}</div>
+              </gosi-button-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <cnt-engagement-period-dc [engagement]="engagement"></cnt-engagement-period-dc>
+            </div>
+          </div>
+        </div>
+      </gosi-accordion-dc>
+    </ng-container>
+  </div>
+</div>
+<ng-template #onwards>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+<ng-template #nullValue>--</ng-template>

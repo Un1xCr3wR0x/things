@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container *ngIf="showingCard">
+  <gosi-modal-dc [modalHeader]="heading">
+    <div class="row" modalContent>
+      <div class="col-lg-12">
+        <div class="row">
+          <div class="col-lg-12 warning-message" *ngIf="noSessions">
+            <gosi-alert-dc
+              [message]="'OCCUPATIONAL-HAZARD.NO-UPCOMING-SESSIONS' | translate"
+              [dismissible]="true"
+              type="warning"
+            ></gosi-alert-dc>
+          </div>
+          <div class="col-lg-12 warning-message" *ngIf="onHold">
+            <gosi-alert-dc
+              [message]="'OCCUPATIONAL-HAZARD.ON-HOLD-SESSION' | translate"
+              [dismissible]="true"
+              type="warning"
+            ></gosi-alert-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="mbTypeenglish === 'Primary Medical Board' || mbTypearabic === 'اللجنة الطبية الابتدائية'">
+          <div class="col-lg-12" >
+            <gosi-input-select-dc
+              id="eventType"
+              [label]="'OCCUPATIONAL-HAZARD.ASSESSMENT-LOCATION' | translate"
+              [list]="locationList"
+              [hideClear]="true"
+              [control]="assessmentForm.get('location')"
+              (select)="onLocationSelect()"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="mbTypeenglish === 'Appeal Medical Board' || mbTypearabic === 'اللجنة الطبية  الاستئنافية'">
+          <div class="col-lg-12" >
+            <gosi-input-select-dc
+              id="eventType"
+              [label]="'OCCUPATIONAL-HAZARD.FIELDOFFICE-LOCATION' | translate"
+              [list]="locationList"
+              [hideClear]="true"
+              [control]="assessmentForm.get('location')"
+              (select)="onLocationSelect()"
+              [disabled]="true"
+              [placeholder]="'OCCUPATIONAL-HAZARD.FIELDOFFICE-LOCATION' | translate"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-highlight-reschedule-dc
+              id="assessment"
+              [control]="assessmentForm.get('assessmentDate').get('gregorian')"
+              [label]="'OCCUPATIONAL-HAZARD.NEW-ASSESSMENTDATE' | translate"
+              [availableArray]="availableArray"
+              [unavailableArray]="unavailableArray"
+              [minDate]="minDateValue"
+              [maxDate]="maxDateValue"
+              (changedDate)="onMonthChange($event)"
+              (changeEvent)="onDayChange($event)"
+              [resetTime]="resetTime"
+              [disabled]="noSessionscalendar"
+            ></gosi-input-highlight-reschedule-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="sessionTimeList; else emptylist">
+          <div class="col-md-12">
+            <gosi-input-select-dc
+              id="assessmentTime"
+              [label]="'OCCUPATIONAL-HAZARD.SELECT-TIME' | translate"
+              [list]="sessionTimeList"
+              [control]="assessmentForm.get('assessmentTime')"
+              [disabled]="isDisabled"
+              (selectLov)="selectedTime($event)"
+            >
+              <!-- [bindValueIsCode]="true" -->
+            </gosi-input-select-dc>
+          </div>
+        </div>
+      </div>
+      <ng-template #emptylist>
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-input-select-dc
+              id="assessmentTime"
+              [label]="'OCCUPATIONAL-HAZARD.SELECT-TIME' | translate"
+              [list]="list"
+              [control]="assessmentForm.get('assessmentTime')"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-left">
+        <gosi-button-dc id="confirmApproveBtn" type="secondary" (submit)="declinereschedule()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc
+          id="confirmApproveBtn"
+          type="secondary"
+          (click)="onClickAcceptReschedule(acceptassessmentTemplate, assessmentForm)"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.RESCHEDULE' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-container>
+<ng-template #acceptassessmentTemplate>
+  <gosi-ui-accept-assessment-dc
+    [heading]="'OCCUPATIONAL-HAZARD.ASSESSMENT-RESCHEDULE'"
+    [message]="'OCCUPATIONAL-HAZARD.ASSESSMENT-NOTIFICATION-Reschedule' | translate"
+    (onCancelreschedule)="finaldeclinereschedule()"
+    (onconfirmreschedule)="finalAcceptReschedule()"
+    [assessmentForm]="assessmentForm"
+    [isAccept]="accepted"
+    [selectedDate]="datecheck"
+    [isReschedule]="rescheduled"
+    [virtual]="virtual"
+  ></gosi-ui-accept-assessment-dc>
+</ng-template>

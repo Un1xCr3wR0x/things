@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="col-lg-12" *ngIf="isReopenClosingInProgress">
+    <gosi-alert-dc type="info" [message]="'BILLING.REOPEN-PROGRESS'"> </gosi-alert-dc>
+  </div>
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documents" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.REFUND-CREDIT-BALANCE' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc
+          icon="building"
+          heading="BILLING.ESTABLISHMENT-DETAILS"
+          [canEdit]="editFlag && !isReopenClosingInProgress"
+          (onEdit)="navigateToEdit()"
+        >
+        </frm-content-heading-dc>
+        <blg-credit-refund-establishment-dc
+          [establishmentDetails]="establishmentDetails"
+          [creditBalanceDetails]="creditBalanceDetails"
+          [CreditRefundDetails]="CreditRefundDetails"
+          [fromPage]="'est'"
+          [iscreditRefund]="iscreditRefund"
+          [bankName]="bankName"
+        >
+        </blg-credit-refund-establishment-dc>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="canReject"
+          [isReturn]="false"
+          [disableReturn]="isEdit"
+          [disableApprove]="isEditApprove"
+          (approveEvent)="approveCreditTransaction(approveTemplate)"
+          (rejectEvent)="rejectCreditTransaction(rejectTemplate)"
+          (returnEvent)="returnCreditTransaction(returnTemplate)"
+          (cancelEvent)="showModals(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCreditCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      (approveEvent)="confirmCreditApprove()"
+      [parentForm]="creditManagementForm"
+      (cancelEvent)="hideModal()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="creditManagementForm"
+      [heading]="rejectHeading"
+      (rejectEvent)="confirmCreditReject()"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList"
+      [transactionNumber]="transactionNumber"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="creditManagementForm"
+      [heading]="returnHeading"
+      (cancelEvent)="hideModal()"
+      [warningMessage]="
+        isGOL ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+      "
+      (returnEvent)="confirmCreditReturn()"
+      [returnReasonList$]="returnReasonList"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

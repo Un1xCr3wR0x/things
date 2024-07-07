@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<gosi-ui-admin-contact-display-message></gosi-ui-admin-contact-display-message>
+<div class="header-wrapper">
+  <dsb-dashboard-header-dc
+    [establishmentList]="establishmentList"
+    (searchValue)="searchEstablishments($event)"
+    (selected)="selectedEstablishment($event)"
+    (sort)="onSort($event)"
+    [searchRequest]="estListRequest"
+    (filterEvent)="onFilter($event)"
+    [villageLocationList]="villageLocationList$ | async"
+  ></dsb-dashboard-header-dc>
+  <div class="alert-wrapper">
+    <gosi-alert-dc [noPadding]="true" [message]="'DASHBOARD.EST-INFO-MESSAGE'" type="info"></gosi-alert-dc>
+  </div>
+</div>
+<div class="content empty-content">
+ 
+  <div class="row est-card pt-2" [ngClass]="[width < 767 ? 'no-gutters' : '']">
+    <div
+      *ngFor="
+        let list of estData | paginate: { itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalCount }
+      "
+      class="col-lg-4 col-md-6 col-sm-12"
+    >
+      <dsb-establishment-branch-card-dc
+        (navigateComplaints)="navigateToComplaints(list)"
+        (navigate)="navigateToBranch(list)"
+        (navigateHealthInsurance)="navigateToHealthInsurance(list)"
+        (navigateTo)="navigateToCertificateView(list)"
+        (view)="navigateToBillingView(list)"
+        [list]="list"
+        [width]="width"
+        [certificateRequired]="certificateRequired"
+        [isShowCES]="isShowCES"
+        [isSuperAdmin]="isSuperAdmin"
+        (favorite)="addRemoveEstablishmentFromFavorite(list)"
+      ></dsb-establishment-branch-card-dc>
+    </div>
+  </div>
+  <div
+    class="row est-card pt-2"
+    [ngClass]="[width < 767 ? 'no-gutters' : '']"
+    *ngIf="isEstablishmentListLoading || hasEstablishmentListError"
+  >
+    <div *ngFor="let i of [1, 2, 3, 4, 5, 6]" class="col-lg-4 col-md-6 col-sm-12">
+      <dsb-skeleton-card-dc
+        [isError]="hasEstablishmentListError"
+        (reload)="getEstablishmentList()"
+        [width]="width"
+      ></dsb-skeleton-card-dc>
+    </div>
+  </div>
+
+  <div
+    class="content m-0 d-flex align-items-center justify-content-center"
+    *ngIf="!isEstablishmentListLoading && estData?.length === 0 && !hasEstablishmentListError"
+  >
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+
+  <div class="d-flex justify-content-center mt-3">
+    <div class="pagination">
+      <gosi-pagination-dc
+        *ngIf="totalCount > pageSize"
+        [totalSize]="totalCount"
+        [itemsPerPage]="pageSize"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+      >
+      </gosi-pagination-dc>
+    </div>
+  </div>
+</div>
+<ng-template #warningTemplate>
+  <div class="py-4">
+    <div class="d-flex justify-content align-items-center flex-column">
+      <img src="assets/icons/svg/warning_popup.svg" class="triangle-icon" alt="exclamation-triangle" />
+      <div class="label py-4 text-center">
+        {{ 'DASHBOARD.USER-ACCESS' | translate }}
+      </div>
+      <gosi-button-dc (submit)="closeModal()" size="sm" type="secondary">
+        {{ 'DASHBOARD.OK' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+

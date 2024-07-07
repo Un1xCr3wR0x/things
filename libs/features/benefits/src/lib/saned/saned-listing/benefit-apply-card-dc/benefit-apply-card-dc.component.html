@@ -1,0 +1,52 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="benefit-content">
+  <!-- benefit describing paragraph start here -->
+  <div *ngIf="benefit.benefitType?.english !== benefitTypes.funeralGrant">
+    <span>{{ benefitDescriptionLabel | translate }}</span>
+  </div>
+  <div *ngIf="benefit.benefitType?.english === benefitTypes.funeralGrant">
+    <span> {{ benefitDescriptionLabel | translate: { newlawdate: oldLawDateValue } }}</span>
+  </div>
+  <div class="statusMessage">
+    <fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon>
+    <span *ngIf="eligible && benefitStatus === benefitValues.new; else alreadyApplied">{{
+      eligibleLabel | translate
+    }}</span>
+    <ng-template #alreadyApplied>
+      <span
+        *ngIf="
+          eligible &&
+            (benefitStatus === benefitValues.active ||
+              benefitStatus === benefitValues.workflow ||
+              benefitStatus === benefitValues.reopen);
+          else notEligible
+        "
+        >{{ activeLabel | translate }}</span
+      >
+      <ng-template #notEligible>
+        <span> {{ notEligibleLabel | translate }}</span>
+      </ng-template>
+    </ng-template>
+  </div>
+  <div *ngIf="benefit.contMonthsBought">
+    <gosi-alert-dc message="{{ 'BENEFITS.CONT-MONTHS-BOUGHT' | translate }}" type="info">
+    </gosi-alert-dc>
+  </div>
+  <div class="apply-btn" *ngIf="eligible && benefitStatus === benefitValues.new">
+    <ng-container *gosiShow="isIndividualApp ? true : viewModify">
+      <gosi-button-dc
+        [id]="benefit.benefitType?.english | titlecase"
+        type="primary"
+        (submit)="apply()"
+      >
+        {{ 'BENEFITS.APPLY-NOW' | translate }}</gosi-button-dc
+      >
+    </ng-container>
+  </div>
+  <div *ngIf="isHeir && benefit.retirementEligibility?.eligibleForRetirementBenefit">
+    <gosi-alert-dc message="{{ benefit.retirementEligibility?.message | bilingualText }}" type="info">
+    </gosi-alert-dc>
+  </div>
+</div>

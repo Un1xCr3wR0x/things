@@ -1,0 +1,317 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<br />
+
+<div class="table-scroll table-responsive full-width">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th id="allowancePeriod">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PERIOD' | translate | uppercase }}
+          <span class="sort-icon" [class.selected]="'assignedDate' === currentSortColumn">
+            <fa-icon [icon]="['fas', 'sort']" class="header-icon" (click)="sort()"></fa-icon>
+          </span>
+        </th>
+        <th id="allowanceType">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-TYPE' | translate | uppercase }}
+        </th>
+        <th id="treatmentType">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-TYPE' | translate | uppercase }}
+        </th>
+        <th id="allowanceAmount">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.AMOUNT' | translate | uppercase }}
+        </th>
+        <th id="allowanceStatus">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.STATUS' | translate | uppercase }}
+        </th>
+      </tr>
+    </thead>
+    <tbody
+      *ngFor="
+        let task of allowanceDetails.allowances
+          | paginate
+            : {
+                id: 'allowance-details',
+                itemsPerPage: itemsPerPage,
+                currentPage: currentPage,
+                totalItems: allowanceDetails.totalCount
+              };
+        let i = index
+      "
+    >
+      <tr class="data-row">
+        <td>
+          <div class="description-content" *ngIf="task && task.startDate && task.endDate">
+            {{ task.startDate.gregorian | gosiDate }}
+            <fa-icon *ngIf="lang === 'en'" class="allowance" [icon]="['fas', 'arrow-right']"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="allowance" [icon]="['fas', 'arrow-left']"></fa-icon>
+            {{ task.endDate.gregorian | gosiDate }}
+            <span class="allowance"
+              >({{ getDaysDifference(task.startDate, task.endDate) }}
+              {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span
+            >
+          </div>
+          <div class="description-content" *ngIf="task && task.startDate && task.isRejected">
+            {{ task.startDate.gregorian | gosiDate }}
+          </div>
+        </td>
+        <td>
+          <div class="description-content" *ngIf="task && task.allowanceType && !task.isRejected">
+            <span
+              *ngIf="
+                task.allowanceType.english !== 'OutPatient Daily Allowance Adjustment' &&
+                task.allowanceType.english !== 'OutPatient Daily Allowance'
+              "
+            >
+              {{ task.allowanceType | bilingualText }}
+            </span>
+            <span *ngIf="task.allowanceType.english === 'OutPatient Daily Allowance Adjustment'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.OUTPATIENT-ALLOWANCE-ADJUSTMENT' | translate }}
+            </span>
+            <span *ngIf="task.allowanceType.english === 'OutPatient Daily Allowance'">
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE-ALLOWANCE' | translate }}
+            </span>
+            <span *ngIf="task.reissue">({{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.RE-ISSUE ALLOWANCE' | translate }})</span>
+          </div>
+          <div class="description-content" *ngIf="task.isRejected">
+            <span>
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.REJECTED-ALLOWANCE' | translate }}
+            </span>
+          </div>
+        </td>
+        <td>
+          <div class="description-content" *ngIf="task && task.treatmentType && !task.isRejected">
+            <ng-container
+              *ngIf="
+                task.treatmentType.english === 'OutPatient' || task.treatmentType.english === 'Sick Leave';
+                else inPatient
+              "
+            >
+              <span
+                *ngIf="
+                  task.treatmentType.english !== 'OutPatient Daily Allowance Adjustment' &&
+                  task.treatmentType.english !== 'OutPatient Daily Allowance' &&
+                  task.treatmentType.english !== 'OutPatient'
+                "
+              >
+                {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE' | translate }}
+              </span>
+              <span *ngIf="task.treatmentType.english === 'OutPatient Daily Allowance Adjustment'">
+                {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.OUTPATIENT-ALLOWANCE-ADJUSTMENT' | translate }}
+              </span>
+              <span *ngIf="task.treatmentType.english === 'OutPatient Daily Allowance'">
+                {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SICK-LEAVE-ALLOWANCE' | translate }}
+              </span>
+              <span *ngIf="task.treatmentType.english === 'OutPatient'">
+                {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.OUT-PATIENT' | translate }}
+              </span>
+            </ng-container>
+            <ng-template #inPatient>
+              {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.IN-PATIENT' | translate }}
+            </ng-template>
+          </div>
+        </td>
+        <td>
+          <div class="description-content" *ngIf="!task.isRejected">
+            {{ task.amount }}
+          </div>
+          <div class="description-content" *ngIf="task.isRejected">
+            {{ getAmount(task.startDate.hijiri) }}
+          </div>
+        </td>
+        <td *ngIf="task && task.paymentStatus && !task.isRejected">
+          <div class="allowance-view">
+            <span [ngClass]="getColor(task.paymentStatus)">{{ task.paymentStatus | bilingualText | uppercase }}</span>
+          </div>
+        </td>
+        <td *ngIf="task && task.isRejected">
+          <div class="allowance-view">
+            <div class="orange">
+              {{ getStatus(task.startDate.hijiri) | translate | uppercase }}
+            </div>
+          </div>
+        </td>
+        <td (click)="toggleFunction(i, task.icon, task.allowanceType, task.isDisabled)">
+          <fa-icon style="cursor: pointer" icon="{{ task.icon }}" size="1x" *ngIf="!task.isDisabled"></fa-icon>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="6" *ngIf="task.showBox && !task.isRejected">
+          <div [hidden]="!task.showBox">
+            <gosi-card-dc type="secondary" lessPadding="true">
+              <div class="row" *ngIf="task.paymentStatus.english === 'Overlapped'">
+                <div
+                  class="col-lg-12 receipt-alert"
+                  *ngIf="
+                    (task && task.allowanceType.english === 'InPatient Daily Allowance') ||
+                    task.allowanceType.english === 'OutPatient Daily Allowance' ||
+                    task.allowanceType.english === 'OutPatient Allowance' ||
+                    task.allowanceType.english === 'InPatient  Allowance'
+                  "
+                >
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitEndDate.gregorian | gosiDate) !== (task.benefitStartDate.gregorian | gosiDate)
+                    "
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.DAILY-ALLOWANCE-PARTIAL-OVERLAP'
+                        | translate
+                          : {
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              EndDate: task.benefitEndDate.gregorian | gosiDate,
+                              InjuryId: task.injuryIdList
+                            }
+                    "
+                    type="info"
+                    [dismissible]="false"
+                  >
+                  </gosi-alert-dc>
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitStartDate.gregorian | gosiDate) === (task.benefitEndDate.gregorian | gosiDate)
+                    "
+                    type="info"
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.DAILY-ALLOWANCE-FULL-OVERLAP'
+                        | translate
+                          : {
+                              EndDate: task.benefitEndDate.gregorian | gosiDate,
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              InjuryId: task.injuryIdList
+                            }
+                    "
+                    [dismissible]="false"
+                  >
+                  </gosi-alert-dc>
+                </div>
+                <div
+                  class="col-lg-12 receipt-alert"
+                  *ngIf="
+                    (task && task.allowanceType.english === 'Companion Daily Allowance') ||
+                    (task && task.allowanceType.english === 'Companion Allowance')
+                  "
+                >
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitStartDate.gregorian | gosiDate) !== (task.benefitEndDate.gregorian | gosiDate)
+                    "
+                    [dismissible]="false"
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.COMPANION-PERIOD-PARTIAL-OVERLAP'
+                        | translate
+                          : {
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              EndDate: task.benefitEndDate.gregorian | gosiDate,
+                              InjuryId: task.injuryIdList
+                            }
+                    "
+                    type="info"
+                  >
+                  </gosi-alert-dc>
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitStartDate.gregorian | gosiDate) === (task.benefitEndDate.gregorian | gosiDate)
+                    "
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.COMPANION-PERIOD-FULL-OVERLAP'
+                        | translate
+                          : {
+                              InjuryId: task.injuryIdList,
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              EndDate: task.benefitEndDate.gregorian | gosiDate
+                            }
+                    "
+                    type="info"
+                    [dismissible]="false"
+                  >
+                  </gosi-alert-dc>
+                </div>
+                <div
+                  class="col-lg-12 receipt-alert"
+                  *ngIf="
+                    (task && task.allowanceType.english === 'Companion Conveyance Allowance') ||
+                    task.allowanceType.english === 'Conveyance Allowance'
+                  "
+                >
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitStartDate.gregorian | gosiDate) !== (task.benefitEndDate.gregorian | gosiDate)
+                    "
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.CONVEYANCE-PERIOD-PARTIAL-OVERLAP'
+                        | translate
+                          : {
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              InjuryId: task.injuryIdList,
+                              EndDate: task.benefitEndDate.gregorian | gosiDate
+                            }
+                    "
+                    [dismissible]="false"
+                    type="info"
+                  >
+                  </gosi-alert-dc>
+                  <gosi-alert-dc
+                    *ngIf="
+                      task &&
+                      (task.benefitStartDate.gregorian | gosiDate) === (task.benefitEndDate.gregorian | gosiDate)
+                    "
+                    [message]="
+                      'OCCUPATIONAL-HAZARD.CONVEYANCE-PERIOD-FULL-OVERLAP'
+                        | translate
+                          : {
+                              StartDate: task.benefitStartDate.gregorian | gosiDate,
+                              EndDate: task.benefitEndDate.gregorian | gosiDate,
+                              InjuryId: task.injuryIdList
+                            }
+                    "
+                    type="info"
+                    [dismissible]="false"
+                  >
+                  </gosi-alert-dc>
+                </div>
+              </div>
+              <oh-allowance-calculation-dc
+                *ngIf="task.paymentStatus.english !== 'Overlapped'"
+                [allowances]="task"
+                [companionDetails]="task.companionDetails"
+                [calculationWrapper]="task.calculationWrapper"
+                [contributorWage]="task.contributorWage"
+                [day]="task.day"
+                [workDisabilityDate]="workDisabilityDate"
+              ></oh-allowance-calculation-dc>
+            </gosi-card-dc>
+          </div>
+        </td>
+        <td colspan="6" *ngIf="this.showBox && task.isRejected">
+          <gosi-card-dc type="secondary">
+            <oh-rejection-additional-details-dc
+              [detailsClubbed]="task"
+              [rejectedList]="rejectedList"
+            ></oh-rejection-additional-details-dc>
+          </gosi-card-dc>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<gosi-pagination-dc
+  *ngIf="allowanceDetails.totalCount > itemsPerPage"
+  [totalSize]="allowanceDetails.totalCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+  paginationId="allowance-details"
+></gosi-pagination-dc>
+<div class="row mt-2" *ngIf="documents?.length > 0">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+  </div>
+</div>

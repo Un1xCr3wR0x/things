@@ -1,0 +1,117 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="table-responsive pb-3">
+  <div class="row">
+    <div class="col-lg-12 session-table">
+      <table class="table table-condensed m-0">
+        <thead>
+          <tr>
+            <th>
+              {{ 'MEDICAL-BOARD.SESSION-TYPE' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.MEDICAL-BOARD' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.FIELD-OFFICE' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.FREQUENCY' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.SESSION-DAYS' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.TIME' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'MEDICAL-BOARD.STATUS' | translate | uppercase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="data-row"
+            *ngFor="
+              let item of list
+                | paginate
+                  : {
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: totalCount
+                    }
+            "
+          >
+            <td class="session-click">
+              <a (click)="onNavigate(item)">{{ item.sessionType | bilingualText }}</a>
+            </td>
+            <td style="width: 4%">
+              {{ item.medicalBoardType | bilingualText }}
+            </td>
+            <td>
+              {{ item.officeLocation | bilingualText }}
+            </td>
+            <td style="width: 3%">
+              {{ item.frequency | bilingualText }}
+            </td>
+            <td>
+              <ng-container *ngFor="let day of item?.days">
+                <span class="days"> {{ day | bilingualText }}</span></ng-container
+              >
+              <div *ngIf="lang === 'en'">
+                <ng-container *ngIf="item.sessionType.english == adHocValue">
+                  <span class="startDate">{{ item?.startDate.gregorian | date: 'dd/MM/yyyy' }}</span>
+                </ng-container>
+              </div>
+              <div *ngIf="lang === 'ar'">
+                <ng-container *ngIf="item.sessionType.english == adHocValue">
+                  <span class="startDate">{{ item?.startDate.gregorian | date: 'yyyy/MM/dd' }}</span>
+                </ng-container>
+              </div>
+            </td>
+            <td style="width: 3%">
+              <div *ngIf="lang === 'en'">
+                <div class="row forth-row pb-2" dir="ltr">
+                  <div class="float-container">
+                    <div class="float-child mr-1">
+                      {{ item?.startTime }} {{ item?.startTimeAmOrPm | bilingualText }} - {{ item?.endTime }}
+                      {{ item?.endTimeAmOrPm | bilingualText }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="lang === 'ar'">
+                <div class="row forth-row pb-2" dir="rtl">
+                  <div class="float-container">
+                    <div class="float-child ml-1">
+                      {{ item?.startTime }} {{ item?.startTimeAmOrPm | bilingualText }} - {{ item?.endTime
+                      }}{{ item?.endTimeAmOrPm | bilingualText }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {{ item.status | bilingualText }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="list?.length == 0" class="pt-4">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<gosi-pagination-dc
+  #paginationComponent
+  *ngIf="totalCount > itemsPerPage"
+  [totalSize]="totalCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+>
+</gosi-pagination-dc>

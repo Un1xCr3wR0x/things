@@ -1,0 +1,161 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- <div id="mainHeading">
+    <frm-main-heading-dc
+      heading="{{ assessmentDetails?.assessmentType | bilingualText }} {{
+        'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate
+      }}"
+    >
+    </frm-main-heading-dc>
+  </div> -->
+  <div class="row no-gutters">
+    <div class="col-auto pr-3 border-right align-self-center">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <span class="mr-2"></span>
+    <div class="col-auto mr-auto">
+      <h3
+        *ngIf="
+          assessmentDetails?.assessmentType?.english === 'Occupational Disability Reassessment' ||
+          assessmentDetails?.assessmentType?.english === 'Non-Occupational Disability Reassessment' ||
+          assessmentDetails?.assessmentType?.english === 'Heir Disability Reassessment' ||
+          assessmentDetails?.assessmentType?.english === 'Dependent Disability Reassessment'
+        "
+      >
+        {{ assessmentDetails?.assessmentType | bilingualText }} {{ 'MEDICAL-BOARD.DETAILS' | translate }}
+      </h3>
+      <h3
+        *ngIf="
+          assessmentDetails?.assessmentType?.english === 'Occupational Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Non-Occupational Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Heir Disability' ||
+          assessmentDetails?.assessmentType?.english === 'Dependent Disability'
+        "
+      >
+        {{ assessmentDetails?.assessmentType | bilingualText }} {{ 'MEDICAL-BOARD.ASSESSMENT-DETAILS' | translate }}
+      </h3>
+    </div>
+  </div>
+  <mb-validator-contributor-details-dc
+    *ngIf="personDetails"
+    [personDetails]="personDetails?.person"
+    [injuryDetailsById]="injuryDetailsById"
+    [injuryIdNeeded]="true"
+    [assessmentType]="assessmentType"
+    (onContributorIdClicked)="viewContributorDetails($event)"
+    (onInjuryIdClicked)="viewInjuryInfo($event)"
+  >
+  </mb-validator-contributor-details-dc>
+  <div
+    *ngIf="
+      assessmentDetails?.assessmentType?.english === 'Heir Disability' ||
+      assessmentDetails?.assessmentType?.english === 'Heir Disability Reassessment' ||
+      assessmentDetails?.assessmentType?.english === 'Dependent Disability' ||
+      assessmentDetails?.assessmentType?.english === 'Dependent Disability Reassessment'
+    "
+  >
+    <gosi-card-dc
+      type="secondary"
+      heading="{{
+        (assessmentDetails?.assessmentType?.english === 'Heir Disability' ||
+        assessmentDetails?.assessmentType?.english === 'Heir Disability Reassessment'
+          ? 'MEDICAL-BOARD.HEIR-DETAILS'
+          : 'MEDICAL-BOARD.DEPENDENT-DETAILS'
+        ) | translate
+      }}"
+      lessPadding="true"
+    >
+      <mb-heir-dependent-details-dc [assessmentDetails]="assessmentDetails"></mb-heir-dependent-details-dc>
+    </gosi-card-dc>
+  </div>
+  <ng-container *ngIf="visitingDoctorDetails">
+    <gosi-card-dc type="secondary" heading="{{ 'MEDICAL-BOARD.VISITING-DOCTOR-DETAILS' | translate }}">
+      <mb-visiting-doctor-details-dc
+        *ngIf="visitingDoctorDetails; else noData"
+        [selectedVistingDr]="visitingDoctorDetails"
+        [isColumnThree]="true"
+      >
+      </mb-visiting-doctor-details-dc>
+    </gosi-card-dc>
+  </ng-container>
+  <gosi-card-dc type="secondary">
+    <mb-assessment-details-view-dc
+      *ngIf="assessmentDetails && !isContractDoctor"
+      [assessmentDetails]="assessmentDetails"
+      [isValidatorView]="false"
+      [isIndividalApp]="isIndividalApp"
+      (onShowMBAssessmentClicked)="viewMBAssessmentModal(previousMBAssessmentModal)"
+      (onInjuryIdClicked)="viewInjuryId($event)"
+      [isContributor]="isContributor"
+      [isMbo]="isMbo"
+      (selected)="navigateToEarlyReassessment($event)"
+      (navigateToAppealInfo)="navigateToAppealHistory($event)"
+      (onAssessmentIdClicked)="viewAssessmentById($event)"
+      [singleAssessmentDetail]="singleAssessmentDetail"
+      [isHoDoctor]="isHoDoctor"
+      [isCSR]="isCSR"
+      [isGosiDrShow]="true"
+      (benefitIdClick)="benefitIdClick($event)"
+      (onNavigate)="navigateToApppeal($event)"
+    ></mb-assessment-details-view-dc>
+    <mb-cotract-doctor-view-assessment-details-dc
+      *ngIf="assessmentDetails && isContractDoctor"
+      [assessmentDetails]="assessmentDetails"
+    ></mb-cotract-doctor-view-assessment-details-dc>
+  </gosi-card-dc>
+  <gosi-card-dc type="secondary" *ngIf="assessmentDetails">
+    <mb-conveyance-details-dc
+      [assessmentDetails]="assessmentDetails"
+      [isValidatorView]="false"
+      [isAmb]="isAmb"
+    ></mb-conveyance-details-dc>
+  </gosi-card-dc>
+  <gosi-card-dc type="secondary" heading="{{ 'MEDICAL-BOARD.DOCUMENTS_LBL' | translate }}" lessPadding="true">
+    <div class="row" *ngIf="assessmentDocuments?.length > 0; else noDocuments">
+      <div class="col-lg-4 col-md-4 col-sm-4 hori-align" *ngFor="let item of assessmentDocuments; let i = index">
+        <gosi-document-view-dc [document]="item"></gosi-document-view-dc>
+      </div>
+    </div>
+    <ng-template #noDocuments>
+      <div class="d-flex justify-content-center">
+        {{ 'THEME.NO-DOCUMENTS' | translate }}
+      </div>
+    </ng-template>
+  </gosi-card-dc>
+  <ng-template #previousMBAssessmentModal>
+    <gosi-modal-dc
+      [modalHeader]="'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate"
+      [needCloseButton]="true"
+      (closeModal)="modalRef.hide()"
+    >
+      <div modalContent>
+        <mb-previous-disability-dc
+          *ngIf="previousDisabilityDetails"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          (onAssessmentIdClicked)="viewAssessmentById($event)"
+        ></mb-previous-disability-dc>
+      </div>
+    </gosi-modal-dc>
+  </ng-template>
+</div>
+<ng-template #noData>
+  <gosi-alert-dc [message]="'MEDICAL-BOARD.NO-RECORDS' | translate" type="info" [dismissible]="true"> </gosi-alert-dc>
+</ng-template>

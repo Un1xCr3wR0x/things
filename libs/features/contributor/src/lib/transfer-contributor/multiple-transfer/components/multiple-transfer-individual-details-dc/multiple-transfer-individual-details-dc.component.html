@@ -1,0 +1,203 @@
+
+
+
+<div class="content table-padding">
+  <div class="row heading-section">
+    <div class="col-auto mr-auto heading">
+      <cnt-header-section-dc heading="CONTRIBUTOR.SELECT-CONTRIBUTORS" [showBackButton]="false"> 
+      </cnt-header-section-dc>
+    </div>
+    <div class="search-sort-filter-sec menu">
+    <div class="sort selected">
+      <div class="circle">
+        <span>{{selectedContributors}}</span>
+      </div>
+      <div class="p-2">  {{'CONTRIBUTOR.SELECTED' | translate}}</div>
+    </div>
+    <div class="search">
+          <gosi-search-dc
+          id="contributorIdentifier"
+          [placeholder]="(verified?'CONTRIBUTOR.CONTRIBUTOR-LIST.ID' : 'CONTRIBUTOR.CONTRIBUTOR-LIST.ID-NAME') | translate"
+          [clearSearch]="resetSearch"
+          (search)="searchContributorByIdentifier($event)"
+          (keyup)="searchContributorByIdentifier($event.target.value)"
+          [allowOnlyNumbers]="verified? true: false"
+        ></gosi-search-dc>
+    </div>
+    <div class="filter" *ngIf="!verified">
+        <gosi-filter-dc
+          id="filter-area"
+          [hasFilterParams]="hasFilter"
+          #filterbutton
+          (apply)="joiningDateFormControl.value ? applyFilter() : null"
+          (reset)="clearFilterForm()"
+        >
+        <ng-container modalContent>
+          <div class="row filter-body">
+              <div class="col-lg-12 bottom_line">
+                <gosi-input-daterange-dc
+                  #dateRangePicker
+                  [label]="'CONTRIBUTOR.WAGE.ENGAGEMENT-START-DATE' | translate"
+                  [control]="joiningDateFormControl"
+                  [maxDate]="maximumDate"
+                  [hideOptionalLabel]="true"
+                  [isFilter]="true"
+  
+                ></gosi-input-daterange-dc>
+              </div>
+          </div>
+          </ng-container>
+        </gosi-filter-dc>
+    </div>
+    </div>
+
+  </div>
+
+  <div class="ind-table">
+    <div class="row d-flex align-items-center">
+      <div class="col-lg-12 table-scroll table-responsive full-width">
+        <div class="table-adjustmentDetails">
+          <table class="table table-borderless">
+            <thead class="tHead">
+              <tr>
+                <th rowspan="3"></th>
+                <th class="topMargin" rowspan="3">{{'CONTRIBUTOR.NAME' | translate}}</th>
+                <th class="topMargin" rowspan="3">{{'CONTRIBUTOR.NATIONAL-ID' | translate}}</th>
+                <th class="topMargin" rowspan="3">{{'CONTRIBUTOR.WAGE.ENGAGEMENT-START-DATE' | translate}}</th>
+              </tr>
+            </thead>
+            <tbody *ngIf="!verified">
+              <tr class="tRow" *ngFor="let list of contributorList  
+                  | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: totalNumberOfActiveContributors
+                    };
+                    let i = index
+              ">
+                <td class="p-3">
+                  <div class="checkboxStyle">
+                    <input
+                      type="checkbox"
+                      id = "{{list.personIdentifier}}"
+                      name="{{list.personIdentifier}}"
+                      (change)="checkboxChanged($event,list)"
+                      [checked]="toggleCheckBox(list.personIdentifier)"
+                    >
+                  </div>
+              
+                </td>
+
+                <td>{{ list.name | nameToString: true }}</td>
+                <td>{{ list.personIdentifier }}</td>
+                <td>{{ list.joiningDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+            <tbody *ngIf="verified && !searchBoolean">
+              <tr class="tRow" *ngFor="let list of getSelectedList()  
+                  | paginate
+                  : {
+                      id: paginationIds,
+                      itemsPerPage: 10,
+                      currentPage: pageDetailsSelected.currentPage,
+                      totalItems: selectedContributors
+                    };
+                    let i = index
+              ">
+                <td class="p-3">
+                    <fa-icon
+                        (click)="removeList(list)"
+                        size="lg"
+                        class="delete-icon"
+                        [icon]="['far', 'trash-alt']"
+                    >
+                    </fa-icon>
+
+                </td>
+                <td>{{ list.name | nameToString: true }}</td>
+                <td>{{ list.personIdentifier }}</td>
+                <td>{{ list.joiningDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+            <tbody *ngIf="verified && searchBoolean">
+              <tr class="tRow" *ngFor="let list of contributorSelectedSearchList| paginate
+              : {
+                  id: paginationIdSearch,
+                  itemsPerPage: 10,
+                  currentPage: pageDetailsSearch.currentPage,
+                  totalItems: contributorSelectedSearchList.length
+                };">
+                <td class="p-3">
+                    <fa-icon
+                        (click)="removeList(list)"
+                        size="lg"
+                        class="delete-icon"
+                        [icon]="['far', 'trash-alt']"
+                    >
+                    </fa-icon>
+
+                </td>
+                <td>{{ list.name | nameToString: true }}</td>
+                <td>{{ list.personIdentifier }}</td>
+                <td>{{ list.joiningDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+              </tr>
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row pagination justify-content-center" *ngIf="!verified && totalNumberOfActiveContributors > 0">
+    <gosi-pagination-dc
+      [totalSize]="totalNumberOfActiveContributors"
+      [pageDetails]="pageDetails"
+      (pageChange)="paginateContributors($event)"
+      [paginationId]="'paginationId'"
+    ></gosi-pagination-dc>
+  </div>
+  <div class="row pagination justify-content-center" *ngIf="verified  && !searchBoolean && selectedContributors > 0">
+    <gosi-pagination-dc
+      [totalSize]="selectedContributors"
+      [pageDetails]="pageDetailsSelected"
+      (pageChange)="paginateSelectedContributor($event)"
+      [paginationId]="paginationIds"
+    ></gosi-pagination-dc>
+  </div>
+  <div class="row pagination justify-content-center" *ngIf="verified  && searchBoolean && contributorSelectedSearchList.length > 0">
+    <gosi-pagination-dc
+      [totalSize]="contributorSelectedSearchList.length"
+      [pageDetails]="pageDetailsSearch"
+      (pageChange)="paginateSearchContributor($event)"
+      [paginationId]="paginationIdSearch"
+    ></gosi-pagination-dc>
+  </div>
+
+  <div class="row"  *ngIf="!verified">
+    <div class="col-lg-12 form-action">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="verify" (submit)="contributorSelectedList.length>0? verifyContributorDetails() : showAlertConfirmBtn()" type="primary">{{
+          'CONTRIBUTOR.CONFIRM' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="reset" (submit)="resetForm()" type="secondary">{{
+          'CONTRIBUTOR.RESET' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+
+  <div class="row"  *ngIf="verified">
+    <div class="col-lg-12 form-action">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="verify" (submit)="contributorSelectedList.length!= totalNumberOfActiveContributorsFixed?  addContributorDetails(): null" type="primary">{{
+          'CONTRIBUTOR.ADD-MORE-CONTRIBUTOR' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+
+</div>

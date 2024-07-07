@@ -1,0 +1,149 @@
+<ng-container *ngIf="isViewOnly === false; else addressView">
+  <gosi-card-dc
+    [type]="selectedCardType"
+    [noHeadingMargin]="noHeadingMargin"
+    [isHeading]="hasAddressDetailsLabel"
+    [heading]="'FORM-FRAGMENTS.ADDRESS-DETAILS' | translate"
+    [showCard]="showCard"
+    [lessPadding]="lessPadding"
+  >
+    <gosi-input-radio-dc
+      *ngIf="!(!hasNationalAddress && !hasPOAddress && hasOverseasAddress)"
+      [id]="idValue + 'addressType'"
+      [name]="idValue ? idValue + 'addressType' : 'addressType'"
+      [noMargin]="true"
+      [label]="'FORM-FRAGMENTS.PREFERRED-DEFAULT-ADDRESS'"
+      [control]="addressTypeForm"
+      [list]="addressTypeList"
+      (select)="selectedAddressType($event)"
+      [disabled]="readOnlyAll"
+    >
+    </gosi-input-radio-dc>
+    <ng-container *ngIf="!hasNationalAddress && !hasPOAddress && hasOverseasAddress">
+      <ng-container *ngTemplateOutlet="overseas"></ng-container>
+    </ng-container>
+  </gosi-card-dc>
+
+  <div class="address-container">
+    <gosi-card-dc
+      [ngStyle]="{ order: getOrder(nationalType) }"
+      [showCard]="showCard"
+      [type]="selectedCardType"
+      *ngIf="hasNationalAddress"
+    >
+      <frm-address-item-dc
+        [readOnly]="readOnlyAll"
+        [id]="idValue + 'National'"
+        (selectAddress)="choseAddresses($event, nationalType, nationalAddressFormName)"
+        [heading]="'FORM-FRAGMENTS.NATIONAL-ADDRESS'"
+        [onlyAddress]="onlyAddressType === nationalType"
+        [value]="nationalType"
+        [nationalAlwaysMandatory]="nationalAlwaysMandatory"
+        [toggleMailingAddressControl]="toggleMailingAddress"
+        [isAddressSelected]="
+          selectedAddresses.includes(nationalType) ||
+          (toggleMailingAddress.value === nationalType && selectedAddresses.includes(nationalType))
+        "
+        [isWaselAddress]="isWaselAddress"
+      >
+        <frm-national-address-dc
+          id="addressItemContent"
+          #nationalAddressComponent
+          [idValue]="idValue"
+          [readOnlyAll]="readOnlyAll"
+          [parentForm]="parentForm"
+          [addressDetails]="nationalAddress"
+          [cityList]="cityList"
+          [establishmentWaselAddress]="establishmentWaselAddress"
+          [isWaselAddress]="isWaselAddress"
+        >
+        </frm-national-address-dc>
+      </frm-address-item-dc>
+    </gosi-card-dc>
+
+    <gosi-card-dc
+      [ngStyle]="{ order: getOrder(poBoxType) }"
+      [showCard]="showCard"
+      [type]="selectedCardType"
+      *ngIf="hasPOAddress"
+    >
+      <frm-address-item-dc
+        [readOnly]="readOnlyAll"
+        [id]="idValue + 'Pobox'"
+        (selectAddress)="choseAddresses($event, poBoxType, poAddressFormName)"
+        [heading]="'FORM-FRAGMENTS.PO-ADDRESS'"
+        [onlyAddress]="onlyAddressType === poBoxType"
+        [isAddressSelected]="
+          selectedAddresses.includes(poBoxType) ||
+          (toggleMailingAddress.value === poBoxType && selectedAddresses.includes(poBoxType))
+        "
+        [value]="poBoxType"
+        [toggleMailingAddressControl]="toggleMailingAddress"
+      >
+        <frm-po-address-dc
+          id="addressItemContent"
+          #poAddressComponent
+          [idValue]="idValue"
+          [readOnlyAll]="readOnlyAll"
+          [parentForm]="parentForm"
+          [addressDetails]="poBoxAddress"
+          [cityList]="cityList"
+        >
+        </frm-po-address-dc>
+      </frm-address-item-dc>
+    </gosi-card-dc>
+    <ng-container *ngIf="!(!hasNationalAddress && !hasPOAddress && hasOverseasAddress)">
+      <ng-container *ngTemplateOutlet="overseas"></ng-container>
+    </ng-container>
+    <ng-template #overseas>
+      <gosi-card-dc
+        [ngStyle]="{ order: getOrder(foreignType) }"
+        [showCard]="isGCC"
+        *ngIf="hasOverseasAddress"
+        [type]="selectedCardType"
+      >
+        <frm-address-item-dc
+          [readOnly]="readOnlyAll"
+          [id]="idValue + 'Foreign'"
+          (selectAddress)="choseAddresses($event, foreignType, foreignAddressFormName)"
+          [heading]="'FORM-FRAGMENTS.OVERSEAS-ADDRESS'"
+          [onlyAddress]="onlyAddressType === foreignType && selectedAddresses.length !== 0"
+          [isAddressSelected]="
+            selectedAddresses.includes(foreignType) ||
+            (toggleMailingAddress.value === foreignType && selectedAddresses.includes(foreignType))
+          "
+          [value]="foreignType"
+          [toggleMailingAddressControl]="toggleMailingAddress"
+        >
+          <frm-overseas-address-dc
+            id="addressItemContent"
+            #overseasAddressComponent
+            [addressDetails]="overSeasAddress"
+            [idValue]="idValue"
+            [readOnlyAll]="readOnlyAll"
+            [mandatoryOverseasAddress]="mandatoryOverseasAddress"
+            [countryReadOnly]="countryReadOnly"
+            [countryList]="countryList"
+            [parentForm]="parentForm"
+          >
+          </frm-overseas-address-dc>
+        </frm-address-item-dc>
+      </gosi-card-dc>
+    </ng-template>
+  </div>
+</ng-container>
+
+<ng-template #addressView>
+  <frm-view-address-dc
+    [isPaddingRequired]="isPaddingRequired"
+    [currentMailingAddress]="currentMailingAddress"
+    [hasAddressDetailsLabel]="hasAddressDetailsLabel"
+    [hasNationalAddress]="hasNationalAddress"
+    [hasPOAddress]="hasPOAddress"
+    [hasOverseasAddress]="hasOverseasAddress"
+    [addressDetails]="addressDetails"
+    [showEdit]="showEdit"
+    (editEvent)="editEventDetails()"
+  >
+  </frm-view-address-dc>
+</ng-template>

@@ -1,0 +1,239 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="col-sm-12 col-md-12 col-lg-12 complication-details"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <frm-content-heading-dc
+        icon="user-injured"
+        heading="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DETAILS"
+        [canEdit]="canEdit"
+        (onEdit)="onEditComlicationDetails()"
+      >
+      </frm-content-heading-dc>
+      <div class="row" *ngIf="complication">
+        <div class="col-md-6">
+          <ul class="timeline">
+            <li class="timeline-item" *ngIf="engagement && engagement.formSubmissionDate">
+              <div class="timeline-badge"></div>
+  
+              <gosi-label-dc
+                id="engagementFormSubmissionDate"
+                [value]="engagement.formSubmissionDate.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.ENGAGEMENT-FORM-SUBMISSION-DATE"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item" *ngIf="startDateOfEngagement">
+              <div class="timeline-badge"></div>
+              <gosi-label-dc
+                id="engagementStartDate"
+                [value]="startDateOfEngagement.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.ENGAGEMENT-START-DATE"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item" *ngIf="complication.injuryDate">
+              <div class="timeline-badge"></div>
+              <gosi-label-dc
+                id="injuryDate"
+                [value]="complication.injuryDate.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.INJURY.INJURY-DATE"
+              >
+              </gosi-label-dc>
+            </li>
+            <li
+              class="timeline-item"
+              *ngIf="
+                !isComplicationSubmissionDateDiff &&
+                !isComplicationEngagementApprvDateDiff &&
+                !isComplicationEngagementJoinDateDiff
+              "
+            >
+              <div class="timeline-badge"></div>
+              <gosi-label-dc
+                id="complicationDate"
+                [value]="complication.complicationDate.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DATE"
+              >
+              </gosi-label-dc>
+            </li>
+            <li
+              class="timeline-item"
+              *ngIf="
+                isComplicationSubmissionDateDiff ||
+                isComplicationEngagementApprvDateDiff ||
+                isComplicationEngagementJoinDateDiff
+              "
+            >
+              <div class="timeline-badge danger"></div>
+              <div class="complication-date-heading">
+                {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DATE' | translate }}
+              </div>
+              <div class="complication-date" id="complicationDate">
+                {{ complication.complicationDate.gregorian | date: 'dd/MM/yyyy' }}
+              </div>
+              <div class="validate-text" *ngFor="let violation of complicationDateList">
+                <fa-icon icon="exclamation-triangle" size="sm" class="fa fa-exclamation-triangle"></fa-icon>
+                {{ violation | translate }}
+              </div>
+            </li>
+            <li class="timeline-item" *ngIf="!contributorInformedViolation">
+              <div class="timeline-badge"></div>
+              <gosi-label-dc *ngIf="!isContributor"
+                id="contributorInformedOn"
+                [value]="complication.employeeInformedDate.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.WORKER-INFORMED-ON"
+              ></gosi-label-dc>
+              <gosi-label-dc *ngIf="isContributor"
+                id="contributorInformedOn"
+                [value]="complication.employeeInformedDate.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATES"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item" *ngIf="contributorInformedViolation">
+              <div class="timeline-badge danger"></div>
+              <div class="complication-date-heading" *ngIf="!isContributor">
+                {{ 'OCCUPATIONAL-HAZARD.WORKER-INFORMED-ON' | translate }}
+              </div>
+              <div class="complication-date-heading" *ngIf="isContributor">
+                {{ 'OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATES' | translate }}
+              </div>
+              <div class="complication-date" id="contributorInformedOn">
+                {{ complication.employeeInformedDate.gregorian | date: 'dd/MM/yyyy' }}
+              </div>
+              <div class="validate-text">
+                <fa-icon icon="exclamation-triangle" size="sm" class="fa fa-exclamation-triangle"></fa-icon>
+  
+                <span>
+                  {{ contributorInformedYearsDiff > 2 ? contributorInformedYearsDiff : '' }}
+                  {{
+                    calculateYear(
+                      contributorInformedYearsDiff,
+                      contributorInformedOnDateMonthsOfDifference,
+                      contributorInformedOnDaysDifference,
+                      true
+                    ) | translate
+                  }}
+                  {{ contributorInformedOnDateMonthsOfDifference > 2 ? contributorInformedOnDateMonthsOfDifference : '' }}
+                  {{
+                    calculateMonth(contributorInformedOnDateMonthsOfDifference, contributorInformedOnDaysDifference, true)
+                      | translate
+                  }}
+                  {{ contributorInformedOnDaysDifference > 2 ? contributorInformedOnDaysDifference : '' }}
+                  {{ calculateDay(contributorInformedOnDaysDifference, true) | translate }}
+                </span>
+              </div>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-badge"></div>
+              <gosi-label-dc *ngIf="complication?.workDisabilityDate"
+                id="workDisabilityDate"
+                [value]="complication?.workDisabilityDate?.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-badge"></div>
+              <gosi-label-dc
+                id="deathDate"
+                [value]="complication?.deathDate?.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item" *ngIf="!isContributor"  >
+              <div class="timeline-badge"></div>
+              <gosi-label-dc
+                id="employerInformedOn"
+                [value]="complication?.employerInformedDate?.gregorian | date: 'dd/MM/yyyy'"
+                label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+              ></gosi-label-dc>
+            </li>
+            <li class="timeline-item" *ngIf="(employerInformedOnDateViolation || employerInformedYearsOnViolation) && !isContributor">
+              <div class="timeline-badge danger"></div>
+              <div class="complication-date-heading">
+                {{ 'OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON' | translate }}
+              </div>
+              <div class="complication-date" id="employerInformedOn">
+                {{ complication?.employerInformedDate?.gregorian | date: 'dd/MM/yyyy' }}
+              </div>
+  
+              <div class="validate-text" *ngIf="employerInformedOnDateViolation">
+                <fa-icon icon="exclamation-triangle" size="sm" class="fa fa-exclamation-triangle"> </fa-icon>
+                <span>
+                  {{ employerInformedYearsDiff > 2 ? employerInformedYearsDiff : '' }}
+                  {{
+                    calculateYear(
+                      employerInformedYearsDiff,
+                      contributorInformedMonthsDiff,
+                      employerInformedOnDaysDiff,
+                      false
+                    ) | translate
+                  }}
+                  {{ contributorInformedMonthsDiff > 2 ? contributorInformedMonthsDiff : '' }}
+                  {{ calculateMonth(contributorInformedMonthsDiff, employerInformedOnDaysDiff, false) | translate }}
+                  {{ employerInformedOnDaysDiff > 2 ? employerInformedOnDaysDiff : '' }}
+                  {{ calculateDay(employerInformedOnDaysDiff, false) | translate }}
+                </span>
+              </div>
+  
+              <div class="validate-text" *ngIf="employerInformedYearsOnViolation">
+                <fa-icon icon="exclamation-triangle" size="sm" class="fa fa-exclamation-triangle"> </fa-icon>
+  
+                <span>
+                  {{ complicationReportingYearsDiff > 2 ? complicationReportingYearsDiff : '' }}
+                  {{
+                    calculateYear(
+                      complicationReportingYearsDiff,
+                      complicationReportedOnMonthsDiff,
+                      complicationReportedOnDaysDiff,
+                      true
+                    ) | translate
+                  }}
+                  {{ complicationReportedOnMonthsDiff > 2 ? complicationReportedOnMonthsDiff : '' }}
+                  {{ calculateMonth(complicationReportedOnMonthsDiff, complicationReportedOnDaysDiff, true) | translate }}
+                  {{ complicationReportedOnDaysDiff > 2 ? complicationReportedOnDaysDiff : '' }}
+                  {{ calculateDay(complicationReportedOnDaysDiff, true) | translate }}
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-6 injury-time">
+          <gosi-label-dc *ngIf="complication?.complicationId"
+            id="complicationId"
+            [value]="complication?.complicationId"
+            label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-NUMBER"
+            isLink="true"
+            (select)="viewComplicationDetails(complication)"
+          ></gosi-label-dc>
+  
+          <gosi-label-dc
+            id="complicationLeadtoDeath"
+            [value]="complication.complicationToDeathIndicator ? 'Yes' : 'No'"
+            label="OCCUPATIONAL-HAZARD.COMPLICATION-LEAD-TO-DEATH"
+          ></gosi-label-dc>
+  
+          <gosi-label-dc
+            id="treatmentIsCompleted"
+            [value]="complication.treatmentCompleted ? 'Yes' : 'No'"
+            label="OCCUPATIONAL-HAZARD.TREATMENT-COMPLETED"
+          ></gosi-label-dc>
+          <gosi-label-dc  *ngIf="!isContributor"
+            id="reasonForDelay"
+            label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR"
+            [value]="complication.reasonForDelay | bilingualText"
+          >
+          </gosi-label-dc>
+          <gosi-label-dc *ngIf="isContributor"
+            id="reasonForDelay"
+            label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR-IND"
+            [value]="complication.reasonForDelay | bilingualText"
+          >
+          </gosi-label-dc>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  

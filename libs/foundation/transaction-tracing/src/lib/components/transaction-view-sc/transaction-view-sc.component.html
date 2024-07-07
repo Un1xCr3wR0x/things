@@ -1,0 +1,158 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <!-- This secotion will be visible at the beginning until the user clicks on appeal button -->
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+   <ng-container *ngIf="!showAppealForm">
+    <div class="d-flex justify-content-between">
+      <gosi-main-heading-dc [backPath]="backPath" (back)="onBack()" [header]="header"></gosi-main-heading-dc>
+      <div class="col-lg-6">
+        <a class="view-details float-right"
+          *ngIf="header?.english?.trim() == 'Complaint' && showReopen && !IsReopenTransaction && transaction?.status?.english == 'Completed' && isReopenRole"
+          (click)="onReopenClick()">
+          {{'COMPLAINTS.REOPEN-COMPLAINT' | translate }}
+        </a>
+        <a class="view-details float-right"
+          *ngIf="header?.english?.trim() == 'Enquiry' && showReopen && !IsReopenTransaction && transaction?.status?.english == 'Completed' && isReopenRole"
+          (click)="onReopenClick()">
+          {{'COMPLAINTS.REOPEN-ENQUIRY' | translate }}
+        </a>
+        <gosi-button-dc class="view-details float-right"
+          *ngIf="transaction?.requestClarification && isBehalfParticipant" type="primary"
+          (submit)="actBehalfParticipant()" size="md">
+          {{ 'TRANSACTION-TRACING.ACT-BEHALF-OF-PARTICIPANT' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+
+    <gosi-summary-dc *ngIf="!IsReopenTransaction" [transaction]="transaction">
+      <div class="col-lg-3" *ngIf="isItsm && incidentNumber">
+        <gosi-label-dc id="incidentNumber" [control]="incidentNumber"
+          [label]="'TRANSACTION-TRACING.INCIDENT-NUMBER' | translate">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="(showAppealButton && estAppealActive == 'Appeal_Est')">
+        <gosi-button-dc [size]="'sm'" (click)="activateAppealForm()">
+          {{ transaction?.canRequestReview
+          ? ('TRANSACTION-TRACING.REVIEW-REQUEST' | translate)
+          : ('TRANSACTION-TRACING.APPEAL' | translate)
+          }}
+        </gosi-button-dc>
+      </div>
+    </gosi-summary-dc>
+
+    <ng-container *ngIf="!IsReopenTransaction"><gosi-workflow-sc
+        [workflowItems]="workflow"></gosi-workflow-sc></ng-container>
+
+    <div *ngIf="
+        transaction?.title?.english !== 'Occupational Hazard Allowance Audit' &&
+        transaction?.title?.english !== 'Audit Medical Provider Claim'
+      ">
+      <gosi-comments-dc *ngIf="comment.length > 0 && isNotAppeal && !IsReopenTransaction" [comments]="comment"
+        [showRole]="true"></gosi-comments-dc>
+    </div>
+    <router-outlet></router-outlet>
+
+    <!-- Code Block for adding Notes on any transaction -->
+    <gosi-card-dc *ngIf="showNoteBlock" [type]="'secondary'" [heading]="'TRANSACTION-TRACING.NOTES' | translate">
+      <ng-container *ngIf="notesTimeLine.length > 0">
+        <trn-notes-history-dc
+          [notesTimeLine]="notesTimeLine">
+        </trn-notes-history-dc>
+        <!-- Additional timeline point besides the add button to meet the design requirements -->
+        <trn-timeline-dc>
+          <div class="row" timeline-date>
+              <div class="col-12 flag-timeline">
+                  <span class="flag-date">
+                  </span>
+              </div>
+          </div>
+          <div timeline-content>
+          </div>
+        </trn-timeline-dc>
+      </ng-container>
+
+      <gosi-button-dc [size]="'sm'" [type]="'primary'" [outlineOnly]="true" (click)="addNote()" class="pl-4 pr-4">
+        <span class="add-button"> {{ 'TRANSACTION-TRACING.ADD-NOTE' | translate}} </span>
+      </gosi-button-dc>
+    </gosi-card-dc>
+  </ng-container>
+
+  <!-- This section will be shown when the user clicks on appeal button -->
+  <ng-container *ngIf="showAppealForm">
+    <trn-appeal-form-dc [transaction]="transaction" [userId]="userId" [previousRequest]="previousRequest"
+      (appealRequest)="submitAppeal($event)" (hideAppealForm)="deactivateAppealForm()">
+    </trn-appeal-form-dc>
+  </ng-container>
+</div>
+
+<ng-template #submitNoteModal>
+  <div class="confirm-modal">
+    <div class="modal-header">
+      <h4>{{ 'TRANSACTION-TRACING.NOTE-ADDITION' | translate }}</h4>
+      <span class="times-icon" (click)="cancel()"> <fa-icon icon="times"></fa-icon></span>
+    </div>
+    <div class="modal-body">
+      <div class="col-lg-12 d-flex">
+        <div class="container modal-body-style">
+          <gosi-input-radio-dc id="priority-status" [label]="'TRANSACTION-TRACING.PRIORITY-STATUS' | translate"
+            [list]="priorityList$ | async" [control]="noteForm.get('priority')">
+          </gosi-input-radio-dc>
+
+          <gosi-input-text-area-dc [maxLength]="498" gosiSpecialCharacterMask [control]="noteForm.get('note')"
+            [label]="'TRANSACTION-TRACING.YOUR-NOTE' | translate" [removeExtraSpecialCharacters]="true"
+            [removeSpecialCharacters]="true">
+          </gosi-input-text-area-dc>
+
+        </div>
+      </div>
+    </div>
+    <div>
+      <gosi-button-dc modalAction id="submit-note" type="primary" [size]="'sm'" (submit)="submitNote()"
+        class="btn-section float-left" [disabled]="!noteForm.valid">
+        {{ 'TRANSACTION-TRACING.SUBMIT' | translate }}
+      </gosi-button-dc>
+      <gosi-button-dc modalAction id="cancel" type="secondary" [size]="'sm'" (submit)="cancel()"
+        class="btn-section float-right">
+        {{ 'TRANSACTION-TRACING.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #actBehalfParticipantModal>
+  <gosi-modal-dc [modalHeader]="'TRANSACTION-TRACING.ACT-BEHALF-OF-PARTICIPANT' | translate" [needCloseButton]="true"
+    (closeModal)="modalRef?.hide()">
+    <div class="row" modalContent style="min-height: 80px;">
+      <div class="col-lg-12">
+        <!-- <gosi-alert-sc></gosi-alert-sc> -->
+        <gosi-alert-dc
+        type="warning"
+        [dismissible]="false"
+        [bilingualMessage]="acknowledgementMessage"
+      >
+      </gosi-alert-dc>
+        <div class="col-md-12">
+          {{ 'TRANSACTION-TRACING.ACT-FOR-CUSTOMER' | translate }}
+        </div>
+        <div class="col-md-12" style="min-height: 20px;"></div>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right">
+        <gosi-button-dc [id]="'yes'" [type]="'primary'" class="action-button" (submit)="actBehalfParticipantApi()">
+          {{ 'TRANSACTION-TRACING.YES' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc [type]="'secondary'" [id]="'cancel'" (submit)="modalRef?.hide()">
+          {{ 'TRANSACTION-TRACING.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

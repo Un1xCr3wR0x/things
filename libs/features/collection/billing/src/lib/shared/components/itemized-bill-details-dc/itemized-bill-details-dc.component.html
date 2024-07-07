@@ -1,0 +1,280 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="bill-content" *ngIf="itemizedBillDetails">
+  <div class="row">
+    <div class="col-auto bill-header">
+      {{ 'BILLING.BILL-FOR' | translate }}
+    </div>
+    <div class="col-lg-auto col-md-auto col-sm-12 align-header" [ngClass]="isBillNumber ? 'mr-auto ' : ''">
+      <gosi-input-month-dc
+        id="billMonth"
+        [ignoreLabel]="true"
+        [dateFormat]="dateFormat"
+        [minDate]="minDate"
+        [maxDate]="maxDate"
+        [control]="billingForm.get('month').get('gregorian')"
+        [readOnly]="true"
+        class="billMonth"
+        (blur)="selectStartDate($event)"
+      >
+      </gosi-input-month-dc>
+    </div>
+    <ng-container *ngIf="!isBillNumber">
+      <ng-container *ngIf="!isMofFlag">
+        <div class="col-auto sub-value border-right align-header" id="billNumberValue">
+          {{ 'BILLING.BILL-NUMBER' | translate }}: {{ itemizedBillDetails.billNo }}
+        </div>
+      </ng-container>
+      <div id="itemizedBillIssueDateValue" class="col-auto sub-value mr-auto align-header" *ngIf="!paidIconFlag">
+        {{ 'BILLING.BILL-ISSUE-DATE' | translate }}:
+        {{ billIssueMonth | translate: billIssueDate }}
+      </div>
+      <div id="itemizedBillIssueDateValue" class="col-auto sub-value align-header" *ngIf="paidIconFlag">
+        {{ 'BILLING.BILL-ISSUE-DATE' | translate }}:
+        {{ billIssueMonth | translate: billIssueDate }}
+      </div>
+      <fa-icon
+        *ngIf="paidIconFlag"
+        class="icon-wrapper-check-circle align-header image-align top-align"
+        icon="check-circle"
+        size="2x"
+      ></fa-icon>
+      <div id="itemizedPaidFlag" class="col-auto mr-auto sub-value align-header" *ngIf="paidIconFlag">
+        {{ 'BILLING.PAID' | translate }}
+      </div>
+    </ng-container>
+    <div class="col-auto detailed-bill align-header top-align">
+      <gosi-button-dc [outlineOnly]="true" id="view" type="secondary" [size]="'md'" (click)="getDashboardBillDetails()">
+        {{ 'BILLING.VIEW-BILL-SUMMARY' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!isBillNumber">
+    <div class="row mt-4">
+      <div class="col-lg-5">
+        <div class="row" *ngIf="itemizedBillDetails.previousBill >= 0">
+          <div class="col-lg-6 col-view-6 sub-label">
+            {{ 'BILLING.PREVIOUS-BILL-AMOUNT' | translate }}
+          </div>
+          <div class="col-lg-6 col-view-6 sum-amount bill-amount-value" id="itemizedPreviousBillAmountValue" *ngIf="itemizedBillDetails.previousBill === 0">
+            {{ itemizedBillDetails.previousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div class="col-lg-6 col-view-6 amount danger"
+          id="itemizedPreviousBillAmountValue"
+            *ngIf="itemizedBillDetails.previousBill > 0 && !isMofFlag"
+          >
+            {{ itemizedBillDetails.previousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div
+            class="col-lg-6 col-view-6 sum-amount bill-amount-value danger"
+            id="itemizedPreviousBillAmountValue"
+            *ngIf="itemizedBillDetails.previousBill > 0 && isMofFlag"
+          >
+            {{ itemizedBillDetails.previousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row" *ngIf="itemizedBillDetails.previousBill < 0">
+          <div class="col-lg-6 col-view-6 sub-label">
+            {{ 'BILLING.CREDIT-FROM-PREVIOUS-BILL' | translate }}
+          </div>
+          <div class="col-lg-6 col-view-6 amount primary" id="itemizedAmountValue" *ngIf="itemizedBillDetails.previousBill < 0">
+            {{ itemizedPreviousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="itemizedBillDetails.lateFee !== null && !isMofFlag">
+          <div class="col-8 sub-label show-detail">
+            {{ 'BILLING.LATE-PAYMENT-FEES' | translate }}
+          </div>
+          <div class="col-4 amount danger" id="itemizedLateFeeValue">
+            {{ itemizedBillDetails.lateFee * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row my-3">
+          <div class="col-lg-6 col-view-6 sub-label show-detail">
+            {{ 'BILLING.CREDIT-DURING-THE-MONTH' | translate }}
+          </div>
+          <div
+            class="col-lg-6 col-view-6 amount primary"
+            id="creditAmountValue"
+            *ngIf="itemizedBillDetails.billBreakUp.accountBreakUp !== null"
+          >
+            {{ itemizedBillDetails.billBreakUp.accountBreakUp.availableCredit * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div
+            class="col-4 amount primary"
+            id="creditAmountValue"
+            *ngIf="itemizedBillDetails.billBreakUp.accountBreakUp === null"
+          >
+            {{ 0 | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-lg-6 col-view-6 sub-label">
+            {{
+              isMofFlag
+                ? ('BILLING.CONTRIBUTION-EMPLOYER-SHARE' | translate)
+                : ('BILLING.CURRENT-MONTH-DUES' | translate)
+            }}
+          </div>
+          <div class="col-lg-6 col-view-6 amount danger" id="currentMonthDueValue">
+            {{ itemizedBillDetails.currentBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="itemizedBillDetails.amountTransferredToMof !== 0 && !isMofFlag">
+          <div class="col-8 sub-label show-detail">
+            {{ 'BILLING.MOF-AMOUNT' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="toolTemplate"></fa-icon>
+          </div>
+          <div class="col-4 amount primary" id="creditAmountValue">
+            {{ itemizedBillDetails.amountTransferredToMof * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="col-lg-12 border-bottom pt-2"></div>
+        <ng-container *ngIf="!creditFlag && itemizedBillDetails?.minimumPaymentRequired !== null">
+          <div class="row mt-3">
+            <div class="col-lg-6 col-view-6 sub-label">
+              {{ 'BILLING.BILL-AMOUNT' | translate }}
+            </div>
+            <div class="col-lg-6 col-view-6 sum-amount bill-amount-value danger" id="totalAmountValue">
+              {{ billAmount * exchangeRate | number: '1.2-2' }}
+              {{ currencyType | bilingualText }}
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="row mt-3" *ngIf="creditFlag; else itemizedBillValue">
+          <div class="col-8 sum-label">
+            {{ 'BILLING.CREDIT-FROM-LAST-BILL' | translate }}
+          </div>
+          <div class="col-4 sum-amount credit-amount-value" id="itemizedCreditAmount">
+            {{ creditAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div
+          class="row mt-3"
+          *ngIf="
+            itemizedBillDetails?.minimumPaymentRequired !== null && itemizedBillDetails?.minimumPaymentRequired !== 0 && !isMofFlag
+          "
+        >
+          <div class="col-6 sum-label">
+            {{ 'BILLING.MINIMUM-PAYMENT-REQUIRED' | translate }}
+            <span>
+              <fa-icon [icon]="['fas', 'info-circle']" placement="top" [tooltip]="toolTemplateInfo"></fa-icon>
+            </span>
+          </div>
+          <div class="col-6 sum-amount bill-amount-value" id="itemizedMinimumAmount">
+            {{ itemizedBillDetails.minimumPaymentRequired | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <ng-template #itemizedBillValue>
+          <ng-container *ngIf="itemizedBillDetails?.minimumPaymentRequired === null">
+            <div class="row mt-3">
+              <div class="col-6 sum-label">
+                {{ 'BILLING.BILL-AMOUNT' | translate }}
+              </div>
+              <div class="col-6 sum-amount bill-amount-value" id="billAmountValue">
+                {{ billAmount * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+            </div>
+          </ng-container>
+        </ng-template>
+      </div>
+      <div class="col-lg-7 align-self-center">
+        <div class="row mt-4 due-date-margin">
+          <div class="col-auto due-date-icon">
+            <fa-icon icon="stopwatch"></fa-icon>
+          </div>
+          <div class="col-auto due-date-info">
+            <div class="row no-gutters">
+              {{ 'BILLING.PAYMENT-DUE-DATE:' | translate }}
+              <span class="due-date">
+                {{ paymentMonth | translate: paymentDate }}
+              </span>
+            </div>
+            <div class="row no-gutters" *ngIf="!isMofFlag">
+              {{ 'BILLING.SUBJECT-TO-PENALITIES' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isBillNumber">
+    <div class="mt-5 text-center full-width">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ errorMessage | bilingualText }}</p>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Modals -->
+<ng-template #availableCreditDetails>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'BILLING.CREDIT-DURING-THE-MONTH' | translate">
+      <div class="total" modalSubHeading>
+        {{ 'BILLING.TOTAL' | translate }}:
+        {{ itemizedBillDetails.billBreakUp.accountBreakUp.availableCredit * exchangeRate | number: '1.2-2' }}
+        {{ currencyType | bilingualText }}
+      </div>
+      <blg-available-credit-breakup-dc
+        modalContent
+        [availableCreditBreakup]="accountDetails"
+        [exchangeRate]="exchangeRate"
+        [currencyType]="currencyType"
+        [isGccCountry]="isGccCountry"
+      >
+      </blg-available-credit-breakup-dc>
+      <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" size="md" (submit)="hideModal()">
+        {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+      >
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+
+<ng-template #toolTemplate>
+  <ng-container>
+    <div>
+      {{ 'BILLING.MOF-MSG' | translate }}
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #toolTemplateInfo>
+  <div class="d-flex flex-column">
+    <ng-container *ngIf="itemizedBillDetails.previousMonthDues; else noDues">
+      {{ 'BILLING.MINIMUM-PAYMENT-REQUIRED' | translate }}= {{ 'BILLING.INSTALLMENT-AMOUNT' | translate }}({{
+        itemizedBillDetails.installmentAmount | number: '1.2-2'
+      }}) + {{ 'BILLING.CURRENT-MONTH-AMOUNT' | translate }}({{ currentMonthAmount * exchangeRate | number: '1.2-2' }})
+      + {{ 'BILLING.DUES-BILLED' | translate }}({{ itemizedBillDetails.previousMonthDues | number: '1.2-2' }}) - ({{
+        'BILLING.CREDIT-RECEIVED-SINCE-DATE' | translate
+      }}({{ itemizedBillDetails.creditAmountFromApplyDate | number: '1.2-2' }}) -
+      {{ 'BILLING.DOWN-PAYMENT' | translate }}({{ itemizedBillDetails.downPaymentAmount | number: '1.2-2' }})) =
+      {{ itemizedBillDetails.minimumPaymentRequired * exchangeRate | number: '1.2-2' }}
+    </ng-container>
+    <ng-template #noDues>
+      {{ 'BILLING.MINIMUM-PAYMENT-REQUIRED' | translate }}= {{ 'BILLING.UNPAID-MINIMUM-AMOUNT' | translate }} ({{
+        itemizedBillDetails.carryForwardAmount | number: '1.2-2'
+      }}) + {{ 'BILLING.INSTALLMENT-AMOUNT' | translate }}({{
+        itemizedBillDetails.installmentAmount | number: '1.2-2'
+      }}) + {{ 'BILLING.CURRENT-MONTH-AMOUNT' | translate }}({{ currentMonthAmount * exchangeRate | number: '1.2-2' }})
+      = {{ itemizedBillDetails.minimumPaymentRequired * exchangeRate | number: '1.2-2' }}
+    </ng-template>
+  </div>
+</ng-template>

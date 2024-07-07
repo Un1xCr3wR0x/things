@@ -1,0 +1,238 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <ng-container>
+    <frm-main-heading-dc [heading]="(routerData.resourceType=='Link Contributor' ? 'BENEFITS.LINK-CONTRIBUTOR' : 'BENEFITS.REGISTER-HEIR-HEADING') | translate"></frm-main-heading-dc>
+  </ng-container>
+ 
+
+  <frm-main-content-dc [canEdit]="false" [documents]="documentList" [showComments]="false">
+    <div id="contentArea">
+      <div class="row" *ngIf="heirPersonDetails">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc icon="user" heading="{{ 'BENEFITS.HEIR_DETAILS' | translate }}" [canEdit]="false">
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="heirNIN"
+                [value]="heirNin"
+                label="{{ heirNinLabel | translate }}"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="dob"
+                [control]="'BENEFITS.AGE' | translate: { age: heirAge }"
+                label="BENEFITS.DATE-OF-BIRTH"
+              >
+                <span id="prefixValue">{{ heirDob }} </span>
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="heirNameArab"
+                [value]="heirNameArabic"
+                label="{{ 'BENEFITS.HEIR_NAME_ARABIC' | translate }}"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="heirNameEng"
+                [value]="heirNameEnglish"
+                label="{{ 'BENEFITS.HEIR_NAME_VALIDATOR' | translate }}"
+              ></gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="relation"
+                [value]="heirAccountDetails.relationship | bilingualText"
+                label="{{ 'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate }}"
+              ></gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="contributorPersonDetails">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="user"
+            heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+            [canEdit]="false"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="contributorNIN"
+                [value]="contributorNin"
+                label="{{ contributorNinLabel | translate }}"
+                isLink="true"
+                (click)="navigateToInjuryDetails()"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="dob"
+                [control]="'BENEFITS.AGE' | translate: { age: contributorAge }"
+                label="BENEFITS.DATE-OF-BIRTH"
+              >
+                <span id="prefixValue">{{ contributorDob }} </span>
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="contributorName"
+                [value]="contributorNameArabic"
+                label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="contributorName"
+                [value]="contributorNameEnglish"
+                label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+              ></gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="reason"
+                [value]="heirAccountDetails.benefitRequestReason | bilingualText"
+                label="{{ 'BENEFITS.REASON_BENEFIT' | translate }}"
+              ></gosi-label-dc>
+            </div>
+            <div *ngIf="heirAccountDetails.eventDate && isDeath" class="col-sm-6 col-md-6 col-lg-6">
+              <div>
+                <span class="notificationDate">
+                  {{ 'BENEFITS.DEATH_DATE' | translate }}
+                </span>
+              </div>
+              <div class="notificationDate">
+                {{ heirAccountDetails.eventDate?.gregorian | date: 'dd/MM/yyyy' }}
+              </div>
+            </div>
+            <div *ngIf="heirAccountDetails.eventDate && !isDeath" class="col-sm-6 col-md-6 col-lg-6">
+              <div>
+                <span class="notificationDate">
+                  {{ 'BENEFITS.MISSING_DATE' | translate }}
+                </span>
+              </div>
+              <div class="notificationDate">
+                {{ heirAccountDetails.eventDate?.gregorian | date: 'dd/MM/yyyy' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="actionArea" *ngIf="!isTransactionsView">
+      <div class="row form-action">
+        <div class="col-lg-12">
+          <div class="action-requests">
+            <div class="btn-section float-right">
+              <ng-container *gosiShow="validatorAccess">
+
+
+                <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                  {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                >
+                <gosi-button-dc
+                  class="pr-5 pl-5"
+                  type="danger"
+                  id="reject"
+                  (submit)="rejectTransaction(rejectTemplate)"
+                >
+                  {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                >
+                <gosi-button-dc
+                  id="approve"
+                  [disabled]="disableApprove"
+                  type="primary"
+                  (click)="approveTransaction(approveTemplate)"
+                >
+                  {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+                >
+              </ng-container>
+            </div>
+            <!-- <ng-container>
+              <div class="btn-section float-right">
+                <gosi-button-dc type="danger" id="reject" (click)="rejectTransaction(rejectTemplate)">
+                  {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right">
+                <gosi-button-dc type="secondary" id="request">
+                  {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+                >
+              </div>
+            </ng-container>-->
+            <div class="btn-section float-left">
+              <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  id="cancel"
+                  type="secondary"
+                  (submit)="showCancelTemplate(cancelEngagementTemplate)"
+                >
+                  {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+                >
+
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="'BENEFITS.CONFIRM_REGISTER-HEIR-HEADING'"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="retirementForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmActivate()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    [heading]="'BENEFITS.REJECT-REGISTER-HEIR-HEADING'"
+    [warningMessage]="'BENEFITS.INFO-HEIR-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="retirementForm"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="confirmRejectRequest()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{'BENEFITS.REGISTER-HEIR-HEADING' | translate}}"
+    [warningMessage]="'BENEFITS.INFO-IND-RETURN'"
+    [parentForm]="retirementForm"
+    (returnEvent)="confirmReturn(retirementForm)"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+

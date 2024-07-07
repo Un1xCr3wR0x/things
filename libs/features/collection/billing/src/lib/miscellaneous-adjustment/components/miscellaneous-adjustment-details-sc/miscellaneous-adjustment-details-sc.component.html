@@ -1,0 +1,133 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <div class="header">{{ 'BILLING.MISCELLANEOUS-ADJUSTMENT' | translate }}</div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div *ngIf="(currentTab === 0 || currentTab === 1) && !isVerified">
+    <blg-establishment-info-ms-dc [establishmentDetails]="establishmentDetails"></blg-establishment-info-ms-dc>
+    <!-- Progress Wizard -->
+    <gosi-progress-wizard-dc
+      [wizardItems]="miscellaneousAdjustmentWizardItems"
+      (clickWizard)="selectWizard($event)"
+      #miscellaneousAdjustmentWizard
+    >
+    </gosi-progress-wizard-dc>
+    <div *ngIf="currentTab === 0">
+      <!-- adjustment details -->
+      <blg-adjustment-details-dc
+        [parentForm]="miscellaneousAdjustmentForm"
+        [miscellanousDetails]="miscellanousDetails"
+        [lang]="lang"
+        [previousTab]="previousTab"
+        [establishmentStartDate]="estStartDate"
+        [isEstablishmentClosed]="isEstablishmentClosed"
+        (selectedReasonItem)="selectedReasonItem($event)"
+        (selectedLevelAdj)="selectedLevel($event)"
+        (cancel)="cancelAvailableAdjustmentPage()"
+        [adjustmentReasonlist]="adjustmentReason$ | async"
+      >
+      </blg-adjustment-details-dc>
+      <!-- adjustment details group -->
+      <blg-adjustment-group-details-dc
+        [isContributorLevel]="isContributorLevel"
+        [miscellanousDetails]="miscellanousDetails"
+        [selectedReason]="selectedReason"
+        [totalAdjustmentAmount]="miscellanousDetails.totalAdjustment"
+        [miscellanousSubmittedDetails]="miscellanousDetails.adjustmentDetails"
+        [isEdit]="isEdit"
+        [previousTab]="previousTab"
+        [isGcc]="isGcc"
+        [isMofpayment]="isMofpayment"
+        [parentForm]="miscellaneousAdjustmentForm"
+        [isEstablishmentClosed]="isEstablishmentClosed"
+        [isPPAEst]="isPPAEst"
+        (cancel)="cancelAvailableAdjustmentPage()"
+        (save)="nextForm()"
+      >
+      </blg-adjustment-group-details-dc>
+    </div>
+    <div *ngIf="currentTab === 1">
+      <blg-miscellaneous-adjustment-file-upload-dc
+        [documentList]="documents"
+        [inWorkflow]="inWorkflow"
+        [isScan]="true"
+        [uuid]="uuid"
+        [transactionId]="documentTransactionId"
+        [businessKey]="regNumber"
+        [referenceNo]="referenceNumber"
+        [transactionId]="documentTransactionId"
+        (submit)="submitAdjustmentDetails()"
+        (previous)="previousForm()"
+        [parentForm]="miscellaneousAdjustmentForm"
+        (cancelBtn)="cancelAvailableAdjustmentPage()"
+        (doc)="refreshDocuments($event)"
+      >
+      </blg-miscellaneous-adjustment-file-upload-dc>
+    </div>
+  </div>
+  <div class="col-lg-12" *ngIf="isVerified">
+    <div class="row extra-margin-summary">
+      <table class="table-borderless establishment-info">
+        <thead>
+          <tr>
+            <th>{{ 'BILLING.REGISTRATION-NUMBER' | translate }}</th>
+            <th>{{ 'BILLING.SUBMISSION-DATE' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ regNumber }}</td>
+            <td>{{ submissionDate }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row">
+      <table class="table-borderless adjustment-details">
+        <thead class="table-header">
+          <th class="table-headline">{{ 'BILLING.ADJUSTMENT-REASON' | translate }}</th>
+          <th class="table-headline">{{ 'BILLING.AMOUNT-TO-ADJUST' | translate }} ({{ 'BILLING.SAR' | translate }})</th>
+        </thead>
+        <!-- adjustment reson => not equal Others -->
+        <tbody *ngIf="miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentReason.english !== 'Others'">
+          <td class="table-col">
+            <span *ngIf="lang === 'en'">{{
+              miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentReason.english
+            }}</span>
+            <span *ngIf="lang !== 'en'">{{
+              miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentReason.arabic
+            }}</span>
+          </td>
+          <td class="table-col">
+            {{ miscellaneousAdjustmentForm.value.adjustmentGroupDeatilsForm.totalAmount | number: '1.2-2' }}
+          </td>
+        </tbody>
+        <!-- adjustment reson => Others -->
+        <tbody *ngIf="miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentReason.english === 'Others'">
+          <td class="table-col summary-table-wd">
+            <span *ngIf="miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentType.english === 'Credit'">{{
+              'BILLING.MISCELLANEOUS-CREDIT' | translate
+            }}</span>
+            <span *ngIf="miscellaneousAdjustmentForm.value.adjustmentdetailsForm.adjustmentType.english === 'Debit'">{{
+              'BILLING.MISCELLANEOUS-DEBIT' | translate
+            }}</span>
+          </td>
+          <td class="table-col">
+            {{ miscellaneousAdjustmentForm.value.adjustmentGroupDeatilsForm.totalAmount | number: '1.2-2' }}
+          </td>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row home-button">
+      <div class="float-left btn-section">
+        <gosi-button-dc type="secondary" (click)="homePage()"> {{ 'BILLING.HOME' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</div>

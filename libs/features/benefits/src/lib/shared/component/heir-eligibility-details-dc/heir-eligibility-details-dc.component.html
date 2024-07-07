@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div class="row d-flex align-items-center">
+    <div class="col-md-12 header">{{ 'BENEFITS.ELIGIBILITY-DETAILS' | translate }}</div>
+    <table class="table table-borderless rounded">
+      <thead>
+        <tr>
+          <td rowspan="1"></td>
+          <th scope="col">{{ 'BENEFITS.HEIR' | translate }}</th>
+          <th scope="col">{{ 'BENEFITS.ELIGIBILITY' | translate }}</th>
+          <th scope="col" *ngIf="isHeirLumpsum">{{ 'BENEFITS.REASON' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let heir of heirEligibilityDetails; let i = index" class="data-row">
+          <th scope="row">
+            <fa-icon
+              *ngIf="
+                heir.heirPensionStatus?.english === eligibilityStatus.ELIGIBLE_BACKDATED ||
+                heir.heirPensionStatus?.english === eligibilityStatus.ELIGIBLE_BENEFIT ||
+                heir.heirPensionStatus?.english === eligibilityStatus.HEIR_ELIGIBLE_FOR_BENEFIT ||
+                heir.heirPensionStatus?.english === eligibilityStatus.ELIGIBLE_FOR_BACKDATED ||
+                heir.heirPensionStatus?.english === eligibilityStatus.ELIGIBLE_FOR_BENEFIT
+              "
+              class="eligible-icon"
+              size="lg"
+              icon="check-circle"
+            ></fa-icon>
+            <fa-icon
+              *ngIf="
+                heir.heirPensionStatus?.english === eligibilityStatus.NOT_ELIGIBILE_BACKDATED ||
+                heir.heirPensionStatus?.english === eligibilityStatus.NOT_ELIGIBILE_BENEFIT
+              "
+              class="warning-icon"
+              icon="exclamation-triangle"
+              size="lg"
+            ></fa-icon>
+          </th>
+          <td>
+            <div class="d-block">{{ heir?.name | nameToString: true }} ({{ heir?.relationship | bilingualText }})</div>
+            <div class="d-block nin-text" *ngIf="heir?.identity?.length">
+              <span>{{ checkIdentityLabel(i) | translate }} : </span>
+              {{ checkIdentity(i) }}
+            </div>
+          </td>
+          <td>
+            <!-- defect-450853 -->
+            {{ heir.heirPensionStatus | bilingualText }}
+            <!-- ineligibility pop not required for heir lumpsum -->
+            <span
+              class="pl-2"
+              *ngIf="
+                (!isHeirLumpsum && heir.heirPensionStatus?.english === eligibilityStatus.ELIGIBLE_BACKDATED) ||
+                heir.heirPensionStatus?.english === eligibilityStatus.NOT_ELIGIBILE_BENEFIT
+              "
+            >
+              <a class="view-link" routerLinkActive="active" (click)="showIneligibilityReasons(heir)">
+                <span>{{ 'BENEFITS.SHOW-REASONS' | translate }}</span>
+              </a>
+              <!-- <fa-icon
+                class="info-icon"
+                icon="info-circle"
+                size="lg"
+                (click)="showIneligibilityReasons(heir)"
+              ></fa-icon> -->
+            </span>
+          </td>
+          <td *ngIf="isHeirLumpsum">{{ getLumpsumReason(heir) | bilingualText }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>

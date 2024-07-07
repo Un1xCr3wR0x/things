@@ -1,0 +1,260 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="col-lg-12 sub-heading">
+      {{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}
+    </div>
+  </div>
+  <div class="row" *ngIf="contributorDetails">
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="nationalId"
+        [value]="contributorDetails?.nin"
+        [isLink]="true"
+        label="{{ 'BENEFITS.NATIONAL-ID' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="contributorName"
+        [value]="contributorDetails?.contributorName?.english"
+        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div *ngIf="!contributorDetails?.contributorName?.arabic" class="col-md-4">
+      <gosi-label-dc
+        id="contributorName"
+        [value]="
+          contributorDetails?.contributorName?.arabic?.firstName +
+          ' ' +
+          contributorDetails?.contributorName?.arabic?.secondName +
+          ' ' +
+          contributorDetails?.contributorName?.arabic?.thirdName +
+          ' ' +
+          contributorDetails?.contributorName?.arabic?.familyName
+        "
+        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div *ngIf="contributorDetails?.contributorName?.arabic" class="col-md-4">
+      <gosi-label-dc
+        id="contributorName"
+        [value]="contributorDetails?.contributorName?.arabic"
+        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="dateOfBirth"
+        [value]="contributorDetails?.dateOfBirth?.gregorian | date: 'dd/MM/yyyy'"
+        label="{{ 'BENEFITS.DATE-OF-BIRTH' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="dateOfBirthHijri"
+        [value]="contributorDetails?.dateOfBirth?.hijiri | date: 'dd/MM/yyyy'"
+        label="{{ 'BENEFITS.DATE-OF-BIRTH-HIJIRI' | translate }}"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <!-- heir details -->
+  <ng-container *ngIf="heirAccordianPresent">
+    <div class="row">
+      <div class="col-lg-12">
+        <h6 class="heading">{{ 'BENEFITS.HEIR_DETAILS' | translate }}</h6>
+      </div>
+    </div>
+    <ng-container *ngFor="let item of heirList">
+      <accordion class="accordian-container">
+        <accordion-group class="accordion-group-class">
+          <div accordion-heading class="row col-md-6 pl-3">
+            <div *ngIf="lang === 'en'" class="tpa-value view-link">
+              {{ item?.name.english.name | bilingualText }}
+              ({{ item?.relationship.english }})
+            </div>
+            <div *ngIf="lang === 'ar'" class="tpa-value view-link">
+              {{
+                item?.name?.arabic?.firstName +
+                  ' ' +
+                  item?.name?.arabic?.secondName +
+                  ' ' +
+                  item?.name?.arabic?.thirdName +
+                  ' ' +
+                  item?.name?.arabic?.familyName
+              }}
+
+              ({{ item?.relationship.arabic }})
+            </div>
+          </div>
+          <div class="header-wrapper-size ml-auto" accordion-heading>
+            <div class="row">
+              <span class="arrow-up col-md-2">
+                <fa-icon icon="angle-up" size="2x"></fa-icon>
+              </span>
+              <span class="arrow-down ml-auto col-md-2" accordion-heading>
+                <fa-icon icon="angle-down" size="2x"></fa-icon>
+              </span>
+            </div>
+          </div>
+          <gosi-card-dc type="secondary">
+            <div class="row">
+              <div class="col-md-4">
+                <gosi-label-dc
+                  id="nationalId"
+                  [value]="item?.identity[0]?.newNin"
+                  [isLink]="true"
+                  label="{{ 'BENEFITS.NATIONAL-ID' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  id="heirName"
+                  [value]="item?.name?.english.name"
+                  label="{{ 'BENEFITS.HEIR_NAME_VALIDATOR' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  id="heirName"
+                  [value]="
+                    item?.name?.arabic?.firstName +
+                    ' ' +
+                    item?.name?.arabic?.secondName +
+                    ' ' +
+                    item?.name?.arabic?.thirdName +
+                    ' ' +
+                    item?.name?.arabic?.familyName
+                  "
+                  label="{{ 'BENEFITS.HEIR_NAME_ARABIC' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  id="dateOfBirth"
+                  value=" {{ item?.birthDate?.gregorian | date: 'dd/MM/yyyy' }} ({{ 'ADJUSTMENT.AGE' | translate }} : {{
+                    item?.age
+                  }})"
+                  label="{{ 'BENEFITS.DATE-OF-BIRTH' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4">
+                <gosi-label-dc
+                  id="dateOfBirthHijri"
+                  value=" {{ item?.birthDate?.hijiri | date: 'dd/MM/yyyy' }} ({{ 'ADJUSTMENT.AGE' | translate }} : {{
+                    item?.age
+                  }})"
+                  label="{{ 'BENEFITS.DATE-OF-BIRTH-HIJIRI' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <!-- modification details -->
+            <div class="row" *ngIf="isModificationDetailsPresent">
+              <div class="col-lg-12 mb-4 mod-dtls-heading">
+                {{ 'BENEFITS.MODIFICATION-DETAILS' | translate }}
+              </div>
+            </div>
+            <div class="row" *ngIf="isModificationDetailsPresent">
+              <div class="col-md-4 col-lg-4" *ngIf="isHold">
+                <gosi-label-dc
+                  id="reasonForHold"
+                  [value]="item?.reasonForModification | bilingualText"
+                  label="{{ 'BENEFITS.REASON-FOR-HOLD' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4 col-lg-4" *ngIf="isStartBenefit">
+                <gosi-label-dc
+                  id="reasonForHold"
+                  [value]="contributorDetails?.reasonForHold | bilingualText"
+                  label="{{ 'BENEFITS.REASON-FOR-BENEFIT-WAIVE' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="notes"
+                  [value]="item?.notes"
+                  label="{{ 'BENEFITS.NOTES' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div>
+
+            <!-- payment details -->
+            <div class="row" *ngIf="isPaymentDetailsPresent">
+              <div class="col-lg-12">
+                <h6 class="heading mb-4">{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}</h6>
+              </div>
+            </div>
+            <div class="row" *ngIf="isPaymentDetailsPresent">
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="payeeType"
+                  [value]="item?.payeeType | bilingualText"
+                  label="{{ 'BENEFITS.PAYEE' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="paymentMethod"
+                  [value]="item?.paymentMode | bilingualText"
+                  label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div>
+            <div class="row" *ngIf="isPaymentDetailsPresent">
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="iban"
+                  [value]="item?.iban"
+                  label="{{ 'BENEFITS.IBANACCOUNT-NUMBER' | translate }}"
+                ></gosi-label-dc>
+              </div>
+
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="bankName"
+                  [value]="item?.bankName"
+                  label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div>
+
+            <!-- modification details -->
+            <!-- <div class="row" *ngIf="isModificationDetailsPresent">
+              <div class="col-lg-12 col-md-12 col-sm-12 mb-4 mod-dtls-heading">
+                {{ 'BENEFITS.MODIFICATION-DETAILS' | translate }}
+              </div>
+            </div>
+            <div class="row" *ngIf="isModificationDetailsPresent">
+              <div class="col-md-4 col-lg-4" *ngIf="isHold">
+                <gosi-label-dc
+                  id="reasonForHold"
+                  [value]="contributorDetails?.reasonForHold | bilingualText"
+                  label="{{ 'BENEFITS.REASON-FOR-HOLD' | translate }}"
+                ></gosi-label-dc>
+              </div>
+
+              <div class="col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="notes"
+                  [value]="contributorDetails?.notes | bilingualText"
+                  label="{{ 'BENEFITS.NOTES' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div> -->
+
+            <!-- payment accordian  -->
+            <div class="row" *ngIf="isPaymentDetailsAccordianPresent">
+              <bnt-payment-details-accordian-view-dc
+                [paymentRequest]="validDetails"
+                [lang]="lang"
+              ></bnt-payment-details-accordian-view-dc>
+            </div>
+          </gosi-card-dc>
+        </accordion-group>
+      </accordion>
+    </ng-container>
+  </ng-container>
+</gosi-card-dc>

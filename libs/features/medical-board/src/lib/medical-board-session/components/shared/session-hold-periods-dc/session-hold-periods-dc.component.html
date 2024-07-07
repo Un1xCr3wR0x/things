@@ -1,0 +1,125 @@
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-card-dc type="secondary">
+      <div class="custom-header">
+        <h3 class="custom-heading sm">
+          {{ 'MEDICAL-BOARD.SESSION-HOLD-PERIOD' | translate }}
+        </h3>
+        <div class="action-btn ml-auto" id="id">
+          <div class="d-flex flex-row-reverse">
+            <div class="btn-section">
+              <gosi-button-dc
+                type="secondary"
+                size="sm"
+                id="addHoldPeriod"
+                *gosiShow="allowedMedicalOfficerRole"
+                [disabled]="isDisableHold"
+                (submit)="openHoldSessionModal(holdSessionModal, 'add', 'md')"
+              >
+                {{ 'MEDICAL-BOARD.ADD-HOLD-PERIOD' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngIf="individualSessionDetails.holdDetails?.length !== 0; else notAvailable">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th>
+                {{ 'MEDICAL-BOARD.PERIOD' | translate }}
+              </th>
+              <th>
+                {{ 'MEDICAL-BOARD.REASON' | translate }}
+              </th>
+              <th *ngIf="commentsPresent">
+                {{ 'MEDICAL-BOARD.COMMENTS-LABEL' | translate }}
+              </th>
+
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-bottom" *ngFor="let item of individualSessionDetails?.holdDetails; let i = index">
+              <td *ngIf="item?.holdStartDate?.gregorian || item?.holdEndDate?.gregorian; else noValue">
+                {{ item?.holdStartDate?.gregorian | gosiDate }}
+                <span *ngIf="item?.holdEndDate !== null">
+                  <fa-icon [icon]="lang === 'ar' ? 'arrow-left' : 'arrow-right'"></fa-icon>
+                </span>
+                <span>{{ item?.holdEndDate?.gregorian | gosiDate }}</span>
+              </td>
+              <td>{{ item?.holdReason | bilingualText }}</td>
+              <td *ngIf="commentsPresent">{{ item?.comments }}</td>
+              <td *ngIf = "!showDot(i)">
+                <fa-icon
+                  class="dropdown-icon data-row"
+                  [popover]="periodOptionsModal"
+                  outsideClick="true"
+                  (click)="setIndex(i)"
+                  placement="right"
+                  icon="ellipsis-v"
+                ></fa-icon>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+    </gosi-card-dc>
+  </div>
+</div>
+<ng-template #notAvailable>
+  <div class="mt-5 text-center full-width">
+    {{ 'MEDICAL-BOARD.NOT-AVAILABLE' | translate }}
+  </div>
+</ng-template>
+<!-- period popup -->
+<ng-template #periodOptionsModal>
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="openHoldSessionModal(removeConfirm, 'remove', 'lg')"
+    *gosiShow="allowedMedicalOfficerRole"
+    [disabled]="isDisableHold"
+  >
+    {{ 'MEDICAL-BOARD.REMOVE' | translate }}
+  </button>
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="openHoldSessionModal(holdSessionModal, 'modify', 'md')"
+    *gosiShow="allowedMedicalOfficerRole && individualSessionDetails?.holdDetails[index].canHold"
+    [disabled]="isDisableHold"
+  >
+    {{ 'MEDICAL-BOARD.MODIFY-HOLD' | translate }}
+  </button>
+  <!-- </ng-container> -->
+</ng-template>
+<ng-template #removeConfirm>
+  <gosi-confirm-modal-dc
+    class="hold-modal"
+    [message]="lang === 'en' ? removeMessage?.english : removeMessage?.arabic"
+    (onConfirm)="removeHold()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--Hold Session popup-->
+<ng-template #holdSessionModal>
+  <mb-hold-session-modal-dc
+    (cancelEvent)="hideModal()"
+    [parentForm]="holdSessionForm"
+    (action)="holdSession($event)"
+    [actionType]="action"
+    [individualSessionDetails]="individualSessionDetails"
+    [holdDetails]="individualSessionDetails?.holdDetails[index]"
+    [holdReasonList]="holdReasonList"
+  >
+  </mb-hold-session-modal-dc>
+</ng-template>
+<ng-template #noValue>
+  <div class="hold-null">
+    {{ 'MEDICAL-BOARD.NOT-AVAILABLE' | translate }}
+  </div>
+</ng-template>

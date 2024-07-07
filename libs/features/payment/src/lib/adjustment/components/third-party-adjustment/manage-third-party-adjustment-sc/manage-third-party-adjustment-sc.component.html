@@ -1,0 +1,459 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content manage-tpa-content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading">
+        {{ 'ADJUSTMENT.ADD-MANAGE-ADJUSTMENT' | translate }}
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <gosi-alert-sc class="adjustment-alert"></gosi-alert-sc>
+        </div>
+      </div>
+      <gosi-progress-wizard-dc
+        [wizardItems]="thirdPartyWizardItem"
+        (clickWizard)="selectWizard($event)"
+        #thirdPartyWizard
+      >
+      </gosi-progress-wizard-dc>
+      <div>
+        <div class="hide-tab">
+          <tabset class="pills" #adjustmentTab>
+            <tab [active]="currentTab === 0">
+              <div class="row">
+                <div class="col-md-12">
+                  <gosi-card-dc type="secondary" class="manage-content">
+                    <div class="row mb-4">
+                      <div class="col-lg-12 custom-heading">{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}</div>
+                    </div>
+                    <div class="row">
+                      <div class="col-lg-12 table-responsive">
+                        <table class="table table-borderless modify-table table-effect">
+                          <thead class="table-header">
+                            <tr>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate | uppercase }}
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.DATE-CREATED' | translate | uppercase }}
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.PARTY' | translate | uppercase }}
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.CONTINOUS-DEDUCTION' | translate | uppercase }}
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate | uppercase }} ({{
+                                  'ADJUSTMENT.SAR' | translate
+                                }})
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.MONTHLY-DEDUCTION' | translate }}
+                              </th>
+                              <th class="custom-wrap custom-align-top">
+                                {{ 'ADJUSTMENT.ADJUSTMENT-STATUS' | translate | uppercase }}
+                              </th>
+                              <th class="custom-wrap custom-align-top"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <ng-container *ngFor="let adjustment of adjustmentMap | keyvalue">
+                              <tr class="custom-row" *ngIf="!adjustment.value?.isAdd">
+                                <td>{{ adjustment.value?.modifyData?.adjustment?.adjustmentId }}</td>
+                                <td>
+                                  <div class="adjustment-date">
+                                    {{
+                                      adjustment.value?.modifyData?.adjustment?.createdDate?.gregorian
+                                        | date: 'dd/MM/yyyy'
+                                    }}
+                                  </div>
+                                  <div class="adjustment-channel">
+                                    {{ 'ADJUSTMENT.CHANNEL' | translate }}:
+                                    {{ adjustment.value?.modifyData?.adjustment?.channel | bilingualText }}
+                                  </div>
+                                </td>
+                                <td>{{ adjustment.value?.modifyData?.adjustment?.payeeName | bilingualText }}</td>
+                                <td>
+                                  <ng-container
+                                    *ngIf="adjustment.value?.modifyData?.adjustment?.continuousDeduction; else no"
+                                  >
+                                    {{ 'ADJUSTMENT.YES' | translate }}
+                                  </ng-container>
+                                  <ng-template #no>
+                                    {{ 'ADJUSTMENT.NO' | translate }}
+                                  </ng-template>
+                                </td>
+                                <td>
+                                  {{
+                                    adjustment.value?.modifyData?.adjustment?.adjustmentAmount
+                                      | numToPositive
+                                      | number: '1.2-2'
+                                  }}<span class="px-1">{{ 'ADJUSTMENT.SAR' | translate }}</span>
+                                </td>
+                                <td *ngIf="adjustment.value?.modifyData?.adjustment?.monthlyDeductionAmount">
+                                  {{
+                                    adjustment.value?.modifyData?.adjustment?.monthlyDeductionAmount
+                                      | numToPositive
+                                      | number: '1.2-2'
+                                  }}<span class="px-1">{{ 'ADJUSTMENT.SAR' | translate }}</span>
+                                </td>
+                                <td *ngIf="!adjustment.value?.modifyData?.adjustment?.monthlyDeductionAmount">
+                                  {{ adjustment.value?.modifyData?.adjustment?.adjustmentPercentage }} %
+                                </td>
+                                <td>
+                                  <gosi-status-badge-dc
+                                    [label]="
+                                      adjustment.value?.modifyData?.adjustment?.adjustmentStatus
+                                        | bilingualText
+                                        | uppercase
+                                    "
+                                    type="{{
+                                      adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english === 'New'
+                                        ? 'info'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Active'
+                                        ? 'success'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Cancelled'
+                                        ? 'danger'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'On Hold'
+                                        ? 'warning'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Paid Up'
+                                        ? 'warning'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Recovered'
+                                        ? 'warning'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Stopped'
+                                        ? 'danger'
+                                        : adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          'Partially Recovered'
+                                        ? 'warning'
+                                        : ''
+                                    }}"
+                                  ></gosi-status-badge-dc>
+                                </td>
+                                <td class="justify-content-end d-flex">
+                                  <ng-container *ngIf="adjustment.value?.isSaved">
+                                    <ng-container
+                                      *ngIf="
+                                        (adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          activeStatus ||
+                                          adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                            newStatus) &&
+                                        !adjustment.value?.hasModified
+                                      "
+                                    >
+                                      <gosi-button-dc
+                                        outlineOnly="true"
+                                        size="sm"
+                                        type="primary"
+                                        class="action-container"
+                                        id="action{{ adjustment.key }}"
+                                        (submit)="onModify(adjustment.key)"
+                                      >
+                                        {{ 'ADJUSTMENT.MODIFY-HOLD-STOP' | translate | uppercase }}
+                                      </gosi-button-dc>
+                                    </ng-container>
+                                    <ng-container
+                                      *ngIf="
+                                        adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          onHoldStatus && !adjustment.value?.hasModified
+                                      "
+                                    >
+                                      <gosi-button-dc
+                                        outlineOnly="true"
+                                        size="sm"
+                                        type="secondary"
+                                        id="action{{ adjustment.key }}"
+                                        (submit)="onModify(adjustment.key)"
+                                      >
+                                        {{ 'ADJUSTMENT.REACTIVATE' | translate | uppercase }}
+                                      </gosi-button-dc>
+                                    </ng-container>
+                                    <ng-container
+                                      *ngIf="
+                                        adjustment.value?.modifyData?.adjustment?.adjustmentStatus?.english ===
+                                          onHoldStatus && !adjustment.value?.hasModified
+                                      "
+                                    >
+                                      <span class="mx-1"></span>
+                                      <gosi-button-dc
+                                        outlineOnly="true"
+                                        size="sm"
+                                        type="danger"
+                                        id="action{{ adjustment.key }}"
+                                        (submit)="onStop(adjustment)"
+                                      >
+                                        {{ 'ADJUSTMENT.STOP' | translate | uppercase }}
+                                      </gosi-button-dc>
+                                    </ng-container>
+                                    <ng-container *ngIf="adjustment.value?.hasModified">
+                                      <div class="my-auto status">
+                                        <span
+                                          ngClass="{{
+                                            adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                            actionTYpeModify
+                                              ? 'modify'
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeHold
+                                              ? 'hold'
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeStop
+                                              ? 'stop'
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeReactivate
+                                              ? 'reactivate'
+                                              : ''
+                                          }}"
+                                        >
+                                          {{
+                                            adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                            actionTYpeModify
+                                              ? ('ADJUSTMENT.MODIFIED' | translate | uppercase)
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeHold
+                                              ? ('ADJUSTMENT.HOLD' | translate | uppercase)
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeStop
+                                              ? ('ADJUSTMENT.STOPPED' | translate | uppercase)
+                                              : adjustment.value?.savedAdjustmentData?.actionType?.english ===
+                                                actionTypeReactivate
+                                              ? ('ADJUSTMENT.REACTIVATED' | translate | uppercase)
+                                              : ''
+                                          }}
+                                        </span>
+
+                                        <fa-icon
+                                          [icon]="['fas', 'pencil-alt']"
+                                          class="icon pl-3 m-auto"
+                                          (click)="onModify(adjustment.key)"
+                                          role="button"
+                                        ></fa-icon>
+                                      </div>
+                                    </ng-container>
+                                  </ng-container>
+                                </td>
+                              </tr>
+                              <tr class="custom-row" *ngIf="adjustment.value?.isAdd && adjustment.value?.isSaved">
+                                <td>{{ adjustment.value?.savedAdjustmentData?.adjustmentId }}</td>
+                                <td>
+                                  {{
+                                    adjustment.value?.savedAdjustmentData?.createdDate?.gregorian | date: 'dd/MM/yyyy'
+                                  }}
+                                </td>
+                                <td>{{ adjustment.value?.savedAdjustmentData?.payeeName | bilingualText }}</td>
+                                <td>
+                                  <ng-container
+                                    *ngIf="adjustment.value?.savedAdjustmentData?.continuousDeduction; else no"
+                                  >
+                                    {{ 'ADJUSTMENT.YES' | translate }}
+                                  </ng-container>
+                                  <ng-template #no> {{ 'ADJUSTMENT.NO' | translate }} </ng-template>
+                                </td>
+                                <td>
+                                  {{
+                                    adjustment.value?.savedAdjustmentData?.adjustmentAmount
+                                      | numToPositive
+                                      | number: '1.2-2'
+                                  }}<span class="px-1">{{ 'ADJUSTMENT.SAR' | translate }}</span>
+                                </td>
+                                <td *ngIf="adjustment?.value?.savedAdjustmentData?.monthlyDeductionAmount">
+                                  {{
+                                    adjustment?.value?.savedAdjustmentData?.monthlyDeductionAmount
+                                      | numToPositive
+                                      | number: '1.2-2'
+                                  }}
+                                  <span class="px-1">{{ 'ADJUSTMENT.SAR' | translate }}</span>
+                                </td>
+                                <td *ngIf="!adjustment?.value?.savedAdjustmentData?.monthlyDeductionAmount">
+                                  {{ adjustment?.value?.savedAdjustmentData?.adjustmentPercentage }} %
+                                </td>
+                                <td>
+                                  {{
+                                    adjustment.value?.savedAdjustmentData?.adjustmentStatus | bilingualText | uppercase
+                                  }}
+                                </td>
+                                <td class="text-right">
+                                  <gosi-button-dc outlineOnly="true" size="sm" type="primary" class="action-container">
+                                    {{ 'ADJUSTMENT.NEW' | translate | uppercase }}
+                                  </gosi-button-dc>
+                                  <fa-icon
+                                    [icon]="['fas', 'pencil-alt']"
+                                    class="icon pl-3"
+                                    (click)="onModify(adjustment.key, true)"
+                                    role="button"
+                                  ></fa-icon>
+                                </td>
+                              </tr>
+                              <tr *ngIf="adjustment.value?.isSaved === false">
+                                <td colspan="8" class="p-0">
+                                  <div
+                                    class="row no-gutters mb-4 border-line px-4 py-4"
+                                    *ngIf="adjustment.value?.isAdd; else modify"
+                                  >
+                                    <pmt-add-third-party-adjustment-dc
+                                      class="w-100"
+                                      [paymentModeList]="paymentModeList$ | async"
+                                      [continousDeduction]="continousDeduction$ | async"
+                                      [adjustmentReasonList]="adjustmentReasonList"
+                                      [percentageList]="percentageList$ | async"
+                                      [requestByList]="requestByList$ | async"
+                                      [cityList]="cityList$ | async"
+                                      [isValidator]="isValidator"
+                                      [isFromSavedData]="adjustment.value?.hasSavedData"
+                                      [parentForm]="adjustment.value?.form"
+                                      [benefitTypeList]="benefitDetails"
+                                      [itemsPerPage]="itemsPerPage"
+                                      [payeeDetails]="adjustment.value?.addData?.payeeSearchResult"
+                                      [totalPayeesCount]="adjustment.value?.addData?.totalPayeesCount"
+                                      [showPayeesList]="adjustment.value?.addData?.showPayeesList"
+                                      [selectedpayee]="adjustment.value?.addData?.selectedpayee"
+                                      [showPayeeSummary]="adjustment.value?.addData?.showPayeeSummary"
+                                      [payeeListPageDetails]="adjustment.value?.addData?.payeeListPageDetails"
+                                      [payeeCurrentBank]="adjustment.value?.addData?.payeeCurrentBank"
+                                      [showBenefitDetails]="adjustment.value?.addData?.showBenefitDetails"
+                                      [newBankName]="adjustment.value?.addData?.newBankName"
+                                      [adjustmentValues]="
+                                        adjustment.value?.savedAdjustmentData ||
+                                        adjustment.value?.addData?.csrAdjustmentValues
+                                      "
+                                      [hasOtherAdjustments]="true"
+                                      [monthlyDeductionEligibility]="monthlyDeductionEligibility"
+                                      [netMonthlyDeductionAmount]="netMonthlyDeductionAmount"
+                                      [savedMonthlyDeductionAmount]="savedMonthlyDeductionAmount"
+                                      (searchValue)="findPayee($event, firstPage, adjustment.key)"
+                                      (onSelectPayee)="onSelectPayee($event, !isValidator, adjustment.key, false)"
+                                      (pageIndexEvent)="
+                                        findPayee(adjustment.value?.addData?.payeeSearchQuery, $event, adjustment.key)
+                                      "
+                                      (onChangePayee)="onChangePayee(adjustment.key)"
+                                      (onIbanchange)="getBankName($event, adjustment.key)"
+                                      (adjustmentReasonValue)="adjustmentReasonKeyValue($event)"
+                                      (onBenefitSelected)="getSelectedBenefit($event)"
+                                    >
+                                    </pmt-add-third-party-adjustment-dc>
+                                    <div class="d-flex justify-content-between btn-section w-100 add-action-area">
+                                      <gosi-button-dc
+                                        id="cancelButton"
+                                        type="secondary"
+                                        (submit)="
+                                          showModal(addTpacancelTemplateModal); setCancelMapIndex(adjustment.key)
+                                        "
+                                      >
+                                        {{ 'ADJUSTMENT.CANCEL' | translate }}</gosi-button-dc
+                                      >
+                                      <gosi-button-dc
+                                        id="submit"
+                                        type="primary"
+                                        (submit)="onAddModifySave(adjustment.key, true)"
+                                      >
+                                        {{ 'ADJUSTMENT.SAVE' | translate }}</gosi-button-dc
+                                      >
+                                    </div>
+                                  </div>
+                                  <ng-template #modify>
+                                    <pmt-modify-stop-third-party-dc
+                                      [monthlyDeductionEligibility]="monthlyDeductionEligibility"
+                                      [hasOtherAdjustments]="true"
+                                      [enableReactivate]="adjustment.value?.modifyData?.enableReactivate"
+                                      [reasonForHolding]="reasonForHolding$ | async"
+                                      [reasonForReactivating]="reasonForReactivating$ | async"
+                                      [reasonForStopping]="reasonForStopping$ | async"
+                                      [percentageList]="percentageList$ | async"
+                                      [benefitDetails]="benefitDetails"
+                                      [adjustment]="adjustment.value?.modifyData?.adjustment"
+                                      [modifiedAdjustment]="
+                                        adjustment.value?.savedAdjustmentData ||
+                                        adjustment.value?.modifyData?.csrAdjustmentValues
+                                      "
+                                      [parentForm]="adjustment.value?.form"
+                                      [netMonthlyDeductionAmount]="netMonthlyDeductionAmount"
+                                      [tempMonthlyDeductionAmount]="tempMonthlyDeductionAmount"
+                                      [stopHoldDeducted]="adjustment?.value?.modifyData?.adjustment?.statusChange"
+                                      (isEditActive)="cancelModifyTpa(adjustment.key)"
+                                      (onSave)="onAddModifySave(adjustment.key, false)"
+                                    >
+                                    </pmt-modify-stop-third-party-dc>
+                                  </ng-template>
+                                </td>
+                              </tr>
+                            </ng-container>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div class="row mb-4" *ngIf="showAddTpaBtn">
+                      <div class="col-lg-12 custom-heading text-center">
+                        <gosi-button-dc
+                          outlineOnly="true"
+                          size="md"
+                          type="secondary"
+                          class="add-third-party"
+                          (submit)="addThirdParty()"
+                        >
+                          {{ 'ADJUSTMENT.ADD-THIRDPARTY-ADJUSTMENT' | translate | uppercase }}</gosi-button-dc
+                        >
+                      </div>
+                    </div>
+                  </gosi-card-dc>
+                </div>
+                <div class="col-lg-12">
+                  <pmt-action-area-dc
+                    [idValue]="'tpaSaveAndNext'"
+                    [primaryButtonLabel]="'ADJUSTMENT.SAVE-NEXT'"
+                    [showPreviousSection]="false"
+                    [disablePrimary]="disableSaveAndNext"
+                    (submit)="saveTpadjustment(false)"
+                    (onCancelAction)="showModal(cancelTemplateModal)"
+                  ></pmt-action-area-dc>
+                </div>
+              </div>
+            </tab>
+            <tab [active]="currentTab === 1">
+              <div class="row">
+                <div class="col-md-12">
+                  <!-- document details section -->
+                  <pmt-file-upload-dc
+                    [parentForm]="commentForm"
+                    [isCommentRequired]="true"
+                    [transactionId]="transactionId"
+                    [referanceNumber]="referenceNumber"
+                    [documentList]="documents"
+                    [isContract]="'contract-auth'"
+                    cancelMessage="ADJUSTMENT.INFO-CANCEL"
+                    (refresh)="refreshTpaDocuments($event, transactionName, transactionType, false)"
+                    (previous)="selectWizard(0)"
+                    (submit)="saveTpadjustment(true)"
+                    (cancelDoc)="cancelTpaAdjustment()"
+                  >
+                  </pmt-file-upload-dc>
+                </div>
+              </div>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplateModal>
+  <gosi-confirm-modal-dc
+    [message]="'ADJUSTMENT.INFO-CANCEL'"
+    (onConfirm)="cancelTpaPage()"
+    (onCancel)="modalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #addTpacancelTemplateModal>
+  <gosi-confirm-modal-dc [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="cancelAddTpa()" (onCancel)="modalRef.hide()">
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,208 @@
+<!-- 
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row border-top-claims">
+  <div class="col-md-3 batch-list">
+    <div [ngClass]="noCases ? 'row batch-heading d-flex float-right' : 'row batch-heading d-flex '">
+      <div class="pt-1 injury-heading" *ngIf="auditDetails && auditDetails?.auditCases?.length > 0">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURIES' | translate }}
+      </div>
+      <div class="pt-1 lighter-label" *ngIf="auditDetails && auditDetails?.auditCases?.length > 0">
+        ({{ noOfInjuries }})
+      </div>
+      <div
+        class="filter ml-auto"
+        *ngIf="
+          (((minValue === 0 || minValue) && (minNewValue === 0 || minNewValue)) ||
+            ((minValue === 0 || minValue) && !isNewAllowance)) &&
+          showFilter
+        "
+      >
+        <oh-auditor-filter-dc
+          [auditDetails]="auditDetails"
+          [ohCategoryLovList]="ohCategoryList"
+          [minValue]="minValue"
+          [maxValue]="maxValue"
+          [minNewValue]="minNewValue"
+          [maxNewValue]="maxNewValue"
+          (apply)="applyFilter($event)"
+        >
+        </oh-auditor-filter-dc>
+      </div>
+    </div>
+    <div class="row batch-heading d-flex mt-5" *ngIf="noCases">
+      {{ 'OCCUPATIONAL-HAZARD.NO-MATCH-RESULTS' | translate }}
+    </div>
+    <ng-container *ngIf="auditDetails && auditDetails?.auditCases?.length > 0">
+      <div [ngClass]="lang === 'en' ? 'row admin-row gosi-scrollbar' : 'admin-row gosi-scrollbar'">
+        <div
+          class="col-md-12 admin-item"
+          ngClass="{{ selectedId === cases?.caseId ? 'selected' : '' }}"
+          *ngFor="let cases of auditDetails?.auditCases; let i = index"
+          (click)="selectCase(cases, i)"
+        >
+          <div class="overflow-hidden">
+            <div class="row d-flex justify-content-center">
+              <div class="col-md-12 col-sm-12 col-lg-12 batch-id d-flex">
+                <ng-container *ngIf="!cases.workItemReadStatus && canDifferentiateAllowance">
+                  <span class="dot"></span>
+                </ng-container>
+                {{ cases.caseId }}
+
+                <ng-container *ngIf="cases?.receiveClarification?.length > 0 && canDifferentiateAllowance">
+                  <div
+                    [ngClass]="
+                      viewedComments(cases.receiveClarification) ? 'readComment pl-2 pr-2' : 'unreadComment pl-2 pr-2'
+                    "
+                  >
+                    <fa-icon [icon]="['far', 'comment-dots']"></fa-icon>
+                  </div>
+                </ng-container>
+              </div>
+              <div class="col-md-12 col-sm-12 col-lg-12 batch-content">
+                <div ngClass="float-left treatment ml-1">
+                  {{ cases.totalAllowances }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCES' | translate }}
+                  <span class="lighter-content" *ngIf="cases.newAllowances"
+                    >({{ cases.newAllowances }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NEW' | translate }})</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="selected-item" *ngIf="selectedId === cases.caseId"></div>
+          <div class="only-sm mt-3" *ngIf="selectedId === cases.caseId"></div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <ng-container *ngIf="auditDetails && auditDetails?.auditCases?.length > 0">
+    <div class="col-md-9 pt-4">
+      <ng-container>
+        <oh-auditor-allowance-detail-dc
+          [contributor]="contributor"
+          [hideAction]="hideAction"
+          [id]="selectedId"
+          (navigate)="navigateTo($event)"
+          [allowanceSummaryDetails]="selectedCase"
+        ></oh-auditor-allowance-detail-dc>
+        <oh-allowance-summary-dc [auditSummary]="auditSummary"></oh-allowance-summary-dc>
+        <ng-container *ngIf="comment?.length > 0">
+          <gosi-comments-dc [showComments]="true" [comments]="comment" [documents]="documents"></gosi-comments-dc>
+        </ng-container>
+        <div class="row form-action" *ngIf="!hideAction">
+          <div class="col-lg-12">
+            <div
+              class="col-auto float-right reject-request"
+              *ngIf="selectedAllowancelist.length > 0 && clarificationButton"
+            >
+              <gosi-button-dc id="clarify" [size]="'md'" type="primary" (submit)="emitEvent($event)">
+                {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+              </gosi-button-dc>
+            </div>
+            <div
+              class="col-auto float-right reject-request"
+              *ngIf="selectedAllowancelist.length === 0 || !clarificationButton"
+            >
+              <gosi-button-dc id="clarify" [outlineOnly]="true" [size]="'md'" type="secondary">
+                {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+              </gosi-button-dc>
+            </div>
+            <div class="col-auto float-right reject-request" *ngIf="selectedAllowancelist.length > 0">
+              <gosi-button-dc type="danger" id="reject" [size]="'md'" (submit)="showModal(rejectTemplate)">
+                {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="col-auto float-right reject-request" *ngIf="selectedAllowancelist.length === 0">
+              <gosi-button-dc [size]="'md'" type="secondary" [outlineOnly]="true" id="reject">
+                {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 pt-5">
+          <oh-allowance-audit-details-dc
+            [allowanceDetails]="allowanceDetails"
+            [previousAllowance]="previousAllowance"
+            (selectedAllowance)="getSelection($event)"
+            [visitList]="visitLovList"
+            (removeSelection)="removeSelection($event)"
+            [allowanceType]="allowanceType"
+            (applyAllowance)="applyAllowanceFilter($event)"
+            (sortEvent)="sortAllowances($event)"
+            [sortList]="sortList"
+            [previousAllowanceDetails]="previousAllowanceDetails"
+            [checkBoxDisabled]="checkBoxDisabled"
+          >
+          </oh-allowance-audit-details-dc>
+        </div>
+        <div class="col">
+          <div class="row" *ngIf="previousAuditSummary?.allowancePeriod?.length > 0">
+            <span class="label-style">{{ labelValue | translate }} </span>
+            <span class="{{ class }}">
+              <fa-icon icon="{{ icon }}" size="2x" (click)="showAllowance($event, icon)"></fa-icon>
+            </span>
+          </div>
+          <div *ngIf="icon === 'chevron-up'">
+            <div class="row-lg-6 pt-4 summary-display">
+              <oh-allowance-summary-dc
+                [auditSummary]="previousAuditSummary"
+                [isPrevious]="true"
+              ></oh-allowance-summary-dc>
+            </div>
+            <div
+              class="row-lg-6 summary-display"
+              *ngIf="previousAuditSummary?.allowancePeriod?.length > 0; else loading"
+            >
+              <oh-allowance-audit-details-dc
+                [allowanceDetails]="previousAllowance"
+                [previousAllowanceDetails]="previousAllowanceDetails"
+                [isPrevious]="true"
+                [visitList]="visitLovList"
+                (selectedAllowance)="getSelection($event)"
+                (removeSelection)="removeSelection($event)"
+                [checkBoxDisabled]="checkBoxDisabled"
+              >
+              </oh-allowance-audit-details-dc>
+            </div>
+            <div class="load-more">
+              <gosi-loadmore-dc
+                [currentPage]="currentPage"
+                [totalCount]="pageTotal"
+                [pageSize]="pageLimit"
+                (loadMore)="onLoadMore($event)"
+              ></gosi-loadmore-dc>
+            </div>
+
+            <ng-template #loading>
+              <div class="loading-section">
+                <fa-icon [icon]="['fas', 'spinner']" [spin]="true" size="3x"></fa-icon>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+  <!--Template -->
+  <ng-template #loading>
+    <div class="loading-section">
+      <fa-icon [icon]="['fas', 'spinner']" [spin]="true" size="3x"></fa-icon>
+    </div>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <h2 class="heading-modal">{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.REJECT-ALLOWANCE' | translate }}</h2>
+    <div class="rows-style gosi-scrollbar">
+      <oh-audit-allowance-reject-dc
+        [selectedAllowancelist]="selectedAllowancelist"
+        [allAllowanceDetails]="allAllowanceDetails"
+        [rejectReasonList$]="rejectReasonList$"
+        (cancelEvent)="hideModal()"
+        (rejectEvent)="rejectAllowance($event)"
+      >
+      </oh-audit-allowance-reject-dc>
+    </div>
+  </ng-template>
+</div>

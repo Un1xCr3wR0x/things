@@ -1,0 +1,215 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div *ngIf="!heirId" class="col-auto mr-auto header">
+      {{ 'BENEFITS.REGISTER_HEIR' | translate }}
+    </div>
+    <div *ngIf="heirId" class="col-auto mr-auto header">
+      {{ 'BENEFITS.LINK-CONTRIBUTOR' | translate }}
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="heir-value">
+        <gosi-card-dc type="secondary" lessPadding="true">
+          <div class="heir-text">
+            <bnt-search-person-dc
+              *ngIf="!heirId"
+              [parentForm]="heirForm"
+              [systemRunDate]="systemRunDate"
+              [nationalityList$]="nationalityList$"
+              [showCancel]="false"
+              [showVerify]="false"
+              [calenderLabel]="'BENEFITS.DOB_HEIR'"
+              [ninLabel]="'BENEFITS.NIN_HEIR'"
+              [nationalityLabel]="'BENEFITS.NATIONALITY_HEIR'"
+              [iqamaLabel]="'BENEFITS.IQAMA-HEIR'"
+              [gccLabel]="'BENEFITS.GCC-HEIR'"
+              [passPortLabel]="'BENEFITS.PASSPORT-HEIR'"
+              (getGenderDetails)="getGenderDetails($event)"
+              (getDobHeir)="getDobHeir($event)"
+            ></bnt-search-person-dc>
+            <!--select contributor-->
+            <div class="row">
+              <div class="col-md-6 col-sm-12">
+                <gosi-input-select-dc
+                  name="nationality"
+                  [label]="'BENEFITS.NATIONALITY_CONTRIBUTOR' | translate"
+                  (select)="selectIdForm($event)"
+                  [id]="idValue + 'Nationality'"
+                  [list]="nationalityList$ | async"
+                  [control]="searchForm.get('nationality')"
+                >
+                </gosi-input-select-dc>
+              </div>
+              <ng-container *ngIf="searchForm.get('identity')">
+                <ng-container *ngFor="let identity of identityFormArray">
+                  <div class="col-md-6 col-sm-12">
+                    <gosi-input-number-dc
+                      *ngIf="identity.get('idType').value === ninType && identity.get('newNin')"
+                      name="newNin"
+                      [id]="idValue + 'Nin'"
+                      [label]="'BENEFITS.NIN_CONTRIBUTOR' | translate"
+                      [control]="identity.get('newNin')"
+                      [maxLength]="ninLength"
+                    >
+                    </gosi-input-number-dc>
+                    <gosi-input-number-dc
+                      *ngIf="identity.get('idType').value === gccType && identity.get('id')"
+                      name="nationalId"
+                      [id]="idValue + 'GccId'"
+                      [label]="'BENEFITS.GCC-CONTRIBUTOR' | translate"
+                      [control]="identity.get('id')"
+                      [maxLength]="gccIdLength"
+                    >
+                    </gosi-input-number-dc>
+                    <gosi-input-number-dc
+                      *ngIf="identity.get('idType').value === iqamaType && identity.get('iqamaNo')"
+                      name="iqamaNo"
+                      [id]="idValue + 'Iqama'"
+                      [label]="'BENEFITS.IQAMA-CONTRIBUTOR' | translate"
+                      [control]="identity.get('iqamaNo')"
+                      [maxLength]="iqamaLength"
+                    >
+                    </gosi-input-number-dc>
+                    <gosi-input-text-dc
+                      *ngIf="identity.get('idType').value === passportType && identity.get('passportNo')"
+                      name="passportNo"
+                      [id]="idValue + 'PassportNumber'"
+                      [label]="'BENEFITS.PASSPORT-CONTRIBUTOR' | translate"
+                      [control]="identity.get('passportNo')"
+                      [maxLength]="passportLength"
+                    >
+                    </gosi-input-text-dc>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <gosi-input-select-dc
+                  [label]="'BENEFITS.RELATIONSHIP-WITH-CONTRIBUTOR' | translate"
+                  [list]="annuityRelationShip$ | async"
+                  [control]="heirForm.get('registration')?.get('relationship')"
+                >
+                </gosi-input-select-dc>
+              </div>
+            </div>
+          </div>
+          <!-- action area -->
+          <div class="row pl-3" *ngIf="!heirForm.get('registration')?.get('reason')?.get('english').value">
+            <div class="col-md-12">
+              <div class="float-left pr-4">
+                <gosi-button-dc [type]="'primary'" (click)="verifyHeirDetails()">
+                  {{ 'BENEFITS.SEARCH' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+          <div class="row pt-5 pl-4" *ngIf="heirForm.get('registration')?.get('reason')?.get('english').value">
+            <div class="col-md-6 col-lg-6">
+              <gosi-input-select-dc
+                [label]="'BENEFITS.REASON_BENEFIT' | translate"
+                id="reason-dropdown"
+                [control]="heirForm.get('registration')?.get('reason')"
+                [list]="benefitReasonList$ | async"
+                [hideOptionalLabel]="true"
+                [disabled]="true"
+              >
+              </gosi-input-select-dc>
+            </div>
+
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isMissing">
+              <gosi-input-date-dc
+                id="missingDate"
+                label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+                [maxDate]="maxDate"
+                [hideOptionalLabel]="true"
+                [control]="heirForm.get('registration')?.get('missingDate')?.get('gregorian')"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isMissing">
+              <gosi-input-date-dc
+                id="deathDate"
+                label="{{ 'BENEFITS.DEATH_DATE' | translate }}"
+                [maxDate]="maxDate"
+                [hideOptionalLabel]="true"
+                [disabled]="true"
+                [control]="heirForm.get('registration')?.get('deathDate')?.get('gregorian')"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </gosi-card-dc>
+        <gosi-card-dc
+          heading="{{ 'BENEFITS.DOCUMENTS_REGISTER' | translate }}"
+          type="secondary"
+          lessPadding="true"
+          *ngIf="heirForm.get('registration')?.get('reason')?.get('english').value && documentList?.length > 0"
+        >
+          <div class="row" *ngIf="documentList?.length">
+            <div class="col-lg-12">
+              <ng-container *ngFor="let items of documentList; let i = index">
+                <gosi-input-file-sc
+                  (refresh)="refreshDocument(items)"
+                  [index]="i"
+                  [isScan]="isAppPrivate"
+                  [businessKey]="idObjContributor.id"
+                  [document]="items"
+                  [uuid]="uuid"
+                  [transactionId]="transactionId"
+                >
+                </gosi-input-file-sc>
+              </ng-container>
+            </div>
+          </div>
+        </gosi-card-dc>
+        <div class="row" *ngIf="heirForm?.get('registration')?.get('reason')?.get('english').value">
+          <div class="col-md-12">
+            <div *ngIf="!heirId" class="float-left pr-4">
+              <gosi-button-dc [type]="'primary'" (click)="registerHeir()">
+                {{ 'BENEFITS.REGISTER' | translate }}
+              </gosi-button-dc>
+            </div>
+            <div *ngIf="heirId" class="float-left pr-4">
+              <gosi-button-dc [type]="'primary'" (click)="registerHeir()">
+                {{ 'BENEFITS.LINK' | translate }}
+              </gosi-button-dc>
+            </div>
+            <div class="float-right pl-4">
+              <gosi-button-dc id="cancelButton" type="outline-secondary" (click)="cancelTransaction()">
+                {{ 'BENEFITS.CANCEL' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="routeBack()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

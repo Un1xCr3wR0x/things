@@ -1,0 +1,123 @@
+<frm-main-content-dc [documents]="[]" [comments]="transactionRefData">
+  <div id="mainHeading" class="main-heading">
+    <frm-main-heading-dc [heading]="lang === 'en' ? payload?.titleEnglish : payload?.titleArabic">
+    </frm-main-heading-dc>
+  </div>
+  <div id="contentArea">
+    <bnt-benefit-recalculation-details-sc
+      *ngIf="personId && requestId"
+      [personId]="personId"
+      [requestId]="requestId"
+      [referenceNo]="referenceNo"
+    ></bnt-benefit-recalculation-details-sc>
+  </div>
+</frm-main-content-dc>
+<!--Buttons-->
+<div id="actionArea">
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <div class="action-request">
+        <div class="btn-section float-right">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            id="engagementChangeApprove"
+            type="primary"
+            (click)="showModal(approveRecalculationTemplate)"
+          >
+            {{ 'BENEFITS.APPROVE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'FC Approver'">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            type="secondary"
+            id="engagementChangeReturn"
+            (submit)="showModal(returnRecalculationTemplate)"
+          >
+            {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'Validator1'">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            type="secondary"
+            id="reportCalculation"
+            (click)="showModal(reportCalcTemplate)"
+          >
+            {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <!--<div
+          class="btn-section float-right"
+          *ngIf="payload?.assignedRole === 'Validator1' && benefitRecalculationDetails?.hasOverlappingEngagements"
+        >
+          <gosi-button-dc
+            type="secondary"
+            id="benefitRequestInspection"
+            (click)="requestInspection(requestInspectionTemplate)"
+          >
+            {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+          </gosi-button-dc>
+        </div>-->
+        <div class="btn-section float-left">
+          <ng-container *gosiShow="validatorRecalculation">
+          <gosi-button-dc
+            id="cancel"
+            type="secondary"
+            (click)="showCancelTemplate(cancelRecalculationTemplate)"
+          >
+            {{ 'BENEFITS.CANCEL' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Approve Template-->
+<ng-template #approveRecalculationTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'PAYMENT.APPROVE' | translate }} - {{ 'BENEFITS.BENEFIT-RECALCULATION_ENGAGEMENT-CHANGE' | translate }}"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (approveEvent)="approvePaymentBenefitInspection(retirementForm)"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!-- Return Template -->
+<ng-template #returnRecalculationTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.BENEFIT-RECALCULATION_ENGAGEMENT-CHANGE' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-FC-RETURN-VALIDATOR'"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (returnEvent)="confirmReturn(retirementForm)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!--Cancel Template-->
+<ng-template #cancelRecalculationTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="commonModalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--Report Calculation Issue Template-->
+<ng-template #reportCalcTemplate>
+  <bnt-report-recalculation-template-dc
+    *ngIf="retirementForm"
+    heading="{{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}"
+    [parentForm]="retirementForm"
+    [isCommentsMandatory]="true"
+    [infoMessage]="'BENEFITS.INCORRECT-CALC-BENEFIT' | translate: { id: referenceNo }"
+    (submitEvent)="raiseItsmTicket()"
+    (cancelEvent)="commonModalRef.hide()"
+  >
+  </bnt-report-recalculation-template-dc>
+</ng-template>

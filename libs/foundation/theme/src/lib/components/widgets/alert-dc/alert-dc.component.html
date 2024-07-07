@@ -1,0 +1,67 @@
+<div
+  class="alert-block"
+  *ngIf="alert && (alert.message || alert.messageKey || alert.details)"
+  [ngClass]="[noPadding ? 'no-padding' : '']"
+>
+  <alert
+    *ngIf="alert && (alert.message || alert.messageKey || alert.details)"
+    id="gosiAlert"
+    [type]="transparent ? type + '-transparent' : type"
+    (onClosed)="triggerDismissEvent()"
+    [dismissible]="dismissible"
+    [dismissOnTimeout]="alert.timeout"
+  >
+    <div class="alert-content">
+      <div class="alert-icon">
+        <fa-icon [icon]="icon" size="lg" *ngIf="icon !== errorIcon"></fa-icon>
+        <img *ngIf="icon === errorIcon" src="assets/icons/svg/exclamation-hex.svg" alt="Error" class="custom-icon" />
+      </div>
+      <div class="alert-details alert-icon">
+        <div *ngIf="alert.messageKey; else showAlertMessage">
+          <div
+            [innerHtml]="alert.messageKey | translate: (alert.messageParam ? alert.messageParam : null) | formatDate"
+          ></div>
+          <ng-container *ngTemplateOutlet="alertDetails"></ng-container>
+        </div>
+        <ng-content select="[actOnAlert]"></ng-content>
+      </div>
+      <ng-template #showAlertMessage>
+        <div
+          *ngIf="
+            alert.details ? (alert.details.length === 0 || alert.details.length > 1) && alert.message : alert.message;
+            else showDetailsAsMessage
+          "
+        >
+          {{ alert.message | bilingualText | formatDate }}
+          <ng-container *ngTemplateOutlet="alertDetails"></ng-container>
+        </div>
+      </ng-template>
+      <ng-template #showDetailsAsMessage>
+        <ng-container *ngIf="alert.details?.length === 1; else alertDetails">
+          {{
+            alert.details[0].messageKey
+              ? (alert.details[0].messageKey
+                | translate: (alert.details[0].messageParam ? alert.details[0].messageParam : null)
+                | formatDate)
+              : (alert.details[0].message | bilingualText | formatDate)
+          }}
+        </ng-container>
+      </ng-template>
+    </div>
+  </alert>
+</div>
+<ng-template #alertDetails>
+  <div *ngIf="alert.details != null && alert.details?.length > 0">
+    <ul class="sub-message">
+      <li *ngFor="let detail of alert.details; index as i">
+        <div>
+          {{
+            detail.messageKey
+              ? (detail.messageKey | translate: (detail.messageParam ? detail.messageParam : null) | formatDate)
+              : (detail.message | bilingualText | formatDate)
+          }}
+        </div>
+      </li>
+    </ul>
+  </div>
+</ng-template>

@@ -1,0 +1,235 @@
+<div class="engagementTimeline">
+  <ng-container *ngIf="engagements?.length">
+    <div class="timeLineBlock" *ngFor="let item of engagements; let i = index">
+      <div
+        class="engagementItem"
+        [class.paidStatusItem]="item.paidStatus"
+        [class.aggregatedItem]="item.aggregationType != aggregatedType.NOT_AGGREGATED"
+      >
+        <div class="itemHead">
+          <span
+            class="engagementType"
+            [class.publicSector]="item.engagementType == 1"
+            [class.privateSector]="item.engagementType == 2"
+          ></span>
+          <div class="orgName">
+            <ng-container *ngIf="item.engagementType != engagementTypes.GOSI_VIC">
+              <label>{{ 'COMPLAINTS.EST-NAME' | translate }}</label>
+              <span>{{ item.establishmentName }}</span>
+            </ng-container>
+            <ng-container *ngIf="item.engagementType == engagementTypes.GOSI_VIC">
+              <span class="gOSI_VIC">
+                {{ 'CUSTOMER-INFORMATION.GOSI_VIC' | translate }}
+              </span>
+            </ng-container>
+          </div>
+          <div class="engagementDates">
+            <div>
+              <label>{{ 'CUSTOMER-INFORMATION.START-DATE' | translate }}</label>
+              <span class="dateFormat">
+                <span>{{ item.startDate | dateType }}</span>
+              </span>
+            </div>
+            <div>
+              <label>{{ 'CUSTOMER-INFORMATION.END-DATE' | translate }}</label>
+              <span *ngIf="item.endDate" class="dateFormat">
+                <span>{{ item.endDate | dateType }}</span>
+              </span>
+              <span *ngIf="!item.endDate">{{ 'CUSTOMER-INFORMATION.STILL-ACTIVE' | translate }}</span>
+            </div>
+          </div>
+          <div class="engagementDuration">
+            <!-- <span class="hasPeriodWithoutAnnuityCoverage" *ngIf="item.hasPeriodWithoutAnnuityCoverage">
+              {{ 'CUSTOMER-INFORMATION.HAS-PERIOD-WITHOUT-ANNUITY-COVERAGE' | translate }}
+            </span>
+            <span class="hasPeriodWithoutAnnuityCoverage" *ngIf="!item.considered">
+              {{ 'CUSTOMER-INFORMATION.PERIOD-IS-NOT-CALCULATED-FROM-THE-SUBSCRIPTION-MONTHS' | translate }}
+            </span>
+             -->
+            <label>
+              {{ 'CUSTOMER-INFORMATION.ENGAGEMENT-DURATION' | translate }}
+            </label>
+            <span *ngIf="item.engagementDuration">
+              <ng-container *ngIf="item.engagementDuration.noOfMonths !== 0">
+                {{ item.engagementDuration.noOfMonths }} {{ 'CUSTOMER-INFORMATION.MONTH' | translate }}
+              </ng-container>
+              <ng-container *ngIf="item.engagementDuration.noOfDays !== 0">
+                {{ item.engagementDuration.noOfDays }} {{ 'CUSTOMER-INFORMATION.DAY' | translate }}
+              </ng-container>
+            </span>
+          </div>
+        </div>
+        <div *ngIf="item.engagementPeriods?.length" class="itemBody">
+          <ul *ngFor="let period of item.engagementPeriods; let index = index">
+            <!-- This Condition To display One Period for now -->
+            <ng-container *ngIf="index === 0">
+              <li *ngIf="period.jobClass">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.JOB-CLASS' | translate }}
+                </label>
+                <span>
+                  {{ period.jobClass }}
+                </span>
+              </li>
+              <li *ngIf="period.rank">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.JOB-LEVEL' | translate }}
+                </label>
+                <span>
+                  {{ period.rank }}
+                </span>
+              </li>
+              <li *ngIf="period.grade">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.JOB-GRADE' | translate }}
+                </label>
+                <span>
+                  {{ period.grade }}
+                </span>
+              </li>
+              <li *ngIf="period.monthlyContributoryWage">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.TOTAL-WAGE' | translate }}
+                </label>
+                <span class="wageContainer">
+                  <ng-container
+                    >{{ period.monthlyContributoryWage }}
+                    {{ 'CUSTOMER-INFORMATION.SAR' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="!period.showWage"><span class="hidedData">********</span></ng-container>
+                </span>
+                <a class="showWage" (click)="period.showWage = !period.showWage">
+                  <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </a>
+              </li>
+              <li *ngIf="period.basicSalary">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.BASIC-WAGE' | translate }}
+                </label>
+                <span class="wageContainer">
+                  <ng-container> {{ period.basicSalary }} {{ 'CUSTOMER-INFORMATION.SAR' | translate }} </ng-container>
+                  <ng-container *ngIf="!period.showBasicWage"><span class="hidedData">********</span></ng-container>
+                </span>
+                <a class="showWage" (click)="period.showBasicWage = !period.showBasicWage">
+                  <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </a>
+              </li>
+              <li *ngIf="period.housing">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.HOUSING' | translate }}
+                </label>
+                <span class="wageContainer">
+                  <ng-container> {{ period.housing }} {{ 'CUSTOMER-INFORMATION.SAR' | translate }}</ng-container>
+                  <ng-container *ngIf="!period.showHousing"><span class="hidedData">********</span></ng-container>
+                </span>
+                <a class="showWage" (click)="period.showHousing = !period.showHousing"
+                  > 
+                  <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </a>
+              </li>
+              <li *ngIf="period.commissions">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.COMMISSIONS' | translate }}
+                </label>
+                <span class="wageContainer">
+                  <ng-container> {{ period.commissions }} {{ 'CUSTOMER-INFORMATION.SAR' | translate }}</ng-container>
+                  <ng-container *ngIf="!period.showCommissions"><span class="hidedData">********</span></ng-container>
+                </span>
+                <a class="showWage" (click)="period.showCommissions = !period.showCommissions"> </a>
+              </li>
+              <li *ngIf="period.otherAllowance">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.OTHER-ALLOWANCE' | translate }}
+                </label>
+                <span class="wageContainer">
+                  <ng-container>
+                    {{ period.otherAllowance }} {{ 'CUSTOMER-INFORMATION.SAR' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="!period.showOtherAllowance"
+                    ><span class="hidedData">********</span></ng-container
+                  >
+                </span>
+                <a class="showWage" (click)="period.showOtherAllowance = !period.showOtherAllowance">
+                  <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z"
+                      stroke="#006937"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </a>
+              </li>
+              <li *ngIf="period.occupation">
+                <label>
+                  {{ 'CUSTOMER-INFORMATION.OCCUPATION' | translate }}
+                </label>
+                <span>
+                  {{ lang == 'en' ? period.occupation?.english : period.occupation?.arabic }}
+                </span>
+              </li>
+            </ng-container>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+
+<ng-template #NA>
+  {{ 'CUSTOMER-INFORMATION.NA' | translate }}
+</ng-template>

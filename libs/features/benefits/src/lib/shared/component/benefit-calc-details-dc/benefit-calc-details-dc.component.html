@@ -1,0 +1,294 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-modal-dc [modalHeader]="'BENEFITS.BENEFIT-CALC-DETAILS' | translate">
+  <!-- Toggle only For Recalculation -->
+  <div class="float-right" modalSubHeading>
+    <div class="d-inline-block calc-type" *ngIf="isRecalculation">
+      <div class="calc-method-toggler">
+        <div
+          class="column-left calc-text"
+          [ngClass]="{
+            'calc-type-selected': calcType == 'newBenefit',
+            'calc-type-unselected ': calcType == 'currentBenefit'
+          }"
+          (click)="calcTypeChange('newBenefit')"
+        >
+          {{ 'BENEFITS.NEW-BENEFIT' | translate }}
+        </div>
+        <div
+          class="column-right calc-text"
+          [ngClass]="{
+            'calc-type-selected': calcType == 'currentBenefit',
+            'calc-type-unselected ': calcType == 'newBenefit'
+          }"
+          (click)="calcTypeChange('currentBenefit')"
+        >
+          {{ 'BENEFITS.CURRENT-BENEFIT' | translate }}
+        </div>
+      </div>
+    </div>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <fa-icon icon="times"></fa-icon>
+    </button>
+  </div>
+  <div class="row" modalContent>
+    <ng-container *ngIf="!isRecalculation">
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.NET-AVERAGE-WAGE' | translate }} =
+        <span class="primary-bold-label" *ngIf="benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitRecalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }
+          }}
+        </span>
+        <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitCalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }
+          }}
+        </span>
+      </div>
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }} =
+        <span class="primary-bold-label" *ngIf="benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationDetails?.reCalculation?.afterRecalculation?.benefitAmount | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitCalculationDetails?.basicBenefitAmount | number: '1.2-2' }
+          }}
+        </span>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="calcType === 'newBenefit' && isRecalculation">
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.NET-AVERAGE-WAGE' | translate }} =
+        <span
+          class="primary-bold-label"
+          *ngIf="benefitRecalculationDetails && benefitRecalculationDetails?.reCalculation?.afterRecalculation?.amw"
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : { amount: benefitRecalculationDetails?.reCalculation?.afterRecalculation?.amw | number: '1.2-2' }
+          }}
+        </span>
+        <span
+          class="primary-bold-label"
+          *ngIf="benefitRecalculationDetails && benefitRecalculationDetails?.occRecalculationDetails"
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      (benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.afterRecalculation?.amw
+                        ? benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.afterRecalculation?.amw
+                        : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.amw
+                      ) | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitCalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }
+          }}
+        </span>
+      </div>
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }} =
+        <span
+          class="primary-bold-label"
+          *ngIf="
+            benefitRecalculationDetails && benefitRecalculationDetails?.reCalculation?.afterRecalculation?.benefitAmount
+          "
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationDetails?.reCalculation?.afterRecalculation?.benefitAmount | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <span
+          class="primary-bold-label"
+          *ngIf="
+            benefitRecalculationDetails &&
+            benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.afterRecalculation?.benefitAmount
+          "
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.afterRecalculation
+                        ?.benefitAmount | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitCalculationDetails?.basicBenefitAmount | number: '1.2-2' }
+          }}
+        </span>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="calcType === 'currentBenefit' && isRecalculation">
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.NET-AVERAGE-WAGE' | translate }} =
+        <span
+          class="primary-bold-label"
+          *ngIf="benefitRecalculationDetails && benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.amw"
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : { amount: benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.amw | number: '1.2-2' }
+          }}
+        </span>
+        <span
+          class="primary-bold-label"
+          *ngIf="benefitRecalculationDetails && benefitRecalculationDetails?.occRecalculationDetails"
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      (benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.beforeRecalculation?.amw
+                        ? benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.beforeRecalculation?.amw
+                        : benefitRecalculationDetails?.occRecalculationDetails?.newBenefitDetails?.amw
+                      ) | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <!-- <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate: { amount: benefitCalculationDetails?.averageMonthlyContributoryWage | number: '1.2-2' }
+          }}
+        </span> -->
+      </div>
+      <div class="col-12 py-1">
+        {{ 'BENEFITS.BENEFIT-AMOUNT' | translate }} =
+        <span
+          class="primary-bold-label"
+          *ngIf="
+            benefitRecalculationDetails &&
+            benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.benefitAmount
+          "
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationDetails?.reCalculation?.beforeRecalculation?.benefitAmount | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <span
+          class="primary-bold-label"
+          *ngIf="
+            benefitRecalculationDetails &&
+            benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.beforeRecalculation?.benefitAmount
+          "
+        >
+          {{
+            'BENEFITS.AVERAGE-AMOUNT'
+              | translate
+                : {
+                    amount:
+                      benefitRecalculationDetails?.occRecalculationDetails?.reCalculation?.beforeRecalculation
+                        ?.benefitAmount | number: '1.2-2'
+                  }
+          }}
+        </span>
+        <!-- <span class="primary-bold-label" *ngIf="!benefitRecalculationDetails">
+            {{
+              'BENEFITS.AVERAGE-AMOUNT'
+                | translate: { amount: benefitCalculationDetails?.basicBenefitAmount | number: '1.2-2' }
+            }}
+          </span> -->
+      </div>
+    </ng-container>
+
+    <div class="col-12 primary-bold-label py-2">{{ 'BENEFITS.AVERAGE-WAGE-CALCULATION' | translate }}</div>
+    <div class="col-12">
+      <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+        {{ 'BENEFITS.AVERAGE-MONTHLY-WAGE-EQUALS' | translate }}
+      </gosi-card-dc>
+    </div>
+    <div class="col-12 primary-bold-label py-2">{{ 'BENEFITS.AGE-FACTOR-CALCULATION' | translate }}</div>
+    <ng-container *ngIf="eligibleForPensionReform;else notEligibleForPensionReform">
+      <div class="col-12">
+        <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+          <span class="secondary-bold-label py-1">{{ 'BENEFITS.AGE-GREATER-THAN-FORTY-FIVE' | translate }}</span> <br />
+          {{ 'BENEFITS.AGE-FACTOR-EQUALS-FORTY-FIVE' | translate }}
+        </gosi-card-dc>
+      </div>
+      <div class="col-12">
+        <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+          <span class="secondary-bold-label py-1">{{ 'BENEFITS.AGE-LESS-THAN-EQUAL-FORTY-FIVE' | translate }}</span> <br />
+          {{ 'BENEFITS.AGE-FACTOR-EQUAL-TO-SIXTY' | translate }}
+        </gosi-card-dc>
+      </div>
+    </ng-container>
+    <ng-template #notEligibleForPensionReform>
+      <div class="col-12">
+        <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+          <span class="secondary-bold-label py-1">{{ 'BENEFITS.AGE-GREATER-THAN-FORTY' | translate }}</span> <br />
+          {{ 'BENEFITS.AGE-FACTOR-EQUALS' | translate }}
+        </gosi-card-dc>
+      </div>
+      <div class="col-12">
+        <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+          <span class="secondary-bold-label py-1">{{ 'BENEFITS.AGE-LESS-THAN-EQUAL-FORTY' | translate }}</span> <br />
+          {{ 'BENEFITS.AGE-FACTOR-EQUAL-TO-SIXTY' | translate }}
+        </gosi-card-dc>
+      </div>
+    </ng-template>
+
+
+    <div class="col-12 primary-bold-label py-2">{{ 'BENEFITS.BENEFIT-CALCULATION' | translate }}</div>
+    <div class="col-12">
+      <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+        <span class="secondary-bold-label py-1">{{
+          'BENEFITS.PERCENTAGE-DISABILITY-LESS-THAN-FIFTY' | translate
+        }}</span>
+        <br />
+        <div class="d-flex justify-content-between py-1">
+          <span>{{ 'BENEFITS.BENEFIT-AMOUNT-CALCULATION-AF' | translate }}</span>
+
+            <span *ngIf="!eligibleForPensionReform">
+              ({{ 'BENEFITS.MAX-BENEFIT' | translate }}:
+              {{ 'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: 165000 | number: '1.2-2' } }})</span>
+          
+        </div>
+      </gosi-card-dc>
+    </div>
+    <div class="col-12">
+      <gosi-card-dc [type]="'secondary'" [lessPadding]="true">
+        <span class="secondary-bold-label py-1">{{
+          'BENEFITS.PERCENTAGE-DISABILITY-FIFTY-TO-NINETYNINE' | translate
+        }}</span>
+        <br />
+        {{ 'BENEFITS.BENEFIT-AMOUNT-CALCULATION' | translate }}
+      </gosi-card-dc>
+    </div>
+  </div>
+</gosi-modal-dc>

@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div class="row pl-3">
+    <div class="col-lg-12">
+      <div class="table-responsive">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <!-- <th scope="col">
+                                    {{ 'BENEFITS.BENEFIT-TYPE' | translate }}</th> -->
+              <th scope="col">
+                {{ 'BENEFITS.BENEFIT-PERIOD' | translate }}
+              </th>
+              <!-- <th scope="col">
+                {{ 'BENEFITS.ADJUSTMENT_ID' | translate }}
+              </th> -->
+              <th scope="col">
+                {{ 'BENEFITS.ADJUSTMENT-TYPE' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}
+              </th>
+              <th scope="col">
+                {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="border-bottom"
+              *ngFor="let adjustment of benefitRecalculationDetails?.adjustments; let i = index"
+            >
+              <!-- <td>{{ item?.adjustmentType | bilingualText }}</td> -->
+              <td>
+                {{ adjustment?.benefitPeriodStartDate?.gregorian | date: 'dd/MM/yyyy' }}
+                <fa-icon class="arrow-color" [icon]="['fas', lang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+                <span *ngIf="adjustment?.benefitPeriodStopDate; else Onwards">
+                  {{ adjustment?.benefitPeriodStopDate?.gregorian | date: 'dd/MM/yyyy' }}
+                </span>
+                <ng-template #Onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+              </td>
+              <!-- <td>{{adjustment?.adjustmentId || '-'}}</td> -->
+              <td>{{ adjustment?.adjustmentType | bilingualText }}</td>
+              <td>{{ adjustment?.adjustmentReason | bilingualText }}</td>
+              <td>
+                <span
+                  ngClass="{{
+                    adjustment?.adjustmentType?.english === 'Credit'
+                      ? 'text-success'
+                      : adjustment?.adjustmentType?.english === 'Debit'
+                      ? 'text-danger'
+                      : ''
+                  }}"
+                >
+                  {{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-12">
+      <bnt-adjustment-net-amount-dc
+        [benefitRecalculationDetails]="benefitRecalculationDetails"
+        [checkForm]="checkForm"
+        [disableDirectPayment]="disableDirectPayment"
+        (onPreviousAdjustmentsClicked)="onViewPreviousDetails()"
+      >
+      </bnt-adjustment-net-amount-dc>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row border-top-claims">
+  <div class="col-md-3 batch-list">
+    <div [ngClass]="noCases ? 'row batch-heading d-flex float-right' : 'row batch-heading d-flex '">
+      <div class="col pt-1" *ngIf="invoiceDetails && invoiceDetails?.cases?.length > 0">
+        {{ 'OCCUPATIONAL-HAZARD.AUDITOR.BATCH' | translate }} {{ invoiceDetails?.batchId }}
+      </div>
+      <span class="filter" *ngIf="minValue">
+        <oh-claims-filter-dc
+          [maxValue]="maxValue"
+          [minValue]="minValue"
+          [invoiceDetails]="invoiceDetails"
+          (filterValues)="applyFilter($event)"
+        ></oh-claims-filter-dc>
+      </span>
+    </div>
+    <div class="row batch-heading d-flex mt-5" *ngIf="noCases">
+      {{ 'OCCUPATIONAL-HAZARD.NO-MATCH-RESULTS' | translate }}
+    </div>
+    <ng-container *ngIf="invoiceDetails && invoiceDetails?.cases?.length > 0">
+      <div [ngClass]="lang === 'en' ? 'row admin-row gosi-scrollbar' : 'admin-row gosi-scrollbar'">
+        <div
+          class="col-md-12 admin-item"
+          ngClass="{{ selectedId === claims?.claimNo ? 'selected' : '' }}"
+          *ngFor="let claims of invoiceDetails?.cases; let i = index"
+          (click)="selectClaim(claims, i)"
+        >
+          <div class="overflow-hidden">
+            <div class="row d-flex justify-content-center">
+              <div class="col-md-12 col-sm-12 col-lg-12 batch-id d-flex">
+                <ng-container *ngIf="!claims.workItemReadStatus && canDifferentiateClaims">
+                  <span class="dot"></span>
+                </ng-container>
+                {{ claims.claimNo }}
+                <ng-container *ngIf="claims?.receiveClarification?.length > 0 && canDifferentiateClaims">
+                  <div [ngClass]="viewedComments(claims.receiveClarification) ? 'read pl-2 pr-2' : 'unread pl-2 pr-2'">
+                    <fa-icon [icon]="['far', 'comment-dots']"></fa-icon>
+                  </div>
+                </ng-container>
+              </div>
+              <div class="col-md-12 col-sm-12 col-lg-12 batch-content">
+                <div
+                  [ngClass]="!claims.isViewed ? 'float-left treatment ml-1' : 'float-left treatment'"
+                  *ngIf="daysList?.length > 0"
+                >
+                  <ng-container *ngIf="claims.daysDiff === 1">
+                    {{ 'OCCUPATIONAL-HAZARD.AUDITOR.ONE-TREATMENT-DAYS' | translate: { day: claims.daysDiff } }}
+                  </ng-container>
+                  <ng-container *ngIf="claims.daysDiff === 2">
+                    {{ 'OCCUPATIONAL-HAZARD.AUDITOR.TWO-TREATMENT-DAYS' | translate: { day: claims.daysDiff } }}
+                  </ng-container>
+                  <ng-container *ngIf="claims.daysDiff > 2 && claims.daysDiff < 11">
+                    {{
+                      'OCCUPATIONAL-HAZARD.AUDITOR.GREATERTHANTWO-TREATMENT-DAYS' | translate: { day: claims.daysDiff }
+                    }}
+                  </ng-container>
+                  <ng-container *ngIf="claims.daysDiff > 10">
+                    {{
+                      'OCCUPATIONAL-HAZARD.AUDITOR.GREATERTHANTEN-TREATMENT-DAYS' | translate: { day: claims.daysDiff }
+                    }}
+                  </ng-container>
+                </div>
+                <div class="float-right amount">
+                  {{ claims.payableAmount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="selected-item" *ngIf="selectedId === claims.claimNo"></div>
+          <div class="only-sm mt-3" *ngIf="selectedId === claims.claimNo"></div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <ng-container *ngIf="invoiceDetails && invoiceDetails?.cases?.length > 0">
+    <div class="col-md-9">
+      <ng-container *ngIf="claimSummaryDetails; else loading">
+        <oh-auditor-claim-details-dc
+          [contributor]="contributor"
+          [claimSummaryDetails]="claimSummaryDetails"
+          [hideAction]="hideAction"
+          [previousClaims]="previousClaims"
+          (navigate)="navigateTo($event)"
+          [referenceNo]="referenceNo"
+        ></oh-auditor-claim-details-dc>
+        <ng-container *ngIf="comment?.length > 0">
+          <gosi-comments-dc [showComments]="true" [comments]="comment" [documents]="documents"></gosi-comments-dc>
+        </ng-container>
+        <div class="row" *ngIf="!hideAction">
+          <div class="col-lg-12 form-action mb-4">
+            <div class="req-clarification">
+              <div class="btn-section float-right pl-2 pr-2" *ngIf="selectionTreatmentlist?.length > 0 && !isNewBatch">
+                <gosi-button-dc id="clarify" type="primary" [size]="'md'" (submit)="emitModal($event)">
+                  {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-right pl-2 pr-2" *ngIf="selectionTreatmentlist?.length === 0 || isNewBatch">
+                <gosi-button-dc id="clarify" type="secondary" [size]="'md'" [outlineOnly]="true">
+                  {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-right pl-2 pr-2" *ngIf="selectionTreatmentlist?.length > 0 && !isNewBatch">
+                <gosi-button-dc type="danger" id="reject" [size]="'md'" (submit)="showModal(rejectTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right pl-2 pr-2" *ngIf="selectionTreatmentlist?.length === 0 || isNewBatch">
+                <gosi-button-dc type="secondary" id="reject" [size]="'md'" [outlineOnly]="true">
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--Treatment Service Details-->
+        <ng-container *ngIf="treatmentList; else loading">
+          <oh-auditor-treatment-details-dc
+            [treatmentList]="treatmentList"
+            [serviceTypeList$]="serviceTypeList$"
+            [claimSummaryDetails]="claimSummaryDetails"
+            (getTreatmentServiceDetails)="fetchTreatmentDetails($event)"
+            (removeSelection)="removeSelection($event)"
+            (selectedService)="getSelection($event)"
+            (sortEvent)="getSortDetails($event)"
+            [checkBoxDisabled]="checkBoxDisabled"
+          >
+          </oh-auditor-treatment-details-dc>
+          <ng-container>
+            <div class="load-more">
+              <gosi-loadmore-dc
+                [currentPage]="currentPage"
+                [totalCount]="pageTotal"
+                [pageSize]="pageLimit"
+                (loadMore)="onLoadMore($event)"
+              ></gosi-loadmore-dc>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <!--Template -->
+      <ng-template #loading>
+        <div class="loading-section">
+          <fa-icon [icon]="['fas', 'spinner']" [spin]="true" size="3x"></fa-icon>
+        </div>
+      </ng-template>
+      <ng-template #rejectTemplate>
+        <h2 class="heading-modal">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.REJECT-CLAIMS' | translate }}</h2>
+        <div class="batch-list-style gosi-scrollbar">
+          <oh-audit-reject-template-dc
+            (cancelEvent)="hideModal()"
+            [selectionTreatmentlist]="selectionTreatmentlist"
+            [unitList]="unitLovList"
+            [parentForm]="auditForm"
+            [rejectReasonList$]="rejectReasonList$"
+            (auditEvent)="confirmRejection($event)"
+          >
+          </oh-audit-reject-template-dc>
+        </div>
+      </ng-template>
+    </div>
+  </ng-container>
+</div>

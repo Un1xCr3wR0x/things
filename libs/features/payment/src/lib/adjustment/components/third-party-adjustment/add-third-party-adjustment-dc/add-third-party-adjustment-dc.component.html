@@ -1,0 +1,172 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row custom-heading">
+  <div class="col heading">
+    {{ 'ADJUSTMENT.ADD-NEW-THIRD-PARTY' | translate }}
+  </div>
+</div>
+<div class="row mt-2">
+  <div class="col-lg-6">
+    <gosi-input-select-dc
+      id="benefitType"
+      [control]="addTpaForm?.get('benefitType')"
+      [label]="'ADJUSTMENT.BENEFIT-TYPE' | translate"
+      [placeholder]="'ADJUSTMENT.BENEFIT-TYPE' | translate"
+      [list]="benefitTypeListLov"
+      (selectLov)="selectBenefitType($event)"
+    >
+    </gosi-input-select-dc>
+  </div>
+</div>
+<ng-container *ngIf="showBenefitDetails">
+  <div class="row mt-2">
+    <div class="col-lg-4">
+      <gosi-currency-label-dc
+        id="benefitAmount"
+        label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="benefitAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-4" *ngIf="deductionAmount">
+      <gosi-currency-label-dc
+        id="netMonthlyDeductionAmount"
+        label="{{ 'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="netMonthlyDeductionAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-currency-label-dc
+        id="benefitAmountAfterDeduction"
+        label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT-AFTER-DEDUCTIONS' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="benefitAmount - netMonthlyDeductionAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <ng-container *ngIf="benType === sanedPension">
+      <div class="col-lg-4">
+        <gosi-currency-label-dc
+          id="threeMonthAmount"
+          label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT-FIRST-THREE-MONTHS' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="threeMonthAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-currency-label-dc
+          id="fourMonthOnwardsAmount"
+          label="{{ 'ADJUSTMENT.BENEFIT-AMOUNT-FOURTH-MONTHS-ONWARDS' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="fourMonthOnwardsAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+    </ng-container>
+    <div *ngIf="basicBenAmount" class="col-lg-4">
+      <gosi-currency-label-dc
+        id="basicBenAmount"
+        label="{{ 'ADJUSTMENT.BASIC-BENEFIT-AMOUNT' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="basicBenAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div *ngIf="helperAmount" class="col-lg-4">
+      <gosi-currency-label-dc
+        id="helperAmount"
+        label="{{ 'ADJUSTMENT.HELPER-ALLOWANCE' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="helperAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div *ngIf="dependentAmount" class="col-lg-4">
+      <gosi-currency-label-dc
+        id="dependentAmount"
+        label="{{ 'ADJUSTMENT.DEPENDENT-ALLOWANCE' | translate }}"
+        [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+        [currencyTo]="dependentAmount"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-label-dc [value]="benefitStatus | bilingualText" label="ADJUSTMENT.BENEFIT-STATUS"> </gosi-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-label-dc [value]="benefitStartDate?.gregorian | date: 'dd/MM/yyyy'" label="ADJUSTMENT.BENEFIT-START-DATE">
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row mt-2" *ngIf="!showPayeeSummary">
+    <div class="col-lg-6">
+      <gosi-input-text-dc
+        id="payeeId"
+        [placeholder]="'ADJUSTMENT.PAYEE-SEARCH' | translate"
+        [label]="'ADJUSTMENT.SEARCH-PARTY' | translate"
+        [control]="addTpaForm?.get('nationalID')"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-6 mt-4 pt-3">
+      <gosi-button-dc id="verify" (submit)="findPayee()" type="primary">{{
+        'ADJUSTMENT.SEARCH' | translate
+      }}</gosi-button-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="showPayeesList">
+    <div class="col-md-12">
+      <pmt-payee-list-dc
+        [payeeDetails]="payeeDetails"
+        [totalPayees]="totalPayeesCount"
+        (onSelectPayee)="selectPayee($event, scrollView)"
+        (pageIndexEvent)="pageIndexEvent.emit($event)"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="payeeListPageDetails"
+        #payeesList
+      ></pmt-payee-list-dc>
+    </div>
+  </div>
+  <div class="row" #scrollView [hidden]="!showPayeeSummary">
+    <div class="col-md-12">
+      <pmt-search-result-payee-dc [payee]="selectedpayee" (changePayee)="changePayee()"></pmt-search-result-payee-dc>
+    </div>
+    <div class="col-md-12">
+      <pmt-payment-method-details-dc
+        [parentForm]="parentForm"
+        [paymentModeList]="paymentModeList"
+        [currentBankAccount]="payeeCurrentBank"
+        [bankName]="newBankName"
+        [adjustmentValues]="adjustmentValues"
+        [isValidator]="isValidator"
+        [isFromSavedData]="isFromSavedData"
+        (onIbanchange)="onIbanchange.emit($event)"
+      >
+      </pmt-payment-method-details-dc>
+    </div>
+    <div class="col-md-12">
+      <pmt-choose-countinues-deduction-dc
+        [selectedBenefit]="selectedBenefit"
+        [monthlyDeductionEligibility]="monthlyDeductionEligibility"
+        [hasOtherAdjustments]="hasOtherAdjustments"
+        [adjustmentReasonList]="adjustmentReasonList"
+        [requestByList]="requestByList"
+        [percentageList]="percentageList"
+        [continousDeduction]="continousDeduction"
+        [parentForm]="parentForm"
+        [adjustmentValues]="adjustmentValues"
+        [cityList]="cityList"
+        [monthlyAdjustmentLimit]="benefitAmountAfterDeduction"
+        [netMonthlyDeductionAmount]="netMonthlyDeductionAmount"
+        [benefitAmount]="benefitAmount"
+        [savedMonthlyDeductionAmount]="savedMonthlyDeductionAmount"
+        (adjustmentReasonKey)="adjustmentReasonKey($event)"
+      ></pmt-choose-countinues-deduction-dc>
+    </div>
+  </div>
+</ng-container>

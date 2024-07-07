@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documentList" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.CONTIBUTOR-REFUND-REQUEST' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc icon="building" heading="BILLING.ESTABLISHMENT-DETAILS" [canEdit]="false">
+        </frm-content-heading-dc>
+        <blg-contributor-refund-establishment-account-details-dc
+          [estDetails]="establishmentDetails"
+          [contributorDetails]="contributorDetails"
+          [backdatedTermination]="terminationDetails"
+          [vicAccountNumber]="ibanNumber"
+          [vicBankNameDetail]="vicBankNameDetail"
+          (onEdit)="navigateToCsrPage()"
+          [canEdit]="editFlag"
+        >
+        </blg-contributor-refund-establishment-account-details-dc>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="canReject"
+          [isReturn]="false"
+          (approveEvent)="approveContributorRefundTransaction(approveTemplate)"
+          (rejectEvent)="rejectContributorRefundTransaction(rejectTemplate)"
+          (returnEvent)="returnContributorRefundTransaction(returnTemplate)"
+          (cancelEvent)="showModals(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      message="BILLING.INFO-CANCEL"
+      (onConfirm)="confirmContributorRefundCancel()"
+      (onCancel)="declineModal()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      (approveEvent)="confirmContributorRefundApprove()"
+      (cancelEvent)="hideModalDetails()"
+      [parentForm]="contributorRefundForm"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="contributorRefundForm"
+      [heading]="rejectHeadingValue"
+      [rejectReasonList$]="rejectReasons"
+      [transactionNumber]="transactionNumber"
+      (rejectEvent)="confirmContributorRefundReject()"
+      (cancelEvent)="hideModalDetails()"
+      warningMessage="BILLING.INFO-VALIDATOR-REJECTION"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="contributorRefundForm"
+      [heading]="returnHeadingValue"
+      (returnEvent)="confirmContributorRefundReturn()"
+      [returnReasonList$]="returnReasons"
+      (cancelEvent)="hideModalDetails()"
+      [warningMessage]="'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

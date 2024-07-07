@@ -1,0 +1,424 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div *ngIf="!individualApp" class="row row-bottom-padding">
+  <div class="col-lg-12">
+    <div class="d-inline-block heading-prop">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS' | translate }}</div>
+  </div>
+</div>
+<div *ngIf="individualApp" class="view-heading d-flex align-items-center">
+  <div class="entity-name">
+    <a class="back-button fa-2x" (click)="navigateToContribution()">
+      <fa-icon
+        class="header-icon custom-pointer"
+        [ngClass]="!individualApp ? 'gray-500' : 'ind-gray-500'"
+        [icon]="['far', selectedLang === 'en' ? 'arrow-alt-circle-left' : 'arrow-alt-circle-right']"
+      ></fa-icon>
+    </a>
+  </div>
+  <div class="entity-identifier">
+    {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS' | translate }}
+  </div>
+</div>
+<!---Engagement Section--->
+<gosi-alert-sc></gosi-alert-sc>
+
+<div>
+  <div *ngIf="engagementDetails" class="float-style">
+    <span class="title-text gray-500">
+      {{ engagementDetails?.joiningDate?.gregorian | gosiDate }}
+      <span class="mr-1"></span>
+      <fa-icon class="gray-500" [icon]="['fas', selectedLang === 'en' ? 'arrow-right' : 'arrow-left']"></fa-icon>
+      <span class="mr-2"></span>
+      <span *ngIf="engagementDetails?.leavingDate?.gregorian; else onwards">
+        {{ engagementDetails?.leavingDate?.gregorian | gosiDate }}
+      </span>
+      <ng-template #onwards>{{ 'CONTRIBUTOR.WAGE.ONWARDS' | translate }}</ng-template></span
+    >
+    <span class="gray-500">
+      ({{ engagementDetails?.engagementDuration?.noOfMonths }}
+      {{
+        engagementDetails?.engagementDuration?.noOfMonths === 1
+          ? ('CONTRIBUTOR.WAGE.MONTH' | translate | titlecase)
+          : engagementDetails?.engagementDuration?.noOfMonths === 2
+          ? ('CONTRIBUTOR.WAGE.MONTHS' | translate | titlecase)
+          : engagementDetails?.engagementDuration?.noOfMonths > 2 &&
+            engagementDetails?.engagementDuration?.noOfMonths < 11
+          ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate | titlecase)
+          : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate | titlecase)
+      }}
+      <span
+        *ngIf="engagementDetails?.engagementDuration?.noOfMonths && engagementDetails?.engagementDuration?.noOfDays"
+      >
+        ,
+      </span>
+      {{ engagementDetails?.engagementDuration?.noOfDays }}
+      {{
+        engagementDetails.engagementDuration.noOfDays === 1
+          ? ('CONTRIBUTOR.WAGE.DAY' | translate | titlecase)
+          : engagementDetails.engagementDuration.noOfDays === 2
+          ? ('CONTRIBUTOR.WAGE.DAYS' | translate | titlecase)
+          : engagementDetails.engagementDuration.noOfDays > 2 && engagementDetails.engagementDuration.noOfDays < 11
+          ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate | titlecase)
+          : ('CONTRIBUTOR.WAGE.DAYS-11' | translate | titlecase)
+      }}
+      | {{ selectedLang === 'en' ? engagementDetails?.workType?.english : engagementDetails?.workType?.arabic }})
+    </span>
+  </div>
+</div>
+<!-- Contract List -->
+<ng-container>
+  <div class="row mt-3" class="overflow-tabl">
+    <div class="col-lg-12">
+      <table *ngIf="!individualApp" id="contractDetailsTable" class="table table-borderless table-effect">
+        <thead class="table-header">
+          <tr>
+            <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-START' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-END' | translate }}</th>
+            <th class="align-left">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-TYPE' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.STATUS' | translate }}</th>
+            <th class="align-left">{{ 'CONTRIBUTOR.DETAILS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="contractDetails">
+          <ng-container
+            *ngFor="
+              let details of contractDetails.contracts
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: currentPage,
+                      totalItems: noOfRecords
+                    };
+              let i = index
+            "
+          >
+            <tr
+              [ngClass]="
+                details.status === 'CONTRACT_AUTO_CANCELLED' || details.status === 'CONTRACT_REJECTED_CON'
+                  ? 'contract-status-rejected'
+                  : details.status === 'CONTRACT_PENDING_CON' ||
+                    details.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                    details.status === 'CONTRACT_PENDING_VALIDATOR'
+                  ? 'contract-status-pending-with-contributor'
+                  : details.status === 'CONTRACT_APPROVED_CON' || details.status === 'CONTRACT_APPROVED_SYS'
+                  ? 'contract-status-approved'
+                  : details.status === 'CONTRACT_CANCELLED' || details.status === 'CONTRACT_EXPIRED'
+                  ? 'contract-status-expired'
+                  : details.status === 'TERMINATED'
+                  ? 'contract-status-terminated'
+                  : ''
+              "
+            >
+              <td *ngIf="details.startDate">{{ details.startDate.gregorian | gosiDate }}</td>
+              <td *ngIf="details.endDate">{{ details.endDate.gregorian | gosiDate }}</td>
+              <td *ngIf="!details.endDate">-</td>
+              <td class="align-left" *ngIf="details?.contractType">
+                {{ details?.contractType | bilingualText }}
+              </td>
+              <td *ngIf="details.status" class="contract-status row-top-padding">
+                <div
+                  [ngClass]="
+                    details.status === 'CONTRACT_AUTO_CANCELLED' || details.status === 'CONTRACT_REJECTED_CON'
+                      ? 'contract-rejected'
+                      : details.status === 'CONTRACT_PENDING_CON' ||
+                        details.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                        details.status === 'CONTRACT_PENDING_VALIDATOR'
+                      ? 'contract-pending-with-contributor'
+                      : details.status === 'CONTRACT_APPROVED_CON' || details.status === 'CONTRACT_APPROVED_SYS'
+                      ? 'contract-approved'
+                      : details.status === 'CONTRACT_CANCELLED' || details.status === 'CONTRACT_EXPIRED'
+                      ? 'contract-expired'
+                      : details.status === 'TERMINATED'
+                      ? 'contract-terminated'
+                      : ''
+                  "
+                >
+                  <ng-container *ngIf="details.status == 'CONTRACT_AUTO_CANCELLED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_AUTO_CANCELLED' | translate }}
+                  </ng-container>
+                  <ng-container
+                    *ngIf="details.status == 'CONTRACT_PENDING_CON' || details.status === 'CONTRACT_DOCUMENT_PENDING'"
+                  >
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status === 'CONTRACT_PENDING_VALIDATOR'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_VALIDATOR' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'CONTRACT_APPROVED_CON'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'CONTRACT_REJECTED_CON'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_REJECTED_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'CONTRACT_APPROVED_SYS'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_SYS_STATUS' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'CONTRACT_CANCELLED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_CANCELLED' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'CONTRACT_EXPIRED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_EXPIRED' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="details.status == 'TERMINATED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.TERMINATED' | translate }}
+                  </ng-container>
+                </div>
+              </td>
+              <td class="align-left">
+                <a class="view-details black-theme">
+                  <u (click)="navigateToPreview(details)">
+                    {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS' | translate }}
+                  </u>
+                </a>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+
+      <table *ngIf="individualApp" id="individualcontractDetailsTable" class="table table-borderless table-effect">
+        <thead class="table-header">
+          <tr>
+            <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-START' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-END' | translate }}</th>
+            <th class="align-left">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-TYPE' | translate }}</th>
+            <th>{{ 'CONTRIBUTOR.STATUS' | translate }}</th>
+            <th class="align-left">{{ 'CONTRIBUTOR.DETAILS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="contractDetails">
+          <ng-container
+            *ngFor="
+              let detail of contractDetails.contracts
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: currentPage,
+                      totalItems: noOfRecords
+                    };
+              let i = index
+            "
+          >
+            <tr
+              [ngClass]="
+                detail.status === 'CONTRACT_AUTO_CANCELLED' || detail.status === 'CONTRACT_REJECTED_CON'
+                  ? 'ind-contract-status-rejected'
+                  : detail.status === 'CONTRACT_PENDING_CON' ||
+                    detail.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                    detail.status === 'CONTRACT_PENDING_VALIDATOR'
+                  ? 'ind-contract-status-pending-with-contributor'
+                  : detail.status === 'CONTRACT_APPROVED_CON' || detail.status === 'CONTRACT_APPROVED_SYS'
+                  ? 'ind-contract-status-approved'
+                  : detail.status === 'CONTRACT_CANCELLED' || detail.status === 'CONTRACT_EXPIRED'
+                  ? 'ind-contract-status-expired'
+                  : detail.status === 'TERMINATED'
+                  ? 'ind-contract-status-terminated'
+                  : ''
+              "
+            >
+              <td *ngIf="detail.startDate">{{ detail.startDate.gregorian | gosiDate }}</td>
+              <td *ngIf="detail.endDate">{{ detail.endDate.gregorian | gosiDate }}</td>
+              <td *ngIf="!detail.endDate">-</td>
+              <td class="align-left" *ngIf="detail?.contractType">
+                {{ detail?.contractType | bilingualText }}
+              </td>
+              <td *ngIf="detail.status" class="ind-contract-status row-top-padding">
+                <div
+                  [ngClass]="
+                    detail.status === 'CONTRACT_AUTO_CANCELLED' || detail.status === 'CONTRACT_REJECTED_CON'
+                      ? 'ind-contract-rejected'
+                      : detail.status === 'CONTRACT_PENDING_CON' ||
+                        detail.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                        detail.status === 'CONTRACT_PENDING_VALIDATOR'
+                      ? 'ind-contract-pending-with-contributor'
+                      : detail.status === 'CONTRACT_APPROVED_CON' || detail.status === 'CONTRACT_APPROVED_SYS'
+                      ? 'ind-contract-approved'
+                      : detail.status === 'CONTRACT_CANCELLED' || detail.status === 'CONTRACT_EXPIRED'
+                      ? 'ind-contract-expired'
+                      : detail.status === 'TERMINATED'
+                      ? 'ind-contract-terminated'
+                      : ''
+                  "
+                >
+                  <ng-container *ngIf="detail.status == 'CONTRACT_AUTO_CANCELLED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_AUTO_CANCELLED' | translate }}
+                  </ng-container>
+                  <ng-container
+                    *ngIf="detail.status == 'CONTRACT_PENDING_CON' || detail.status === 'CONTRACT_DOCUMENT_PENDING'"
+                  >
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status === 'CONTRACT_PENDING_VALIDATOR'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_VALIDATOR' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'CONTRACT_APPROVED_CON'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'CONTRACT_REJECTED_CON'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_REJECTED_CON' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'CONTRACT_APPROVED_SYS'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_SYS_STATUS' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'CONTRACT_CANCELLED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_CANCELLED' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'CONTRACT_EXPIRED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_EXPIRED' | translate }}
+                  </ng-container>
+                  <ng-container *ngIf="detail.status == 'TERMINATED'">
+                    {{ 'CONTRIBUTOR.STATUS-TYPE.TERMINATED' | translate }}
+                  </ng-container>
+                </div>
+              </td>
+              <td class="align-left">
+                <a class="view-details black-theme">
+                  <u (click)="navigateToPreview(detail)">
+                    {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS' | translate }}
+                  </u>
+                </a>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+      <table *ngIf="contractDetails" id="contractDetailsResponsiveTable" class="table-reponsive">
+        <ng-container
+          *ngFor="
+            let contractData of contractDetails.contracts
+              | paginate
+                : {
+                    id: 'paginationId',
+                    itemsPerPage: itemsPerPage,
+                    currentPage: currentPage,
+                    totalItems: noOfRecords
+                  };
+            let i = index
+          "
+        >
+          <tr
+            class="parent-tr"
+            [ngClass]="
+              contractData.status === 'CONTRACT_AUTO_CANCELLED' || contractData.status === 'CONTRACT_REJECTED_CON'
+                ? 'contract-status-rejected'
+                : contractData.status === 'CONTRACT_PENDING_CON' ||
+                  contractData.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                  contractData.status === 'CONTRACT_PENDING_VALIDATOR'
+                ? 'contract-status-pending-with-contributor'
+                : contractData.status === 'CONTRACT_APPROVED_CON' || contractData.status === 'CONTRACT_APPROVED_SYS'
+                ? 'contract-status-approved'
+                : contractData.status === 'CONTRACT_CANCELLED' || contractData.status === 'CONTRACT_EXPIRED'
+                ? 'contract-status-expired'
+                : contractData.status === 'TERMINATED'
+                ? 'contract-status-terminated'
+                : ''
+            "
+          >
+            <td class="parent-td">
+              <tr>
+                <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-START' | translate }}</th>
+                <td *ngIf="contractData.startDate">{{ contractData.startDate.gregorian | gosiDate }}</td>
+              </tr>
+              <tr>
+                <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-END' | translate }}</th>
+                <td *ngIf="contractData.endDate">{{ contractData.endDate.gregorian | gosiDate }}</td>
+                <td *ngIf="!contractData.endDate">-</td>
+              </tr>
+              <tr>
+                <th>{{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-TYPE' | translate }}</th>
+                <td *ngIf="contractData?.contractType">
+                  {{ contractData?.contractType | bilingualText }}
+                </td>
+              </tr>
+              <tr>
+                <th>{{ 'CONTRIBUTOR.STATUS' | translate }}</th>
+                <td *ngIf="contractData.status" class="contract-status">
+                  <div
+                    [ngClass]="
+                      contractData.status === 'CONTRACT_AUTO_CANCELLED' ||
+                      contractData.status === 'CONTRACT_REJECTED_CON'
+                        ? 'contract-rejected'
+                        : contractData.status === 'CONTRACT_PENDING_CON' ||
+                          contractData.status === 'CONTRACT_PENDING_VALIDATOR' ||
+                          contractData.status === 'CONTRACT_PENDING_VALIDATOR'
+                        ? 'contract-pending-with-contributor'
+                        : contractData.status === 'CONTRACT_APPROVED_CON' ||
+                          contractData.status === 'CONTRACT_APPROVED_SYS'
+                        ? 'contract-approved'
+                        : contractData.status === 'CONTRACT_CANCELLED' || contractData.status === 'CONTRACT_EXPIRED'
+                        ? 'contract-expired'
+                        : contractData.status === 'TERMINATED'
+                        ? 'contract-terminated'
+                        : ''
+                    "
+                  >
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_AUTO_CANCELLED'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_AUTO_CANCELLED' | translate }}
+                    </ng-container>
+                    <ng-container
+                      *ngIf="
+                        contractData.status == 'CONTRACT_PENDING_CON' ||
+                        contractData.status === 'CONTRACT_DOCUMENT_PENDING'
+                      "
+                    >
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_CON' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status === 'CONTRACT_PENDING_VALIDATOR'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_PENDING_VALIDATOR' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_APPROVED_CON'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_CON' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_REJECTED_CON'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_REJECTED_CON' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_APPROVED_SYS'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_APPROVED_SYS_STATUS' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_CANCELLED'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_CANCELLED' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'CONTRACT_EXPIRED'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.CONTRACT_EXPIRED' | translate }}
+                    </ng-container>
+                    <ng-container *ngIf="contractData.status == 'TERMINATED'">
+                      {{ 'CONTRIBUTOR.STATUS-TYPE.TERMINATED' | translate }}
+                    </ng-container>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>{{ 'CONTRIBUTOR.DETAILS' | translate }}</th>
+                <td>
+                  <a class="view-details black-theme">
+                    <u (click)="navigateToPreview(contractData)">
+                      {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS' | translate }}
+                    </u>
+                  </a>
+                </td>
+              </tr>
+            </td>
+          </tr>
+        </ng-container>
+      </table>
+    </div>
+  </div>
+  <ng-container>
+    <div>
+      <gosi-pagination-dc
+        *ngIf="noOfRecords > itemsPerPage"
+        [totalSize]="noOfRecords"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+        paginationId="paginationId"
+      ></gosi-pagination-dc>
+    </div>
+  </ng-container>
+</ng-container>

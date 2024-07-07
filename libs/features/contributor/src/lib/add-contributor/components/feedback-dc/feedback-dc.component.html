@@ -1,0 +1,127 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="col-md-12" *ngIf="messageToDisplay">
+  <gosi-alert-dc type="success" [bilingualMessage]="messageToDisplay" [dismissible]="false"> </gosi-alert-dc>
+</div>
+
+<div class="col-md-12" *ngIf="engagementDetails">
+  <div class="row">
+    <div class="col-lg-10 col-md-12 card-info">
+      <div class="row">
+        <div class="col-12">
+          <div class="feedback-heading">
+            {{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE-COVERAGE-DETAILS' | translate }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="info-content table-responsive">
+            <table id="successessCoverageTable" class="table table-borderless table-lg">
+              <thead class="table-head">
+                <tr>
+                  <th class="pl-4">
+                    {{ 'CONTRIBUTOR.PERIOD' | translate }}
+                  </th>
+                  <th>{{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE' | translate }}</th>
+                  <th class="text-center" *ngIf="!ppaEstablishment">
+                    {{ 'CONTRIBUTOR.ANNUITY' | translate }}
+                  </th>
+                  <th class="text-center" *ngIf="!ppaEstablishment">
+                    {{ 'CONTRIBUTOR.OCCUPATIONAL-HAZARDS' | translate }}
+                  </th>
+                  <th class="text-center" *ngIf="!ppaEstablishment">
+                    {{ 'CONTRIBUTOR.UNEMPLOYMENT-INS' | translate }}
+                  </th>
+                  <th class="text-center" *ngIf="ppaEstablishment && showPPAAnnuity">
+                    {{'CONTRIBUTOR.PPA-ANNUITY' | translate }}
+                  </th>
+                  <th class="text-center" *ngIf="showPensionReform">
+                    {{'CONTRIBUTOR.PENSION-REFORM' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody *ngIf="engagementPeriod">
+                <tr id="coverageTableRow{{ i }}" class="table-row" *ngFor="let item of engagementPeriod; let i = index">
+                  <td class="pl-4">
+                    <span *ngIf="item.startDate !== null && item.startDate.gregorian !== null && item.startDate.entryFormat == typeGregorian "
+                      >{{ item.startDate.gregorian | date: 'dd/MM/yyyy' }}
+                    </span>
+                    <span *ngIf="item.endDate">
+                      <span *ngIf="item.endDate.gregorian && item.startDate.entryFormat == typeGregorian "> - {{ item.endDate.gregorian | date: 'dd/MM/yyyy' }} </span>
+                    </span>
+                    <span *ngIf="item.startDate !== null && item.startDate.hijiri !== null && item.startDate.entryFormat == typeHijira"
+                      >{{ item.startDate.hijiri | dateTypeHijiri }}
+                    </span>
+                    <span *ngIf="item.endDate">
+                      <span *ngIf="item.endDate.hijiri && item.startDate.entryFormat == typeHijira "> - {{ item.endDate.hijiri | dateTypeHijiri }} </span>
+                    </span>
+                    <span *ngIf="!item.endDate"> - {{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                  </td>
+                  <td *ngIf="item.wage.contributoryWage != 0">{{ item.wage.contributoryWage }}</td>
+                  <td *ngIf="item.wage.contributoryWage == 0">{{ item.wage.basicWage }}</td>
+                  <td class="text-center" *ngIf="!ppaEstablishment">
+                    <fa-icon
+                      class="cov-icon"
+                      [ngClass]="{
+                        'icon-active': checkAnnuityCoverage(item.coverageType)
+                      }"
+                      icon="check"
+                    >
+                    </fa-icon>
+                  </td>
+                  <td class="text-center" *ngIf="!ppaEstablishment">
+                    <fa-icon
+                      class="cov-icon"
+                      [ngClass]="{
+                        'icon-active': checkOHCoverage(item.coverageType)
+                      }"
+                      icon="check"
+                    ></fa-icon>
+                  </td>
+                  <td class="text-center" *ngIf="!ppaEstablishment">
+                    <fa-icon
+                      class="cov-icon"
+                      [ngClass]="{
+                        'icon-active': checkUICoverage(item.coverageType)
+                      }"
+                      icon="check"
+                    ></fa-icon>
+                  </td>
+                  <td class="text-center" *ngIf="ppaEstablishment && showPPAAnnuity">
+                    <fa-icon
+                      class="cov-icon"
+                      [ngClass]="{
+                        'icon-active': checkPpaCoverage(item.coverageType)
+                      }"
+                      icon="check"
+                    ></fa-icon>
+                  </td>
+                  <td class="text-center" *ngIf="showPensionReform">
+                    <fa-icon
+                      class="cov-icon"
+                      [ngClass]="{
+                        'icon-active': checkPensionReformCoverage(item.coverageType)
+                      }"
+                      icon="check"
+                    ></fa-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row form-action" *ngIf="!hideAddContributor">
+  <div class="col-md-12">
+    <gosi-button-dc class="float-right" id="submit" (submit)="cntresetToFirstForm()" type="primary">
+      {{ 'CONTRIBUTOR.ADD-ANOTHER-CONTRIBUTOR' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>

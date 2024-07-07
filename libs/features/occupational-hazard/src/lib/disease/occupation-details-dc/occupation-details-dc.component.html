@@ -1,0 +1,155 @@
+<div class="row expansion map-block mt-4">
+    <div class="col-lg-12 mb-2">
+      <h3 class="card-heading">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.SELECT-OCCUPATION' | translate }}
+      </h3>
+    </div>
+    <div class="col-lg-12">
+      <div class="row">
+        <div class="col-lg-6" *ngIf="occupationDetailsForm.get('occupationForm') && isOccupationsLoaded">
+          <gosi-input-group-select-dc
+            id="selectOccupation"
+            [label]="'OCCUPATIONAL-HAZARD.OCCUPATION' | translate"
+            [control]="occupationDetailsForm.get('occupationForm').get('occupation')"
+            [list]="occupationsList"
+            (select)="getDetails($event)"
+            [hideOptionalLabel]="true"
+            [disabled]="isDisabled"
+          >
+          </gosi-input-group-select-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-8">
+          <gosi-input-checkbox-dc
+            id="checkBox"
+            [control]="occupationFormFlag.get('checkBoxFlag')"
+            [label]="'OCCUPATIONAL-HAZARD.DISEASE.AVAILABILITY-OF-OCCUPATION' | translate"
+            (select)="showOccupationText($event)"
+          ></gosi-input-checkbox-dc>
+        </div>
+      </div>
+      <div class="row" *ngIf="textAreaVisible">
+        <div class="col-lg-6" *ngIf="occupationDetailsForm.get('newOccupationForm')">
+          <gosi-input-text-dc
+            id="newOccupation"
+            [label]="'OCCUPATIONAL-HAZARD.DISEASE.OCCUPATION' | translate"
+            [control]="occupationDetailsForm.get('newOccupationForm').get('newOccupation')"
+            [placeholder]="'OCCUPATIONAL-HAZARD.DISEASE.OCCUPATION' | translate"
+            [hideOptionalLabel]="true"
+            [maxlength]="15"
+            (keyup)="onKeyUp($event.target.value)"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12 mb-2" *ngIf="engagementResults && engagementResults.length > 0 && (isOccupationSelected || textAreaVisible)">
+          <h3 class="card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.DISEASE.ENGAGEMENTS' | translate }}
+          </h3>
+        </div>
+        <div
+          class="col-lg-12 mt-2"
+          *ngIf="engagementResults && engagementResults.length > 0 && (isOccupationSelected || textAreaVisible)"
+        >
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <th id="establishment" style="width: 35%">
+                {{ 'OCCUPATIONAL-HAZARD.ESTABLISHMENT' | translate }}
+              </th>
+              <th id="engagementPeriod" style="width: 35%">
+                {{ 'OCCUPATIONAL-HAZARD.ENGAGEMENT-TIME' | translate }}
+              </th>
+              <th id="remove" style="width: 30%"></th>
+            </thead>
+            <tbody *ngIf="engagementResults">
+              <ng-container>
+                <tr *ngFor="let item of engagementResults; let i = index">
+                  <td id="{{ 'establishmentNameValue' + i }}">
+                    {{ item.establishmentName | bilingualText }}
+                  </td>
+                  <td
+                    id="{{ 'engagementPeriod' + i }}"
+                    *ngIf="
+                      item.engagementPeriod && item.engagementPeriod[0].startDate && item.engagementPeriod[0].endDate
+                    "
+                  >
+                    {{ item.engagementPeriod[0].startDate.gregorian | date: 'dd/MM/yyyy' }} >
+                    {{ item.engagementPeriod[0].endDate.gregorian | date: 'dd/MM/yyyy' }}
+                  </td>
+                  <td
+                    id="{{ 'engagementPeriod' + i }}"
+                    *ngIf="
+                      item.engagementPeriod &&
+                      item.engagementPeriod[0].startDate &&
+                      (item.engagementPeriod[0].endDate === null || item.engagementPeriod[0].endDate === undefined)
+                    "
+                  >
+                    {{ item.engagementPeriod[0].startDate.gregorian | date: 'dd/MM/yyyy' }} -
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.ONWARDS' | translate }}
+                  </td>
+                  <td>
+                    <ng-container *ngIf="isOccupation && !item.isRemoved">
+                      <div class="delete-button">
+                        <a
+                          *ngIf="isOccupation && !item.isRemoved"
+                          class="delete-block"
+                          [id]="'delete' + i"
+                          (click)="showModal(deleteEngagement)"
+                        >
+                          <fa-icon [icon]="['far', 'trash-alt']" [ngClass]="disableDelete ? 'disabled' : ''"></fa-icon>
+                        </a>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="item.isRemoved">
+                      <div class="row pl-2 pr-4 ml-auto" *ngIf="item.isRemoved">
+                        <div class="col-lg-7 removed">{{ 'OCCUPATIONAL-HAZARD.DISEASE.REMOVED' | translate }}</div>
+                        <div class="col-lg-5 undo-icon" (click)="undoDelete(item,i)">
+                          <fa-icon icon="undo" class="pl-2 pr-2"></fa-icon
+                          >{{ 'OCCUPATIONAL-HAZARD.DISEASE.UNDO' | translate }}
+                        </div>
+                      </div>
+                    </ng-container>
+                  </td>
+                  <ng-template #deleteEngagement>
+                    <gosi-confirm-modal-dc
+                      [message]="'OCCUPATIONAL-HAZARD.DISEASE.CONFIRM-DELETE' | translate"
+                      (onConfirm)="onDeleteEngagement(item,i)"
+                      (onCancel)="decline()"
+                    >
+                    </gosi-confirm-modal-dc>
+                  </ng-template>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+        <div class="container">
+          <div *ngIf="noEngagementResults && isOccupationSelected">
+            <div class="col-lg-12">
+              <div class="no-results">
+                {{ 'OCCUPATIONAL-HAZARD.DISEASE.NO-DATA' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+    </div>
+  </div>
+  <div class="col-md-12 text-center mt-3">
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" size="lg" (click)="cancelOccupation()">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-right"  *ngIf="!noEngagementResults || !isOccupationSelected">
+      <gosi-button-dc id="save" type="primary" size="lg" (click)="save()">
+        {{ 'OCCUPATIONAL-HAZARD.DISEASE.SAVE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+  
+  
+  

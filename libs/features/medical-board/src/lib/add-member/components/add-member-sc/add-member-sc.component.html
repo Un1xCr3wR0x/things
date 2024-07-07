@@ -1,0 +1,117 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="main-heading">
+        {{ 'MEDICAL-BOARD.ADD-MB-MEMBER' | translate }}
+      </h4>
+    </div>
+  </div>
+  <!--Comment section -->
+  <div class="row" *ngIf="currentTab != totalTabs - 1 && isComments">
+    <div class="col-12">
+      <gosi-comments-dc [comments]="transactionReferenceData"> </gosi-comments-dc>
+    </div>
+  </div>
+  <!-- Progress wizard icons section -->
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab != totalTabs - 1"
+    [wizardItems]="mbwizardItems"
+    (clickWizard)="selectWizard($event)"
+    #addMemberWizard
+  >
+  </gosi-progress-wizard-dc>
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <mb-verify-member-dc
+    *ngIf="!verified"
+    [nationalityList]="nationalityList$ | async"
+    (submit)="verifyMemberDetails($event)"
+    (invalidForm)="showFormInvalid()"
+  >
+  </mb-verify-member-dc>
+  <!-- Four tabs for four section-->
+  <div class="hide-tab">
+    <tabset type="pills" #addMemberTabs>
+      <tab [active]="currentTab === 0">
+        <!-- Personal details section -->
+        <mb-personal-details-dc
+          *ngIf="verified"
+          [person]="member ? member : personDetails"
+          [members]="members"
+          [bankDetails]="bankDetails"
+          [cityList]="cityList$ | async"
+          [gccCountryList]="gccCountryList$ | async"
+          [genderList]="genderList$ | async"
+          (reset)="resetVerify($event)"
+          (IBAN)="getBankDetails($event)"
+          [bankNameList]="bankNameList"
+          (submit)="savememberFormDetails($event)"
+          (cancel)="showTemplate(cancelTemplate)"
+          (invalidForm)="showFormInvalid()"
+          [editMode]="editMode"
+          [personBirthDate]="personBirthDate"
+        >
+        </mb-personal-details-dc>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <!-- Contract details section -->
+        <mb-contract-details-dc
+          *ngIf="members?.personId || member?.mbProfessionalId"
+          [members]="members"
+          [person]="member"
+          [doctorType]="doctorType$ | async"
+          [medicalboardtype]="medicalboardtype$ | async"
+          [specialty]="specialty$ | async"
+          [hospital]="hospital$ | async"
+          [fees]="fees | async"
+          [feespervisit]="feespervisit$ | async"
+          [region]="region$ | async"
+          (feespersession)="getFees($event)"
+          (cancel)="showTemplate(cancelTemplate)"
+          (previous)="previousForm()"
+          (submit)="saveContractDetails($event)"
+          (invalidForm)="showFormInvalid()"
+          [hasPerson]="hasperson"
+          [editMode]="editMode"
+        >
+        </mb-contract-details-dc>
+      </tab>
+      <tab [active]="currentTab === 2">
+        <!-- Documents section -->
+        <mb-documents-dc
+          #scanDocsComp
+          [registrationNumber]="member.contractId"
+          [documentList]="documentList$ | async"
+          [isScan]="true"
+          (submit)="submitDocument($event)"
+          (cancel)="showTemplate(cancelTemplate)"
+          [comments]="comments"
+          (previous)="previousForm()"
+          (refresh)="refreshDocument($event)"
+          [member]="member"
+        >
+        </mb-documents-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<ng-container>
+  <ng-template #memberExistTemplate>
+    <gosi-confirm-modal-dc
+      message="MEDICAL-BOARD.ALREADY_ADDED_MEMBER"
+      (onConfirm)="getMbProfessionalDetails($event)"
+      (onCancel)="hideModal()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</ng-container>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'MEDICAL-BOARD.INFO-CANCEL'" (onConfirm)="cancelForm()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

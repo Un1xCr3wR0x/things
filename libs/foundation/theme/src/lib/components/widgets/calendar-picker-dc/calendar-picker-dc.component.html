@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row no-gutters calendar-block m-1" *ngIf="year">
+  <div class="col-lg-12">
+    <h6 class="year-title">{{ year.year }}</h6>
+  </div>
+
+  <div class="col-lg-12">
+    <div class="row d-flex months-row no-gutters" *ngFor="let monthRow of year.monthsRows; let i = index">
+      <div *ngIf="monthRow.activeClass" class="active-hlt" [ngClass]="monthRow.activeClass"></div>
+      <div *ngIf="monthRow.suggestedClass" class="suggested-hlt" [ngClass]="monthRow.suggestedClass"></div>
+      <div *ngIf="monthRow.selectedClass" class="selected-hlt" [ngClass]="monthRow.selectedClass"></div>
+      <div
+        class="col-lg-3 col-3 d-flex align-self-center justify-content-center"
+        *ngFor="let month of monthRow.months; let j = index"
+      >
+        <div
+          class="month-card"
+          [ngClass]="{ disabled: month.disabled }"
+          [tooltip]="
+            !month.beyondLimit || isAppPublic
+              ? monthRow.suggestedClass
+                ? suggestedMessage
+                : isAppPublic
+                ? isPublicMessage
+                : null
+              : null
+          "
+          (mouseover)="handleMouseOver(monthRow, month)"
+          (mouseout)="handleMouseOut(monthRow, month)"
+          (click)="handleSelection(monthRow, month)"
+        >
+          {{ month.labelKey | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #suggestedMessage>
+  <div class="d-flex flex-column">
+    {{ 'THEME.MONTH-SELECTION-MESSAGE' | translate }}
+  </div>
+</ng-template>
+
+<ng-template #disabledMessage>
+  <div class="d-flex flex-column">
+    {{ 'THEME.PERIOD-BEYOND-MAXLIMIT-MESSAGE' | translate }}
+  </div>
+</ng-template>
+
+<ng-template #isPublicMessage>
+  <div class="d-flex flex-column">
+    {{ 'THEME.EDIT-UNAVAILABLE' | translate }}
+  </div>
+</ng-template>

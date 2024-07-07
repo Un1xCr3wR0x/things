@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="form-group fc-margin" style="position: relative" [ngClass]="ignoreLabel ? 'no-label' : ''">
+  <label *ngIf="!ignoreLabel">
+    {{ label | translate }}
+    <span class="optional-field" *ngIf="!isRequired() && !hideOptionalLabel">({{ 'THEME.OPTIONAL' | translate }})</span>
+  </label>
+  <input
+    [formControl]="isMonthPicker ? monthControl : control"
+    class="form-control date-picker"
+    #hijiriPicker
+    (blur)="onBlur($event)"
+    (focus)="onFocus($event)"
+    [ngClass]="[
+      (isMonthPicker ? validateMonthField() : validateField()) ? 'is-invalid' : '',
+      disabled ? 'disabled' : '',
+      hasValue ? 'has-value' : ''
+    ]"
+    placeholder="{{ isMonthPicker ? 'MM/YYYY' : placeholder ? placeholder : 'DD/MM/YYYY' }}"
+    [dropSpecialCharacters]="false"
+    (keydown)="onKeydown($event)"
+    mask="{{ isMonthPicker ? '00/0000' : inputmask }}"
+    (click)="toggleContainer()"
+    disabled="{{ disabled }}"
+    id="{{ id }}"
+    disabled="{{ disabled }}"
+    [readonly]="disabled"
+    autocomplete="off"
+  />
+  <span #hijiriPickerIcon>
+    <fa-icon
+      [icon]="['far', 'calendar-alt']"
+      (click)="toggleContainer()"
+      class="calendar-icon"
+      [ngClass]="[
+        !ignoreLabel ? 'calendar-icon-align' : '',
+        disabled === true ? 'disable_icon' : '',
+        size === 'sm' ? 'sm' : ''
+      ]"
+    ></fa-icon>
+  </span>
+  <small class="form-text text-muted" *ngIf="helpText">
+    {{ helpText }}
+  </small>
+  <div class="invalid-feedback" id="{{ id }}-feedback" *ngIf="validationError">
+    {{ validationError.error | translate: validationError | formatDate }}
+  </div>
+</div>
+<div class="outer-container" [ngClass]="!showContainer ? 'hide' : ''">
+  <div
+    (mousedown)="$event.preventDefault()"
+    aria-label="calendar"
+    class="bottom ng-tns-c4-2 ng-star-inserted hijiri-container"
+    #hijiriContainer
+    role="dialog"
+  >
+    <div class="bs-datepicker ng-tns-c43-1 theme-green ng-star-inserted">
+      <div class="bs-datepicker-container ng-trigger ng-trigger-datepickerAnimation">
+        <div class="bs-calendar-container" role="application">
+          <div class="bs-media-container ng-tns-c43-1 ng-star-inserted">
+            <!---->
+            <gosi-hijiri-daypicker
+              *ngIf="viewMode === 'day'"
+              (onViewMode)="changeView($event)"
+              (onDaySelect)="onDaySelect($event, id)"
+            ></gosi-hijiri-daypicker>
+            <gosi-hijiri-monthpicker
+              [contextId]="id"
+              *ngIf="viewMode === 'month'"
+              (onViewMode)="changeView($event)"
+              (onMonthSelect)="onMonthSelect($event)"
+            ></gosi-hijiri-monthpicker>
+            <gosi-hijiri-yearpicker
+              *ngIf="viewMode === 'year'"
+              (onViewMode)="changeView($event)"
+              (onYearSelect)="onYearSelect($event)"
+            ></gosi-hijiri-yearpicker>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

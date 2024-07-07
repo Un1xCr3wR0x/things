@@ -1,0 +1,141 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="mof-allocation-content">
+  <div class="row">
+    <div class="col-auto mr-auto heading">
+      {{ 'BILLING.ALLOCATION-OF-CREDITS' | translate }} ({{ noOfRecords }} {{ 'BILLING.ESTABLISHMENT' | translate }})
+    </div>
+    <div class="menu d-flex">
+      <div class="search-component">
+        <gosi-search-dc
+          [placeholder]="'BILLING.SEARCH' | translate"
+          (search)="onSearchAmount($event)"
+          (keyup)="onSearchAmount($event.target.value)"
+        >
+        </gosi-search-dc>
+      </div>
+      <!----------------------------------------- Filter -------------------------------------------->
+      <div class="filter-component">
+        <gosi-filter-dc id="filter-area" (reset)="clearAllFiters()" (apply)="applyFilter()" [noScroll]="true">
+          <ng-container modalContent>
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-range-slider-dc
+                  [label]="'BILLING.DEBIT-AMOUNT'"
+                  [control]="debitAmount"
+                  [ceil]="defaultMaxValue"
+                  [floor]="defaultMinValue"
+                ></gosi-range-slider-dc>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-range-slider-dc
+                  [label]="'BILLING.ALLOCATED-AMOUNT'"
+                  [control]="allocationAmount"
+                  [ceil]="defaultMaxValue"
+                  [floor]="defaultMinValue"
+                ></gosi-range-slider-dc>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-range-slider-dc
+                  [label]="'BILLING.BALANCE-AFTER-ALLOCATION'"
+                  [control]="balanceAfterAllocation"
+                  [ceil]="defaultMaxValue"
+                  [floor]="defaultMinValue"
+                ></gosi-range-slider-dc>
+              </div>
+            </div>
+          </ng-container>
+        </gosi-filter-dc>
+      </div>
+      <!----------------------------------------- Filter Ends-------------------------------------------->
+    </div>
+  </div>
+  <!----------------------------------------------------Table View----------------------------------------------------->
+  <ng-container>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="table-scroll table-responsive">
+          <table class="table table-borderless table-effect">
+            <thead class="table-header">
+              <tr>
+                <th id="mofAllocationDeatils">
+                  {{ 'BILLING.ESTABLISHMENT-DETAILS' | translate }}
+                </th>
+                <th id="mofAllocationDebitAmount">
+                  {{ 'BILLING.DEBIT-AMOUNT' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+                <th id="mofAllocatedAmount">
+                  {{ 'BILLING.ALLOCATED-AMOUNT' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+                <th id="mofAllocationBalance">
+                  {{ 'BILLING.BALANCE-AFTER-ALLOCATION' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container
+                *ngFor="
+                  let item of itemlist
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemsPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: noOfRecords
+                        };
+                  let i = index
+                "
+              >
+                <tr class="border-bottom" (click)="routeToEstAllocation(item?.registrationNo)">
+                  <a class="view-details">
+                    <td>
+                      <span *ngIf="item?.establishmentName?.english !== null && lang === 'en'">
+                        {{ item?.establishmentName?.english }}
+                      </span>
+                      <span *ngIf="item?.establishmentName?.english == undefined || lang === 'ar'"
+                        >{{ item?.establishmentName?.arabic }}
+                      </span>
+                      <div class="registration-no">
+                        ({{ 'BILLING.REGISTRATION-NUMBER' | translate }}: {{ item?.registrationNo }})
+                      </div>
+                    </td>
+                  </a>
+
+                  <td>{{ item?.debitAmount * exchangeRate | number: '1.2-2' }}</td>
+                  <td>{{ item?.allocatedAmount * exchangeRate | number: '1.2-2' }}</td>
+                  <td>{{ item?.balanceAfterAllocation * exchangeRate | number: '1.2-2' }}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <ng-container>
+      <div *ngIf="noOfRecords > 10">
+        <gosi-pagination-dc
+          *ngIf="noOfRecords > itemsPerPage"
+          [totalSize]="noOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          paginationId="paginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+  <!----------------------------------------------------Table View Ends----------------------------------------------------->
+</div>

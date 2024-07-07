@@ -1,0 +1,215 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-----------------start of segment  Details ------------------>
+<ng-container>
+  <div class="sub-content-item">
+    <div class="sub-heading">
+      <span>{{ segmentHeading | translate }}</span>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="!vicBulkFlag && !allentityFlag && !csvVic && !csvEst">
+        <gosi-label-dc
+          id="establishmentSegment"
+          label="BILLING.SEGMENT-TERM"
+          [value]="waiverDetails?.selectedCriteria.segment.name | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="vicBulkFlag && !allentityFlag && !csvVic && !csvEst">
+        <gosi-label-dc
+          id="VicSegment"
+          label="BILLING.SEGMENT-TERM"
+          [value]="waiverDetails?.selectedCriteria.segment.name | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="allentityFlag && !csvVic && !csvEst">
+        <gosi-label-dc
+          id="allentity"
+          label="BILLING.SEGMENTATION-CRITERION"
+          [value]="waiverDetails?.selectedCriteria.segment.name | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-lg-6"
+        *ngIf="waiverDetails?.selectedCriteria.segment.name.english !== 'All' && !csvVic && !csvEst"
+      >
+        <div id="segmnetMultiselect" class="form-group form-label fc-margin">
+          <label class="label-color no-margin">
+            <span *ngIf="lang === 'en'">{{ waiverDetails?.selectedCriteria.segment.name.english }}</span>
+            <span *ngIf="lang === 'ar'">{{ waiverDetails?.selectedCriteria.segment.name.arabic }}</span>
+          </label>
+          <div class="label-value">
+            <span *ngIf="lang === 'en'">{{ listItemEn }} </span>
+            <span *ngIf="lang === 'ar'">{{ listItemAr }} </span>
+            <span *ngIf="segmentFlagVal"
+              ><a class="link-color" (click)="showSegmentDetailsModel(segmentListValidatorView, 'md')"
+                >+{{ segmentlistLength }} {{ 'BILLING.MORE' | translate }}</a
+              ></span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6" *ngIf="csvDataList.length > 0">
+        <div id="segmnetMultiselect" class="form-group form-label fc-margin">
+          <label class="label-color no-margin">
+            <span *ngIf="csvEst">{{ 'BILLING.REGISTRATION-NUMBER' | translate }}</span>
+            <span *ngIf="csvVic">{{ 'BILLING.CONTRIBUTOR-NUMBER' | translate }}</span>
+          </label>
+          <div class="label-value">
+            <span>{{ regNumberList }} </span>
+            <span *ngIf="segmentFlagValue">
+              <a class="link-color" (click)="showSegmentDetailsModel(regNumberListView, 'md')"
+                >+{{ segmentlistLengthValue }} {{ 'BILLING.MORE' | translate }}</a
+              ></span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="(!vicBulkFlag || allentityFlag || csvEst) && !csvVic">
+        <gosi-label-dc
+          id="noOfEst"
+          label="BILLING.TOTAL-NO-ESTABLISHMEHT"
+          [value]="waiverDetails?.quote.establishmentCount"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="vicBulkFlag || allentityFlag || csvVic">
+        <gosi-label-dc id="noOfCon" label="BILLING.TOTAL-NO-CONTRIBUTOR" [value]="waiverDetails?.quote.vicCount">
+        </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-----------------end of segment Details ------------------>
+
+<!-----------------start of Late Fees Waiver Details ------------------>
+<div class="row">
+  <div class="col-lg-12 sub-heading">
+    {{ 'BILLING.LATE-FEES-WAVIER-DETAILS' | translate }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-6" *ngIf="waiverDetails?.reasonOthers !== null">
+    <gosi-label-dc
+      id="exceptionReason"
+      [label]="'BILLING.WAIVER-REASON' | translate"
+      [value]="waiverDetails?.reasonOthers | bilingualText"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-6" *ngIf="waiverDetails?.reasonOthers === null">
+    <gosi-label-dc
+      id="exceptionReason"
+      [label]="'BILLING.WAIVER-REASON' | translate"
+      [value]="waiverDetails?.reason | bilingualText"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-lg-6 mainStyles" *ngIf="waiverDetails?.waiverType !== 'EVENT_DATE_CHANGE'">
+    <div class="value-clr">
+      {{ 'BILLING.PERIOD-OF-WAIVER' | translate }}
+    </div>
+    <div
+      class="previous-Indicators"
+      *ngIf="!sameMonthFlag && waiverDetails?.waiverStartDate?.gregorian && waiverDetails?.waiverEndDate.gregorian"
+    >
+      {{ waiverDetails?.waiverStartDate?.gregorian | date: 'MM/yyyy' }}
+      <fa-icon class="value-clr" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+      <fa-icon class="value-clr" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+      {{ waiverDetails?.waiverEndDate.gregorian | date: 'MM/yyyy' }}
+    </div>
+    <div class="previous-Indicators" *ngIf="sameMonthFlag && waiverDetails?.waiverStartDate?.gregorian">
+      {{ waiverDetails?.waiverStartDate?.gregorian | date: 'MM/yyyy' }}
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="waiverDetails?.waiverType === 'EVENT_DATE_CHANGE'">
+  <div class="col-lg-12"></div>
+  <div class="col-lg-12 event-date">
+    <div class="table-responsive">
+      <table class="table">
+        <thead class="thead-light">
+          <tr>
+            <th class="month-align">{{ 'BILLING.SELECTED-MONTH' | translate }}</th>
+            <th>
+              {{ 'BILLING.ACTUAL-LATE-FEE-DATE' | translate }}
+            </th>
+            <th>
+              {{ 'BILLING.NEW-LATE-FEE-DATE' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let contDetail of waiverDetails?.eventDate; let i = index">
+            <td class="month-align" *ngIf="lang === 'en'">{{ contDetail.month?.english | uppercase }}</td>
+            <td class="month-align" *ngIf="lang === 'ar'">{{ contDetail.month?.arabic }}</td>
+            <td>
+              {{ contDetail.actualEventDate?.gregorian | date: 'dd/MM/yyyy' }}
+            </td>
+            <td>
+              {{ contDetail.newEventDate?.gregorian | date: 'dd/MM/yyyy' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="waiverDetails?.waiverType !== 'EVENT_DATE_CHANGE'">
+  <div class="col-lg-6">
+    <gosi-label-dc
+      id="penaltyPercentage"
+      [label]="'BILLING.WAIVED-PENALITY-PERCETANGES' | translate"
+      [value]="waivedPenaltyPercentage"
+    >
+    </gosi-label-dc>
+  </div>
+</div>
+<!-----------------end of Late Fees Waiver Details ------------------>
+<!-- Modals -->
+<ng-template #segmentListValidatorView>
+  <div class="model-margin">
+    <blg-segment-list-details-dc
+      [establishmentSegment]="waiverDetails?.selectedCriteria.segment.name"
+      [establishmentSegmentMultiSelect]="waiverDetails?.selectedCriteria.segment.values"
+      (cancel)="confirmCancelPopUp()"
+    >
+    </blg-segment-list-details-dc>
+  </div>
+</ng-template>
+<ng-template #regNumberListView>
+  <div class="model-margin modal-table">
+    <div class="scroll">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th>
+              <span *ngIf="csvEst">{{ 'BILLING.REGISTRATION-NUMBER' | translate }}</span>
+              <span *ngIf="csvVic">{{ 'BILLING.CONTRIBUTOR-NUMBER' | translate }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let item of csvDataList; let i = index">
+            <tr class="border-bottom">
+              <td>
+                <span>{{ item }}</span>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-padding">
+      <gosi-button-dc id="confirmBtn" class="float-right" type="secondary" size="md" (submit)="confirmCancelPopUp()">
+        {{ 'BILLING.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>

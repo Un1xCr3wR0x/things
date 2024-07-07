@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row owner-content align-items-center justify-content-between custom-scroll-bar" *ngIf="owners">
+  <table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th style="width: 50%">{{ 'ESTABLISHMENT.OWNER-NAME' | translate }}</th>
+        <th></th>
+        <th style="width: 25%">{{ 'ESTABLISHMENT.OWNER-START-DATE' | translate }}</th>
+        <th style="width: 25%">{{ 'ESTABLISHMENT.OWNER-END-DATE' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="
+          let owner of owners
+            | paginate
+              : {
+                  id: 'ownerPagination',
+                  itemsPerPage: itemsPerPage,
+                  currentPage: currentPage,
+                  totalItems: totalOwners
+                };
+          let i = index
+        "
+      >
+        <td class="center-align">
+          <div class="d-flex">
+            <div>
+              <div class="name">
+                <est-owner-name-dc [owner]="owner" [ownerIndex]="i"> </est-owner-name-dc>
+              </div>
+              <ng-container *ngIf="owner?.person != null">
+                <div class="nationalId">
+                  <est-owner-identity-dc [owner]="owner"></est-owner-identity-dc>
+                </div>
+              </ng-container>
+             <ng-container *ngIf="owner.estOwner != null">
+                <div class="estOwner">
+                {{ 'ESTABLISHMENT.PARTY-ID' | translate }}: {{ owner?.estOwner?.partyId }}
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </td>
+        <td class="center-align">
+          <div
+            class="owner-status-container"
+            *ngIf="
+              owner.recordAction &&
+              (owner.recordAction === removeRecordAction || owner.recordAction === modifyRecordAction)
+            "
+          >
+            <div *ngIf="owner.recordAction === removeRecordAction" class="owner-status">
+              {{ 'ESTABLISHMENT.MODIFIED' | translate }}
+            </div>
+            <div *ngIf="owner.recordAction === modifyRecordAction" class="owner-status">
+              {{ 'ESTABLISHMENT.MODIFIED' | translate }}
+            </div>
+          </div>
+        </td>
+        <td class="center-align">
+          <div class="d-flex dates">
+            <div [ngClass]="[dateHasChanged(owner, true) ? 'modified' : '']">
+              {{ owner?.startDate?.gregorian | gosiDate }}
+            </div>
+          </div>
+        </td>
+        <td class="center-align">
+          <div class="d-flex dates">
+            <ng-container *ngIf="owner.endDate && owner.endDate?.gregorian !== null; else noValueTemplate">
+              <div [ngClass]="[dateHasChanged(owner, false) ? 'modified' : '']">
+                {{ owner?.endDate?.gregorian | gosiDate }}
+              </div>
+            </ng-container>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="d-flex justify-content-center" *ngIf="totalOwners > itemsPerPage">
+  <gosi-pagination-dc
+    [totalSize]="totalOwners"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectedPage($event)"
+    paginationId="ownerPagination"
+  ></gosi-pagination-dc>
+</div>
+<ng-template #noValueTemplate>
+  {{ 'ESTABLISHMENT.ONWARDS' | translate }}
+</ng-template>

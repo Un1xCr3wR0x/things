@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content">
+  <ng-container *ngIf="establishment && establishment.registrationNo !== 0">
+    <frm-main-content-dc
+      [canEdit]="!validator2"
+      (onEdit)="isOrgGcc ? navigateToCsrView(2) : navigateToCsrView(3)"
+      [documents]="documentList ? documentList : []"
+      [comments]="comments$ | async"
+    >
+      <div id="mainHeading">
+        <frm-main-heading-dc
+          [heading]="heading | translate"
+          [subLabel]="'ESTABLISHMENT.REGISTRATION-NO' | translate"
+          [subValue]="establishment.registrationNo"
+        >
+        </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <div class="content-item">
+          <est-establishment-details-dc
+            (onEdit)="navigateToCsrView(0)"
+            [showCrn]="isEstablishmentFromMci"
+            [isBranch]="isBranch"
+            [canEdit]="!validator2"
+            [isGCC]="isGCC"
+            [establishment]="establishment"
+            [showModifiedLegend]="isEstProactive"
+            [highlightStartDate]="highlightStartDate"
+            [highlightLicense]="highlightLicense"
+            [highlightLicenseNo]="highlightLicenseNo"
+            [highlightLicenseAuth]="highlightLicenseAuth"
+            [highlightLicenseIssDate]="highlightLicenseIssDate"
+            [highlightLiceseExpDate]="highlightLiceseExpDate"
+            [highlightLegalEntity]="highlightLegalEntity"
+            [highlightActivityType]="highlightActivityType"
+            [highlightEstEngName]="highlightEstEngName"
+            [highlightMailingAddressChange]="highlightMailingAddressChange"
+            [highlightNationalAddress]="highlightNationalAddress"
+            [highlightPoAddress]="highlightPoAddress"
+            [highlightEmail]="highlightEmail"
+            [highlightMobileNo]="highlightMobileNo"
+            [highlightTelephone]="highlightTelephone"
+            [highlightExtension]="highlightExtension"
+            [highlightUnifiedNaionalNumber]="highlightUnifiedNaionalNumber"
+            [highlightCrNumber]="highlightCrNumber"
+          ></est-establishment-details-dc>
+        </div>
+        <ng-container *ngIf="showPaymentSection">
+          <div class="content-item">
+            <est-establishment-payment-details-dc
+              (onEdit)="navigateToCsrView(1)"
+              [showLateFee]="hasLateFeeIndicator"
+              [canEdit]="!validator2"
+              [establishment]="establishment"
+              [showMofPayment]="showMofPayment"
+              [highlightIban]="highlightIban"
+              [highlightMof]="highlightMof"
+              [highlightPaymentStartDate]="highlightPaymentStartDate"
+              [highlightLateFee]="highlightLateFee"
+              [isGCC]="isGCC"
+            ></est-establishment-payment-details-dc>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="(isGCC || establishment.proactive) && !isPpa">
+          <div class="content-item">
+            <est-establishment-owner-details-dc
+              [canEdit]="!validator2"
+              (onEdit)="navigateToCsrView(1)"
+              [newOwners]="establishmentOwnerDetails.persons"
+              [estOwnersList]="establishmentOwners?.owners"
+              [isGcc]="isGCC"
+              [showDate]="false"
+              [ownersToHighlight]="ownersToHighlight"
+              [hasOwnerDeleted]="hasOwnerDeleted"
+            >
+            </est-establishment-owner-details-dc>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="hasAdmin">
+          <div class="content-item">
+            <est-establishment-admin-details-dc
+              (onEdit)="isOrgGcc ? navigateToCsrView(1) : navigateToCsrView(2)"
+              [canEdit]="!validator2"
+              [isGCC]="isGCC"
+              [establishmentAdminDetails]="establishmentAdminDetails"
+            >
+            </est-establishment-admin-details-dc>
+          </div>
+        </ng-container>
+      </div>
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="validator2 || establishment.proactive === true"
+          [canReject]="establishment.proactive === false"
+          (approveEvent)="approveEstablishment(approveTemplate)"
+          (rejectEvent)="rejectEstablishment(rejectTemplate)"
+          (returnEvent)="returnEstablishment(returnTemplate)"
+          (cancelEvent)="showModal(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <!---------------------------------- Modals --------------------------------------->
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      iconName="warning"
+      message="ESTABLISHMENT.INFO-CANCEL"
+      (onConfirm)="confirmCancel()"
+      (onCancel)="hideModal()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="validatorForm"
+      [heading]="'ESTABLISHMENT.EST-REJECT-REASON'"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="establishmentRejectReasonList"
+      (rejectEvent)="confirmRejection()"
+      [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: estRouterData.referenceNo }"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="validatorForm"
+      [heading]="'ESTABLISHMENT.EST-RETURN-REASON'"
+      (cancelEvent)="hideModal()"
+      [returnReasonList$]="establishmentReturnReasonList"
+      (returnEvent)="confirmReturn()"
+      [warningMessage]="
+        establishment.proactive
+          ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO'
+          : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+      "
+    ></frm-return-template-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="validatorForm"
+      [isCommentsMandatory]="isTransactionReturned"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="confirmApprove()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+</div>

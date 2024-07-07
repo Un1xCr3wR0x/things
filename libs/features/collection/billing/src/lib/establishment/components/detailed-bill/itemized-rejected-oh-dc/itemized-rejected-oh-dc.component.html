@@ -1,0 +1,185 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row search-area-padding">
+  <div class="col-auto mr-auto heading">
+    {{ 'BILLING.REJECTED-OH-CLAIMS-DETAILS' | translate | titlecase }}
+  </div>
+  <div class="menu d-flex">
+    <div class="search">
+      <gosi-search-dc [placeholder]="'BILLING.SEARCH' | translate"> </gosi-search-dc>
+    </div>
+    <div class="filter filter-padding">
+      <gosi-filter-dc></gosi-filter-dc>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 table-scroll table-responsive full-width">
+    <table class="table table-borderless">
+      <thead class="thead-light">
+        <tr>
+          <th rowspan="3">{{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}</th>
+          <th rowspan="3">
+            {{ 'BILLING.OH-TYPE' | translate }}
+          </th>
+          <th rowspan="3">
+            {{ 'BILLING.CASE-NUMBER' | translate }}
+          </th>
+
+          <th rowspan="3">
+            {{ 'BILLING.REJECTION-DATE' | translate }}
+          </th>
+
+          <th rowspan="3">
+            {{ 'BILLING.REJECTION-REASON' | translate }}
+          </th>
+          <th colspan="4" class="alignment">
+            {{ 'BILLING.REJECTED-AMOUNT-BREAKUP' | translate | titlecase }}
+            <span class="currencyStyle">({{ 'BILLING.SAR' | translate }})</span>
+          </th>
+          <th rowspan="3">
+            {{ 'BILLING.TOTAL-AMOUNT' | translate }}
+            <span class="currencyStyle">({{ 'BILLING.SAR' | translate }})</span>
+          </th>
+        </tr>
+        <tr>
+          <th class="alignment">{{ 'BILLING.DAILY-ALLOWANCE' | translate | titlecase }}</th>
+          <th class="alignment">{{ 'BILLING.MEDICAL-EXPENSES' | translate | titlecase }}</th>
+          <th class="alignment">{{ 'BILLING.MEDICATION-AMOUNT' | translate | titlecase }}</th>
+          <th class="alignment">{{ 'BILLING.VAT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container>
+          <ng-container
+            *ngFor="
+              let injuryitem of items
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: rejectedOHDetails.rejectedInjuryCount
+                    };
+              let i = index
+            "
+          >
+            <ng-container *ngIf="injuryitem">
+              <tr *ngFor="let expense of injuryitem.expenses; let j = index">
+                <td [attr.rowspan]="injuryitem.expenses?.length" *ngIf="j === 0" id="{{ 'nameDetails' }}">
+                  <span
+                    *ngIf="
+                      injuryitem.name.english?.name !== null &&
+                      injuryitem.name.english?.name?.length > 0 &&
+                      lang === 'en'
+                    "
+                  >
+                    {{ injuryitem.name.english.name }}
+                  </span>
+                  <span
+                    *ngIf="
+                      ((injuryitem.name.english?.name?.length === 0 || injuryitem.name.english?.name === undefined) &&
+                        lang === 'en') ||
+                      lang === 'ar'
+                    "
+                    >{{
+                      injuryitem.name.arabic.firstName +
+                        injuryitem.name.arabic.secondName +
+                        injuryitem.name.arabic.thirdName +
+                        injuryitem.name.arabic.familyName | bilingualText
+                    }}
+                  </span>
+                  <div *ngIf="injuryitem.personId && injuryitem.personId.idType !== null">
+                    <div *ngIf="injuryitem.personId.idType === 'NIN'">
+                      <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                      <span>
+                        {{ injuryitem.personId.personIdentifier }}) ({{
+                          injuryitem.personId.nationality | bilingualText
+                        }})</span
+                      >
+                    </div>
+                    <div *ngIf="injuryitem.personId.idType === 'PASSPORT'">
+                      <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                      <span>
+                        {{ injuryitem.personId.personIdentifier }}) ({{
+                          injuryitem.personId.nationality | bilingualText
+                        }})
+                      </span>
+                    </div>
+                    <div *ngIf="injuryitem.personId.idType === 'Iqama'">
+                      <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                      <span>
+                        {{ injuryitem.personId.personIdentifier }}) ({{
+                          injuryitem.personId.nationality | bilingualText
+                        }})</span
+                      >
+                    </div>
+                    <div *ngIf="injuryitem.personId.idType === 'Border No'">
+                      <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                      <span>
+                        {{ injuryitem.personId.personIdentifier }}) ({{
+                          injuryitem.personId.nationality | bilingualText
+                        }})
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td [attr.rowspan]="injuryitem.expenses?.length" *ngIf="j === 0" id="{{ injuryitem.type }}">
+                  {{ injuryitem.type | bilingualText }}
+                </td>
+                <td [attr.rowspan]="injuryitem.expenses?.length" *ngIf="j === 0" id="{{ injuryitem.caseNumber }}">
+                  {{ injuryitem.caseNumber }}
+                </td>
+                <td
+                  [attr.rowspan]="injuryitem.expenses?.length"
+                  *ngIf="j === 0"
+                  id="{{ injuryitem.rejectionDate?.gregorian }}"
+                >
+                  <span *ngIf="injuryitem.rejectionDate !== null">
+                    {{ injuryitem.rejectionDate?.gregorian | date: 'dd/MM/yyyy' }}</span
+                  >
+                </td>
+
+                <td [attr.rowspan]="injuryitem.expenses?.length" *ngIf="j === 0" id="{{ injuryitem.rejectionReason }}">
+                  {{ injuryitem.rejectionReason | bilingualText }}
+                </td>
+
+                <td id="{{ expense.recoveryBreakup?.compensationPaid }}">
+                  {{ expense.recoveryBreakup?.compensationPaid | number: '1.2-2' }}
+                </td>
+                <td id="{{ expense.recoveryBreakup?.medicalExpense }}">
+                  {{ expense.recoveryBreakup?.medicalExpense | number: '1.2-2' }}
+                </td>
+                <td id="{{ expense.recoveryBreakup?.medicationAmount }}">
+                  {{ expense.recoveryBreakup?.medicationAmount | number: '1.2-2' }}
+                </td>
+                <td id="{{ expense.recoveryBreakup?.vat }}">
+                  {{ expense.recoveryBreakup?.vat | number: '1.2-2' }}
+                </td>
+                <td colspan="2" id="{{ expense.total }}">
+                  {{ expense.total | number: '1.2-2' }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>
+<ng-container>
+  <div>
+    <gosi-pagination-dc
+      *ngIf="rejectedOHDetails.rejectedInjuryCount > itemsPerPage"
+      [totalSize]="rejectedOHDetails.rejectedInjuryCount"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectedPage($event)"
+      paginationId="paginationId"
+    ></gosi-pagination-dc>
+  </div>
+</ng-container>

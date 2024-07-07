@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <!-- Heading -->
+  <cnt-header-section-dc
+    heading="CONTRIBUTOR.ADD-CONTRACT"
+    (goBack)="isEditMode ? onCancelClick(cancelTemplate) : onCancelDraftClick(cancelDraftTemplate)"
+
+  ></cnt-header-section-dc>
+
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="personDetails">
+    <div class="col-lg-12">
+      <cnt-contributor-banner-dc [contributor]="personDetails"></cnt-contributor-banner-dc>
+    </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!-- Progress Wizard -->
+  <gosi-progress-wizard-dc (clickWizard)="selectWizard($event)" [wizardItems]="formWizardItems" #progressWizardItems>
+  </gosi-progress-wizard-dc>
+
+  <!-- Personal Details section -->
+  <div class="hide-tab">
+    <tabset type="pills" #registerContributorTabs>
+      <tab [active]="activeTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- add contract details details section -->
+            <cnt-contract-form-dc
+              *ngIf="activeEngagement && contributorType"
+              [activeEngagement]="activeEngagement"
+              [contributorType]="contributorType"
+              [isContributorAbroad]="contributorAbroad"
+              [cityList]="cityList$ | async"
+              [minStartDate]="minStartDate"
+              [internationalCountryList]="internationalCountryList$ | async"
+              [religionList]="religionList$ | async"
+              [contractAtDraft]="contractAtDraft"
+              [contractAtValidator]="contractAtValidator"
+              [bankAccount]="bankInfo"
+              [bankNameList$]="bankNameList$"
+              [parentForm]="parentForm"
+              [isEditMode]="isEditMode"
+              [isBankDetailsPending]="isBankDetailsPending"
+              (IBAN)="getBank($event)"
+              (saveContractClicked)="editContractDetails($event)"
+              (previousContractClicked)="navigateToPreviousTab()"
+              (cancel)="isEditMode ? onCancelClick(cancelTemplate) : onCancelDraftClick(cancelDraftTemplate)"
+              (showError)="showErrorAlert($event)"
+            >
+            </cnt-contract-form-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- add contract clauses details details section -->
+            <cnt-add-contract-clauses-dc
+              [contractClausesList]="contractClausesList"
+              [transportationAllowance]="transportationAllowance"
+              [isEditMode]="isEditMode"
+              [parentFormRef]="parentForm"
+              (save)="saveClauses($event)"
+              (cancel)="isEditMode ? onCancelClick(cancelTemplate) : onCancelDraftClick(cancelDraftTemplate)"
+              (next)="navigateToNextTab()"
+              (previous)="navigateToPreviousTab()"
+              [activeEngagement]="activeEngagement"
+              (showError)="showErrorAlert($event)"
+            ></cnt-add-contract-clauses-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 2 && appToken === 'PRIVATE'">
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <!-- document details section -->
+              <cnt-contract-file-upload-dc
+                [parentForm]="parentForm"
+                [isCommentRequired]="isEditMode"
+                [engagementId]="engagementId"
+                [contractId]="contractId"
+                [referenceNumber]="referenceNo"
+                [documentList]="documents"
+                [isContract]="'contract-auth'"
+                [infoMessage]="'CONTRIBUTOR.COMPLIANCE.ATLEAST-ONE_DOC'"
+                (refresh)="refreshDocument($event)"
+                (previous)="navigateToPreviousTab()"
+                (reset)="isEditMode ? onCancelClick(cancelTemplate) : onCancelDraftClick(cancelDraftTemplate)"
+                (submit)="onSubmitDocuments()"
+              ></cnt-contract-file-upload-dc>
+            </div>
+          </div>
+        </ng-container>
+      </tab>
+      <tab [active]="(activeTab === 2 && appToken === 'PUBLIC') || activeTab === 3">
+        <div *ngIf="!isEditMode" class="col-md-12 fa-class d-flex justify-content-end">
+          <gosi-button-dc type="outline-secondary" [size]="'md'" id="printContract" (click)="printPreview()">
+            <fa-icon [icon]="['fas', 'print']"></fa-icon>
+            <span class="mr-2"></span>
+            {{ 'CONTRIBUTOR.PREVIEW-DETAILS.PRINT-CONTRACT-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+        <!-- Add contract preview screen -->
+        <cnt-preview-dc
+          [establishment]="previewEstablishment"
+          [personDetails]="personDetails"
+          [activeEngagement]="activeEngagement"
+          [contractAtDraft]="contractAtDraft || contractAtValidator"
+          [bankInfo]="
+            isEditMode
+              ? bankInfo
+              : parentForm.get('bankDetailsForm')
+              ? parentForm.getRawValue().bankDetailsForm
+              : bankInfo
+          "
+          [contractClausesList]="contractClausesList"
+          [transportationAllowance]="transportationAllowance"
+          [isPreviewEdit]="true"
+          [isEditMode]="isEditMode"
+          (onSubmitClicked)="finalSubmitContract()"
+          (onPreviousClicked)="navigateToPreviousTab()"
+          (onContractDetails)="navigateToContractDetailsTab()"
+          (onClausesEdit)="navigateToClausesTab()"
+          (cancel)="isEditMode ? onCancelClick(cancelTemplate) : onCancelDraftClick(cancelDraftTemplate)"
+        >
+        </cnt-preview-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CONFIRM-CANCEL"
+    (onConfirm)="onConfirmCancelClick()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+
+<ng-template #cancelDraftTemplate>
+  <cnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="onKeepDraft()"
+    (discardEvent)="onDiscard()"
+    (onCancel)="hideModal()"
+  ></cnt-transaction-cancel-popup-dc>
+</ng-template>

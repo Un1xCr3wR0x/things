@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-modal-dc [modalHeader]="'MEDICAL-BOARD.SEARCH-PARTICIPANT' | translate">
+  <div modalContent>
+    <div class="col-lg-12 warning-alert" *ngIf="showAddedParticipant">
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.ALREADY-ADDED'" type="warning" [dismissible]="true"> </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12">
+      <gosi-alert-dc
+        *ngIf="showUnavailability"
+        [message]="'MEDICAL-BOARD.UNAVAILABILITY-OF-A-PARTICIPANT' | translate"
+        [dismissible]="false"
+        type="danger"
+      ></gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 warning-alert" *ngIf="isHold">
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.HOLD-SESSION-MSG'" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-search-dc
+          id="search-area"
+          class="pr-2 pl-2 search-value"
+          [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+          (search)="onSearchParticipant($event)"
+          (keyup)="onSearchEnabled($event.target.value)"
+          [searchParam]="searchParams"
+          (reset)="resetSearch()"
+        ></gosi-search-dc>
+      </div>
+    </div>
+    <ng-container class="row" *ngIf="showModal">
+      <!-- *ngIf="isSearched "> -->
+      <ng-container>
+        <!-- *ngIf="searchedParticipant !== null; else noValue" -->
+        <div class="col-lg-12 warning-alert" *ngIf="countExceeded">
+          <gosi-alert-dc [message]="'MEDICAL-BOARD.PARTICIPANTS-WARNING'" type="warning" [dismissible]="false">
+          </gosi-alert-dc>
+        </div>
+        <div class="col-lg-12 warning-alert" *ngIf="isMaxParticipant">
+          <gosi-alert-dc [message]="'MEDICAL-BOARD.MAXIMUM-PARTICIPANTS-TEMPLATE'" type="warning" [dismissible]="true">
+          </gosi-alert-dc>
+        </div>
+        <div class="col-lg-12 warning-alert" *ngIf="isModalParticipantLocation">
+          <gosi-alert-dc [message]="'MEDICAL-BOARD.ERROR-LOCATION'" type="warning" [dismissible]="true">
+          </gosi-alert-dc>
+        </div>
+        <div class="col-lg-12 warning-alert" *ngIf="isNonSpeciality">
+          <gosi-alert-dc [message]="'MEDICAL-BOARD.ERROR-SPECIALITY'" type="warning" [dismissible]="true">
+          </gosi-alert-dc>
+        </div>
+        <div class="col-lg-12">
+          <gosi-card-dc heading="{{ 'MEDICAL-BOARD.PARTICIPANTS-DETAILS' | translate }}" type="secondary">
+            <div class="row" *ngIf="searchedParticipant && searchedParticipant?.identityNumber">
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [value]="
+                    searchedParticipant.name?.english === null
+                      ? searchedParticipant.name?.arabic
+                      : (searchedParticipant.name | bilingualText)
+                  "
+                  label="MEDICAL-BOARD.NAME"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [value]="searchedParticipant.identityNumber"
+                  label="MEDICAL-BOARD.ID"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [value]="searchedParticipant.assessmentType | bilingualText"
+                  label="MEDICAL-BOARD.ASSESMENT-TYPE"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [control]="searchedParticipant.specialty"
+                  label="MEDICAL-BOARD.REQUIRED-SPECIALITY"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [control]="searchedParticipant.location"
+                  label="MEDICAL-BOARD.LOCATION"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [value]="searchedParticipant.noOfDaysInQueue"
+                  label="MEDICAL-BOARD.DAYS-IN-QUEUE"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-lg-4">
+                <gosi-label-dc
+                  class="label-value"
+                  [control]="searchedParticipant.mobileNumber"
+                  label="MEDICAL-BOARD.MOB_NUM"
+                >
+                  <span id="prefixValue">{{ getISDCodePrefix() }}</span>
+                </gosi-label-dc>
+              </div>
+            </div>
+          </gosi-card-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancelBtn" type="secondary" (submit)="cancelAddParticipant()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-right" *ngIf="isSessionstatus && totalNoOfParticipantRecords >= maxParticipants">
+      <gosi-button-dc id="confirmBtn" [disabled]="isDisabled" (submit)="onClickAddParticipantsNIN()">
+        {{ 'MEDICAL-BOARD.ADD-PARTICIPANT' | translate }}
+      </gosi-button-dc>
+    </div>
+
+    <div class="btn-section float-right" *ngIf="!isSessionstatus || maxParticipants > totalNoOfParticipantRecords">
+      <gosi-button-dc id="submit" [disabled]="isDisabled" type="primary" (submit)="confirmAddParticipant()">
+        {{ 'MEDICAL-BOARD.ADD-PARTICIPANT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</gosi-modal-dc>
+
+<ng-template #noValue>
+  <!-- <div *ngIf="searchedParticipant?.length === 0" class="pt-4"> -->
+  <gosi-no-result-dc></gosi-no-result-dc>
+  <!-- </div> -->
+</ng-template>

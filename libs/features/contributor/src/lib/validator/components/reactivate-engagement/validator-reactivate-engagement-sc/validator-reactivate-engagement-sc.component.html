@@ -1,0 +1,105 @@
+<div class="content">
+  <frm-main-content-dc [comments]="comments" (onEdit)="navigateToEdit()" [documents]="documents" [canEdit]="false">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'CONTRIBUTOR.REACTIVATE-ENGAGEMENT' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+
+      <cnt-contributor-details-dc 
+        [contributor]="contributor" 
+        (onEdit)="navigateToEdit()" 
+        [canEdit]="!isValidator2"
+      ></cnt-contributor-details-dc>
+
+      <cnt-engagement-detailsRe-dc 
+        [reactivateEngagements]="reactivateEngagements"
+      ></cnt-engagement-detailsRe-dc>
+
+      <cnt-reactivate-dc 
+        [reactivateEngagements]="reactivateEngagements" 
+        [engagement]="engagement"
+        [lang]="lang"
+      ></cnt-reactivate-dc>
+      <gosi-alert-dc
+        [message]="'CONTRIBUTOR.REACTIVATE-ENGAGEMENT-ALERT-MSG' | translate"
+        type="info"
+        dismissable="false"
+        >
+      </gosi-alert-dc>
+      <div class="col-lg-12 peanlity">
+        <form class="form-inline">
+          <div class="col-lg-6">
+            <span class="peanlity-label"> {{ 'CONTRIBUTOR.APPLY-PENALITY' | translate }}</span>
+          </div>
+          <div class="col-lg-3"></div>
+          <div class="col-lg-3">
+            <gosi-input-toggle-dc
+              [disabled]="!canEditPenalty"
+              class="slider"
+              id="applyLatePenality"
+              [control]="validatorForm.get('penaltyIndicator')"
+              [ignoreLabel]="true"
+            >
+            </gosi-input-toggle-dc>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <cnt-validator-action-area-dc
+        [showApprove]="true"
+        [showReject]="canReject"
+        [showReturn]="isValidator2"
+        (approveEvent)="showModal(approveModal)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate, true)"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveModal>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.REACTIVATE-ENGAGEMENT-REJECT'"
+    [rejectReasonList$]="rejectReasonList$"
+    [transactionNumber]="referenceNo"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.REACTIVATE-ENGAGEMENT-RETURN'"
+    [returnReasonList$]="returnReasonList$"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

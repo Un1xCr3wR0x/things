@@ -1,0 +1,199 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- ---- Reason for Modification drop down come here --- -->
+<div class="pt-4">
+  <div class="row">
+    <div class="col-md-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.REASON-FOR-MODIFICATION' | translate"
+        id="modification-dropdown"
+        [control]="reasonForm.get('reasonSelect')"
+        [list]="reasonsList"
+        [hideOptionalLabel]="true"
+        (selectLov)="reasonSelected($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div
+      class="col-md-6"
+      *ngIf="!reasonForm.get('income') && heirStatusUpdated?.status && reasonForm.get('reasonSelect.english').value"
+    >
+      <gosi-label-dc
+        id="dep-status"
+        [value]="heirStatusUpdated.status | bilingualText"
+        label="{{ 'BENEFITS.NEW-HEIR-STATUS' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <ng-container
+      *ngIf="
+        !reasonForm.get('income') && !isUnborn && heirStatusUpdated && reasonForm.get('reasonSelect.english').value
+      "
+    >
+      <div class="col-md-6" *ngIf="marriageGrantDisplay">
+        <gosi-label-dc
+          id="marriageGrant"
+          [value]="heirStatusUpdated.marriageGrant || '0' | number: '1.2-2'"
+          label="{{ 'BENEFITS.MARRIAGE-GRANT-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-md-6" *ngIf="isDateEditable && heirStatusUpdated.status">
+        <gosi-input-date-dc
+          id="statusDateEditable"
+          label="{{ 'BENEFITS.STATUS-DATE' | translate }}"
+          [maxDate]="maxDateGregorian"
+          [control]="reasonForm.get('statusDate').get('gregorian')"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-md-6" *ngIf="!isDateEditable && heirStatusUpdated.status">
+        <gosi-label-dc
+          id="statusDate"
+          [value]="heirStatusUpdated?.eventDate | dateType"
+          label="{{ 'BENEFITS.STATUS-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+
+    <!--if Change in Monthly Wage selected-->
+    <ng-container *ngIf="reasonForm.get('income')">
+      <div class="col-md-6">
+        <gosi-input-currency-dc
+          [id]="'new-wage'"
+          [control]="reasonForm.get('income')"
+          [disabled]="heirStatusUpdated?.income > 0"
+          [label]="'BENEFITS.NEWLY-MONTHLY-WAGE' | translate"
+          [hideOptionalLabel]="true"
+          [separatorLimit]="separatorLimit"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="col-md-6">
+        <gosi-label-dc
+          id="dep-status"
+          [value]="heirStatusUpdated?.existingIncome | number: '1.2-2'"
+          label="{{ 'BENEFITS.CURRENT-MONTHLY-WAGE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </ng-container>
+
+    <div class="col-md-6" *ngIf="isDeathOfChild">
+      <gosi-input-date-dc
+        id="deathDate"
+        label="{{ 'BENEFITS.DEATH-DATE' | translate }}"
+        [maxDate]="maxDateGregorian"
+        [control]="reasonForm.get('statusDate').get('gregorian')"
+      >
+      </gosi-input-date-dc>
+    </div>
+    <div class="col-md-12 col-lg-12" *ngIf="showNewBornForm && !unborn?.personId">
+      <bnt-search-person-dc
+        #searchDcComponent
+        [systemRunDate]="systemRunDate"
+        [isUnborn]="isUnborn"
+        [nationalityList$]="nationalityList$"
+        [parentForm]="parentForm"
+        (searchPerson)="search($event)"
+        [showCancel]="false"
+      ></bnt-search-person-dc>
+    </div>
+    <div class="col-md-12 mt-4" *ngIf="unborn?.personId">
+      <bnt-heir-add-edit-dc
+        #addHeirChildComp
+        *ngIf="unborn && unborn.personId"
+        [update]="false"
+        [isPension]="isPension"
+        [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+        [payeeList]="payeeList"
+        [relationShipListForUnborn]="relationshipForNewborn$ | async"
+        [lang]="lang"
+        [heirList]="heirList"
+        [listOfDependents]="heirDetails"
+        [listOfGuardians]="listOfGuardians"
+        [validateApiResponse]="validateApiResponse"
+        [paymentMethodList]="paymentMethodList"
+        [guardianDetails]="guardianDetails"
+        [isHeir]="true"
+        [isUnborn]="true"
+        [isValidator]="isValidator"
+        [parentForm]="parentForm"
+        [systemRunDate]="systemRunDate"
+        [systemParameter]="systemParameter"
+        [dependentDetails]="unborn"
+        [annuityRelationShipList]="annuityRelationShip"
+        [maritalStatusList]="maritalStatusList"
+        [heirStatusList]="heirStatus"
+        [nationalityList$]="nationalityList$"
+        [heirStatusArr]="heirStatusArr"
+        [ageInNewLaw]="ageInNewLaw"
+        (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+        (validateDependent)="validateUnbornHeir($event)"
+        (addValidatedHeir)="addHeir($event)"
+        (reset)="resetSearch()"
+        (getBankForid)="getBank($event)"
+        (searchGuardian)="searchHeirGuardian($event)"
+        (getAuthPeronContactDetails)="getAuthorizedPersonContact($event)"
+      ></bnt-heir-add-edit-dc>
+    </div>
+  </div>
+  <!-- <div class="row" *ngIf="showNewBornForm && !unborn?.personId">
+
+  </div> -->
+  <!-- <div class="row mt-4" *ngIf="unborn?.personId">
+    <div class="col-md-12">
+      <bnt-heir-add-edit-dc
+        #addHeirChildComp
+        *ngIf="unborn && unborn.personId"
+        [update]="false"
+        [isPension]="isPension"
+        [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+        [payeeList]="payeeList"
+        [relationShipListForUnborn]="relationshipForNewborn$ | async"
+        [lang]="lang"
+        [heirList]="heirList"
+        [listOfDependents]="heirDetails"
+        [listOfGuardians]="listOfGuardians"
+        [paymentMethodList]="paymentMethodList"
+        [guardianDetails]="guardianDetails"
+        [isHeir]="true"
+        [isUnborn]="true"
+        [isValidator]="isValidator"
+        [parentForm]="parentForm"
+        [systemRunDate]="systemRunDate"
+        [systemParameter]="systemParameter"
+        [dependentDetails]="unborn"
+        [annuityRelationShipList]="annuityRelationShip"
+        [maritalStatusList]="maritalStatusList"
+        [heirStatusList]="heirStatus"
+        [nationalityList$]="nationalityList$"
+        [heirStatusArr]="heirStatusArr"
+        (validateDependent)="validateUnbornHeir($event)"
+        (reset)="resetSearch()"
+        (getBankForid)="getBank($event)"
+        (searchGuardian)="searchHeirGuardian($event)"
+        (getAuthPeronContactDetails)="getAuthorizedPersonContact($event)"
+      ></bnt-heir-add-edit-dc>
+    </div>
+  </div> -->
+
+  <!-- <div class="row" *ngIf="!isUnborn && heirStatusUpdated && reasonForm.get('reasonSelect.english').value">
+
+  </div> -->
+
+  <!-- save and cancel  -->
+  <div class="row d-flex justify-content-between pr-2" *ngIf="showSaveCancel">
+    <div class="col-auto">
+      <gosi-button-dc type="secondary" id="cancel" size="md" (submit)="cancelEditForm()">{{
+        'BENEFITS.CANCEL' | translate
+      }}</gosi-button-dc>
+    </div>
+    <div class="col-auto">
+      <gosi-button-dc type="primary" id="save" size="md" (submit)="saveStatus()">{{
+        'BENEFITS.SAVE' | translate
+      }}</gosi-button-dc>
+    </div>
+  </div>
+</div>

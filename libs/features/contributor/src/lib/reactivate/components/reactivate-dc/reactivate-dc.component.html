@@ -1,0 +1,150 @@
+
+ <div class="row">
+  <!-- <div *ngIf="true" class="col-md-12 pt-4 pb-4">
+    <fa-icon class="admin-icon" [icon]="['fas', 'briefcase']" size="2x"></fa-icon
+    ><span class="heading">
+      {{ 'CONTRIBUTOR.WAGE.OVERALL-ENGAGEMENT-DETAILS' | translate }}
+    </span>
+  </div> -->
+  <div class="col-md-12 accordion-holder">
+    <ng-container>
+      <gosi-accordion-dc [isOpen]="true">
+        <div header>
+          <div class="heading-wrapper">
+            <div class="row align-items-center d-md-flex justify-content-between">
+              <div class="accordion-heading-type col-lg-11 col-auto">
+                <div class="type-label">
+                  {{
+                    engagement?.establishmentName?.english === null
+                      ? engagement?.establishmentName?.arabic
+                      : (engagement?.establishmentName | bilingualText | titlecase)
+                  }}
+                  <span class="number"
+                    >{{ 'CONTRIBUTOR.REGISTRATION-NO' | translate }} : {{ engagement?.registrationNo }}</span
+                  >
+                </div>
+                <div class="type-value">
+                  <div class="row">
+                    <div class="col-3 date-value">
+                      {{ engagement?.joiningDate | dateType }}
+                      <fa-icon class="value-clrs" *ngIf="lang == 'en'" icon="arrow-right"></fa-icon>
+                      <fa-icon class="value-clrs" *ngIf="lang == 'ar'" icon="arrow-left"></fa-icon>
+                      <ng-container *ngIf="engagement?.leavingDate?.gregorian; else onwards">{{
+                        engagement?.leavingDate | dateType
+                      }}</ng-container>
+                    </div>
+                    <div class="col-2 border-value">
+                      {{
+                        'CONTRIBUTOR.NO-OF-MONTHS' | translate: { months: engagement?.engagementDuration?.noOfMonths }
+                      }}
+                      , {{ 'CONTRIBUTOR.NO-OF-DAYS' | translate: { days: engagement?.engagementDuration?.noOfDays } }}
+                    </div>
+                    <div class="col-2">{{ engagement?.workType | bilingualText }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-1 col-auto d-flex justify-content-end">
+                
+                <span class="arrow-up">
+                  <fa-icon icon="angle-up" size="lg"></fa-icon>
+                </span>
+                <span class="arrow-down">
+                  <fa-icon icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div body>
+          <div class="row d-flex pt-2 pb-4">
+            <div class="col-lg-3 flex-column">
+              <div class="label">{{ 'CONTRIBUTOR.EMPLOYEE-ID' | translate }}</div>
+              <ng-container *ngIf="engagement?.companyWorkerNumber; else nullValue">
+                <div class="value">{{ engagement?.companyWorkerNumber }}</div>
+              </ng-container>
+            </div>
+            <div class="px-2">
+              <gosi-label-dc
+                id="leavingReason"
+                [control]="engagement?.leavingReason | bilingualText"
+                label="CONTRIBUTOR.LEAVING-REASON"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="px-2">
+              <gosi-label-dc
+                id="cancellationReason"
+                [control]="engagement?.cancellationReason | bilingualText"
+                label="CONTRIBUTOR.CANCEL-CON.CANCELLATION-REASON"
+              >
+              </gosi-label-dc>
+            </div> 
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <cnt-reactivate-engagement-details-dc [engagement]="engagement"></cnt-reactivate-engagement-details-dc>
+            </div>
+          </div>
+        </div>
+      </gosi-accordion-dc>
+    </ng-container>
+  </div>
+</div>
+<ng-template #onwards>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+<ng-template #nullValue>--</ng-template>
+
+<gosi-card-dc type="secondary" [noHeadingMargin]="true">
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        id="reactivateReason"
+        [label]="'CONTRIBUTOR.REACTIVATE.REACTIVATING-REASON' | translate"
+        [control]="ReactivateDetailsForm.get('reactivateReason')"
+        [list]="reactivateReasonList"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-lg-6" >
+      <gosi-input-number-dc
+              id="CRMNumber"
+              [label]="'CONTRIBUTOR.REACTIVATE.CRM-REQ-NUMBER' | translate"
+              [control]="ReactivateDetailsForm.get('crmid')"
+              [maxLength]="10"
+        >
+    </gosi-input-number-dc>
+  </div>
+  </div>
+
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary" [noHeadingMargin]="true" *ngIf="isEditMode">
+  <div class="col-lg-12 peanlity">
+    <form class="form-inline">
+      <div class="col-lg-6">
+        <span class="peanlity-label"> {{ 'CONTRIBUTOR.APPLY-PENALITY' | translate }}</span>
+      </div>
+      <div class="col-lg-3"></div>
+  
+      <div class="col-lg-3">
+        <gosi-input-toggle-dc
+          class="slider"
+          id="applyLatePenality"
+          [control]="ReactivateDetailsForm.get('penaltyIndicator')"
+          [ignoreLabel]="true"
+        >
+        </gosi-input-toggle-dc>
+      </div>
+    </form>
+  </div>
+</gosi-card-dc>
+
+<cnt-action-area-dc
+    [primaryButtonLabel]="'CONTRIBUTOR.SAVE-AND-NEXT'"
+    (submit)="saveReactivateDetails()"
+    (cancel)="showTemplate(cancelReactivateTemplate)"
+></cnt-action-area-dc>
+
+<ng-template #cancelReactivateTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

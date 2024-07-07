@@ -1,0 +1,64 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="sub-section" *ngIf="isMofFlag">
+  <div class="col-auto sub-align float-left">
+    {{ 'BILLING.TOTAL-NO-OF-ESTABLISHMENT' | translate }}
+    <span class="amount">
+      {{ contributionBreakup.totalNoOfEstablishments }}
+    </span>
+  </div>
+  <div class="col-auto float-right">
+    {{ 'BILLING.TOTAL-NO-OF-CONTRIBUTORS' | translate }}
+    <span class="amount">
+      {{ contributionBreakup.totalNoOfContributors }}
+    </span>
+  </div>
+</div>
+<div class="table-scroll table-responsive" *ngIf="contributionDetails.length > 0">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th>{{ 'BILLING.COVERAGE' | translate }}</th>
+        <th>{{ 'BILLING.CONTRIBUTORS-COVERED' | translate }}</th>
+        <th>
+          {{ 'BILLING.TOTAL-CONTRIBUTORS-WAGE' | translate }}
+          ({{ currencyType | bilingualText }})
+        </th>
+        <th>{{ 'BILLING.DEDUCTION-RATE' | translate }}</th>
+        <th *ngIf="isMofFlag">
+          {{ 'BILLING.CREDIT-AMOUNT' | translate }}
+          ({{ currencyType | bilingualText }})
+        </th>
+        <th *ngIf="!isMofFlag">{{ 'BILLING.CONTRIBUTION-AMOUNT' | translate }} ({{ currencyType | bilingualText }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let item of contributionDetails">
+        <ng-container *ngIf="item.noOfContributor !== 0">
+          <tr class="border-bottom">
+            <td>{{ item.productType | bilingualText }}</td>
+            <td>{{ item.noOfContributor }}</td>
+            <td>{{ item.totalContributorsWage * exchangeRate | number: '1.2-2' }}</td>
+            <td [ngSwitch]="item.productType.english">
+              <ng-container *ngSwitchCase="typeAnnuity"> {{ employerShare.annuity }}% </ng-container>
+              <ng-container *ngSwitchCase="typeUnemployment"> {{ employerShare.ui }}% </ng-container>
+              <ng-container *ngSwitchCase="typeOh"> {{ employerShare.oh }}% </ng-container>
+              <ng-container *ngSwitchCase="typePPA"> {{ item.deductionRate }}% </ng-container>
+              <ng-container *ngSwitchCase="typePension"> {{ item.deductionRate }}% </ng-container>
+            </td>
+            <td>{{ item.contributionAmount * exchangeRate | number: '1.2-2' }}</td>
+          </tr>
+        </ng-container>
+      </ng-container>
+      <tr class="font-weight-bold">
+        <td colspan="3"></td>
+        <td>{{ 'BILLING.TOTAL' | translate }}</td>
+        <td>{{ total * exchangeRate | number: '1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,273 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div>
+  <div class="row ml-3">
+    <div class="col-md-2 d-flex">
+      <h5 class="m-auto text-white">
+        {{
+          lang === 'en' && mainEstablishmentProfile?.establishmentnameeng
+            ? mainEstablishmentProfile?.establishmentnameeng
+            : mainEstablishmentProfile?.establishmentnamearb
+        }}
+      </h5>
+    </div>
+
+    <div class="col-md-3" *ngIf="establishmentBranches">
+      <gosi-input-select-dc
+        id="branchesList"
+        [control]="this.branchesForm.get('branchName')"
+        placeholder="{{ 'FEATURE360.ESTABLISHMENTS.BRANCH-SELECT-LABEL' | translate }}"
+        [list]="branchesList"
+        (selectLov)="getSelectBranch($event)"
+        [hideOptionalLabel]="true"
+        [hidePlaceholder]="false"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+
+  <div class="row ml-2 mr-2">
+    <div class="col-md-4 mb-3 p-0">
+      <div class="content mr-3">
+        <div class="row">
+          <div class="col-md-2">
+            <fa-icon [icon]="['far', 'building']" class="header-icon fa-3x"></fa-icon>
+          </div>
+
+          <div class="col-md-10">
+            <div class="row mb-3" *ngIf="this.establishmentProfile?.establishmenttype">
+              <div class="col-md-4">
+                <span
+                  class="border border-dark p-1"
+                  *ngIf="this.establishmentProfile.establishmenttype.toString() == 'فرع'"
+                  >{{ 'FEATURE360.ESTABLISHMENTS.BRANCH' | translate }}</span
+                >
+                <span
+                  class="border border-dark p-1"
+                  *ngIf="this.establishmentProfile.establishmenttype.toString() != 'فرع'"
+                  >{{ 'FEATURE360.ESTABLISHMENTS.MAIN' | translate }}</span
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="">
+                  {{
+                    lang === 'en' && establishmentProfile?.establishmentnameeng
+                      ? establishmentProfile?.establishmentnameeng
+                      : establishmentProfile?.establishmentnamearb
+                  }}
+                </h5>
+                <span
+                  >({{
+                    lang === 'en'
+                      ? this.establishmentProfile?.locationenglish
+                      : this.establishmentProfile?.locationarabic
+                  }})</span
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">{{ 'FEATURE360.ESTABLISHMENTS.ESTABLISHMENT-NUMBER-LABEL' | translate }}</div>
+              <div class="col-md-4">{{ establishmentProfile?.registrationnumber || '-----' }}</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">{{ 'FEATURE360.ESTABLISHMENTS.ESTABLISHMENT-STATUS-LABEL' | translate }}</div>
+              <div class="col-md-4">
+                {{ lang === 'en' ? this.establishmentProfile?.statusengilsh : this.establishmentProfile?.status }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-5">
+          <div class="col-md-12 row border-bottom">
+            <div class="col-md-12">
+              <div class="h6">{{ 'FEATURE360.ESTABLISHMENTS.ESTABLISHMENT-OWNERS' | translate }}</div>
+            </div>
+          </div>
+
+          <ng-container *ngIf="establishmentOwnerDetail?.owners.length > 0">
+            <div *ngFor="let owner of establishmentOwnerDetail?.owners" class="col-md-12 row border-bottom">
+              <div>
+                <div class="row my-2">
+                  <div class="col-md-4 text-center">
+                    <fa-icon [icon]="['far', 'user-circle']" class="header-icon fa-2x"></fa-icon>
+                  </div>
+
+                  <div class="col-md-8 text-center">
+                    <div class="col-md-12 fa-1x">
+                      {{
+                        lang === 'en'
+                          ? owner?.person.name?.english.name
+                          : owner?.person.name?.arabic.firstName +
+                            ' ' +
+                            owner?.person.name?.arabic.secondName +
+                            ' ' +
+                            owner?.person.name?.arabic.familyName
+                      }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center">
+                <div class="row mb-3 mt-3">
+                  <div class="col-md-7 fa-1x">{{ 'FEATURE360.ESTABLISHMENTS.NATIONAL-ID' | translate }}</div>
+                  <div class="col-md-5 fa-1x">{{ owner?.person.personId || '-----' }}</div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-7 fa-1x">{{ 'FEATURE360.ESTABLISHMENTS.BIRTH-DATE' | translate }}</div>
+                  <div class="col-md-5 fa-1x">{{ owner?.person.birthDate.gregorian | date: 'dd/MM/yyyy' }}</div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="col-md-12 row border-bottom" *ngIf="establishmentOwnerDetail?.owners.length === 0">
+            <div class="col-md-12 d-flex justify-content-center align-items-center">
+              <div class="row">
+                <div class="col-md-12">
+                  {{ 'FEATURE360.NO-INFO-AVAILABLE' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-5">
+          <div class="col-md-12 row border-bottom">
+            <div class="col-md-12">
+              <div class="h6">{{ 'FEATURE360.ESTABLISHMENTS.DOCUMENTS' | translate }}</div>
+            </div>
+          </div>
+
+          <div class="col-md-12 row border-bottom">
+            <div class="col-md-12 d-flex justify-content-center align-items-center">
+              <div class="row">
+                <div class="col-md-12">
+                  {{ 'FEATURE360.NO-INFO-AVAILABLE' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *gosiShow="isShowSmsBtn" class="row mt-5">
+          <div class="col-md-12 row border-bottom">
+            <fea-message-modal
+              class="col-md-12 d-flex justify-content-center align-items-center"
+              [token]="token"
+              [details]="details"
+            ></fea-message-modal>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8 mb-3 p-0">
+      <div class="content ml-1">
+        <div class="row">
+          <fea-choose-details-type
+            class="col-md-12"
+            #chooseDetailsTypeComp
+            [detailsTypeList]="detailsTypeList"
+            [currentDetailsTap]="currentDetailsTap"
+          ></fea-choose-details-type>
+
+          <div class="col-md-12">
+            <div
+              *ngIf="
+                currentDetailsTap !== null &&
+                currentDetailsTap == 'ESTABLISHMENT-DETAILS' &&
+                establishmentSupervisorDetail
+              "
+            >
+              <fea-establishment-details-dc
+                #establishmentDetailsComp
+                [establishmentProfile]="establishmentProfile"
+                [establishmentMOLProfile]="establishmentMOLProfile"
+                [establishmentSupervisorDetail]="establishmentSupervisorDetail"
+                [lang]="lang"
+              ></fea-establishment-details-dc>
+            </div>
+            <div *ngIf="currentDetailsTap !== null && currentDetailsTap == 'FINANCIAL-DETAILS'">
+              <fea-establishments-financial-details
+                #establishmentFinancialComp
+                [cntLastPaidInf]="cntLastPaidInf"
+                [cntUnPaidViolation]="cntUnPaidViolation"
+                [creditBalanceDetails]="creditBalanceDetails"
+                [cntClosingDebit]="cntClosingDebit"
+                [cntPaymentPeriod]="cntPaymentPeriod"
+                [cntLastMonthContribution]="cntLastMonthContribution"
+                [cntLastMonthPenalty]="cntLastMonthPenalty"
+                [cntTotalInstallmentAmountAndNumberOfInstallmentMonths]="
+                  cntTotalInstallmentAmountAndNumberOfInstallmentMonths
+                "
+              ></fea-establishments-financial-details>
+            </div>
+
+            <div *ngIf="currentDetailsTap !== null && currentDetailsTap == 'CONTRUBUTION'">
+              <fea-establishments-contribution-details
+                #establishmentContributionComp
+                [profileData]="establishmentProfile"
+                [contributorDetails]="contributorDetails"
+                [lastWageYearDetails]="lastWageYearDetails"
+                [countedEmployeesNitaqat]="countedEmployeesNitaqat"
+                [unCountedEmployeesNitaqat]="unCountedEmployeesNitaqat"
+              ></fea-establishments-contribution-details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mr-5 ml-5 p-3 bg-white rounded">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          <h6>{{ 'FEATURE360.ESTABLISHMENTS.PENDING-TRANSACTIONS' | translate }}</h6>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="rasedAdvancedSearchDetails.length > 0">
+        <div class="col-md-12">
+          <table class="table table-bordered">
+            <thead class="bg-light">
+              <tr>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-NUMBER' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-DATE' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-TYPE' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-ADDRESS' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-STATUS' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.SYSTEM' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.RESPONSIBLE' | translate }}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let transaction of rasedAdvancedSearchDetails">
+                <th scope="row">{{ transaction?.inspectionrequestno || '-----' }}</th>
+                <td>{{ transaction?.createdon | date: 'dd/MM/yyyy' || '-----' }}</td>
+                <td>{{ transaction?.inspectiontype || '-----' }}</td>
+                <td>{{ transaction?.region || '-----' }}</td>
+                <td>{{ transaction?.status || '-----' }}</td>
+                <td>{{ transaction?.originatedsystem || '-----' }}</td>
+                <td>{{ transaction?.pendingwith || '-----' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="rasedAdvancedSearchDetails.length === 0">
+        <div class="col-md-12">
+          {{ 'FEATURE360.NO-INFO-AVAILABLE' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!------------------ BANK-ACCOUNT-DETAILS --------------->
+<gosi-card-dc
+  heading="{{ 'BENEFITS.BANK-DETAILS' | translate }}"
+  type="secondary"
+  [canEdit]="bankInfo?.ibanBankAccountNo?.length"
+  [showCard]="showCard"
+  (edit)="editEventDetails()"
+  headingSize="md"
+>
+  <!-- <div class="col-md-12 col-lg-12 mb-3"> -->
+  <gosi-alert-dc
+    *ngIf="saveApiResp"
+    [noPadding]="true"
+    [message]="'BENEFITS.BANK-UPDATE-SUCCESS' | translate"
+    type="success"
+  >
+  </gosi-alert-dc>
+  <gosi-alert-dc
+    *ngIf="bankInfo?.ibanBankAccountNo"
+    [message]="'BENEFITS.BANK-DETAILS-INFO' | translate"
+    type="info"
+    [dismissible]="false"
+    [noPadding]="true"
+  >
+  </gosi-alert-dc>
+  <gosi-alert-dc
+    *ngIf="bankInfo?.ibanBankAccountNo && bankInfo?.isIbanVerified === false"
+    [message]="'BENEFITS.IBAN-VERIFICATION-INFO' | translate"
+    type="info"
+    [dismissible]="false"
+  >
+  </gosi-alert-dc>
+  <!-- </div> -->
+  <!--if no bank details-->
+  <div class="row bank-details" *ngIf="bankForm && !bankInfo?.ibanBankAccountNo">
+    <div class="col-md-12 col-lg-12 bankinfo mb-4">
+      <gosi-alert-dc
+        [message]="'BENEFITS.BANK-DETAILS-INFO' | translate"
+        type="info"
+        [noPadding]="true"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-sm-12 col-md-12 col-lg-12">
+      <gosi-alert-dc
+        [noPadding]="'true'"
+        [message]="'BENEFITS.IBAN-BANKDETAIL-WARN' | translate"
+        type="warning"
+        [noPadding]="true"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-md-12 col-lg-12 bankinfo mb-4">
+      <span>{{ 'BENEFITS.NO-BANK-DETAILS-FOUND' | translate }}</span>
+    </div>
+    <div class="row col-md-12 col-lg-12 bankinfo">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-input-text-dc
+          id="new-iban"
+          [placeholder]="'BENEFITS.IBANACCOUNT-NUMBER' | translate"
+          [label]="'BENEFITS.IBANACCOUNT-NUMBER' | translate"
+          [control]="bankForm.get('ibanBankAccountNo')"
+          (blur)="getBank(bankForm.get('ibanBankAccountNo').value, bankForm)"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc id="bankName" [control]="bankForm.get('bankName')?.value" label="BENEFITS.BANK-NAME">
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-6 cancel-button" *ngIf="!hideSaveButton">
+        <gosi-button-dc
+          [id]="'cancel'"
+          type="secondary"
+          [isFullWidth]="isSmallScreen"
+          (submit)="cancelBankSave()"
+          [outlineOnly]="'true'"
+        >
+          {{ 'BENEFITS.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-6 save-button" *ngIf="!hideSaveButton">
+        <gosi-button-dc
+          [disabled]="disableBankSaveButton"
+          [isFullWidth]="isSmallScreen"
+          [outlineOnly]="'true'"
+          [id]="'save'"
+          (submit)="saveBankInfo()"
+        >
+          {{ 'BENEFITS.SAVE' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+  <div class="row bank-details" *ngIf="bankInfo?.ibanBankAccountNo">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc id="ibanBankAccountNo" [value]="bankInfo.ibanBankAccountNo" label="BENEFITS.IBANACCOUNT-NUMBER">
+      </gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc id="bankName" [value]="bankForm.get('bankName')?.value | bilingualText" label="BENEFITS.BANK-NAME">
+      </gosi-label-dc>
+    </div>
+    <!-- edit bank details card -->
+  </div>
+  <div class="row bank-details" *ngIf="bankEditForm && bankEditForm.get('ibanBankAccountNo')">
+    <div class="editBankFromSaned col-sm-12 col-md-12 col-lg-12 mt-2">
+      <gosi-card-dc [id]="'editBankFromSaned'" heading="{{ 'BENEFITS.NEW-BANK-DETAILS' | translate }}" type="secondary">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <gosi-alert-dc
+              [noPadding]="'true'"
+              [message]="'BENEFITS.IBAN-BANKDETAIL-WARN' | translate"
+              type="warning"
+              [noPadding]="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-input-text-dc
+              id="iban"
+              [placeholder]="'BENEFITS.IBANACCOUNT-NUMBER' | translate"
+              [label]="'BENEFITS.IBANACCOUNT-NUMBER' | translate"
+              [control]="bankEditForm.get('ibanBankAccountNo')"
+              (blur)="getBank(bankEditForm.get('ibanBankAccountNo').value, bankEditForm)"
+            >
+            </gosi-input-text-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="bankName"
+              [control]="bankEditForm.get('bankName')?.value | bilingualText"
+              label="BENEFITS.BANK-NAME"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6 d-flex justify-content-end">
+            <gosi-button-dc [id]="'cancel'" type="secondary" (submit)="cancelEdit()" [outlineOnly]="'true'">
+              {{ 'BENEFITS.CANCEL' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-button-dc
+              [disabled]="disableBankSaveButton"
+              [outlineOnly]="'true'"
+              [id]="'save'"
+              (submit)="saveEditedBankDetails()"
+            >
+              {{ 'BENEFITS.SAVE' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+</gosi-card-dc>

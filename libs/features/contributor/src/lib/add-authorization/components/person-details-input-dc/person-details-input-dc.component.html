@@ -1,0 +1,162 @@
+<gosi-card-dc [heading]="heading | translate" [noBorder]="noBorder" [showCard]="showCard" [type]="cardType">
+  <div *ngIf="showPersonNameFields">
+    <gosi-alert-dc [alert]="alert"></gosi-alert-dc>
+    <!-- Entered Identity Details -->
+    <div class="row justify-content-md-center">
+      <div class="col">
+        <gosi-label-dc
+          id="personNationality"
+          [control]="personDetailsSmartForm.nationality.value | bilingualText"
+          [label]="'OCCUPATIONAL-HAZARD.NATIONALITY'"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col">
+        <gosi-label-dc
+          id="personIdNumber"
+          [control]="personDetailsSmartForm.id.value"
+          [label]="'CONTRIBUTOR.' + personDetailsSmartForm.idType.value | translate"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col" id="contributorDOB">
+        <!-- Gregorian -->
+        <gosi-label-dc
+          id="contributorDOB"
+          *ngIf="personDetailsSmartForm.isGregorianBirthDate"
+          [control]="personDetailsSmartForm.birthDate.get('gregorian').value | date: 'dd/MM/yyyy'"
+          [label]="'OCCUPATIONAL-HAZARD.DATE-OF-BIRTH'"
+        >
+        </gosi-label-dc>
+        <!-- Hijri -->
+        <gosi-label-dc
+          id="contributorDOB"
+          *ngIf="personDetailsSmartForm.isHijriBirthDate"
+          [control]="personDetailsSmartForm.birthDate.get('hijiri').value"
+          [label]="'OCCUPATIONAL-HAZARD.DATE-OF-BIRTH'"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <!-- Arabic name -->
+    <div class="row justify-content-md-center" *ngIf="showName">
+      <div class="col-sm-12 col-md-12 col-lg-3">
+        <gosi-input-text-dc
+          id="arabicFirstName"
+          [label]="'CONTRIBUTOR.NAME-IN-ARABIC' | translate"
+          [placeholder]="'CONTRIBUTOR.FIRST-NAME' | translate"
+          [control]="personDetailsSmartForm.name.get('arabic.firstName')"
+          [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-3">
+        <gosi-input-text-dc
+          id="arabicSecondName"
+          [ignoreLabel]="true"
+          [placeholder]="'CONTRIBUTOR.SECOND-NAME' | translate"
+          [control]="personDetailsSmartForm.name.get('arabic.secondName')"
+          [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-3">
+        <gosi-input-text-dc
+          id="arabicThirdName"
+          [ignoreLabel]="true"
+          [placeholder]="'CONTRIBUTOR.THIRD-NAME' | translate"
+          [control]="personDetailsSmartForm.name.get('arabic.thirdName')"
+          [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-3">
+        <gosi-input-text-dc
+          id="arabicFamilyName"
+          [ignoreLabel]="true"
+          [placeholder]="'CONTRIBUTOR.FAMILY-NAME' | translate"
+          [control]="personDetailsSmartForm.name.get('arabic.familyName')"
+          [maxLength]="MAX_LENGTH_ENUM.NAME_ARABIC"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </div>
+    <!-- English name -->
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-3" *ngIf="showName">
+        <gosi-input-text-dc
+          id="authEnglishName"
+          [label]="'CONTRIBUTOR.NAME-IN-ENGLISH' | translate"
+          [control]="personDetailsSmartForm.name.get('english.name')"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-12 col-md-12 col-lg-3">
+        <gosi-input-select-dc
+          id="minorTypeList"
+          *ngIf="enableMinorType"
+          [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.TYPE' | translate"
+          [control]="personDetailsSmartForm.minorType"
+          [list]="personDetailsSmartForm.minorTypeList"
+          (select)="personDetailsSmartForm.selectMinorType($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+    <!-- Gender -->
+    <div class="row no-gutters">
+      <gosi-input-radio-dc
+        [id]="'authorizationGenderList' + randomId"
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.GENDER' | translate"
+        [control]="personDetailsSmartForm.gender"
+        [list]="genderList | async"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+  <div class="row justify-content-md-center" *ngIf="showPersonIdentityFields">
+    <div class="col-sm-12 col-md-12 col-lg-6">
+      <gosi-input-select-dc
+        name="nationality"
+        id="nationality"
+        [label]="'CONTRIBUTOR.NATIONALITY' | translate"
+        [list]="nationalityList | async"
+        [control]="personDetailsSmartForm.nationality"
+        (select)="selectNationality($event)"
+      >
+      </gosi-input-select-dc>
+      <cnt-gosi-calendar-dc
+        id="birthDateCalendarNonMOJ"
+        [label]="'CONTRIBUTOR.DATE-OF-BIRTH' | translate"
+        [calendarForm]="personDetailsSmartForm.birthDate"
+      >
+      </cnt-gosi-calendar-dc>
+    </div>
+    <div class="col-sm-12 col-md-12 col-lg-6">
+      <gosi-input-select-dc
+        id="personIdTypeList"
+        [label]="'CONTRIBUTOR.ID-TYPE' | translate"
+        [control]="personDetailsSmartForm.idTypeList"
+        [list]="personIdTypeList"
+        (select)="selectIdType(getIdTypeFromList($event))"
+      >
+      </gosi-input-select-dc>
+      <gosi-input-text-dc
+        id="IdNumber"
+        #idNumber
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ID' | translate"
+        [control]="personDetailsSmartForm.id"
+        [maxLength]="personDetailsSmartForm.maxIDLength"
+      >
+      </gosi-input-text-dc>
+      <gosi-input-radio-dc
+        id="authRelationshipToMinor"
+        *ngIf="enableRelationshipToMinors"
+        [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.RELATIONSHIP-TO-MINORS' | translate"
+        [control]="personDetailsSmartForm.relationshipToMinors"
+        [list]="authRelationshipToMinorList"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+</gosi-card-dc>

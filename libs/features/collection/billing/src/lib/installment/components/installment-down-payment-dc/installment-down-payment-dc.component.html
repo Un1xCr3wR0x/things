@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row top-style" *ngIf="!isAppPublic">
+  <div class="col-lg-12 d-flex bd-highlight">
+    <div class="bd-highlight reopen-details">
+      <span>{{ 'BILLING.DOWN-PAYMENT-REQUIREMENT' | translate }}</span>
+    </div>
+    <gosi-input-toggle-dc
+      id="downPayment"
+      [name]="'modified'"
+      [control]="downPaymentForm.get('downPaymentRequired')"
+      [disabled]="isDisabled"
+      [hidden]="isAppPublic"
+      [disabled]=" specialRequestFlag ? !specialRequestFlag : isDisabled  "
+      (changeEvent)="getDownPaymentValue($event)"
+    >
+    </gosi-input-toggle-dc>
+  </div>
+</div>
+<ng-container>
+  <div class="row">
+    <ng-container *ngIf="isDownPayment || isAppPublic">
+    <div class="col-lg-6">
+      <gosi-input-number-dc
+        id="downPaymentRatio"
+        [control]="amountForm.get('downPaymentRatio')"
+        [label]="'BILLING.DOWN-PAYMENT-RATIO' | translate"
+        [placeholder]="'BILLING.DOWN-PAYMENT-RATIO' | translate"
+        [disabled]="isexceptionFromDownPayment"
+        (keyUp)="getdownpaymentRatio()"
+      >
+      </gosi-input-number-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-input-currency-dc
+        id="downPaymentAmount"
+        [control]="amountForm.get('downPaymentAmount')"
+        [placeholder]="'BILLING.DOWN-PAYMENT-AMOUNT-SAR' | translate"
+        [label]="'BILLING.DOWN-PAYMENT-AMOUNT-SAR' | translate"
+        [disabled]="true"
+      >
+      </gosi-input-currency-dc>
+    </div>
+    <div id="gracePeriods" class="col-lg-6 mainStyle">
+      <div>
+        <div class="indicators">
+          {{ 'BILLING.DOWN-PAYMENT-GRACE-PERIOD-DAYS' | translate }}
+        </div>
+        <div class="previous-Indicator">
+          {{ gracePeriod }}
+          <div id="extendedGracePeriodLink" class="show-details" *ngIf="!extendedGrace && !isAppPublic">
+            <a class="details-link" (click)="showModals(extendGracePeriod, 'md')">{{
+              'BILLING.EXTEND-GRACE-PERIOD' | translate
+            }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+    <!-- additional fields -->
+
+      <div class="col-lg-6" *ngIf="specialRequestFlag || inWorkflow">
+        <gosi-input-radio-dc
+          id="guaranteeStatus"
+          [label]="'BILLING.WAS-THERE-GUARANTEE-PROVIDED' | translate "
+          [control]="guaranteeTypeSpecialRequestForm?.get('guaranteeStatus')"
+          [list]="yesOrNoList"
+          [noMargin]="true"        
+          (select)=" onRadioSelect($event) "
+        ></gosi-input-radio-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="specialRequestFlag && guaranteeTypeSpecialRequestForm?.get('guaranteeStatus')?.value?.english == 'Yes' || isShow">
+        <gosi-input-select-dc
+          id="guaranteeType"
+          [label]="'BILLING.GUARANTEE-TYPE' | translate"
+          [control]="guaranteeTypeSpecialRequestForm?.get('guaranteeType')"
+          [list]="guaranteeTypeList"
+      >
+      </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="specialRequestFlag && guaranteeTypeSpecialRequestForm?.get('guaranteeStatus').value.english == 'Yes' || isShow">
+        <gosi-input-number-dc
+        id="guaranteePercentage"
+        [control]="guaranteeTypeSpecialRequestForm?.get('guaranteePercentage')"
+        [label]="'BILLING.GUARANTEE-PERCENTAGE-FROM-TOTAL-DUES' | translate"
+      >
+      </gosi-input-number-dc>
+      </div>
+    <div id="periodReason" class="col-lg-6 mainStyle" *ngIf="extendedGrace && !isExtraAdded">
+      <div>
+        <div class="indicators">
+          {{ 'BILLING.REASON-FOR-EXTENSION' | translate }}
+        </div>
+        <div class="previous-Indicator">
+          {{ reason }}
+          <div id="extendedGracePeriodLink" class="show-details">
+            <a class="details-link" (click)="showModals(extendGracePeriod, 'md')">{{
+              'BILLING.MODIFY-GRACE-PERIOD' | translate
+            }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #extendGracePeriod>
+      <blg-installment-grace-period-extended-dc
+        [extendedGracePeriod]="!inWorkflow ? downPaymentDetails.additionalGuarantee : null"
+        (gracePeriods)="gracePeriods($event)"
+        (extendedFlag)="extendedFlag($event)"
+        (isCanceled)="isCanceled()"
+        [reason]="reason"
+        [gracePeriodValue]="gracePeriod"
+        [inWorkflow]="inWorkflow"
+        [isGuaranteeType]="extendedGrace"
+        [extraAddedGracePeriod]="extraAddedGracePeriod"
+      ></blg-installment-grace-period-extended-dc>
+    </ng-template>
+  </div>
+</ng-container>

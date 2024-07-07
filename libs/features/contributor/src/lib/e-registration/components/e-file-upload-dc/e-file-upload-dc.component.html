@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <gosi-alert-dc
+            [message]="'CORE.ERROR.DOCUMENT-UPLOAD' | translate"
+            type="info"
+            dismissable="false"
+          >
+          </gosi-alert-dc>
+          <!-- Document upload section -->
+          <ng-container *ngFor="let item of documentList; let i = index">
+            <gosi-input-file-sc  [ngClass]="isEditMode===true?'disable_icon':''"
+              [uuid]="uuid"
+              [isScan]="isPrivate"
+              [document]="item"
+              [index]="i"
+              [businessKey]="engagementId"
+              [transactionId]="contTransactionId"
+              [referenceNo]="referenceNo"
+              (refresh)="refreshDocument(item)"
+              (uploadedEvent)="hasChanged = true"
+              (delete)="hasChanged = true"
+            ></gosi-input-file-sc>
+          </ng-container>
+          <!-- Document upload section -->
+  
+          <div class="row" *ngIf="isCommentRequired">
+            <div class="col-sm-12 col-md-12">
+              <gosi-input-text-area-dc
+                [label]="'CONTRIBUTOR.COMMENTS' | translate"
+                id="comments"
+                name="comments"
+                [maxLength]="commentMaxLength"
+                [control]="documentUploadForm.get('comments')"
+              ></gosi-input-text-area-dc>
+            </div>
+          </div>
+  
+          <div *ngIf="!isEditMode">
+            <!-- Disclamer Content Area -->
+            <div class="row">
+              <div class="form-group fc-margin col-lg-12">
+                <label for="engagementDeclaration">{{ 'CONTRIBUTOR.DECLARATION' | translate }}</label>
+                <textarea
+                  rows="6"
+                  class="form-control"
+                  id="engagementDeclaration"
+                  readOnly="true"
+                >
+                    {{ 'CONTRIBUTOR.E-ADD-SAUDI-CONTRIBUTOR-DECLARATION' | translate }}
+                  </textarea
+                >
+              </div>
+            </div>
+            <!-- End Disclamer Content Area -->
+  
+            <!-- Disclamer Content Checkbox -->
+            <div class="row">
+              <div class="col-lg-12">
+                <gosi-input-checkbox-dc
+                  id="declarationMessage"
+                  name="declaration"
+                  [control]="documentUploadForm.get('checkBoxFlag')"
+                  [label]="'CONTRIBUTOR.ACCEPT-DECLARATION' | translate"
+                >
+                </gosi-input-checkbox-dc>
+              </div>
+            </div>
+            <!-- End Disclamer Content Checkbox -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <cnt-action-area-dc
+    [primaryButtonLabel]="isEditMode ? 'CONTRIBUTOR.SUBMIT' : 'CONTRIBUTOR.SAVE-AND-NEXT'"
+    [showPreviousSection]="true"
+    [disablePrimary]="isApiTriggered"
+    idValue="2"
+    (submit)="submitDocumentDetails()"
+    (previous)="previousForm()"
+    (cancel)="showTemplate(cancelEngagementTemplate)"
+  ></cnt-action-area-dc>
+  
+  <ng-template #cancelEngagementTemplate>
+    <gosi-confirm-modal-dc message="THEME.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  

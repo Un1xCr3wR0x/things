@@ -1,0 +1,104 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc
+    [canEdit]="canEdit || isDoctor"
+    (onEdit)="navigateToEdit(4)"
+    [documents]="documents"
+    [comments]="comments"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.ADD-VIC.REGISTER-VIC' | translate"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [subValue]="socialInsuranceNo"
+        [formSubmissionDate]="vicEngagementDetails?.formSubmissionDate?.gregorian"
+        [transactionRefNo]="referenceNo"
+      ></frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <!-- Personal Details Section -->
+      <div class="content-item" *ngIf="contributor">
+        <cnt-vic-personal-details-dc
+          [contributor]="contributor"
+          [age]="age"
+          [isBeneficiary]="isBeneficiary"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToEdit(1)"
+        ></cnt-vic-personal-details-dc>
+      </div>
+      <!-- Engagement Details Section -->
+      <div class="content-item" [ngClass]="{ 'no-border': isDoctor }" *ngIf="vicEngagementDetails">
+        <cnt-view-engagement-details-dc
+          [isAccordianView]="isDoctor"
+          [engagementDetails]="vicEngagementDetails"
+          [purposeOfEngagement]="purposeOfEngagement"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToEdit(2)"
+        ></cnt-view-engagement-details-dc>
+      </div>
+      <!-- Health Record Details Section -->
+      <div class="content-item" *ngIf="vicEngagementDetails?.healthRecords">
+        <cnt-view-health-record-detail-dc
+          [isOpen]="isDoctor"
+          [healthDetails]="vicEngagementDetails.healthRecords"
+          [doctorVerificationStatus]="vicEngagementDetails.doctorVerificationStatus"
+        ></cnt-view-health-record-detail-dc>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------Modals -------------->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleVicWorkflowEvent(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.ADD-VIC.REJECT-ADD-VIC'"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleVicWorkflowEvent(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.ADD-VIC.RETURN-ADD-VIC'"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleVicWorkflowEvent(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

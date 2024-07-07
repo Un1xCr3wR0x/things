@@ -1,0 +1,461 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- Establishment Details -->
+<ng-container *ngIf="establishment">
+  <gosi-card-dc
+    class="card-style"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-BASIC-DETAILS' | translate }}"
+    [canEdit]="
+      canEditBasicDetails && !isViewOnly && !(restrictDetailEdit && !isAppPrivate) && !reopenedClosingInProgress
+    "
+    (edit)="goToEditBasicDetails()"
+    id="editBasicDetails"
+    accessRoles="{{ restrictDetailEdit ? accessRolesForMCIEst : accessRoles }}"
+    [accessIdentifier]="accessIdentifier"
+    [paddingBottom]="true"
+    [canRefresh]="canRefresh"
+    (refresh)="goToRefreshBasicDetails()"
+    toolTipMessage="{{ 'ESTABLISHMENT.DATA-RETRIVED-FROM-MC' | translate }} "
+  >
+    <gosi-alert-dc
+      *ngIf="editBasicDetailsMsg"
+      [message]="editBasicDetailsMsg | translate: { referenceNo: basicReferenceNo }"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+    <div class="row est-section">
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="establishmentNameArablic"
+        label="{{ 'ESTABLISHMENT.ESTABLISHMENT-ARABIC' | translate }}"
+        [control]="establishment.name.arabic"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="establishmentNameEnglish"
+        label="{{ 'ESTABLISHMENT.ESTABLISHMENT-NAME-EN' | translate }}"
+        [control]="establishment.name.english"
+      >
+      </gosi-label-dc>
+
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="startDate"
+        date="true"
+        label="{{ 'ESTABLISHMENT.ESTABLISHMENT-START-DATE' | translate }}"
+        [control]="establishment?.startDate?.gregorian"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4"
+        id="nationality"
+        label="{{ 'ESTABLISHMENT.NATIONALITY' | translate }}"
+        [control]="establishment.nationalityCode"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="fieldOfficeName"
+        label="{{ 'ESTABLISHMENT.FIELD-OFFICE-NAME' | translate }}"
+        [control]="establishment.fieldOfficeName"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="status"
+        label="{{ 'ESTABLISHMENT.STATUS' | translate }}"
+        [control]="establishment.status"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        *ngIf="establishment.establishmentType?.english !== main"
+        id="mainEstablishmentRegNo"
+        [control]="establishment.mainEstablishmentRegNo"
+        label="{{ 'ESTABLISHMENT.MAIN-EST-REG-NO' | translate }}"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        *ngIf="isCancelled"
+        id="rejectionReason"
+        label="{{ 'ESTABLISHMENT.REJECT-REASON' | translate }}"
+        [control]="rejectionReason"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="activityType"
+        label="{{ 'ESTABLISHMENT.ACTIVITY-TYPE' | translate }}"
+        [control]="establishment.activityType"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="isEstClosed"
+        class="col-md-4 col-sm-12"
+        id="closedDate"
+        date="true"
+        label="{{ 'ESTABLISHMENT.CLOSURE-DATE' | translate }}"
+        [control]="establishmentProfile?.closingDate?.gregorian"
+      >
+      </gosi-label-dc>
+      <ng-template *ngIf="establishment.molEstablishmentIds && establishment.proactive"></ng-template>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="gosiRegistrationDate"
+        date="true"
+        label="{{ 'ESTABLISHMENT.GOSI-REG-DATE' | translate }}"
+        [control]="establishment?.gosiRegistrationDate?.gregorian"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="establishment.lawType !== null"
+        class="col-md-4 col-sm-12"
+        id="lawType"
+        label="{{ 'ESTABLISHMENT.LAW-TYPE' | translate }}"
+        [control]="establishment.lawType"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="row est-section">
+      <gosi-label-dc
+        *ngIf="isGcc"
+        class="col-md-4 col-sm-12"
+        id="gccCountryName"
+        label="{{ 'ESTABLISHMENT.GCC-COUNTRY-NAME' | translate }}"
+        [control]="establishment.gccEstablishment?.country"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="isGcc"
+        class="col-md-4 col-sm-12"
+        id="gccRegistrationNo"
+        label="{{ 'ESTABLISHMENT.GCC-REGISTRATION-NUMBER' | translate }}"
+        [control]="establishment.gccEstablishment?.registrationNo"
+      ></gosi-label-dc>
+    </div>
+  </gosi-card-dc>
+  <!-- Identifier Details -->
+  <gosi-card-dc
+    class="card-style identifier"
+    *ngIf="!isGcc"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-IDENTIFICATION-DETAILS' | translate }}"
+    [canEdit]="canEditIdentifier && !isViewOnly && !reopenedClosingInProgress && canEditEstInfo"
+    (edit)="goToEditIdentifierDetails()"
+    id="editIdentifierDetails"
+    [accessRoles]="accessRoles"
+    [accessIdentifier]="accessIdentifier"
+    [paddingBottom]="true"
+  >
+    <gosi-alert-dc
+      *ngIf="editIdentifierDetailsMsg"
+      [message]="editIdentifierDetailsMsg | translate: { referenceNo: identifierReferenceNo }"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+    <div class="row est-section">
+      <div class="col-12 est-sub-heading">{{ 'ESTABLISHMENT.LICENSE-DETAILS' | translate }}</div>
+      <gosi-label-dc
+        id="licenseNumber"
+        class="col-md-4 col-sm-12"
+        id="licenceNumber"
+        label="{{ 'ESTABLISHMENT.LICENSE-NUMBER' | translate }}"
+        [control]="establishment.license?.number"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        id="licenseIssueDate"
+        [date]="true"
+        class="col-md-4 col-sm-12"
+        id="licenceIssueDate"
+        label="{{ 'ESTABLISHMENT.LICENSE-ISSUE-DATE' | translate }}"
+        [control]="establishment.license?.issueDate?.gregorian"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        id="licenseExpiryDate"
+        class="col-md-4 col-sm-12"
+        date="true"
+        id="licenceExpiryDate"
+        label="{{ 'ESTABLISHMENT.LICENSE-EXPIRY-DATE' | translate }}"
+        [control]="establishment.license?.expiryDate?.gregorian"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        id="licenseIssuingAuthority"
+        class="col-md-4 col-sm-12"
+        id="licenceIssuingAuthority"
+        label="{{ 'ESTABLISHMENT.LICENSE-ISSUING-AUTHORITY' | translate }}"
+        [control]="establishment.license?.issuingAuthorityCode | bilingualText"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="isPpa"
+        id="departmentNumber"
+        class="col-md-4 col-sm-12"
+        id="departmentNumber"
+        label="{{ 'ESTABLISHMENT.DEPARTMENT-ID' | translate }}"
+        [control]="establishment.departmentNumber"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="row est-section">
+      <div class="sub-section"></div>
+      <div class="col-12 est-sub-heading">{{ 'ESTABLISHMENT.COMMERCIAL-REGISTRATION-DETAILS' | translate }}</div>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="crnNumber"
+        label="{{ 'ESTABLISHMENT.CRN-NUMBER' | translate }}"
+        [control]="establishment.crn?.number"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        id="crnIssueDate"
+        class="col-md-4 col-sm-12"
+        date="true"
+        id="crnIssueDate"
+        label="{{ 'ESTABLISHMENT.CRN-ISSUE-DATE' | translate }}"
+        [control]="establishment.crn?.issueDate?.gregorian"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        id="crnExpiryDate"
+        class="col-md-4 col-sm-12"
+        date="true"
+        id="crnExpiryDate"
+        label="{{ 'ESTABLISHMENT.CRN-EXPIRY-DATE' | translate }}"
+        [control]="establishment.crn?.expiryDate?.gregorian"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        date="true"
+        id="crnStatus"
+        label="{{ 'ESTABLISHMENT.CRN-STATUS-ENG' | bilingualText }}"
+        [value]="establishment?.crStatus | bilingualText"
+      >
+      </gosi-label-dc>
+
+      <gosi-label-dc
+        *ngIf="establishment.establishmentType?.english !== main"
+        id="mainCrn"
+        class="col-md-4 col-sm-12"
+        id="mainCrn"
+        label="{{ 'ESTABLISHMENT.MAIN-CRN-NUMBER' | translate }}"
+        [control]="establishment.mainCrn?.number"
+      >
+      </gosi-label-dc>
+    </div>
+    <ng-container *ngIf="establishment.molEstablishmentIds">
+      <div class="row est-section">
+        <div class="sub-section"></div>
+        <div class="col-12 est-sub-heading">{{ 'ESTABLISHMENT.MOL-REGISTRATION-DETAILS' | translate }}</div>
+      </div>
+      <est-mol-details-dc
+        [molDetails]="establishment.molEstablishmentIds"
+        [molFileStatus]="establishment?.molFileStatus"
+      ></est-mol-details-dc>
+    </ng-container>
+    <div class="row est-section">
+      <div class="sub-section"></div>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="unifiedNationalNumber"
+        label="ESTABLISHMENT.UNIFIED-NATIONAL-NO"
+        [control]="establishment.unifiedNationalNumber"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        id="recruitmentNo"
+        class="col-md-4 col-sm-12"
+        id="recruitmentNo"
+        label="{{ 'ESTABLISHMENT.RECRUITMENT-NO' | translate }}"
+        [control]="establishment.recruitmentNo"
+      >
+      </gosi-label-dc>
+    </div>
+  </gosi-card-dc>
+  <!-- Identifier Details for PPA -->
+  <gosi-card-dc
+    class="card-style identifier"
+    *ngIf="isGcc && isPpa"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-IDENTIFICATION-DETAILS' | translate }}"
+    [canEdit]="canEditIdentifier && !isViewOnly && !reopenedClosingInProgress"
+    (edit)="goToEditIdentifierDetails()"
+    id="editIdentifierDetails"
+    [accessRoles]="accessRoles"
+    [accessIdentifier]="accessIdentifier"
+    [paddingBottom]="true"
+  >
+    <div class="row est-section">
+      <gosi-label-dc
+        id="departmentNumber"
+        class="col-md-4 col-sm-12"
+        id="departmentNumber"
+        label="{{ 'ESTABLISHMENT.DEPARTMENT-ID' | translate }}"
+        [control]="establishment.departmentNumber"
+      >
+      </gosi-label-dc>
+    </div>
+  </gosi-card-dc>
+  <!-- Address Details -->
+  <gosi-card-dc
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.ADDRESS-DETAILS' | translate }}"
+    [canEdit]="canEditAddressDetails && !isViewOnly && !reopenedClosingInProgress"
+    (edit)="goToEditAddressDetails()"
+    class="addressDetails card-style"
+    id="editAddressDetails"
+    [accessRoles]="accessRoles"
+    [accessIdentifier]="accessIdentifier"
+  >
+    <gosi-alert-dc
+      *ngIf="editAddressDetailsMsg"
+      [message]="editAddressDetailsMsg | translate: { referenceNo: addressReferenceNo }"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+    <frm-address-dc
+      isViewOnly="true"
+      [hasAddressDetailsLabel]="false"
+      [addressDetails]="
+        establishment.contactDetails && establishment.contactDetails.addresses
+          ? establishment.contactDetails.addresses
+          : []
+      "
+      [hasOverseasAddress]="isGcc"
+      [hasPOAddress]="!isGcc"
+      [hasNationalAddress]="!isGcc"
+      [currentMailingAddress]="establishment.contactDetails?.currentMailingAddress"
+    >
+    </frm-address-dc>
+  </gosi-card-dc>
+  <!-- Contact Details -->
+
+  <gosi-card-dc
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}"
+    [canEdit]="canEditContactDetails && !isViewOnly && !reopenedClosingInProgress"
+    (edit)="goToEditContactDetails()"
+    class="addressDetails card-style"
+    id="editContactDetails"
+    [accessRoles]="accessRoles"
+    [accessIdentifier]="accessIdentifier"
+    [paddingBottom]="true"
+  >
+    <gosi-alert-dc
+      *ngIf="editContactDetailsMsg; else noAddress"
+      [message]="editContactDetailsMsg | translate: { referenceNo: contactReferenceNo }"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+    <ng-template #noAddress>
+      <gosi-alert-dc
+        *ngIf="showAddressEmptyError"
+        [message]="'ESTABLISHMENT.ERROR.CONTACT-TRANSACTION-REQUIREMENT' | translate"
+        type="warning"
+        [dismissible]="false"
+        [noPadding]="true"
+      ></gosi-alert-dc>
+    </ng-template>
+    <div class="row est-section">
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="mobileNo"
+        [control]="establishment.contactDetails?.mobileNo?.primary"
+        [label]="'ESTABLISHMENT.MOBILE-NUMBER'"
+      >
+        <span id="prefixValue">{{ getISDCodePrefix(establishment.contactDetails?.mobileNo) }}</span>
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="telephoneNo"
+        label="{{ 'ESTABLISHMENT.TELEPHONE-NUMBER' | translate }}"
+        [control]="establishment.contactDetails?.telephoneNo?.primary"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="extension"
+        label="{{ 'ESTABLISHMENT.EXTENSION' | translate }}"
+        [control]="establishment.contactDetails?.telephoneNo?.extensionPrimary"
+      ></gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        id="emailID"
+        label="{{ 'ESTABLISHMENT.EMAIL-ID' | translate }}"
+        [control]="establishment.contactDetails?.emailId?.primary"
+      ></gosi-label-dc>
+    </div>
+  </gosi-card-dc>
+  <!-- Bank Account Details -->
+  <gosi-card-dc
+    type="secondary"
+    class="card-style"
+    heading="{{ 'ESTABLISHMENT.BANK-ACCOUNT-DETAILS' | translate }}"
+    [canEdit]="canEditBankDetails && !isViewOnly && !reopenedClosingInProgress"
+    (edit)="goToEditBankDetails()"
+    id="editBankDetails"
+    [accessRoles]="accessRoles"
+    [accessIdentifier]="accessIdentifier"
+    [noMarginBottom]="true"
+    [paddingBottom]="true"
+  >
+    <gosi-alert-dc
+      *ngIf="editBankDetailsMsg"
+      [message]="editBankDetailsMsg | translate: { referenceNo: bankReferenceNo }"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    ></gosi-alert-dc>
+    <div class="row est-section">
+      <gosi-label-dc
+        class="col-md-6 col-sm-12"
+        id="bankName"
+        label="{{ 'ESTABLISHMENT.BANK-NAME' | translate }}"
+        [control]="establishment.establishmentAccount?.bankAccount?.bankName"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        class="col-md-6 col-sm-12"
+        id="ibanAccountNo"
+        label="{{ 'ESTABLISHMENT.IBAN-NUMBER' | translate }}"
+        [control]="establishment.establishmentAccount?.bankAccount?.ibanAccountNo"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="!isGcc && !isAppPrivate"
+        class="col-md-6 col-sm-12"
+        id="ibanAccountStatus"
+        label="{{ 'ESTABLISHMENT.BANK-ACCOUNT.STATUS' | translate }}"
+        [control]="accountStatus | translate"
+      >
+      </gosi-label-dc>
+    </div>
+  </gosi-card-dc>
+</ng-container>
+<!-- <ng-template #noUNNTemplate>
+  <gosi-modal-dc
+    [modalHeader]="'ESTABLISHMENT.EDIT-BANK-ACCOUNT-DETAILS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="hideModal()"
+  >
+    <gosi-alert-dc
+      modalContent
+      [message]="'ESTABLISHMENT.WARNING.IBAN-EDIT' | translate"
+      type="warning"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+    <div class="col-md-12 text-center" modalAction>
+      <gosi-button-dc id="confirmBtn" class="btn" type="secondary" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </gosi-modal-dc>
+</ng-template> -->

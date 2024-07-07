@@ -1,0 +1,210 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<span class="row badge">
+  <fa-icon icon="file-alt" class="icon"></fa-icon>
+  <!-- <span class="head-value">{{ 'DASHBOARD.ACCOUNT-SUMMARY' | translate | uppercase }} </span> -->
+  <!-- In individualApp VD, it is Bill Details -->
+  <span class="head-value">{{ 'DASHBOARD.BILL-DETAILS' | translate | uppercase }} </span>
+</span>
+<div class="row pl-2 pr-2 margin-custom">
+  <div class="col-lg-12 date">
+    {{ 'DASHBOARD.AS-ON' | translate }}
+    {{ currentMonth | translate: currentDate }}
+  </div>
+</div>
+<div class="row pl-2 pr-2 margin-custom">
+  <div class="col-lg-5">
+    <div class="row mt-3" *ngIf="!creditBalance">
+      <div class="col-lg-6 col-view-6 amount-label">
+        {{ 'DASHBOARD.BILL-AMOUNT' | translate }}
+        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplate"></fa-icon>
+      </div>
+      <div class="col-lg-6 col-view-6 amount danger font-weight-bold" id="billAmountValue">
+        {{ billBalanceDetails.balanceDue | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <div class="row mt-3" *ngIf="creditBalance">
+      <div class="col-lg-6 col-view-6 amount-label">
+        {{ 'DASHBOARD.CREDIT-FROM-LAST-BILL' | translate }}
+        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplate"></fa-icon>
+      </div>
+      <div class="col-lg-6 col-view-6 amount primary font-weight-bold" id="lastbillAmountValue">
+        {{ lastBillAmount | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <div class="row mt-4">
+      <div class="col-lg-6 col-view-6 amount-label">
+        {{ 'DASHBOARD.RECEIPTS-AND-CREDITS' | translate }}
+        <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="receiptCreditToolTemplate"></fa-icon>
+      </div>
+      <div class="col-lg-6 col-view-6 amount primary" id="creditBalanceAvailableValue">
+        {{ billBalanceDetails.paidAmount | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <div *ngIf="billBalanceDetails?.creditBalanceRefunded !== 0" class="row mt-3">
+      <div class="col-lg-6 col-view-6 amount-label">
+        {{ 'DASHBOARD.CREDIT-REFUND' | translate }}
+      </div>
+      <div class="col-lg-6 col-view-6 amount danger" id="creditBalanceAvailableValue">
+        {{ billBalanceDetails?.creditBalanceRefunded * exchangeRate | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <div class="row separator"></div>
+    <div class="row mt-3" *ngIf="!excessPaidFlag && unPaidAmount !== 0">
+      <div class="col-lg-4 col-view-6 sum-label">
+        {{ 'DASHBOARD.UNPAID-BALANCE' | translate }}
+      </div>
+
+      <div class="col-lg-8 col-view-6 sum-amount amount-value" id="unpaidBalanceValue">
+        {{ unPaidAmount | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <div class="row mt-3" *ngIf="unPaidAmount === 0">
+      <div class="col-lg-4 col-view-6 sum-label">
+        {{ 'DASHBOARD.UNPAID-BALANCE' | translate }}
+      </div>
+
+      <div class="col-lg-8 col-view-6 paid-amount amount-value" id="unpaidBalanceValue">
+        {{ unPaidAmount | number: '1.2-2' }}
+        {{ 'DASHBOARD.SAR' | translate }}
+      </div>
+    </div>
+    <ng-container *ngIf="unPaidAmount !== 0">
+      <div
+        class="row mt-3"
+        *ngIf="
+          (excessPaidFlag && creditBalance) ||
+          (billBalanceDetails.paidAmount > billBalanceDetails.balanceDue &&
+            billBalanceDetails.paidAmount !== 0 &&
+            excessPaidFlag)
+        "
+      >
+        <div class="col-lg-4 col-view-6 sum-label">
+          {{ 'DASHBOARD.VIC-CREDIT-BALANCE' | translate }}
+        </div>
+        <div class="col-lg-8 col-view-6 excess-amount amount-value" id="creditAmount">
+          {{ creditAmount | number: '1.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <div class="col-lg-4 mt-3 due-date-padding" *ngIf="!excessPaidFlag && unPaidAmount !== 0">
+    <dsb-vic-due-widget-dc [startDate]="billBalanceDetails.dueDate.gregorian"></dsb-vic-due-widget-dc>
+  </div>
+  <div class="col-lg-3 mt-3 pay-button pay">
+    <div class="d-flex flex-column">
+      <gosi-button-dc id="pay" type="primary" [outlineOnly]="true" class="custom-width" (submit)="navigateTo()">
+        {{ 'DASHBOARD.VIEW-BILL' | translate }}</gosi-button-dc
+      >
+      <div class="a-link">
+        {{ 'CONTRIBUTOR.PAY-BILL' | translate }}
+        <a class="help-link" (click)="showModal(payModalRef, 'md')">
+          <fa-icon *ngIf="lang == 'en'" [icon]="['fas', 'question-circle']"></fa-icon>
+          <fa-icon *ngIf="lang == 'ar'" [icon]="['fas', 'question-circle']" flip="horizontal"></fa-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="unBillAmount?.violations > 0 || unBillAmount?.rejectedOh > 0">
+    <div class="col-lg-3 amount-border border-left">
+      <div class="row mt-3">
+        <div class="col-lg-8 font-weight-bold">
+          {{ 'DASHBOARD.UN-BILLED-AMOUNTS' | translate }}
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-lg-7 amount-label">
+          {{ 'DASHBOARD.VIOLATIONS' | translate }}
+        </div>
+        <div class="col-lg-5 amount danger" id="violationAmount">
+          {{ unBillAmount.violations | number: '1.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-lg-7 amount-label">
+          {{ 'DASHBOARD.REJECTED-OH-CLAIMS' | translate }}
+        </div>
+        <div class="col-lg-5 amount danger" id="ohvalue">
+          {{ unBillAmount.rejectedOh | number: '1.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<ng-template #billAmountToolTemplate>
+  <ng-container>
+    <div class="d-flex flex-column">
+      <div>{{ 'DASHBOARD.BILL-AMOUNT-INFO' | translate }}{{ previousMonth | translate: previousDate }}</div>
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #receiptCreditToolTemplate>
+  <ng-container>
+    <div class="sm">{{ 'DASHBOARD.RECEIPTS-CREDIT-INFO' | translate }}{{ creditMonth | translate: creditDate }}</div>
+  </ng-container>
+</ng-template>
+
+<!-- Modals -->
+<ng-template #payBtnPopup>
+  <div class="model-margin">
+    <div class="model-align">{{ 'DASHBOARD.MAKE-PAYMENT-VIA' | translate }}</div>
+    <div>1. {{ 'DASHBOARD.ONLINE-BANKING' | translate }}</div>
+    <div>2. {{ 'DASHBOARD.TELEPHONE-BANKING' | translate }}</div>
+    <div>3. {{ 'DASHBOARD.ATM' | translate }}</div>
+    <div class="model-align">{{ 'DASHBOARD.VIST-URL' | translate }}</div>
+    <div>
+      <gosi-button-dc id="confirmBtn" class="float-right" type="secondary" size="md" (submit)="confirmCancel()"
+        >{{ 'DASHBOARD.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>
+<ng-template #payModalRef>
+  <div class="custom-modal">
+    <gosi-modal-dc>
+      <div class="row" modalContent>
+        <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+          <span class="times-icon times-icon-custom" (click)="hideModal()"> <fa-icon icon="times"></fa-icon></span>
+        </div>
+        <div class="col-lg-12">
+          <div class="header-part">
+            <!-- <div class="col-lg-10"> -->
+            <div class="modal-headers">{{ 'CONTRIBUTOR.PAY-BILL' | translate }}</div>
+            <!-- </div> -->
+          </div>
+        </div>
+        <div class="col-lg-12 header-value pt-4">
+          {{ 'CONTRIBUTOR.PAY-FIRST-MESSAGE' | translate }}
+        </div>
+        <div class="col-lg-12 header-value">
+          {{ 'CONTRIBUTOR.PAY-SECOND-MESSAGE' | translate }}
+        </div>
+        <div class="col-lg-12 pt-4">
+          <div class="d-flex flex-wrap">
+            <div class="d-flex flex-column">
+              <div class="label pb-2" [ngClass]="lang == 'ar' ? 'left-padding' : ''">
+                {{ 'CONTRIBUTOR.ACCOUNT-NUMBER' | translate }}
+              </div>
+              <div class="value">{{ personId }}</div>
+            </div>
+            <div [ngClass]="lang === 'en' ? 'd-flex flex-column value-space' : 'd-flex flex-column ar-value-space'">
+              <div class="label pb-2">{{ 'CONTRIBUTOR.BILLER-CODE' | translate }}</div>
+              <div class="value">060</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

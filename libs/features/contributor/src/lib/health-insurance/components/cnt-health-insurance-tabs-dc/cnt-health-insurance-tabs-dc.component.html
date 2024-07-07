@@ -1,0 +1,229 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<tabset class="wrapper-tabset">
+  <tab  [active]="currentTab === 0"  (selectTab)="toggleTabs(0)" id="onHold">
+    <ng-template tabHeading>
+      <span [ngClass]="currentTab === 0? 'active-span':'not-active.span'">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.ON-HOLD' | translate }} ({{OnHoldList?.numberOfElements}})</span>
+    </ng-template>
+    <br>
+    <ng-container *ngIf="OnHoldList?.numberOfElements !=0; else EmptyOnHoldList">
+      <span class="font-weight-bold">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.ON-HOLD' | translate }} ({{OnHoldList?.numberOfElements}})</span><br><br>
+      <span >{{'CONTRIBUTOR.HEALTH-INSURANCE.HDF-INFO-MSG' | translate}}</span><br><br>
+      <table class="table table-outline">
+        <thead>
+        <tr class="header-background">
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.CONTRIBUTOR' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.JOINING-DATE' | translate}}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="
+                    let insuredListEmployeeInfo of OnHoldList?.content
+                      | paginate
+                        : {
+                            id: 'onHoldPaginationId',
+                            itemsPerPage: itemsPerPage,
+                            currentPage: OnHoldList?.pageable?.pageNumber,
+                            totalItems: OnHoldList?.numberOfElements
+                          };
+                    let i = index
+                  ">
+          <td class="text-dark">
+            {{ convertNameToBilingual(insuredListEmployeeInfo?.employeeNameAr,insuredListEmployeeInfo?.employeeNameEn) | bilingualText}} <br>
+            {{ getEmployeeId(insuredListEmployeeInfo?.employeeID) }}
+          </td>
+          <td class="text-dark">
+            {{getJoiningDate(insuredListEmployeeInfo?.GOSIJoiningDate)}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="row pagination justify-content-center" id="on-hold-pagination">
+        <gosi-pagination-dc
+                [totalSize]="OnHoldList?.numberOfElements"
+                [pageDetails]="pageDetails"
+                (pageChange)="handleOnHoldPagination($event)"
+                [paginationId]="onHoldPaginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+    <ng-template #EmptyOnHoldList>
+      <div class="text-center pt-4">
+        <div class="empty-info">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.EMPTY-ON-HOLD-LIST' | translate }}</div>
+      </div>
+    </ng-template>
+  </tab>
+
+  <tab  [active]="currentTab === 1" (selectTab)="toggleTabs(1)" id="uninsured">
+<ng-template tabHeading>
+      <span [ngClass]="currentTab === 1? 'active-span':'not-active.span'">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.UNINSURED' | translate }} ({{UninsuredList?.numberOfElements}})</span><br><br>
+</ng-template><br>
+    <ng-container *ngIf="UninsuredList?.numberOfElements !=0 ; else EmptyUninsuredList">
+      <div class ="row justify-content-between">
+        <span class="font-weight-bold">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.UNINSURED' | translate }} ({{UninsuredList?.numberOfElements}})</span>
+      </div><br>
+      <table class="table table-outline">
+        <thead>
+        <tr class="header-background">
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.CONTRIBUTOR' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.JOINING-DATE' | translate}}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="
+                    let UninsuredListEmployeeInfo of UninsuredList?.content
+                      | paginate
+                        : {
+                            id: 'uninsured-pagination-id',
+                            itemsPerPage: itemsPerPage,
+                            currentPage: UninsuredList?.pageable?.pageNumber,
+                            totalItems: UninsuredList?.numberOfElements
+                          };
+                    let i = index
+                  ">
+          <td><input type="checkbox" (change)="onSelectContributor(UninsuredListEmployeeInfo, $event)"/></td>
+          <td class="text-dark">
+            {{ convertNameToBilingual(UninsuredListEmployeeInfo?.employeeNameAr,UninsuredListEmployeeInfo?.employeeNameEn) | bilingualText}}
+            <br>
+            {{ UninsuredListEmployeeInfo?.employeeID }}
+          </td>
+          <td class="text-dark">
+            {{getJoiningDate(UninsuredListEmployeeInfo?.GOSIJoiningDate)}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="row pagination justify-content-center" id="uninsured-pagination">
+        <gosi-pagination-dc
+                [totalSize]="UninsuredList?.numberOfElements"
+                [pageDetails]="pageDetails"
+                (pageChange)="handleUninsuredPaginate($event)"
+                [paginationId]="uninsuredPaginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+    <ng-template #EmptyUninsuredList>
+      <div class="text-center pt-4">
+        <div class="empty-info">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.EMPTY-UNINSURED-LIST' | translate }}</div>
+      </div>
+    </ng-template>
+  </tab>
+
+  <tab  [active]="currentTab ===2" (selectTab)="toggleTabs(2)" id="insured">
+<ng-template tabHeading>
+    <span [ngClass]="currentTab === 2? 'active-span':'not-active.span'">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.INSURED' | translate }} ({{InsuredList?.numberOfElements}})</span>
+</ng-template>
+    <ng-container *ngIf="InsuredList?.numberOfElements != 0; else EmptyInsuredList">
+      <table class="table table-outline">
+        <thead>
+        <tr class="header-background">
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.CONTRIBUTOR' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.JOINING-DATE' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.INSURANCE-CLASS' | translate}}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="
+                    let insuredListEmployeeInfo of InsuredList?.content
+                      | paginate
+                        : {
+                            id: 'insured-pagination-id',
+                            itemsPerPage: itemsPerPage,
+                            currentPage: InsuredList?.pageable?.pageNumber,
+                            totalItems: InsuredList?.numberOfElements
+                          };
+                    let i = index
+                  ">
+          <td class="text-dark">
+            {{ convertNameToBilingual(insuredListEmployeeInfo?.employeeNameAr,insuredListEmployeeInfo?.employeeNameEn) | bilingualText }}<br>
+            {{ getEmployeeId(insuredListEmployeeInfo?.employeeID) }}
+          </td>
+          <td class="text-dark">
+            {{getJoiningDate(insuredListEmployeeInfo?.GOSIJoiningDate)}}
+          </td>
+          <td class="text-dark">
+            {{insuredListEmployeeInfo?.insuranceClass}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="row pagination justify-content-center" id="insured-pagination">
+        <gosi-pagination-dc
+                [totalSize]="InsuredList?.numberOfElements"
+                [pageDetails]="pageDetails"
+                (pageChange)="handleInsuredPaginate($event)"
+                [paginationId]="insuredPaginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+    <ng-template #EmptyInsuredList>
+        <div class="text-center pt-4" id="text-1">
+          <div class="empty-info">{{ 'CONTRIBUTOR.HEALTH-INSURANCE.EMPTY-INSURED-LIST' | translate }}</div>
+        </div>
+      </ng-template>
+  </tab>
+
+</tabset>
+
+<ng-template #confirmTemplate>
+  <div class="modal-dialog" id="hip-modal">
+    <div class="modal-title">
+      <h2>{{ 'CONTRIBUTOR.HEALTH-INSURANCE.ADD-CONTRIBUOTR' | translate }}</h2><br><br>
+      <div>
+        <h3>{{ 'CONTRIBUTOR.HEALTH-INSURANCE.HDF-ADD-INFO-MSG' | translate }}</h3>
+      </div>
+    </div>
+    <div class="mb-2 mt-2">
+      <div class="modal-content">
+        <div class="modal-body modal-xl">
+      <table class="table table-outline">
+        <thead>
+        <tr class="header-background">
+          <th scope="col"></th>
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.CONTRIBUTOR' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.JOINING-DATE' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.INSURANCE-CLASS' | translate}}
+          </th>
+          <th>
+            {{'CONTRIBUTOR.HEALTH-INSURANCE.DEPENDENTS' | translate}}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+          </div>
+        <div class="row justify-content-between">
+          <gosi-button-dc  size="lg" type="secondary" id="btn-cancel">
+            {{ 'ESTABLISHMENT.CANCEL' | translate }}
+          </gosi-button-dc>
+          <gosi-button-dc size="lg" type="primary"  id="btn-confirm">
+            {{ 'CONTRIBUTOR.HEALTH-INSURANCE.ADD-CONTRIBUOTR' | translate }} ({{counter}})
+          </gosi-button-dc>
+        </div>
+        </div>
+    </div>
+  </div>
+</ng-template>

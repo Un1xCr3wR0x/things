@@ -1,0 +1,284 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div *ngFor="let adjustment of activeAdjustments?.adjustments; let i = index">
+    <accordion class="active-adjustment-container">
+      <accordion-group class="accordion-group-class">
+        <div accordion-heading class="col-lg-3 pl-3">
+          <div class="adjust-type">{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}</div>
+          <div class="adjust-value">{{ adjustment?.adjustmentId || '-' }}</div>
+        </div>
+        <div accordion-heading class="col-lg-6">
+          <div class="adjust-type">{{ 'ADJUSTMENT.BENEFIT-TYPE' | translate }}</div>
+          <div class="adjust-value benefit-value">{{ adjustment?.benefitType | bilingualText }}</div>
+        </div>
+
+        <div class="header-wrapper ml-auto" accordion-heading>
+          <div class="row">
+            <span class="custom-box py-1 px-3 {{ getActionName(adjustment?.actionType?.english).color }}">{{
+              getActionName(adjustment?.actionType?.english).name | translate
+            }}</span>
+
+            <span class="arrow-up col-md-2">
+              <fa-icon icon="angle-up" size="2x"></fa-icon>
+            </span>
+            <span class="arrow-down ml-auto col-md-2" accordion-heading>
+              <fa-icon icon="angle-down" size="2x"></fa-icon>
+            </span>
+          </div>
+        </div>
+        <div class="row ml-3 pt-4">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}</div>
+            <div class="adjust-modify-value">
+              <a class="view-link" (click)="navigateAdjustmentView(adjustment)">{{
+                adjustment?.adjustmentId || '-'
+              }}</a>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.BENEFIT-TYPE' | translate }}</div>
+            <div class="adjust-modify-value">
+              <a class="view-link" (click)="navigateBenefitDetails(adjustment)">{{
+                adjustment?.benefitType | bilingualText
+              }}</a>
+            </div>
+          </div>
+        </div>
+        <div class="row ml-3 pt-4">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.BENEFIT-STATUS' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.benefitStatus | bilingualText }}
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.BENEFIT-REQUEST-DATE' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy' }}
+            </div>
+          </div>
+        </div>
+        <div class="row ml-3 pt-4">
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isBenefitTypeSaned(adjustment?.benefitType?.english)">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.BENEFIT-AMOUNT' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.benefitAmount }}<span class="mr-1"></span>{{ 'ADJUSTMENT.SAR' | translate }}
+            </div>
+          </div>
+          <div class="col-lg-3" *ngIf="isBenefitTypeSaned(adjustment?.benefitType?.english)">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.INITIAL-BENEFIT-AMOUNT' | translate }}</div>
+            <div class="adjust-modify-value" id="benefitInitialAmount">
+              {{ adjustment?.initialBenefitAmount }}<span class="mr-1"></span>{{ 'ADJUSTMENT.SAR' | translate }}
+            </div>
+          </div>
+          <div class="col-lg-3" *ngIf="isBenefitTypeSaned(adjustment?.benefitType?.english)">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.SUBS-BENEFIT-AMOUNT' | translate }}</div>
+            <div class="adjust-modify-value" id="benefitSubsequentAmount">
+              {{ adjustment?.subsequentBenefitAmount }}<span class="mr-1"></span>{{ 'ADJUSTMENT.SAR' | translate }}
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate }}</div>
+            <div class="adjust-modify-value">{{ adjustment?.adjustmentType | bilingualText }}</div>
+          </div>
+        </div>
+        <div class="row ml-3 pt-4 pb-4">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.ADJUSTMENT-STATUS' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.adjustmentStatus | bilingualText }}
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.ADJUSTMENT-REASON' | translate }}</div>
+            <div class="adjust-modify-value" *ngIf="adjustment?.actionType?.english !== 'Recovery'; else cancelReason">
+              {{ adjustment?.adjustmentReason | bilingualText }}
+            </div>
+            <ng-template #cancelReason>
+              {{ 'ADJUSTMENT.CANCEL-OF-ADJUSTMENT' | translate }}
+            </ng-template>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6 pt-4">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }} <span class="mr-1"></span
+              >{{ 'ADJUSTMENT.SAR' | translate }}
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6 pt-4" *ngIf="adjustment?.adjustmentType?.english === 'Debit'">
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}</div>
+            <div class="adjust-modify-value">{{ adjustment?.adjustmentPercentage }}</div>
+          </div>
+          <div
+            class="col-sm-6 col-md-6 col-lg-6 pt-4"
+            *ngIf="
+              (adjustment?.adjustmentType?.english === 'Debit' && adjustment?.actionType?.english === 'Modify') ||
+              (adjustment?.adjustmentType?.english === 'Debit' && adjustment?.actionType?.english === 'Cancel')
+            "
+          >
+            <div class="adjust-modify-head">{{ 'ADJUSTMENT.BALANCE-AMOUNT' | translate }}</div>
+            <div class="adjust-modify-value">
+              {{ adjustment?.adjustmentBalance | numToPositive | number: '1.0-2' }} <span class="mr-1"></span
+              >{{ 'ADJUSTMENT.SAR' | translate }}
+            </div>
+          </div>
+        </div>
+        <div class="row ml-3 mt-1" *ngIf="adjustment?.modificationDetails">
+          <div class="col">
+            <div class="row">
+              <div class="col" id="subheading">
+                <div class="sub-head">{{ 'ADJUSTMENT.ADJUSTMENT-MODIFICATIONS' | translate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4 mx-3" *ngIf="adjustment?.modificationDetails">
+          <div class="col-md-12">
+            <table class="table table-bordered">
+              <tbody class="modify-details-body">
+                <tr>
+                  <td class="space border-even"></td>
+                  <td class="before adjust-value border-even">
+                    {{ 'ADJUSTMENT.BEFORE-MODIFICATION' | translate }}
+                  </td>
+                  <td class="Aftere adjust-value border-even">
+                    {{ 'ADJUSTMENT.AFTER-MODIFICATION' | translate }}
+                  </td>
+                </tr>
+                <tr
+                  *ngIf="
+                    adjustment?.modificationDetails?.beforeModification?.adjustmentAmount ||
+                    adjustment?.modificationDetails?.afterModification?.adjustmentAmount
+                  "
+                >
+                  <td class="border-inner">
+                    <span class="adjust-value">{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}</span> <br />
+                    <span class="d-block text-center custom-sar">({{ 'ADJUSTMENT.SAR' | translate }})</span>
+                  </td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{
+                      adjustment?.modificationDetails?.beforeModification?.adjustmentAmount
+                        | numToPositive
+                        | number: '1.0-2'
+                    }}
+                  </td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{
+                      adjustment?.modificationDetails?.afterModification?.adjustmentAmount
+                        | numToPositive
+                        | number: '1.0-2'
+                    }}
+                  </td>
+                </tr>
+                <tr
+                  *ngIf="
+                    adjustment?.modificationDetails?.beforeModification?.adjustmentBalance ||
+                    adjustment?.modificationDetails?.afterModification?.adjustmentBalance
+                  "
+                >
+                  <td class="border-inner">
+                    <span class="adjust-value">{{ 'ADJUSTMENT.BALANCE-AMOUNT' | translate }}</span> <br />
+                    <span class="d-block text-center custom-sar">({{ 'ADJUSTMENT.SAR' | translate }})</span>
+                  </td>
+                  <td class="border-even custom-table-value-align px-4">
+                    {{
+                      adjustment?.modificationDetails?.beforeModification?.adjustmentBalance
+                        | numToPositive
+                        | number: '1.0-2'
+                    }}
+                  </td>
+                  <td class="border-even custom-table-value-align px-4">
+                    {{
+                      adjustment?.modificationDetails?.afterModification?.adjustmentBalance
+                        | numToPositive
+                        | number: '1.0-2'
+                    }}
+                  </td>
+                </tr>
+                <tr
+                  *ngIf="
+                    (adjustment?.adjustmentType?.english === 'Debit' &&
+                      adjustment?.modificationDetails?.beforeModification?.adjustmentPercentage) ||
+                    adjustment?.modificationDetails?.afterModification?.adjustmentPercentage
+                  "
+                >
+                  <td class="border-inner adjust-value">{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}</td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{ adjustment?.modificationDetails?.beforeModification?.adjustmentPercentage }}%
+                  </td>
+                  <td class="border-odd custom-table-value-align px-4">
+                    {{ adjustment?.modificationDetails?.afterModification?.adjustmentPercentage }}%
+                  </td>
+                </tr>
+                <tr
+                  *ngIf="
+                    adjustment?.modificationDetails?.beforeModification?.adjustmentReason ||
+                    adjustment?.modificationDetails?.afterModification?.adjustmentReason
+                  "
+                >
+                  <td class="border-inner adjust-value">{{ 'ADJUSTMENT.ADJUSTMENT-REASON' | translate }}</td>
+                  <td class="border-even custom-table-value-align px-4">
+                    {{ adjustment?.modificationDetails?.beforeModification?.adjustmentReason | bilingualText }}
+                  </td>
+                  <td class="border-even custom-table-value-align px-4">
+                    {{ adjustment?.modificationDetails?.afterModification?.adjustmentReason | bilingualText }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row mt-1 mx-3" *ngIf="adjustment?.cancellationDetails">
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col" id="subheading">
+                <div class="cancel-head">{{ 'ADJUSTMENT.CANCELLATION-DETAILS' | translate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4 mx-3 mb-3" *ngIf="adjustment?.cancellationDetails?.rejectionReason">
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col" id="subheading">
+                <div class="adjust-modify-head">{{ 'ADJUSTMENT.REASON-FOR-CANCELLATION' | translate }}</div>
+                <div class="adjust-modify-value">
+                  {{ adjustment?.cancellationDetails?.rejectionReason | bilingualText }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mx-3 mt-1 pb-4" *ngIf="adjustment?.notes && adjustment?.actionType?.english !== 'Recovery'">
+          <div class="col" id="subheading">
+            <div class="notes-head">{{ 'ADJUSTMENT.NOTES' | translate }}</div>
+            <div class="notes-value">
+              {{ adjustment?.notes | limitTo: limit }}
+              <div *ngIf="adjustment?.notes?.length > limitvalue" class="read-more">
+                <a (click)="readFull(adjustment?.notes)">
+                  {{ showMoreText | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="row mx-3 pb-4"
+          *ngIf="adjustment?.actionType?.english === 'Modify' || adjustment?.actionType?.english === 'Cancel'"
+        >
+          <div class="col" id="subheading">
+            <div>
+              <a class="view-link" (click)="navigateAdjustmentView(adjustment)">{{
+                'ADJUSTMENT.ADJUSTMENT-MODIFICATION-HISTORY' | translate
+              }}</a>
+            </div>
+          </div>
+        </div>
+      </accordion-group>
+    </accordion>
+  </div>
+</ng-container>

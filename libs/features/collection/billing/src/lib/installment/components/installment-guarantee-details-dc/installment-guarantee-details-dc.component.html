@@ -1,0 +1,310 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary">
+  <div class="heading-font" *ngIf="!hideGuranteeDetails">
+    {{ 'BILLING.GUARANTEE-DETAILS' | translate }}
+    <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplate"></fa-icon>
+  </div>
+  <ng-template #billAmountToolTemplate>
+    <ng-container>
+      <div class="d-flex flex-column">
+        <div>{{ 'BILLING.GUARANTEE-INFO-MESSAGE' | translate }}</div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <div class="row top-style">
+    <div class="col-lg-6" *ngIf="!hideGuranteeDetails">
+      <gosi-input-select-dc
+        id="category"
+        [label]="'BILLING.GUARANTEE' | translate"
+        [control]="guaranteeModeForm.get('category')"
+        [list]="installmentGuaranteeType"
+        (select)="onGuarateeSelect()"
+        [disabled]="isGuaranteeDisable"
+      >
+      </gosi-input-select-dc>
+    </div>
+
+    <div class="col-lg-6" *ngIf="isGuarantee && !hideGuranteeDetails">
+      <gosi-input-select-dc
+        id="guaranteeMode"
+        [label]="'BILLING.GUARANTEE-TYPE' | translate"
+        [control]="guaranteeTypeModeForm.get('guaranteeType')"
+        [list]="typeList"
+        (select)="onSelectGuaranteeType()"
+        [disabled]="isGuaranteeDisable"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+  <!-----------------------banking-------------------->
+  <ng-container *ngIf="isBanking">
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="bankName"
+          [control]="bankingTypeForm.get('guaranteeName')"
+          [label]="'BILLING.GUARANTEE-BANK' | translate"
+          [list]="saudiBank"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="bankId"
+          [control]="bankingTypeForm.get('guarantorId')"
+          [maxLength]="guaranteeIdLength"
+          [placeholder]="'BILLING.GUARANTEE-NUMBER' | translate"
+          [label]="'BILLING.GUARANTEE-NUMBER' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="bankStartDate"
+          [label]="'BILLING.GUARANTEE-START-DATE' | translate | titlecase"
+          [control]="bankingTypeForm.get('startDate').get('gregorian')"
+          [disabled]="isGuaranteeDisable"
+          [maxDate]="installmentMaxDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="bankEndDate"
+          [label]="'BILLING.GUARANTEE-END-DATE' | translate | titlecase"
+          [control]="bankingTypeForm.get('endDate').get('gregorian')"
+          [disabled]="isGuaranteeDisable"
+          (changeEvent)="mindateChange()"
+          [minDate]="installmentMinDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+    </div>
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="guaranteeAmount"
+          [control]="bankingTypeForm.get('guaranteeAmount')"
+          [placeholder]="'BILLING.GUARANTEE-AMOUNT' | translate"
+          [label]="'BILLING.GUARANTEE-AMOUNT' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+  </ng-container>
+  <!-----------------------Promissory-------------------->
+  <ng-container *ngIf="isPromissory">
+    <div class="row top-style">
+      <div class="col-lg-6" *ngIf="lang === 'en'">
+        <gosi-input-text-dc
+          id="promissoryNameEnglish"
+          gosiSpecialCharacters
+          gosiRestrictNumber
+          [control]="promissoryTypeForm.get('guaranteeName').get('english')"
+          [label]="'BILLING.BENEFICIARY-NAME' | translate"
+          [placeholder]="'BILLING.BENEFICIARY-NAME' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="lang === 'ar'">
+        <gosi-input-text-dc
+          id="promissoryNameArabic"
+          gosiArabicMask
+          [control]="promissoryTypeForm.get('guaranteeName').get('english')"
+          [label]="'BILLING.BENEFICIARY-NAME' | translate"
+          [placeholder]="'BILLING.BENEFICIARY-NAME' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="promissoryId"
+          [control]="promissoryTypeForm.get('guarantorId')"
+          [placeholder]="'BILLING.BENEFICIARY-NATIONAL-ID' | translate"
+          [label]="'BILLING.BENEFICIARY-NATIONAL-ID' | translate"
+          [maxLength]="guaranteeIdLength"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="promissoryStartDate"
+          [label]="'BILLING.PROMISORY-START-DATE' | translate | titlecase"
+          [control]="promissoryTypeForm.get('startDate').get('gregorian')"
+          [disabled]="isGuaranteeDisable"
+          [maxDate]="installmentMaxDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="promissoryEndDate"
+          [label]="'BILLING.PROMISORY-END-DATE' | translate | titlecase"
+          [control]="promissoryTypeForm.get('endDate').get('gregorian')"
+          [disabled]="isGuaranteeDisable"
+          (changeEvent)="mindateChange()"
+          [minDate]="installmentMinDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+    </div>
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="promissoryAmount"
+          [control]="promissoryTypeForm.get('guaranteeAmount')"
+          [placeholder]="'BILLING.PROMISORY-AMOUNT' | translate"
+          [label]="'BILLING.PROMISORY-AMOUNT' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+  </ng-container>
+  <!-----------------------Pension-------------------->
+  <ng-container *ngIf="isPension">
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-text-dc
+          gosiSpecialCharacters
+          gosiRestrictNumber
+          id="pensionName"
+          [control]="pensionTypeForm.get('guaranteeName').get('english')"
+          [label]="'BILLING.BENEFICIARY-NAME' | translate"
+          [placeholder]="'BILLING.BENEFICIARY-NAME' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-number-dc
+          id="pensionId"
+          [control]="pensionTypeForm.get('guarantorId')"
+          [placeholder]="'BILLING.BENEFICIARY-NATIONAL-ID' | translate"
+          [label]="'BILLING.BENEFICIARY-NATIONAL-ID' | translate"
+          [maxLength]="guaranteeIdLength"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row top-style">
+      <div class="col-lg-6">
+        <gosi-input-currency-dc
+          id="pensionAmount"
+          [control]="pensionTypeForm.get('amount')"
+          [placeholder]="'BILLING.PENSION' | translate"
+          [label]="'BILLING.PENSION' | translate"
+          [disabled]="disablePensionAmount || isGuaranteeDisable"
+          (blur)="setPensionDetails()"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-currency-dc
+          id="installmentAmount"
+          [control]="pensionTypeForm.get('installmentAmount')"
+          [placeholder]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+          [label]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-currency-dc>
+      </div>
+    </div>
+  </ng-container>
+  <!-----------------------Others----------------------->
+  <ng-container *ngIf="isOthers">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="enableSalaryAmount">
+        <gosi-input-currency-dc
+          id="salaryAmount"
+          [control]="otherTypeForm.get('amount')"
+          [placeholder]="'BILLING.SALARY-AMOUNT' | translate"
+          [label]="'BILLING.SALARY-AMOUNT' | translate"
+          [disabled]="isGuaranteeDisable"
+        >
+        </gosi-input-currency-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="false">
+        <gosi-input-date-dc
+          id="deathDate"
+          [label]="'BILLING.DEATH-DATE' | translate | titlecase"
+          [control]="otherTypeForm.get('deathDate').get('gregorian')"
+          [disabled]="isGuaranteeDisable"
+          [maxDate]="maxDeathDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6">
+        <ng-container *ngIf="enableSalaryAmount">
+          <gosi-input-currency-dc
+            id="installmentAmount"
+            [control]="otherTypeForm.get('installmentAmount')"
+            [placeholder]="'BILLING.SALARY-AMOUNT' | translate"
+            [label]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+            [disabled]="isGuaranteeDisable"
+          >
+          </gosi-input-currency-dc>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+  <!-----------------------DownPayment Section ----------------------->
+  <ng-container *ngIf="isGuaranteeMode">
+    <blg-installment-down-payment-dc
+      [yesOrNoList]="yesOrNoList"
+      [InstallmentGuaranteeType]="installmentGuaranteeType"
+      [specialRequestFlag]="specialRequestFlag"
+      [isAppPublic]="isAppPublic"
+      [isDownPaymentRequired]="isDownPaymentRequired"
+      [disableToggle]="disableToggle"
+      [downPaymentDetails]="downPaymentDetails"
+      [isGuaranteeType]="isGuaranteeType"
+      [isGuaranteeDisable]="isGuaranteeDisable"
+      [totalAmount]="totalAmount"
+      [installmentRequest]="installmentRequest"
+      [inWorkflow]="inWorkflow"
+      (downPaymentAmount)="setDownPayment($event)"
+      (downPaymentPercentage)="getDownPaymentPercentage($event)"
+      (extensionValues)="getExtendedValues($event)"
+      (isDownPaymentEnabled)="getIsDownPayment($event)"
+      (guaranteeStatus)="getguaranteeStatus($event)"
+      (guaranteePercentage)="getguaranteePercentage($event)"
+      (guaranteeType)="getguaranteeType($event)"
+    ></blg-installment-down-payment-dc>
+  </ng-container>
+</gosi-card-dc>
+<!-----------------------Navigation Buttons----------------------->
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-left btn-section">
+      <gosi-button-dc id="installmentCancel" type="secondary" (submit)="popUp(cancelTemplates)">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section">
+      <gosi-button-dc id="installmentSave" type="primary" (submit)="saveAndNext()" [disabled]="showSearch">
+        {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplates>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="cancelModal()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

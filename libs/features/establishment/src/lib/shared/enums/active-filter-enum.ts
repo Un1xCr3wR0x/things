@@ -1,0 +1,5 @@
+export enum ActiveFilterEnum {
+  UNSET = 0,
+  ACTIVE = 'ESTABLISHMENT.ACTIVE',
+  INACTIVE = 'ESTABLISHMENT.INACTIVE'
+}

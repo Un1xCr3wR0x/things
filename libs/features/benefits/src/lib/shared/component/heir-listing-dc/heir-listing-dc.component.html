@@ -1,0 +1,536 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!--dependents card with delete and edit-->
+
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-borderless w-100" [ngClass]="!isSmallScreen ? 'overflow-auto w-100' : 'table-responsive'">
+      <thead *ngIf="listOfValues.length" [ngClass]="isHeadingLight ? 'thead-light' : ''">
+        <tr>
+          <th *ngIf="heirActionType"></th>
+          <th *ngFor="let eachHeading of tableHeadingAndParams">{{ eachHeading?.heading | translate | uppercase }}</th>
+          <th *ngIf="!heirActionType"></th>
+        </tr>
+      </thead>
+      <ng-container *ngFor="let value of listOfValues; let i = index">
+        <tbody *ngIf="value.actionType !== ActionType.REMOVE">
+          <tr class="data-row" [ngClass]="getClass(value, lang)">
+            <td *ngIf="heirActionType">
+              <gosi-input-checkbox-dc
+                id="checkBox"
+                (select)="checkStatusEditable(i, value?.personId)"
+                name="checkBox"
+                [control]="checkListValue.controls[i].get('checkBoxFlag')"
+              >
+              </gosi-input-checkbox-dc>
+            </td>
+            <td *ngFor="let eachHeading of tableHeadingAndParams">
+              <div *ngIf="eachHeading.parameterName === 'name'; else heirStatuss">
+                <div>
+                  {{ value[eachHeading?.parameterName] | nameToString: true }}
+                  <div class="d-block nin-text" *ngIf="value?.identity?.length > 0">
+                    <!-- <span class="value"> {{ checkIfAgeOrId(value, 'id') }}</span> -->
+                    <span>{{ checkIdentityLabel(i) | translate }} : {{ checkIdentity(i) }}</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #heirStatuss>
+                <ng-container *ngIf="eachHeading.parameterName === 'heirStatus'; else notName">
+                  <span *ngIf="value.newHeirStatus; else oldHeirStatus">
+                    {{ value.newHeirStatus | bilingualText }}
+                  </span>
+                  <ng-template #oldHeirStatus>
+                    {{ value.heirStatus | bilingualText }}
+                  </ng-template>
+                </ng-container>
+              </ng-template>
+              <ng-template #notName>
+                {{ checkIfAgeOrId(value, eachHeading.parameterName) | bilingualText }}
+                <div class="value">
+                  {{ displayHijiriDOB(value, eachHeading.parameterName) | bilingualText }}
+                </div>
+              </ng-template>
+              <!-- <div *ngIf="eachHeading.parameterName === 'benefitAmount'">
+              <div>
+                {{ (value.benefitAmount | number: '1.2-2') || '-' }}
+              </div>
+            </div> -->
+            </td>
+            <td *ngIf="!heirActionType">
+              <!--no edit/delete needed for hold/restart/stop/waive valid to be used for eligibility-->
+              <!-- <div *ngIf="value.valid || isModifyPage; else notValid"> -->
+              <!-- <div> -->
+              <!--Not applicable for modify-->
+              <div *ngIf="value.showMandatoryDetails && !isModifyPage; else hasMandatoryDetailsOrModifyPage">
+                <!-- <gosi-button-dc size="md" type="secondary" (submit)="editButtonClick(i)" [outlineOnly]="true">
+                      {{ 'BENEFITS.ENTER-MANDATORY-DETAILS' | translate }}
+                    </gosi-button-dc> -->
+                <fa-icon class="warning-icon" size="md" icon="exclamation-triangle"></fa-icon>
+                <a class="view-link" (click)="editButtonClick(i)">
+                  <span>{{ 'BENEFITS.VALIDATE-EVENT-TEXT' | translate }}</span> </a
+                >&nbsp;
+                <!-- Delete button added as a part of Defect 470203 -->
+                <fa-icon 
+                  *ngIf="isAppPrivate"
+                  (click)="deleteButtonClick(i)"
+                  size="lg"
+                  class="delete-icon"
+                  [icon]="['far', 'trash-alt']"
+                >
+                </fa-icon>
+              </div>
+              <ng-template #hasMandatoryDetailsOrModifyPage>
+                <div class="action-icon">
+                  <!--                  <ng-container *ngIf="!isModifyPage">-->
+                  <!--TODO: is not eligible required for both existing and added Heir ?-->
+                  <ng-container
+                    *ngIf="value?.statusAfterValidation?.english === benefitValues?.noneligible && !isModifyPage"
+                  >
+                    <fa-icon [ngClass]="'warning-icon'" [icon]="'exclamation-triangle'" size="md"> </fa-icon>
+                    <span [ngClass]="'warning-text'">
+                      {{ value.statusAfterValidation | bilingualText }}
+                    </span>
+                    <a
+                      *ngIf="!isModifyPage"
+                      class="view-link"
+                      routerLinkActive="active"
+                      (click)="showIneligibilityReasons(value)"
+                    >
+                      <span>{{ 'BENEFITS.SHOW-REASONS' | translate }}</span>
+                    </a>
+                  </ng-container>
+                  <!--                  </ng-container>-->
+                  <!--Not modify page ends here-->
+                  <ng-container *ngIf="value.showMandatoryDetails && value.newBorn; else editTemplate">
+                    <fa-icon class="warning-icon" size="md" icon="exclamation-triangle"></fa-icon>
+                    <a class="view-link" (click)="editButtonClick(i)">
+                      <span>{{ 'BENEFITS.VALIDATE-EVENT-TEXT' | translate }}</span> </a
+                    >&nbsp;
+                  </ng-container>
+                  <ng-template #editTemplate>
+                    <fa-icon
+                      size="lg"
+                      (click)="editButtonClick(i)"
+                      class="pl-3 pr-3 pencil-alt"
+                      [icon]="['fas', 'pencil-alt']"
+                      [popover]="'BENEFITS.ONLY-ONE-HEIR-CAN-BE-ADDED' | translate"
+                      triggers="manual"
+                      placement="top"
+                      containerClass="popover-custom-class"
+                      [isOpen]="value.isOpenPopOver"
+                    >
+                    </fa-icon>
+                  </ng-template>
+
+                  <!-- newlyAdded used only for ui check -->
+                  <!--                  *ngIf="isModifyPage ? value.newlyAdded : true"-->
+
+                  <fa-icon
+                    *ngIf="
+                      value.actionType === ActionType.ADD &&
+                      value.dependentSource !== benefitValues.moj &&
+                      value.dependentSource !== benefitValues.nic
+                    "
+                    (click)="isAppPrivate ? deleteButtonClick(i) : showModal(deleteOwnerTemplate)"
+                    size="lg"
+                    class="delete-icon"
+                    [icon]="['far', 'trash-alt']"
+                  >
+                  </fa-icon>
+                  <!--                  <fa-icon-->
+                  <!--                    *ngIf="!isAppPrivate && value.newlyAdded"-->
+                  <!--                    (click)="showModal(deleteOwnerTemplate)"-->
+                  <!--                    size="lg"-->
+                  <!--                    class="delete-icon"-->
+                  <!--                    [icon]="['far', 'trash-alt']"-->
+                  <!--                  >-->
+                  <!--                  </fa-icon>-->
+                  <ng-template #deleteOwnerTemplate>
+                    <gosi-confirm-modal-dc
+                      [message]="'BENEFITS.CONFIRM-DELETE-OWNER' | translate"
+                      (onConfirm)="deleteButtonClick(i)"
+                      (onCancel)="clearModal()"
+                    ></gosi-confirm-modal-dc>
+                  </ng-template>
+                </div>
+              </ng-template>
+
+              <!-- </div> -->
+            </td>
+            <!-- </tr>
+        <tr *ngIf="value.editable && !heirActionType" class="bg-none">
+          <td [attr.colspan]="tableHeadingAndParams.length + 1"> -->
+            <td
+              class="full-width-td white-bg"
+              *ngIf="value.editable && !heirActionType"
+              [attr.colspan]="tableHeadingAndParams.length + 1"
+            >
+              <div
+                *ngIf="
+                  isModifyPage &&
+                    !value.newlyAdded &&
+                    value.actionType !== ActionType.ADD &&
+                    !value.newBorn &&
+                    value.relationship?.english !== benefitValues.unborn;
+                  else addHeirOrUnborn
+                "
+              >
+                <bnt-heir-modify-dc
+                  [addedEvent]="addedEvent"
+                  [isPension]="isPension"
+                  [isModifyPage]="isModifyPage"
+                  [reasonForBenefit]="reasonForBenefit"
+                  [dependentDetails]="value"
+                  [parentForm]="parentForm"
+                  [requestDate]="requestDate"
+                  [systemRunDate]="systemRunDate"
+                  [systemParameter]="systemParameter"
+                  [lang]="lang"
+                  [benefitType]="benefitType"
+                  [isHeir]="true"
+                  [update]="true"
+                  [listYesNo$]="listYesNo$"
+                  [payeeList]="payeeList"
+                  [events]="events"
+                  [bankDetails]="bankDetails"
+                  [paymentMethodList]="paymentMethodList"
+                  [isValidator]="isValidator"
+                  [nationalityList$]="nationalityList$"
+                  [guardianDetails]="guardianDetails"
+                  [listOfGuardians]="listOfGuardians"
+                  [validateApiResponse]="validateApiResponse"
+                  [bankName]="bankName"
+                  [isDraft]="isDraft"
+                  [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                  [authorizedPersonId]="value.authorizedPersonId"
+                  (validateDependent)="validate($event)"
+                  (addValidatedHeir)="heirAdd($event)"
+                  (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"
+                  (getBankForid)="getBankDetails($event)"
+                  (getBankName)="getBankNameForId($event)"
+                  (searchGuardian)="findGuardian($event)"
+                  (addEvent)="addEvent.emit($event)"
+                  (cancelEdit)="editButtonClick(i)"
+                  (getEvents)="getEvents.emit($event)"
+                  (openEligibilityRulesPopup)="openEligibilityRules()"
+                  (getAuthPersonForId)="getAuthPersonForId($event)"
+                  (getGuardianForId)="getGuardianForId($event)"
+                >
+                </bnt-heir-modify-dc>
+                <!--                <bnt-heir-modify-status-dc-->
+                <!--                  [reasonsList]="reasonsList"-->
+                <!--                  [isPension]="isPension"-->
+                <!--                  [nationalityList$]="nationalityList$"-->
+                <!--                  [attorneyDetailsWrapper]="attorneyDetailsWrapper"-->
+                <!--                  [payeeList]="payeeList"-->
+                <!--                  [heirList]="heirList"-->
+                <!--                  [lang]="lang"-->
+                <!--                  [unbornPositionInArray]="i"-->
+                <!--                  [listOfGuardians]="listOfGuardians"-->
+                <!--                  [paymentMethodList]="paymentMethodList"-->
+                <!--                  [guardianDetails]="guardianDetails"-->
+                <!--                  [isValidator]="isValidator"-->
+                <!--                  [annuityRelationShip]="annuityRelationShip"-->
+                <!--                  [maritalStatusList]="maritalStatusList"-->
+                <!--                  [heirStatus]="heirStatus"-->
+                <!--                  [heirStatusArr]="heirStatusArr"-->
+                <!--                  [heirDetail]="value"-->
+                <!--                  [systemParameter]="systemParameter"-->
+                <!--                  [systemRunDate]="systemRunDate"-->
+                <!--                  [heirStatusUpdated]="heirStatusUpdated"-->
+                <!--                  [heirDetails]="listOfValues"-->
+                <!--                  [contributorDeathOrMissingDate]="contributorDeathOrMissingDate"-->
+                <!--                  [unborn]="unborn"-->
+                <!--                  [parentForm]="parentForm"-->
+                <!--                [ageInNewLaw]="ageInNewLaw"-->
+                <!--                (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"-->
+                <!--                  (cancelEdit)="editButtonClick(i)"-->
+                <!--                  (statusDate)="updateStatusDate($event)"-->
+                <!--                  (validateHeirModifyReason)="validateHeirModifyReason($event)"-->
+                <!--                  (saveHeirStatus)="validate($event)"-->
+                <!--                  (searchUnborn)="searchUnborn($event)"-->
+                <!--                  (resetUnbornSearch)="resetUnbornSearch()"-->
+                <!--                  (validateHeir)="validate($event)"-->
+                <!--                  (addValidatedHeir)="heirAdd($event)"-->
+                <!--                  (getBankForid)="getBankDetails($event)"-->
+                <!--                  (searchForGuardian)="findGuardian($event)"-->
+                <!--                  (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"-->
+                <!--                >-->
+                <!--                </bnt-heir-modify-status-dc>-->
+              </div>
+              <ng-template #addHeirOrUnborn>
+                <!--                <div-->
+                <!--                  *ngIf="-->
+                <!--                    isModifyPage &&-->
+                <!--                      value.actionType === ActionType.ADD &&-->
+                <!--                      value.motherId &&-->
+                <!--                      value.expectedDob &&-->
+                <!--                      value.expectedDob.gregorian;-->
+                <!--                    else addHeirOrUnborn-->
+                <!--                  "-->
+                <!--                >-->
+                <div *ngIf="value.relationship?.english === benefitValues.unborn; else addHeirOrUnborn">
+                  <bnt-heir-unborn-edit-dc
+                    [eligibilityStartDate]="eligibilityStartDate"
+                    [reasonsList]="reasonsList"
+                    [unbornDetails]="value"
+                    [motherDetails]="motherDetails"
+                    [systemRunDate]="systemRunDate"
+                    (saveUnborn)="saveUnborn($event)"
+                    (cancelEdit)="editButtonClick(i)"
+                  >
+                  </bnt-heir-unborn-edit-dc>
+                  <!-- unborn-->
+                  <!--                  <bnt-heir-add-unborn-dc-->
+                  <!--                    [heirDetails]="listOfValues"-->
+                  <!--                    [parentForm]="parentForm"-->
+                  <!--                    [contributorDeathOrMissingDate]="contributorDeathOrMissingDate"-->
+                  <!--                    [unbornHeir]="value"-->
+                  <!--                    (save)="unbornValidate($event)"-->
+                  <!--                    (cancel)="editButtonClick(i)"-->
+                  <!--                  ></bnt-heir-add-unborn-dc>-->
+                </div>
+                <ng-template #addHeirOrUnborn>
+                  <div *ngIf="value.newBorn; else addHeir">
+                    <bnt-newborn-add-dc
+                      [dependentDetails]="value"
+                      [isModifyPage]="isModifyPage"
+                      [heirDetails]="listOfValues"
+                      [benefitType]="benefitType"
+                      [referenceNo]="referenceNo"
+                      [isPension]="isPension"
+                      [benefitStartDate]="benefitStartDate"
+                      [sin]="sin"
+                      [lang]="lang"
+                      [isValidator]="isValidator"
+                      [parentForm]="parentForm"
+                      [benefitRequestId]="benefitRequestId"
+                      [reasonForBenefit]="reasonForBenefit"
+                      (addNewBornHeir)="newBorn($event, i)"
+                    >
+                    </bnt-newborn-add-dc>
+                  </div>
+                  <ng-template #addHeir>
+                    <ng-container *ngIf="!value.nonSaudiHeirAdded; else nonSaudiAddHeir">
+                      <ng-container *ngIf="!eligibleForPensionReform; else eligibleForPensionReformTemplate">
+                        <bnt-heir-add-edit-dc
+                          [events]="events"
+                          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                          [reasonForBenefit]="reasonForBenefit"
+                          [validateApiResponse]="validateApiResponse"
+                          [payeeList]="payeeList"
+                          [isPension]="isPension"
+                          [benefitType]="benefitType"
+                          [lang]="lang"
+                          [bankDetails]="bankDetails"
+                          [paymentMethodList]="paymentMethodList"
+                          [parentForm]="parentForm"
+                          [systemRunDate]="systemRunDate"
+                          [update]="true"
+                          [dependentDetails]="value"
+                          [isHeir]="true"
+                          [addedEvent]="addedEvent"
+                          [isValidator]="isValidator"
+                          [heirList]="heirList"
+                          [listOfDependents]="listOfValues"
+                          [listOfGuardians]="listOfGuardians"
+                          [requestDate]="requestDate"
+                          [systemParameter]="systemParameter"
+                          [isModifyPage]="isModifyPage"
+                          [annuityRelationShipList]="annuityRelationShip"
+                          [maritalStatusList]="maritalStatusList"
+                          [heirStatusList]="heirStatus"
+                          [nationalityList$]="nationalityList$"
+                          [heirStatusArr]="heirStatusArr"
+                          [guardianDetails]="guardianDetails"
+                          [bankName]="bankName"
+                          [ageInNewLaw]="ageInNewLaw"
+                          [isDraft]="isDraft"
+                          [listYesNo$]="listYesNo$"
+                          [authorizedPersonId]="value.authorizedPersonId"
+                          [isBankAccountRequired]="isBankAccountRequired"
+                          (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+                          (validateDependent)="validate($event)"
+                          (addValidatedHeir)="heirAdd($event)"
+                          (reset)="reset()"
+                          (cancelEdit)="editButtonClick(i)"
+                          (getBankName)="getBankNameForId($event)"
+                          (getBankForid)="getBankDetails($event)"
+                          (searchGuardian)="findGuardian($event)"
+                          (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"
+                          (addEvent)="addEvent.emit($event)"
+                          (getEvents)="getEvents.emit($event)"
+                          (openEligibilityRulesPopup)="openEligibilityRules()"
+                          (getAuthPersonForId)="getAuthPersonForId($event)"
+                          (getGuardianForId)="getGuardianForId($event)"
+                        >
+                        </bnt-heir-add-edit-dc>
+                      </ng-container>
+                    </ng-container>
+                  </ng-template>
+                  <ng-template #nonSaudiAddHeir>
+                    <bnt-heir-add-dc
+                      [events]="events"
+                      [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                      [reasonForBenefit]="reasonForBenefit"
+                      [validateApiResponse]="validateApiResponse"
+                      [payeeList]="payeeList"
+                      [isPension]="isPension"
+                      [benefitType]="benefitType"
+                      [lang]="lang"
+                      [isDraft]="isDraft"
+                      [requestDate]="requestDate"
+                      [isModifyPage]="isModifyPage"
+                      [paymentMethodList]="paymentMethodList"
+                      [parentForm]="parentForm"
+                      [systemRunDate]="systemRunDate"
+                      [update]="true"
+                      [dependentDetails]="value"
+                      [isHeir]="true"
+                      [addedEvent]="addedEvent"
+                      [isValidator]="isValidator"
+                      [heirList]="heirList"
+                      [listOfDependents]="listOfValues"
+                      [listOfGuardians]="listOfGuardians"
+                      [systemParameter]="systemParameter"
+                      [annuityRelationShipList]="annuityRelationShip"
+                      [maritalStatusList]="maritalStatusList"
+                      [heirStatusList]="heirStatus"
+                      [nationalityList$]="nationalityList$"
+                      [heirStatusArr]="heirStatusArr"
+                      [guardianDetails]="guardianDetails"
+                      [bankName]="bankName"
+                      [ageInNewLaw]="ageInNewLaw"
+                      [genderList]="genderList"
+                      [isDraft]="isDraft"
+                      [listYesNo$]="listYesNo$"
+                      (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+                      (validateDependent)="validate($event)"
+                      (addValidatedHeir)="heirAdd($event)"
+                      (reset)="reset()"
+                      (cancelEdit)="editButtonClick(i)"
+                      (getBankName)="getBankNameForId($event)"
+                      (getBankForid)="getBankDetails($event)"
+                      (searchGuardian)="findGuardian($event)"
+                      (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"
+                      (addEvent)="addEvent.emit($event)"
+                      (getRelationshipListByGender)="getRelationshipListByGender.emit($event)"
+                    >
+                    </bnt-heir-add-dc>
+                  </ng-template>
+                  <ng-template #eligibleForPensionReformTemplate>
+                    <bnt-heir-add-edit-reform-dc
+                      [events]="events"
+                      [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                      [reasonForBenefit]="reasonForBenefit"
+                      [validateApiResponse]="validateApiResponse"
+                      [payeeList]="payeeList"
+                      [isPension]="isPension"
+                      [benefitType]="benefitType"
+                      [lang]="lang"
+                      [bankDetails]="bankDetails"
+                      [paymentMethodList]="paymentMethodList"
+                      [parentForm]="parentForm"
+                      [systemRunDate]="systemRunDate"
+                      [update]="true"
+                      [dependentDetails]="value"
+                      [isHeir]="true"
+                      [addedEvent]="addedEvent"
+                      [isValidator]="isValidator"
+                      [heirList]="heirList"
+                      [listOfDependents]="listOfValues"
+                      [listOfGuardians]="listOfGuardians"
+                      [requestDate]="requestDate"
+                      [systemParameter]="systemParameter"
+                      [isModifyPage]="isModifyPage"
+                      [annuityRelationShipList]="annuityRelationShip"
+                      [maritalStatusList]="maritalStatusList"
+                      [heirStatusList]="heirStatus"
+                      [nationalityList$]="nationalityList$"
+                      [heirStatusArr]="heirStatusArr"
+                      [guardianDetails]="guardianDetails"
+                      [bankName]="bankName"
+                      [ageInNewLaw]="ageInNewLaw"
+                      [isDraft]="isDraft"
+                      [listYesNo$]="listYesNo$"
+                      [authorizedPersonId]="value.authorizedPersonId"
+                      [isBankAccountRequired]="isBankAccountRequired"
+                      (isThisAgeInNewLaw)="isThisAgeInNewLaw.emit($event)"
+                      (validateDependent)="validate($event)"
+                      (addValidatedHeir)="heirAdd($event)"
+                      (reset)="reset()"
+                      (cancelEdit)="editButtonClick(i)"
+                      (getBankName)="getBankNameForId($event)"
+                      (getBankForid)="getBankDetails($event)"
+                      (searchGuardian)="findGuardian($event)"
+                      (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"
+                      (addEvent)="addEvent.emit($event)"
+                      (getEvents)="getEvents.emit($event)"
+                      (openEligibilityRulesPopup)="openEligibilityRules()"
+                      (getAuthPersonForId)="getAuthPersonForId($event)"
+                      (getGuardianForId)="getGuardianForId($event)"
+                    >
+                    </bnt-heir-add-edit-reform-dc>
+                  </ng-template>
+                </ng-template>
+              </ng-template>
+            </td>
+          </tr>
+          <!--Hold restart waive stop status change-->
+          <tr *ngIf="value.editable && heirActionType" class="bg-none">
+            <td [attr.colspan]="tableHeadingAndParams.length + 1">
+              <div>
+                <bnt-waive-benefit-dc
+                  *ngIf="
+                    heirActionType === heirStatusEnums.START_WAIVE || heirActionType === heirStatusEnums.STOP_WAIVE;
+                    else modifyStatus
+                  "
+                  [action]="heirActionType"
+                  [hideHeading]="true"
+                  [parentForm]="checkListValue.controls[i].get('eachPerson')"
+                  [waiveTowardsList]="waiveTowardsList$ | async"
+                >
+                </bnt-waive-benefit-dc>
+                <ng-template #modifyStatus>
+                  <bnt-modify-action-dc
+                    [paymentIndex]="i"
+                    [reasonsList]="reasonsList"
+                    [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+                    [heirActionType]="heirActionType"
+                    [minDateForCalendar]="
+                      checkListValue.controls[i]?.get('eachPerson')?.get('statusChange.statusDate')?.value
+                    "
+                    [systemRunDate]="systemRunDate"
+                    [heirDetail]="value"
+                    [heirDetails]="listOfValues"
+                    [parentForm]="checkListValue.controls[i].get('eachPerson')"
+                    [isHeir]="true"
+                    [payeeList]="payeeList"
+                    [paymentMethodList]="paymentMethodList"
+                    [isValidator]="isValidator"
+                    [nationalityList$]="nationalityList$"
+                    [guardianDetails]="guardianDetails"
+                    [isDraft]="isDraft"
+                    [listOfGuardians]="listOfGuardians"
+                    [bankName]="bankNameArray[i]"
+                    [bankDetails]="bankDetailsArray[i]"
+                    [listYesNo$]="listYesNo$"
+                    (getAuthPeronContactDetails)="authPeronContactDetails($event, value.actionType)"
+                    (getBankForid)="getBankDetailsAtIndex($event, i)"
+                    (getBankName)="getBankNameForIban($event, i)"
+                    (searchGuardian)="findGuardian($event)"
+                  >
+                  </bnt-modify-action-dc>
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </ng-container>
+    </table>
+    <ng-content></ng-content>
+  </div>
+</div>

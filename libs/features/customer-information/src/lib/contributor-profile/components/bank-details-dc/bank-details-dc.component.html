@@ -1,0 +1,180 @@
+<div class="desktop-view">
+  <div class="row">
+    <!-- Story 554035: Message in Individual app: My profile bank details for the beneficiary -->
+    <div class="col-lg-12 warning-padding" *ngIf="isActiveBeneficiary">
+      <gosi-alert-dc [dismissible]="false" [details]="[]" type="warning">
+        <div actOnAlert>
+          {{ 'CUSTOMER-INFORMATION.BENEFICIARY-BANK-MSG' | translate }}
+          <a id="benefit-details-navgn" (click)="viewBenefitDetails()" class="view-link" routerLinkActive="active">{{
+            'CUSTOMER-INFORMATION.BENEFIT-DETAILS' | translate
+          }}</a
+          >.
+        </div>
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 padding-custom">
+      <div class="identification">
+        <div class="row">
+          <div class="col-8 pt-5">
+            <img src="assets/images/bank-building.svg" class="icon" alt="Bank" /><span class="header">
+              {{ 'CUSTOMER-INFORMATION.BANK-DETAILS' | translate }}</span
+            >
+          </div>
+          <div
+            *ngIf="addBtnValidated && !hideAddBtn"
+            class="col-4 d-flex justify-content-end btn-value modify-btn button-padding pb-2"
+          >
+            <gosi-button-dc (click)="navigateTo()">{{
+              'CUSTOMER-INFORMATION.ADD-NEW-BANK-ACCOUNT' | translate
+            }}</gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row table-style">
+    <div class="col-lg-12">
+      <div class="table-scroll table-responsive table-bank-details">
+        <table class="table table-borderless">
+          <thead class="table-header">
+            <tr>
+              <th style="width: 35%">
+                {{ 'CUSTOMER-INFORMATION.ACC-OR-BANK' | translate }}
+              </th>
+              <th>
+                {{ 'CUSTOMER-INFORMATION.LINKED-BENEFITS' | translate }}
+              </th>
+              <th>
+                {{ 'CUSTOMER-INFORMATION.STATUS' | translate }}
+              </th>
+              <th></th>
+              <!-- <th></th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="totalCount !== 0">
+              <tr
+                class="data-row border-bottom"
+                *ngFor="
+                  let item of financialDetails?.bankAccountList
+                    | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalCount };
+                  let i = index
+                "
+              >
+                <td>
+                  <div class="iban-value">
+                    {{ item?.ibanBankAccountNo }}
+                  </div>
+                  <div class="bank-name">
+                    {{ item?.bankName | bilingualText }}
+                  </div>
+                </td>
+                <td>
+                  <ng-container *ngIf="item?.serviceType?.length !== 0">
+                    <ng-container *ngFor="let benefit of item?.serviceType">
+                      <div class="benefit" *ngIf="benefit === 'DEFAULT'">-</div>
+                      <div class="benefit" *ngIf="benefit !== 'DEFAULT'">
+                        {{ benefit | bilingualText }}
+                      </div>
+                    </ng-container>
+                  </ng-container>
+
+                  <div class="benefit" *ngIf="item?.serviceType?.length === 0">-</div>
+                </td>
+                <td>
+                  <gosi-status-badge-dc [label]="item.status" [type]="statusBadge(item.status)"></gosi-status-badge-dc>
+                </td>
+                <td>
+                  <gosi-button-dc
+                    *ngIf="item.verificationStatus == 'Sama Not Verified'"
+                    type="primary"
+                    id="actionButton"
+                    size="sm"
+                    (click)="verification(item)"
+                  >
+                    {{ 'CUSTOMER-INFORMATION.VERIFY' | translate }}
+                  </gosi-button-dc>
+                </td>
+                <!-- <td>
+                  <fa-icon class="text-value" icon="ellipsis-v"></fa-icon>
+                </td>                 -->
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+        <ng-container *ngIf="financialDetails?.totalCount === 0">
+          <gosi-no-result-dc></gosi-no-result-dc>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mobile-view">
+  <div class="row">
+    <div class="col-lg-12 px-5 pt-4" *ngIf="isActiveBeneficiary">
+      <gosi-alert-dc [dismissible]="false" [details]="[]" type="warning">
+        <div actOnAlert>
+          {{ 'CUSTOMER-INFORMATION.BENEFICIARY-BANK-MSG' | translate }}
+          <a id="benefit-details-navgn" (click)="viewBenefitDetails()" class="view-link" routerLinkActive="active">{{
+            'CUSTOMER-INFORMATION.BENEFIT-DETAILS' | translate
+          }}</a
+          >.
+        </div>
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 pl-5 pr-5">
+      <div class="identification">
+        <div class="row">
+          <div
+            *ngIf="addBtnValidated && !hideAddBtn"
+            class="col-12 d-flex justify-content-end btn-value modify-btn pt-4 pb-2"
+          >
+            <gosi-button-dc (click)="navigateTo()">{{
+              'CUSTOMER-INFORMATION.ADD-NEW-BANK-ACCOUNT' | translate
+            }}</gosi-button-dc>
+          </div>
+          <div class="col-12 pt-5">
+            <img src="assets/images/bank-building.svg" class="icon" alt="Bank" /><span class="header">
+              {{ 'CUSTOMER-INFORMATION.BANK-DETAILS' | translate }}</span
+            >
+          </div>
+        </div>
+        <div class="border-line"></div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <div
+        *ngFor="
+          let item of financialDetails?.bankAccountList
+            | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalCount };
+          let i = index
+        "
+      >
+        <cim-bank-details-item-dc
+          [bankAccountList]="item"
+          [index]="(currentPage - 1) * itemsPerPage + i"
+          (reverify)="verification(item)"
+        >
+        </cim-bank-details-item-dc>
+      </div>
+      <ng-container *ngIf="financialDetails?.totalCount === 0">
+        <div class="pt-4"><gosi-no-result-dc></gosi-no-result-dc></div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="totalCount > itemsPerPage"
+      [totalSize]="totalCount"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+    >
+    </gosi-pagination-dc>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<blg-detailed-bill-header-dc
+  [establishmentHeader]="establishmentHeaderDetails"
+  [isGccCountry]="isGccCountry"
+  (download)="downloadInstallmentDetailedBill($event)"
+  (Print)="printInstallmentDetailedBill()"
+></blg-detailed-bill-header-dc>
+
+<div class="content">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="row" *ngIf="currencyKeys.english !== undefined">
+        <div class="col-lg-12">
+          <blg-itemized-bill-details-dc
+            [itemizedBillDetails]="billDetails"
+            (itemizedDate)="getInstallmentDetailsOnSelectedDate($event)"
+            [isAdmin]="isAdmin"
+            [exchangeRate]="exchangeRateValue"
+            [isGccCountry]="isGccCountry"
+            [currencyType]="currencyKeys"
+            (itemizedDetails)="getDashboardBillItemsForRejectedOH()"
+            [itemizedBillList]="itemizedBills"
+            [noOfDays]="noOfDays"
+            [selectedDate]="selectedDateValue"
+            [billStartDate]="billStartDate"
+            [errorMessage]="errorMessage"
+            [isBillNumber]="isBillNumber"
+            [initialStartDate]="initialStartDate"
+          >
+          </blg-itemized-bill-details-dc>
+          <ng-container>
+            <blg-itemized-bill-tabset-dc
+              [selectedTab]="'BILLING.INSTALLMENT'"
+              [exchangeRate]="exchangeRateValue"
+              [currencyType]="currencyKeys"
+              [tabSet]="tabItems"
+              (tabSelected)="onNavToNewTab($event)"
+            >
+            </blg-itemized-bill-tabset-dc>
+            <div *ngIf="installmentDetails; else noResultFound">
+              <div class="row search-area-padding">
+                <div class="col-auto mr-auto heading">
+                  {{ 'BILLING.INSTALLMENT' | translate | titlecase }}
+                  {{ 'BILLING.DETAILS' | translate | titlecase }}
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="table-scroll table-responsive">
+                    <table class="table table-borderless">
+                      <thead class="thead-light">
+                        <tr>
+                          <th></th>
+                          <th>{{ 'BILLING.CURRENT-MONTH-INSTALLMENT' | translate }}</th>
+                          <th>{{ 'BILLING.PREVIOUSLY-PAID' | translate }}</th>
+                          <th>{{ 'BILLING.REMAINING' | translate }}</th>
+                          <th>{{ 'BILLING.TOTAL-INSTALLMENT' | translate }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            {{ 'BILLING.AMOUNT' | translate }}
+                            <span class="currency-lbl"> ({{ 'BILLING.SAR' | translate }}) </span>
+                          </td>
+                          <td>{{ installmentDetails?.currentInstallmentAmount | number: '1.2-2' }}</td>
+                          <td>{{ installmentDetails?.previouslyPaidAmount | number: '1.2-2' }}</td>
+                          <td>{{ installmentDetails?.remainingInstallmentAmount | number: '1.2-2' }}</td>
+                          <td>{{ installmentDetails?.totalInstallmentAmount | number: '1.2-2' }}</td>
+                        </tr>
+                        <tr>
+                          <td>{{ 'BILLING.INSTALLMENT-NUMBER' | translate }}</td>
+                          <td>-</td>
+                          <td>{{ installmentDetails?.numberOfMonthsPaid }}</td>
+                          <td>{{ installmentDetails?.numberOfMonthsRemaining }}</td>
+                          <td>-</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #noResultFound>
+  <div class="mt-5 text-center full-width">
+    <img src="assets/images/search-error.svg" alt="search-error" />
+    <br />
+    <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+  </div>
+</ng-template>

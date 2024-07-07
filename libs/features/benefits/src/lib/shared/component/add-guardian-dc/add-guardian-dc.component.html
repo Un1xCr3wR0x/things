@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc
+  type="secondary"
+  [showCard]="false"
+  heading="{{ 'BENEFITS.GUARDIAN-DETAILS' | translate }}"
+  lessPadding="true"
+>
+  <gosi-input-radio-dc
+    *ngIf="!hideChooseGuardian"
+    [label]="'BENEFITS.CHOOSE-GUARDIAN' | translate"
+    id="chooseGuardian"
+    name="chooseGuardian"
+    [control]="guardianDetialsForm.get('selectGuardianFromList')"
+    [list]="listYesNo$"
+    (select)="chooseGuardian($event)"
+  >
+  </gosi-input-radio-dc>
+  <!--Search guardian-->
+  <bnt-search-person-dc
+    *ngIf="!showListOfGuardians && !guardianDetails?.personId && !guardianSource"
+    [systemRunDate]="systemRunDate"
+    [nationalityList$]="nationalityList$"
+    [calenderLabel]="'BENEFITS.DOB-GUARDIAN'"
+    [showCancel]="false"
+    (searchPerson)="verifyGuardian($event)"
+  >
+  </bnt-search-person-dc>
+  <!--End of Search Guardian-->
+  <!-- Show existing list of guardains -->
+  <div class="row" *ngIf="showListOfGuardians">
+    <div class="col-md-4">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.SELECT-GUARDIAN' | translate"
+        id="select-guardian-dropdown"
+        [list]="listOfGuardiansLovList | async"
+        [control]="guardianDetialsForm.get('selectedFromList')"
+        [hideOptionalLabel]="true"
+        (selectLov)="guardianSelected($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<!-- Guardian search result -->
+<gosi-card-dc
+  *ngIf="guardianDetails?.personId && !showListOfGuardians"
+  type="secondary"
+  heading="{{ 'BENEFITS.GUARDIAN-DETAILS' | translate }}"
+  lessPadding="true"
+>
+  <div class="row">
+    <div class="col-md-3">
+      <gosi-label-dc
+        id="name"
+        [value]="guardianDetails.name | nameToString: true"
+        label="{{ 'BENEFITS.NAME' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-3">
+      <gosi-label-dc id="name" [value]="id" label="{{ 'BENEFITS.NATIONAL-ID' | translate }}"></gosi-label-dc>
+    </div>
+    <div class="col-md-3">
+      <gosi-label-dc id="dob" [control]="'BENEFITS.AGE' | translate: { age: age }" label="BENEFITS.DATE-OF-BIRTH"
+        ><span id="prefixValue">{{ guardianDetails.birthDate | dateType }} </span></gosi-label-dc
+      >
+    </div>
+    <div class="col-md-3">
+      <gosi-label-dc
+        id="maritalStatus"
+        [label]="'BENEFITS.MARITAL-STATUS' | translate"
+        [control]="guardianDetails.maritalStatus"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+
+  <div class="row dependent-text pb-5" *ngIf="!update">
+    <div class="col-md-3">
+      <gosi-button-dc type="secondary" (click)="resetSearch()">
+        {{ 'BENEFITS.RESET' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+
+  <div class="row dependent-text" *ngIf="guardianDetialsForm">
+    <div class="col-md-12">
+      <gosi-input-radio-dc
+        id="paymentMethod"
+        [label]="'BENEFITS.PAYMENT-METHOD' | translate"
+        name="paymentMethod"
+        [control]="guardianDetialsForm.get('paymentMode')"
+        [list]="paymentMethodList"
+        [disabled]="true"
+      >
+      </gosi-input-radio-dc>
+    </div>
+    <div class="col-md-12">
+      <bnt-bank-details-saned-dc
+        #bankDetailsChildComp
+        [showCard]="showCardForBank"
+        [bankDetails]="bankDetails"
+        [parentForm]="guardianDetialsForm"
+        [hideSaveButton]="hideSaveButton"
+        [lang]="lang"
+      >
+      </bnt-bank-details-saned-dc>
+    </div>
+  </div>
+</gosi-card-dc>

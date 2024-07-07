@@ -1,0 +1,146 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="profile-wrapper" *ngIf="person">
+  <frm-name-status-dc [contributor]="contributor" [isBeneficiary]="isBeneficiary"></frm-name-status-dc>
+
+  <!-- WorkFlow status -->
+  <div
+    class="row pt-4"
+    [ngClass]="workFlowInfo && workFlowInfo.details.length > 0 ? 'margin-negative' : ''"
+    *ngIf="workFlowInfo && workFlowInfo.details.length > 0"
+  >
+    <div class="col-lg-12">
+      <gosi-alert-dc [alert]="workFlowInfo"></gosi-alert-dc>
+    </div>
+  </div>
+
+  <!-- Identifier Cards -->
+  <div class="row profile-details horizontal-scrollbar" *ngIf="person">
+    <div class="col-md-6 card-padding">
+      <cim-card-icon-dc
+        [id]="'nationality'"
+        [icon]="'flag'"
+        [label]="'CUSTOMER-INFORMATION.NATIONALITY'"
+        [identifier]="person.nationality | bilingualText"
+      >
+      </cim-card-icon-dc>
+    </div>
+
+    <ng-container *ngFor="let item of person.identity">
+      <ng-container *ngIf="item && item !== null">
+        <div
+          class="col-md-6 card-padding"
+          *ngIf="item.idType !== null && [typeNin, typeGcc, typeIqama].indexOf(item.idType) !== -1"
+        >
+          <ng-container *ngIf="item.idType === typeNin">
+            <cim-card-icon-dc
+              [id]="'ninNumber'"
+              [icon]="'address-card'"
+              [label]="'CUSTOMER-INFORMATION.NIN'"
+              [identifier]="item.newNin"
+            >
+            </cim-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeGcc">
+            <cim-card-icon-dc
+              [id]="'gccNationalid'"
+              [customIcon]="'gcc-id'"
+              [label]="'CUSTOMER-INFORMATION.GCC-ID'"
+              [identifier]="item.id"
+            >
+            </cim-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeIqama">
+            <cim-card-icon-dc
+              [id]="'iqamaNumber'"
+              [icon]="'address-card'"
+              (addEvent)="navigateToAddIqama()"
+              [label]="'CUSTOMER-INFORMATION.IQAMA-NUMBER'"
+              [identifier]="item.iqamaNo"
+              [accessRoles]="accessRoles"
+              [registrationNo]="manageService.registrationNo"
+              [canAdd]="
+                (hasIqamaWorkFlow ? isIqamaReturned && !isCsr : item.iqamaNo === null || item.iqamaNo === undefined) &&
+                active === true &&
+                manageService.getEstablishmentRegistrationNo()
+              "
+              [isUnderWorkFlow]="isIqamaReturned && !isCsr"
+            >
+            </cim-card-icon-dc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <div class="col-md-6 card-padding">
+      <cim-card-icon-dc
+        [id]="'personDOB'"
+        [icon]="'calendar-alt'"
+        [label]="'CUSTOMER-INFORMATION.DATE-OF-BIRTH'"
+        date="{{person?.birthDate?.gregorian | date: 'dd/MM/yyyy'}}"
+      >
+      </cim-card-icon-dc>
+    </div>
+    <div class="col-md-6 card-padding">
+      <cim-card-icon-dc
+        [id]="'gender'"
+        [customIcon]="'gender'"
+        [label]="'CUSTOMER-INFORMATION.GENDER'"
+        [identifier]="person.sex | bilingualText"
+      >
+      </cim-card-icon-dc>
+    </div>
+    <div class="col-md-6 card-padding" *ngIf="isUserLoggedIn || isCsr">
+      <cim-card-icon-dc
+        id="maritalStatus"
+        [customIcon]="'marital-status'"
+        [label]="'CUSTOMER-INFORMATION.MARITAL-STATUS'"
+        [identifier]="person.maritalStatus | bilingualText"
+      >
+      </cim-card-icon-dc>
+    </div>
+    <ng-container *ngFor="let item of person.identity; let i = index">
+      <ng-container *ngIf="item && item !== null && [typeBorder, typePassport].indexOf(item.idType) !== -1">
+        <div class="col-md-6 card-padding" *ngIf="item.idType !== null">
+          <ng-container *ngIf="item.idType === typeBorder">
+            <cim-card-icon-dc
+              [id]="'borderNumber'"
+              [icon]="'map-marked-alt'"
+              (addEvent)="navigateToAddBorder()"
+              [label]="'CUSTOMER-INFORMATION.BORDER-NUMBER'"
+              [accessRoles]="accessRoles"
+              [registrationNo]="manageService.registrationNo"
+              [identifier]="item.id"
+              [isUnderWorkFlow]="isBorderReturned && !isCsr"
+              [canAdd]="
+                (hasBorderWorkFlow ? isBorderReturned && !isCsr : item.id === null || item.id === undefined) &&
+                active === true &&
+                manageService.getEstablishmentRegistrationNo()
+              "
+            >
+            </cim-card-icon-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typePassport">
+            <cim-card-icon-dc
+              class="passport"
+              [id]="'passportNumber'"
+              [icon]="'passport'"
+              [label]="'CUSTOMER-INFORMATION.PASSPORT-NO'"
+              [identifier]="item.passportNo"
+             [canAdd]="
+                (hasPassportWorkFlow ? isPassportReturned && !isCsr : item.id === null || item.id === undefined) &&
+                isPassportActive === true &&
+                manageService.getEstablishmentRegistrationNo()
+              " 
+              [accessRoles]="accessRolesAddPassport"
+              [registrationNo]="manageService.registrationNo"
+              (addEvent)="navigateToAddPassport()"
+            >
+            </cim-card-icon-dc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

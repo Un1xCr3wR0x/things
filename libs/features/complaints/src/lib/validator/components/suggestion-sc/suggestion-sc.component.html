@@ -1,0 +1,100 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <div class="col-md-12">
+    <ces-summary-details-dc
+      [workflow]="workflow"
+      [comment]="comment"
+      [typeLabel]="typeLabel"
+      [canEdit]="canEdit"
+      [subTypeLabel]="subTypeLabel"
+      [dateLabel]="dateLabel"
+      (priority)="showPopUp(editPriority)"
+      [detailLabel]="detailLabel"
+      [summaryHeading]="summaryHeading"
+      [transactionSummary]="transactionSummary"
+      (raiseTicket)="navigateTo()"
+      [documents]="documents"
+      [transactionType]="category"
+      [isBack]="false"
+      [isPrivate]="isPrivate"
+      [header]="header"
+      [canRaiseItsm]="canRaiseItsm"
+      [ticketHistory]="ticketHistory"
+      (navigateToSaedni)="onNavigateToSaedni($event)"
+      (onITSMDetails)="onITSMDetails($event)"
+      [itsmDetails]="itsmDetails"
+      (onSubmit1)="onSubmit1($event)"
+    >
+    </ces-summary-details-dc>
+  </div>
+</div>
+<ces-action-area-dc
+  *ngIf="transactionSummary && !isTicketNumber"
+  [actions]="actions"
+  [departmentList]="departmentList$ | async"
+  [resubmitHeader]="resubmitHeader"
+  [locationList]="locationList$ | async"
+  (info)="getInfoDetails($event)"
+  [uuid]="uuid"
+  [category]="category"
+  [referenceNo]="transactionTraceId"
+  [transactionId]="transactionId"
+  (refresh)="refreshDocument($event)"
+  [documents]="uploadDocuments"
+  [parentForm]="actionForm"
+  (remove)="removeDocuments($event)"
+  (location)="getDepartmentDetails($event)"
+  [currentRole]="assignedRole"
+  (add)="getRequiredDocuments()"
+  [transactionSummary]="transactionSummary"
+  [categoryList]="categoryList$ | async"
+  [transactionTypeList]="transactionTypeList"
+></ces-action-area-dc>
+<div class="row" *ngIf="!isTicketNumber">
+  <div class="col-md-12 form-action">
+    <div class="suggestion-value">
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancel" (submit)="showModal(cancelTemplate, '')" [type]="'secondary'">
+          {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc id="submit" (submit)="submitComplaint(confirmTemplate, '')" [type]="'primary'">
+          {{ 'COMPLAINTS.' + buttonLabel | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="COMPLAINTS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'COMPLAINTS.' + message | translate"
+    (onConfirm)="confirmEvent()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #editPriority>
+  <ces-modify-transaction-dc
+    [typeLabel]="typeLabel"
+    [subTypeLabel]="subTypeLabel"
+    [isTypeSelected]="isTypeSelected"
+    (confirm)="modifyAction()"
+    (hide)="hideModal()"
+    [transactionSummary]="transactionSummary"
+    [typeList]="typeList$ | async"
+    [subTypeList]="subTypeList$ | async"
+    (typeSelect)="onTypeSelect($event)"
+    [parentForm]="transactionTypeForm"
+    [canEditPriority]="false"
+    [heading]="heading"
+    [priorityList]="priorityList"
+  >
+  </ces-modify-transaction-dc>
+</ng-template>

@@ -1,0 +1,228 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="col-lg-12" *ngIf="isShow">
+  <gosi-alert-dc type="info" [message]="'BILLING.VALIDATOR-MSG-MCI'"> </gosi-alert-dc>
+</div>
+<div class="col-lg-12" *ngIf="isReopenClosingInProgress">
+  <gosi-alert-dc type="info" [message]="'BILLING.REOPEN-PROGRESS'"> </gosi-alert-dc>
+</div>
+<div class="content">
+  <frm-main-content-dc [documents]="documents" [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'BILLING.INSTALLMENT' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <frm-content-heading-dc
+        icon="building"
+        heading="BILLING.ESTABLISHMENT-DETAILS"
+        [canEdit]="canEdit && !isReopenClosingInProgress"
+        (onEdit)="navigateToEdit()"
+      >
+      </frm-content-heading-dc>
+      <!-----------------------------Establishment-Details------------------------------------------>
+      <blg-installment-establishment-details-dc
+        [installmentSubmittedDetails]="installmentSubmittedDetails"
+        [establishmentDetails]="establishmentDetails"
+        [installmentDetails]="installmentDetails"
+      >
+      </blg-installment-establishment-details-dc>
+
+      <!-----------------------------Guarandee Detials---------------------------------------------->
+      <div class="row border-top">
+        <div class="col-lg-12 padding-top">
+          <frm-content-heading-dc icon="briefcase" heading="BILLING.GUARANTEE-DETAILS" [canEdit]="false">
+          </frm-content-heading-dc>
+          <blg-installment-guarandee-details-dc [installmentSubmittedDetails]="installmentSubmittedDetails">
+          </blg-installment-guarandee-details-dc>
+        </div>
+      </div>
+      <!-----------------------------Installment Detials---------------------------------------------->
+      <div class="row border-top">
+        <div class="col-lg-12 padding-top">
+          <frm-content-heading-dc icon="briefcase" heading="BILLING.INSTALLMENT-DETAILS" [canEdit]="false">
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="row">
+                <div class="col-lg-6 total-value" *ngIf="installmentSubmittedDetails?.totalInstallmentAmount">
+                  <div class="row label-margin">
+                    <div class="col-lg-12">
+                      <span id="totalInstallmentAmount">
+                        {{ 'BILLING.TOTAL-INSTALLMENT-AMOUNT' | translate }}
+                        <fa-icon
+                          [icon]="['fas', 'info-circle']"
+                          placement="top"
+                          [tooltip]="toolInstallmentTemplateInfo"
+                        ></fa-icon>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="row label-margin">
+                    <div class="col-lg-12">
+                      {{ installmentSubmittedDetails?.totalInstallmentAmount | number: '1.2-2'
+                      }}<span class="info-currency"> {{ 'BILLING.SAR' | translate }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6" *ngIf="installmentSubmittedDetails?.monthlyInstallmentAmount">
+                  <gosi-currency-label-dc
+                    id="monthlyInstallmentAmount"
+                    [label]="'BILLING.MONTHLY-INSTALLMENT-AMOUNT'"
+                    [currencyTo]="installmentSubmittedDetails?.monthlyInstallmentAmount"
+                    [countryCodeFrom]="'BILLING.SAR' | translate"
+                  >
+                  </gosi-currency-label-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6" *ngIf="installmentSubmittedDetails?.lastInstallmentAmount">
+                  <gosi-currency-label-dc
+                    id="lastInstallmentAmount"
+                    [label]="'BILLING.LAST-INSTALLMENT-AMOUNT'"
+                    [currencyTo]="installmentSubmittedDetails?.lastInstallmentAmount"
+                    [countryCodeFrom]="'BILLING.SAR' | translate"
+                  >
+                  </gosi-currency-label-dc>
+                </div>
+                <div class="col-lg-6" *ngIf="installmentSubmittedDetails?.installmentStartMonth">
+                  <gosi-label-dc
+                    id="installmentstartMonth"
+                    [control]="installmentSubmittedDetails?.installmentStartMonth | bilingualText"
+                    [label]="'BILLING.INSTALLMENT-START-MONTH'"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6" *ngIf="installmentSubmittedDetails?.installmentEndMonth">
+                  <gosi-label-dc
+                    id="installmentendMonth"
+                    [control]="installmentSubmittedDetails?.installmentEndMonth | bilingualText"
+                    [label]="'BILLING.INSTALLMENT-END-MONTH'"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-lg-6">
+                  <gosi-label-dc
+                    id="installmentNumber"
+                    [control]="installmentSubmittedDetails?.installmentPeriodInMonths"
+                    [label]="'BILLING.INSTALLMENT-NUMBER'"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-----------------------------Installment Detials---------------------------------------------->
+      <!-----------------------------Installment Schedule Detials---------------------------------------------->
+      <div class="row border-top">
+        <div class="col-lg-12 padding-top">
+          <div class="float-left">
+            <frm-content-heading-dc icon="file-alt" heading="BILLING.INSTALLMENT-SCHEDULE" [canEdit]="false">
+            </frm-content-heading-dc>
+          </div>
+          <div class="float-right">
+            <gosi-button-dc
+              id="viewDetails"
+              type="primary"
+              [outlineOnly]="true"
+              [size]="'md'"
+              (click)="showModal(scheduleTemplate)"
+            >
+              {{ 'BILLING.VIEW-DETAILS' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+
+      <!-----------------------------Installment Schedule Detials---------------------------------------------->
+      <div class="row border-top"></div>
+    </div>
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        (approveEvent)="showModal(approveTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (cancelEvent)="showCancelModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="BILLING.APPROVE-INSTALLMENT"
+    (approveEvent)="approveInstallmentDetails()"
+    (cancelEvent)="hideModal()"
+    [parentForm]="installmentDetailsForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    heading="BILLING.REJECT-INSTALLMENT"
+    (rejectEvent)="rejectInstallmentDetails()"
+    (cancelEvent)="hideModal()"
+    [parentForm]="installmentDetailsForm"
+    warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+    [transactionNumber]="transactionNumber"
+    [rejectReasonList$]="installmentRejectList"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    heading="BILLING.RETURN-INSTALLMENT"
+    (returnEvent)="returnInstallmentDetails()"
+    (cancelEvent)="hideModal()"
+    [parentForm]="installmentDetailsForm"
+    [warningMessage]="'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'"
+    [returnReasonList$]="installmentReturnList"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    message="BILLING.INFO-CANCEL"
+    (onConfirm)="confirmInstallmentDetails()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #scheduleTemplate>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'BILLING.INSTALLMENT-SCHEDULE' | translate">
+      <blg-installment-schedule-dc
+        modalContent
+        [installmentSubmittedDetails]="installmentSubmittedDetails"
+      ></blg-installment-schedule-dc>
+      <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-right" (submit)="hideModal()">
+        {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+      >
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+<ng-template #toolInstallmentTemplateInfo>
+  <div class="d-flex flex-column sm">
+    <div>
+      {{ 'BILLING.TOTAL-DUE-AMOUNT' | translate }}:{{ installmentSubmittedDetails?.totalDue
+      }}{{ 'BILLING.SAR' | translate }}
+    </div>
+    <div>
+      {{ 'BILLING.DOWN-PAYMENT-AMOUNT' | translate }}:{{ installmentSubmittedDetails?.downPayment
+      }}{{ 'BILLING.SAR' | translate }}
+    </div>
+    <div>
+      {{ 'BILLING.TOTAL-INSTALLMENT-AMOUNT' | translate }}:{{ installmentSubmittedDetails?.totalInstallmentAmount
+      }}{{ 'BILLING.SAR' | translate }}
+    </div>
+  </div>
+</ng-template>

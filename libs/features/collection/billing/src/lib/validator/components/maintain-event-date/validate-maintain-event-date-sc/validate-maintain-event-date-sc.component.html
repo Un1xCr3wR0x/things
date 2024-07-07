@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <ng-container *ngIf="showContent">
+    <frm-main-content-dc [documents]="eventDateDocumentList" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'BILLING.MAINTAIN-EVENT-DATE' | translate"> </frm-main-heading-dc>
+      </div>
+
+      <div id="contentArea">
+        <blg-event-date-details-dc [canReturn]="canReturn" [eventDateInfo]="eventDateInfo"> </blg-event-date-details-dc>
+      </div>
+
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReturn]="canReturn"
+          [canReject]="true"
+          [isReturn]="false"
+          [disableApprove]="disableApprove"
+          [disableReturn]="disableReturn"
+          (rejectEvent)="rejectTransaction(rejectTemplate)"
+          (approveEvent)="returnApproveFlag ? approveTransaction(approveTemplate) : null"
+          (returnEvent)="returnApproveFlag ? returnTransaction(returnTemplate) : null"
+          (cancelEvent)="showModal(cancelTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="this.hideModal()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="eventDateValidatorForm"
+      [heading]="'BILLING.REJECT-MAINTAIN-EVENT-DATE'"
+      (cancelEvent)="hideModal()"
+      [rejectReasonList$]="rejectReasonList"
+      (rejectEvent)="confirmReject()"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <ng-container *ngIf="returnApproveFlag">
+      <frm-approve-template-dc
+        [parentForm]="eventDateValidatorForm"
+        (cancelEvent)="hideModal()"
+        (approveEvent)="confirmApprove()"
+      ></frm-approve-template-dc>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #returnTemplate>
+    <ng-container *ngIf="returnApproveFlag">
+      <frm-return-template-dc
+        [parentForm]="eventDateValidatorForm"
+        [heading]="'BILLING.RETURN-MAINTAIN-EVENT-DATE'"
+        (cancelEvent)="hideModal()"
+        [warningMessage]="'BILLING.RETURN-MESSAGE-MAINTAIN-EVENT-DATE'"
+        [returnReasonList$]="returnReasonList"
+        (returnEvent)="confirmReturn()"
+      >
+      </frm-return-template-dc>
+    </ng-container>
+  </ng-template>
+</div>

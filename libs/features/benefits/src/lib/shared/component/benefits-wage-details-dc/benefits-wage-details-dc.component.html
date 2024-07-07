@@ -1,0 +1,169 @@
+<gosi-modal-dc modalHeader="{{ wageBenefitHeading | translate }}" [needCloseButton]="true" (closeModal)="closeModal()">
+  <div modalContent>
+    <div class="row w-100">
+      <div class="col-auto">
+        {{ 'BENEFITS.OF' | translate }} {{ benefitWageDetail?.heirDetails?.name | bilingualText }} (
+        {{ benefitWageDetail?.dateFrom | dateType }}
+        <fa-icon icon="{{ lang === 'ar' ? 'angle-left' : 'angle-right' }}" class="icon-size" size="1x"></fa-icon>
+        <span *ngIf="benefitWageDetail?.dateTo?.gregorian || benefitWageDetail?.dateTo?.hijiri; else onwards">
+          {{ benefitWageDetail?.dateTo | dateType }} )
+        </span>
+        <ng-template #onwards> {{ 'BENEFITS.ONWARDS' | translate }}) </ng-template>
+      </div>
+
+      <div
+        class="col-auto benefits-wage-type ml-auto mr-0"
+        *ngIf="
+          benefitWageDetail?.heirDetails?.otherBenefitAndWage?.wageDetailsList?.length &&
+          benefitWageDetail?.heirDetails?.otherBenefitAndWage?.benefitDetailsList?.length
+        "
+      >
+        <div class="benefits-wage-toggler">
+          <div
+            class="column-left benefits-wage-text"
+            [ngClass]="{
+              'benefits-wage-type-selected': benefitsWageType == 'wage',
+              'benefits-wage-type-unselected': benefitsWageType == 'benefit'
+            }"
+            (click)="benefitsWageChange('wage')"
+          >
+            {{ 'BENEFITS.WAGE' | translate }}
+          </div>
+          <div
+            class="column-right benefits-wage-text"
+            [ngClass]="{
+              'benefits-wage-type-selected': benefitsWageType == 'benefit',
+              'benefits-wage-type-unselected': benefitsWageType == 'wage'
+            }"
+            (click)="benefitsWageChange('benefit')"
+          >
+            {{ 'BENEFITS.BENEFIT' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div
+        class="col-lg-12 align-items-center table-view"
+        *ngIf="benefitWageDetail?.heirDetails?.otherBenefitAndWage?.wageDetailsList?.length && !showBenefits"
+      >
+        <table class="table table-borderless w-100">
+          <thead>
+            <tr>
+              <th>{{ 'BENEFITS.PERIOD' | translate }}</th>
+              <th class="text-right">{{ 'BENEFITS.WAGE-SAR' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="let item of benefitWageDetail?.heirDetails?.otherBenefitAndWage?.wageDetailsList; let i = index"
+            >
+              <tr class="data-row">
+                <td>
+                  {{ item?.startDate | dateType }}
+                  <fa-icon
+                    icon="{{ lang === 'ar' ? 'angle-left' : 'angle-right' }}"
+                    class="icon-size"
+                    size="1x"
+                  ></fa-icon>
+
+                  <span *ngIf="item?.endDate?.gregorian; else onwards">
+                    {{ item?.endDate | dateType }}
+                  </span>
+                  <ng-template #onwards> {{ 'BENEFITS.ONWARDS' | translate }} </ng-template>
+                </td>
+                <td class="text-right">{{ item?.amount | number: '1.2-2' }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+        <!-- <div class="justify-content-between d-flex px-3 pb-5">
+          <span
+            ><b>{{ 'BENEFITS.TOTAL' | translate }}</b></span
+          >
+          <span class="text-right"
+            ><b>{{ benefitWageDetail?.heirDetails?.otherBenefitAndWage?.totalWageAmount | number: '1.2-2' }}</b></span
+          >
+        </div> -->
+      </div>
+    </div>
+    <div class="row">
+      <div
+        class="col-lg-12 align-items-center table-view"
+        *ngIf="
+          showBenefits ||
+          (!benefitWageDetail?.heirDetails?.otherBenefitAndWage?.wageDetailsList?.length &&
+            benefitWageDetail?.heirDetails?.otherBenefitAndWage?.benefitDetailsList?.length)
+        "
+      >
+        <table class="table table-borderless w-100">
+          <thead>
+            <tr>
+              <th>{{ 'BENEFITS.BENEFIT-TYPE' | translate }}</th>
+              <th>{{ 'BENEFITS.BENEFIT-PERIOD' | translate }}</th>
+              <th class="text-right">{{ 'BENEFITS.BENEFIT-STATUS' | translate }}</th>
+              <th class="text-right">{{ 'BENEFITS.NATIONAL-ID-OF-CONTRIBUTOR' | translate }}</th>
+              <th class="text-right">{{ 'BENEFITS.BENEFIT-AMOUNT-SPM' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="
+                let item of benefitWageDetail?.heirDetails?.otherBenefitAndWage?.benefitDetailsList;
+                let i = index
+              "
+            >
+              <tr class="data-row">
+                <td>
+                  {{ item?.benefitType | bilingualText }}
+                  <a class="view-link pl-1" routerLinkActive="active" (click)="showViewDetails(i)">
+                    <span>{{ 'BENEFITS.VIEW-DETAILS' | translate }}</span>
+                  </a>
+                  <tr *ngIf="item?.relationship">
+                    {{
+                      'BENEFITS.RELATIONSHIP' | translate
+                    }}
+                    :
+                    {{
+                      item?.relationship | bilingualText
+                    }}
+                  </tr>
+                </td>
+                <td>
+                  <div *ngIf="item?.startDate || item?.endDate; else noDate">
+                    <span>{{ item?.startDate | dateType }}</span>
+                    <fa-icon *ngIf="lang === 'en'" class="arrow-right px-1" icon="arrow-right"></fa-icon>
+                    <fa-icon *ngIf="lang === 'ar'" class="arrow-left px-1" icon="arrow-left"></fa-icon>
+                    <span *ngIf="item?.endDate; else onWards">{{ item?.endDate | dateType }}</span>
+                  </div>
+                  <ng-template #onWards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+                  <ng-template #noDate> - </ng-template>
+                </td>
+                <td class="text-right">{{ item?.benefitStatus | bilingualText }}</td>
+                <td class="text-right">
+                  <div class="ml-auto">
+                    <a class="view-link" routerLinkActive="active" (click)="showPersonalDetails(item?.sin)">{{
+                      item?.contributorNin
+                    }}</a>
+                  </div>
+                </td>
+                <td class="text-right">{{ item?.benefitAmount | number: '1.2-2' }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+        <!-- <div class="justify-content-between d-flex px-3 pb-5" *ngIf="benefitWageDetail?.heirDetails?.otherBenefitAndWage?.totalBenefitAmount">
+          <span
+            ><b>{{ 'BENEFITS.TOTAL' | translate }}</b></span
+          >
+          <span class="text-right"
+            ><b>{{
+              benefitWageDetail?.heirDetails?.otherBenefitAndWage?.totalBenefitAmount | number: '1.2-2'
+            }}</b></span
+          >
+        </div> -->
+      </div>
+    </div>
+  </div>
+</gosi-modal-dc>

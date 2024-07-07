@@ -1,0 +1,539 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="wage-accordion">
+  <accordion>
+    <!------------------------ Card Tag Start ------------------------>
+    <span
+      [ngClass]="[enableCardTag ? TagType : '', privateSector ? 'privateSector' : 'publicSector']"
+      *ngIf="enableCardTag"
+    >
+      <span class="polygon privateSector" [ngClass]="privateSector ? 'privateSector' : 'publicSector'">
+        <span>
+          <span *ngIf="engagementType === EngagementType.PPA_REGULAR">
+            {{ 'CONTRIBUTOR.CIVIL-LAW' | translate }}
+          </span>
+          <span *ngIf="engagementType === EngagementType.PPA_GCC">
+            {{ 'CONTRIBUTOR.GCC-LAW' | translate }}
+          </span>
+          <span *ngIf="engagementType === EngagementType.MILITARY">
+            {{ 'CONTRIBUTOR.MILITARY-LAW' | translate }}
+          </span>
+          <span
+            *ngIf="
+              engagementType === EngagementType.REGULAR ||
+              engagementType === EngagementType.VIC ||
+              engagementType === EngagementType.PART_TIMER
+            "
+          >
+            {{ 'CONTRIBUTOR.PRIVATE-LAW' | translate }}
+          </span>
+        </span>
+      </span>
+      <span class="afterTag"></span>
+    </span>
+    <accordion-group [isOpen]="isOpenInitially" class="accordion-group">
+      <!-- Accordion heading -->
+      <span accordion-heading class="row col-md-8 col-sm-10 accordion-title">
+        <div *ngIf="isVic" class="title-padding vic-title">{{ 'CONTRIBUTOR.WAGE.VIC-TITLE' | translate }}</div>
+        <div>
+          <ng-container
+            *ngTemplateOutlet="
+              isVic && isFutureEngagement ? futureEngagementHeading : normalEngagementHeading;
+              context: { engModel: engagement, estModel: establishment }
+            "
+          ></ng-container>
+        </div>
+        <!-- Part  timer info in accrodian heading -->
+        <!-- <span *ngIf="isPartTimer" class="parttimer-info" [tooltip]="'CONTRIBUTOR.PART-TIMER-INFO' | translate">
+              <fa-icon [icon]="['fas', 'info-circle']"></fa-icon>
+            </span> -->
+      </span>
+      <span accordion-heading *ngIf="!mobileView">
+        <div class="row col-md-4 tag-line ml-auto">
+          <span *ngIf="engagement?.paidStatus" class="tag-float">
+            <span class="aggregated-engagement">
+              {{ 'CONTRIBUTOR.PAID' | translate }}
+            </span>
+          </span>
+
+          <span
+            *ngIf="
+              engagement?.aggregationType?.english === AggregationType.AGGREGATED_TO_GOSI ||
+              engagement?.aggregationType?.english === AggregationType.AGGREGATED_TO_PPA
+            "
+            class="tag-float"
+          >
+            <span class="aggregated-engagement">
+              {{ engagement?.aggregationType | bilingualText }}
+            </span>
+          </span>
+        </div>
+        <!-- <div class="row col-md-4 ml-auto" *ngIf="engagement?.secondment || engagement?.studyLeave">
+          <span *ngIf="engagement?.secondment" class="secondment-position">
+            <ng-template #overlapMessage>
+              <span class="secondment-engagement"> {{ 'CONTRIBUTOR.SECONDMENT' | translate }}</span>
+            </ng-template>
+            <img
+              src="assets/icons/secondment.svg"
+              placement="top"
+              class="image-ppa"
+              [tooltip]="overlapMessage"
+              alt="annuity"
+            />
+          </span>
+          <span *ngIf="engagement?.studyLeave" class="secondment-position">
+            <ng-template #overlapMessage>
+              <span class="secondment-engagement"> {{ 'CONTRIBUTOR.STUDY-LEAVE' | translate }}</span>
+            </ng-template>
+            <img
+              src="assets/icons/study-leave.svg"
+              placement="top"
+              class="image-ppa"
+              [tooltip]="overlapMessage"
+              alt="annuity"
+            />
+          </span>
+        </div> -->
+      </span>
+
+      <!-- <div class="row col-md-1"> -->
+      <span
+        accordion-heading
+        class="edit-icon ml-auto float-right"
+        id="{{ 'editEngagement' + index }}"
+        *ngIf="isShow && actionList && actionList.length > 0; else placeHolder"
+      >
+        <cnt-dropdown-dc
+          *ngIf="
+            !(
+              !(
+                ENGAGEMENT_ACTIVE.includes(engagement?.status) ||
+                (engagement?.status === CANCEL_IN_PROGRESS && !engagement?.leavingDate?.gregorian)
+              ) &&
+              !(
+                ENGAGEMENT_INACTIVE.includes(engagement?.status) ||
+                (engagement?.status === CANCEL_IN_PROGRESS && engagement?.leavingDate?.gregorian)
+              )
+            ) ||
+            engagement.contractDetailsFlag ||
+            engagement.reactivationAllowed
+          "
+          [isNin]="isNin"
+          [list]="actionList"
+          [disableDropdown]="isFutureEngagement ? true : false"
+          [individualApp]="individualApp"
+          (selectedItem)="handleActions($event)"
+        >
+          <fa-icon [ngClass]="{ disabled: isFutureEngagement ? true : false }" class="dropdown-icon" icon="ellipsis-v">
+          </fa-icon>
+        </cnt-dropdown-dc>
+      </span>
+      <span accordion-heading class="angle-down">
+        <fa-icon icon="angle-down" class="icon-size"></fa-icon>
+      </span>
+
+      <span accordion-heading class="angle-right">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <span accordion-heading class="angle-left">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <!-- </div> -->
+      <!-- Part timer info alert -->
+      <gosi-alert-dc
+        *ngIf="isPartTimer"
+        type="info"
+        [message]="'CONTRIBUTOR.PART-TIMER-INFO'"
+        [dismissible]="false"
+        [noPadding]="true"
+      ></gosi-alert-dc>
+
+      <!-- Accordion content section -->
+      <div class="row company-worker-details" *ngIf="engagement?.status && !isFutureEngagement">
+        <div class="px-2">
+          <gosi-label-dc
+            id="engagementStatus"
+            [value]="
+              ENGAGEMENT_ACTIVE.includes(engagement?.status) ||
+              (engagement?.status === CANCEL_IN_PROGRESS && !engagement?.leavingDate?.gregorian)
+                ? ('CONTRIBUTOR.ACTIVE' | translate)
+                : ENGAGEMENT_INACTIVE.includes(engagement?.status) ||
+                  (engagement?.status === CANCEL_IN_PROGRESS && engagement?.leavingDate?.gregorian)
+                ? ('CONTRIBUTOR.INACTIVE' | translate)
+                : engagement?.status === 'VIC REACTIVATED'
+                ? ('CONTRIBUTOR.INPROGRESS' | translate)
+                : ('CONTRIBUTOR.CANCELLED' | translate)
+            "
+            label="CONTRIBUTOR.ENGAGEMENT-STATUS"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="px-2" *ngIf="engagement?.leavingDate?.gregorian || engagement?.status === ENGAGEMENT_CANCELLED">
+          <gosi-label-dc
+            id="leavingReason"
+            [control]="engagement?.leavingReason | bilingualText"
+            label="CONTRIBUTOR.LEAVING-REASON"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="px-2" *ngIf="engagement?.status === ENGAGEMENT_CANCELLED && engagement?.leavingDate?.gregorian">
+          <gosi-label-dc
+            id="cancellationReason"
+            [control]="engagement?.cancellationReason | bilingualText"
+            label="CONTRIBUTOR.CANCEL-CON.CANCELLATION-REASON"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="px-2" *ngIf="!isVic && !engagement?.ppaIndicator">
+          <gosi-label-dc id="employeeId" [control]="engagement?.companyWorkerNumber" label="CONTRIBUTOR.EMPLOYEE-ID">
+          </gosi-label-dc>
+        </div>
+        <div
+          class="px-3"
+          *ngIf="
+            engagement?.contracts?.length === 0 &&
+            engagement?.status !== 'HISTORY' &&
+            engagement?.isContractsAuthRequired &&
+            contributorData?.active &&
+            engagement?.contractWorkflow?.length === 0 &&
+            hasNinOrIqamaNumber
+          "
+        >
+          <gosi-button-dc
+            *gosiShow="addContractAccessRoles; regNo: establishment?.registrationNo"
+            type="outline-primary"
+            [size]="'md'"
+            id="addContract"
+            [mobFullWidth]="false"
+            (submit)="handleActions('CONTRIBUTOR.ADD-CONTRACT')"
+          >
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            <span class="mr-2"></span>
+            {{ 'CONTRIBUTOR.ADD-CONTRACT' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="px-2" *ngIf="engagement?.contracts?.length > 0 || engagement?.contractWorkflow?.length > 0">
+          <div *ngIf="engagement?.contracts?.length > 0">
+            <gosi-label-dc
+              id="contractStatus"
+              [control]="'CONTRIBUTOR.STATUS-TYPE.' + (engagement?.contracts)[0]?.status | translate"
+              label="CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-STATUS"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+      <ng-container
+        *ngTemplateOutlet="
+          isVic && isFutureEngagement ? futureEngagement : engagementPeriod;
+          context: { engModel: engagement }
+        "
+      >
+      </ng-container>
+    </accordion-group>
+  </accordion>
+
+  <!-- Templatess -->
+  <!-- Normal engagement period view -->
+  <ng-template #engagementPeriod let-engagement="engModel">
+    <cnt-engagement-period-accordian-dc
+      [engagement]="engagement"
+      [isPREligible]="isPREligible"
+    ></cnt-engagement-period-accordian-dc>
+  </ng-template>
+
+  <!-- futture engagement period view -->
+  <ng-template #futureEngagement let-engagement="engModel">
+    <gosi-alert-dc
+      [dismissable]="false"
+      message="CONTRIBUTOR.WAGE.VIC-FUTURE-ENGAGEMENT-INFO"
+      [messageParam]="{ joiningDate: engagement?.joiningDate | dateType }"
+      [dismissible]="false"
+      [noPadding]="true"
+      type="info"
+    ></gosi-alert-dc>
+  </ng-template>
+
+  <ng-template #onwards>{{ 'CONTRIBUTOR.ONWARDS' | translate }}</ng-template>
+
+  <!-- Future engagement heading -->
+  <ng-template #futureEngagementHeading let-engagement="engModel">
+    {{
+      'CONTRIBUTOR.WAGE.VIC-FUTURE-ENGAGEMENT-HEADING' | translate: { joiningDate: engagement?.joiningDate | dateType }
+    }}
+  </ng-template>
+
+  <!-- Backdated Flag hover details -->
+  <ng-template #BackdatedFlagIndicator>
+    <ng-container>
+      <div>
+        {{ 'CONTRIBUTOR.BACKDATED-ENGAGEMENT-FLAG' | translate }}
+      </div>
+    </ng-container>
+  </ng-template>
+
+  <!-- Normal engagement heading -->
+  <ng-template #normalEngagementHeading let-engagement="engModel" let-establishment="estModel">
+    <div *ngIf="isUnifiedProfile">
+      {{ establishment?.name | bilingualText: true }}
+      <span class="reg-font-weight"
+        >({{ 'CONTRIBUTOR.REGISTRATION-NO' | translate }}: {{ establishment?.registrationNo }})</span
+      >
+      <span *ngIf="engagement?.hasOverlappingEngagement" class="overlap-position ui-tooltip">
+        <ng-template #overlapMessage>
+          <span class="ui-tooltip"> {{ 'CONTRIBUTOR.OVERLAP-MSG' | translate }}</span>
+        </ng-template>
+        <img
+          src="assets/icons/overlap.svg"
+          placement="top"
+          class="image-ppa"
+          [tooltip]="overlapMessage"
+          alt="annuity"
+          (click)="imageClicked()"
+        />
+      </span>
+      <span *ngIf="engagement?.secondment" class="overlap-position ui-tooltip">
+        <ng-template #overlapMessage>
+          <span class="ui-tooltip"> {{ 'CONTRIBUTOR.SECONDMENT' | translate }}</span>
+        </ng-template>
+        <img
+          src="assets/icons/secondment.svg"
+          placement="top"
+          class="image-ppa"
+          [tooltip]="overlapMessage"
+          alt="annuity"
+          (click)="imageClicked()"
+        />
+      </span>
+      <span *ngIf="engagement?.studyLeave" class="overlap-position ui-tooltip">
+        <ng-template #overlapMessage>
+          <span class="ui-tooltip"> {{ 'CONTRIBUTOR.STUDY-LEAVE' | translate }}</span>
+        </ng-template>
+        <img
+          src="assets/icons/study-leave.svg"
+          placement="top"
+          class="image-ppa"
+          [tooltip]="overlapMessage"
+          alt="annuity"
+          (click)="imageClicked()"
+        />
+      </span>
+      <!-- Flag engagements when it has one or more backdated periods based on the input backdatingIndicator -->
+      <img
+        *ngIf="isBackdatedFlag"
+        class="back-dated-flag"
+        [tooltip]="BackdatedFlagIndicator"
+        src="assets/icons/BackdatedIndicator.png"
+        alt="Backdated engagement"
+      />
+    </div>
+    <div class="engagement-header pt-2">
+      <div class="pr-1">
+        {{ engagement?.joiningDate | dateType }}
+        <span class="arrow-right px-2">
+          <fa-icon icon="arrow-right"></fa-icon>
+        </span>
+        <span class="arrow-left px-2">
+          <fa-icon icon="arrow-left"></fa-icon>
+        </span>
+        <ng-container *ngIf="engagement?.leavingDate?.gregorian && !isFutureEndingEngagement; else onwards">{{
+          engagement?.leavingDate | dateType
+        }}</ng-container>
+      </div>
+      <div
+        class="duration seperator"
+        *ngIf="engagement?.engagementDuration?.noOfMonths || engagement?.engagementDuration?.noOfDays"
+      >
+        <ng-container
+          *ngIf="engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfMonths !== 0"
+        >
+          <ng-container
+            *ngIf="
+              !(
+                lang === 'ar' &&
+                (engagement?.engagementDuration?.noOfMonths === 1 || engagement?.engagementDuration?.noOfMonths === 2)
+              )
+            "
+          >
+            {{ engagement?.engagementDuration?.noOfMonths }}</ng-container
+          >
+          {{
+            engagement?.engagementDuration?.noOfMonths === 1
+              ? ('CONTRIBUTOR.WAGE.MONTH' | translate | titlecase)
+              : engagement?.engagementDuration?.noOfMonths === 2
+              ? ('CONTRIBUTOR.WAGE.MONTHS' | translate | titlecase)
+              : engagement?.engagementDuration?.noOfMonths > 2 && engagement?.engagementDuration?.noOfMonths < 11
+              ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate | titlecase)
+              : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate | titlecase)
+          }}
+        </ng-container>
+        <ng-container *ngIf="engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfDays">
+          ,</ng-container
+        >
+        <ng-container
+          *ngIf="engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0"
+        >
+          <ng-container
+            *ngIf="
+              !(
+                lang === 'ar' &&
+                (engagement?.engagementDuration?.noOfDays === 1 || engagement?.engagementDuration?.noOfDays === 2)
+              )
+            "
+          >
+            {{ engagement.engagementDuration.noOfDays }}
+          </ng-container>
+          {{
+            engagement?.engagementDuration?.noOfDays === 1
+              ? ('CONTRIBUTOR.WAGE.DAY' | translate | titlecase)
+              : engagement?.engagementDuration?.noOfDays === 2
+              ? ('CONTRIBUTOR.WAGE.DAYS' | translate | titlecase)
+              : engagement?.engagementDuration?.noOfDays > 2 && engagement.engagementDuration?.noOfDays < 11
+              ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate | titlecase)
+              : ('CONTRIBUTOR.WAGE.DAYS-11' | translate | titlecase)
+          }}
+        </ng-container>
+        <span
+          *ngIf="engagement?.workType?.english && engagement?.workType?.arabic"
+          class="overall-engagement-seperator"
+        >
+          {{ engagement?.workType | bilingualText }}</span
+        >
+        <span *ngIf="isPartTimer" class="parttimer-info" [tooltip]="'CONTRIBUTOR.PART-TIMER-INFO' | translate">
+          <fa-icon [icon]="['fas', 'info-circle']"></fa-icon>
+        </span>
+        <!-- overlap icon -->
+        <span *ngIf="engagement?.hasOverlappingEngagement && !isUnifiedProfile" class="overlap-position ui-tooltip">
+          <ng-template #overlapMessage>
+            <span class="ui-tooltip"> {{ 'CONTRIBUTOR.OVERLAP-MSG' | translate }}</span>
+          </ng-template>
+          <img
+            src="assets/icons/overlap.svg"
+            placement="top"
+            class="image-ppa"
+            [tooltip]="overlapMessage"
+            alt="annuity"
+            (click)="imageClicked()"
+          />
+        </span>
+        <span *ngIf="engagement?.secondment && !isUnifiedProfile" class="overlap-position ui-tooltip">
+          <ng-template #overlapMessage>
+            <span class="ui-tooltip"> {{ 'CONTRIBUTOR.SECONDMENT' | translate }}</span>
+          </ng-template>
+          <img
+            src="assets/icons/secondment.svg"
+            placement="top"
+            class="image-ppa"
+            [tooltip]="overlapMessage"
+            alt="annuity"
+            (click)="imageClicked()"
+          />
+        </span>
+        <span *ngIf="engagement?.studyLeave && !isUnifiedProfile" class="overlap-position ui-tooltip">
+          <ng-template #overlapMessage>
+            <span class="ui-tooltip"> {{ 'CONTRIBUTOR.STUDY-LEAVE' | translate }}</span>
+          </ng-template>
+          <img
+            src="assets/icons/study-leave.svg"
+            placement="top"
+            class="image-ppa"
+            [tooltip]="overlapMessage"
+            alt="annuity"
+            (click)="imageClicked()"
+          />
+        </span>
+        <!-- <span *ngIf="isVic">{{ 'CONTRIBUTOR.VIC-PERIOD-INFO' | translate }}</span> -->
+      </div>
+      <div class="duration seperator width-style">
+        <ng-templte *ngIf="engagement?.engagementSourceType">
+          <span>
+            {{ 'CONTRIBUTOR.DATA-SOURCE' | translate }}
+            <span *ngIf="engagement?.engagementSourceType?.english === 'PPA Legacy'" class="ppa-legacy">
+              {{ engagement?.engagementSourceType | bilingualText }}
+            </span>
+            <span *ngIf="engagement?.engagementSourceType?.english === 'Mitaq'" class="mithaq">
+              {{ engagement?.engagementSourceType | bilingualText }}
+            </span>
+            <span *ngIf="engagement?.engagementSourceType?.english === 'GOSI'" class="gosi">
+              {{ engagement?.engagementSourceType | bilingualText }}
+            </span>
+            <span *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency'" class="govt-agency">
+              {{ engagement?.engagementSourceType | bilingualText }}
+            </span>
+            <span
+              *ngIf="engagement?.engagementSourceType?.english === 'Govt Agency & Mithaq'"
+              class="govt-agency-mithaq"
+            >
+              {{ engagement?.engagementSourceType | bilingualText }}
+            </span>
+          </span>
+          <span class="channel-style">
+            {{ 'CONTRIBUTOR.CHANNEL' | translate
+            }}{{ engagement?.channel | bilingualText | titlecase}}
+          </span>
+          <span class="time-style">
+            {{ 'CONTRIBUTOR.WAGE.LAST-UPDATED' | translate
+            }}{{ engagement?.lastModifiedTimeStamp | dateType}}
+          </span>
+        </ng-templte>
+      </div>
+      <span *ngIf="engagement?.reactivated" class="overlap-position">
+        <ng-template #overlapMessage>
+          <span class="small-label">
+            {{
+              !(engagement?.engagementType === 'vic') && engagement?.reactivated
+                ? ('CONTRIBUTOR.REACT-EGMNT' | translate)
+                : ('CONTRIBUTOR.REACT-VIC-EGMNT' | translate)
+            }}
+          </span>
+        </ng-template>
+        <img
+          src="assets/icons/Reactivated.svg"
+          placement="top"
+          class="image-ppa"
+          [tooltip]="overlapMessage"
+          alt="annuity"
+        />
+      </span>
+      <span *ngIf="mobileView">
+        <div class="row col-md-4 tag-line ml-auto">
+          <span *ngIf="engagement?.paidStatus" class="tag-float">
+            <span class="aggregated-engagement">
+              {{ 'CONTRIBUTOR.PAID' | translate }}
+            </span>
+          </span>
+
+          <span
+            *ngIf="
+              engagement?.aggregationType?.english === AggregationType.AGGREGATED_TO_GOSI ||
+              engagement?.aggregationType?.english === AggregationType.AGGREGATED_TO_PPA
+            "
+            class="tag-float"
+          >
+            <span class="aggregated-engagement">
+              {{ engagement?.aggregationType | bilingualText }}
+            </span>
+          </span>
+        </div>
+        <!-- <div class="row col-md-4 ml-auto" *ngIf="engagement?.secondment || engagement?.studyLeave">
+          <span *ngIf="engagement?.secondment" class="secondment-position">
+            <span class="secondment-engagement">
+              {{ 'CONTRIBUTOR.SECONDMENT' | translate }}
+            </span>
+          </span>
+          <span *ngIf="engagement?.studyLeave" class="secondment-position">
+            <span class="secondment-engagement">
+              {{ 'CONTRIBUTOR.STUDY-LEAVE' | translate }}
+            </span>
+          </span>
+        </div> -->
+      </span>
+    </div>
+  </ng-template>
+  <ng-template #placeHolder>
+    <div class="placeHolder"></div>
+  </ng-template>
+</div>

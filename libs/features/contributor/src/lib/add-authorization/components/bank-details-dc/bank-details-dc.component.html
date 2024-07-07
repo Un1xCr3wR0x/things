@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="iban-type form-group" *ngIf="bankAccounts?.bankAccountList[0]">
+  <div
+    class="p-2 pl-4 pr-4 text-center type"
+    [ngClass]="{ 'selected-type': ibanType === Select }"
+    (click)="changeType(Select)"
+  >
+    {{ 'CONTRIBUTOR.SELECT-IBAN' | translate }}
+  </div>
+  <div
+    class="p-2 pl-4 pr-4 text-center type"
+    [ngClass]="{ 'selected-type': ibanType === New }"
+    (click)="changeType(New)"
+  >
+    {{ 'CONTRIBUTOR.NEW-IBAN' | translate }}
+  </div>
+</div>
+<gosi-alert-dc [alert]="noAccountAlert" *ngIf="ibanType === Select && !bankAccounts.bankAccountList[0]"></gosi-alert-dc>
+<gosi-alert-dc [alert]="ibanVerificationAlert" *ngIf="ibanType === New"></gosi-alert-dc>
+<div class="row">
+  <div class="col-sm-6 col-md-6">
+  <gosi-input-radio-dc
+               *ngIf="ibanType === New"
+                id="bankInKSA"
+                [list]="listYesNo"
+                [control]="bankAccountDetailsForm.get('isIbanSelectedOption')"
+                [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.IBANKINSA' | translate"
+                (select)="selectedIfBankInKSA()"
+              ></gosi-input-radio-dc>
+            </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-6 col-md-6">
+    <gosi-input-select-dc
+      *ngIf="ibanType === Select"
+      id="iBanAccountNumberList"
+      name="iBanAccountNumber"
+      [label]="'FORM-FRAGMENTS.IBANACCOUNT-NUMBER' | translate"
+      [control]="bankAccountDetailsForm.get('ibanAccountNo')"
+      [list]="bankAccountList"
+      (select)="selectBankAccount($event)"
+    ></gosi-input-select-dc>
+
+  <gosi-input-text-dc
+  *ngIf="(ibanType === New && bankAccountDetailsForm.get('nonSaudiIbanAccNo'))"
+      id="nonSaudiIbanAccNo"
+      [label]="'FORM-FRAGMENTS.IBANACCOUNT-NUMBER' | translate"
+      [control]="bankAccountDetailsForm.get('nonSaudiIbanAccNo')"
+      [maxLength]="30"
+    >
+  </gosi-input-text-dc>
+
+  <gosi-input-text-dc
+      *ngIf="(ibanType === New && bankAccountDetailsForm?.get('ibanAccountNo'))"
+      id="iBanAccountNumber"
+      [label]="'FORM-FRAGMENTS.IBANACCOUNT-NUMBER' | translate"
+      [control]="bankAccountDetailsForm.get('ibanAccountNo.english')"
+      (blur)="getBank()"
+      [maxLength]="minMaxLengthAccountNo"
+    >
+  </gosi-input-text-dc>
+
+  <gosi-input-text-dc
+    *ngIf="(ibanType === New && bankAccountDetailsForm.get('nonSaudiBankName'))"
+    id="nonSaudiBankName"
+    [label]="'FORM-FRAGMENTS.BANK-NAME' | translate"
+    [control]="bankAccountDetailsForm.get('nonSaudiBankName')"
+  ></gosi-input-text-dc>
+
+  <gosi-input-text-dc
+  *ngIf="(ibanType === New && bankAccountDetailsForm?.get('swiftCode'))"
+  id="swiftCode"
+  [label]="'FORM-FRAGMENTS.SWIFT-CODE' | translate"
+  [control]="bankAccountDetailsForm.get('swiftCode')"
+></gosi-input-text-dc>
+
+
+
+  </div>
+  <div class="col-sm-6 col-md-6">
+    <gosi-input-select-dc
+      *ngIf="(bankAccountDetailsForm?.get('bankName')?.get('english')?.value && bankAccountDetailsForm?.get('isIbanSelectedOption')?.get('english')?.value === 'Yes')"
+      id="bankName"
+      name="bankName"
+      [label]="'FORM-FRAGMENTS.BANK-NAME' | translate"
+      [control]="bankAccountDetailsForm.get('bankName')"
+      [list]="list"
+      [disabled]="true"
+    >
+    </gosi-input-select-dc>
+  </div>
+</div>

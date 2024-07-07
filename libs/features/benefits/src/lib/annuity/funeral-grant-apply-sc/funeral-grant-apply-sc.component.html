@@ -1,0 +1,241 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ 'BENEFITS.REQUEST-FUNERAL-GRANT' | translate }}
+    </div>
+  </div>
+  <div class="row ml-5 mt-5" *ngIf="contributorDetails">
+    <div class="col-md-3 col-lg-3" *ngIf="contributorDetails.person.name.arabic && lang === 'ar'">
+      <gosi-label-dc
+        id="adminArabicName"
+        value="{{ contributorDetails.person.name.arabic.firstName }} {{
+          contributorDetails.person.name?.arabic?.secondName
+        }} {{ contributorDetails.person.name?.arabic?.thirdName }}
+                {{ contributorDetails.person.name.arabic.familyName }}"
+        [label]="'BENEFITS.CONTRIBUTOR-NAME' | translate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3" *ngIf="contributorDetails.person?.name?.english && lang === 'en'">
+      <gosi-label-dc
+        id="contributorNameEnglish"
+        [control]="contributorDetails.person.name.english.name"
+        [label]="'BENEFITS.CONTRIBUTOR-NAME-EN' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3">
+      <gosi-label-dc
+        id="contributorNIN"
+        [value]="contributorDetails?.person?.identity[0]?.newNin"
+        label="{{ 'BENEFITS.NIN' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3">
+      <gosi-label-dc
+        id="dateOfBirth"
+        [value]="contributorDetails?.person?.birthDate | dateType"
+        label="{{ 'BENEFITS.DATE-OF-BIRTH' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-3 col-lg-3">
+      <gosi-label-dc
+        id="dateOfBirth"
+        value="{{
+          validatorFlowBeneficiary
+            ? (validatorFlowBeneficiary?.beneficiaryDetails?.deathDate | dateType)
+            : (contributorDetails?.person?.deathDate | dateType)
+        }}"
+        label="{{ 'BENEFITS.DATE-OF-DEATH' | translate }}"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div [ngClass]="{ hide: hideAlertComponent(currentTab, wizardItems) }">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div [ngClass]="{ hide: wizardItems.length <= 1 }">
+    <gosi-progress-wizard-dc
+      (clickWizard)="selectedWizard($event)"
+      [wizardItems]="wizardItems"
+      #applyFuneralGrantWizard
+    >
+    </gosi-progress-wizard-dc>
+  </div>
+  <div class="row" *ngIf="notEligible">
+    <div class="col-12">
+      <gosi-alert-dc
+        [message]="'BENEFITS.NOT-ELIGIBLE-FG' | translate"
+        type="warning"
+        [dismissible]="false"
+        [noPadding]="true"
+      >
+        <a actOnAlert id="view-ineligible" (click)="viewIneligibleDetails()">{{
+          'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate
+        }}</a>
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <div class="hide-tab">
+    <tabset type="pills" #funeralGrantDetailsTab>
+      <tab [active]="isTabSlctdInWizard(uiConst.FUNERAL_GRANT_DETAILS, currentTab, wizardItems)">
+        <bnt-request-date-dc
+          *ngIf="isAppPrivate"
+          [parentForm]="benefitsForm"
+          [maxDate]="maxDate"
+          [minDate]="minDate"
+          [systemRunDate]="systemRunDate"
+          [showConfirmButton]="false"
+        >
+        </bnt-request-date-dc>
+        <bnt-funeral-grant-details-dc
+          #funeralGrantDc
+          [lang]="lang"
+          [parentForm]="benefitsForm"
+          [contactForm]="contactForm"
+          [validatorFlowBeneficiary]="validatorFlowBeneficiary"
+          [bankName]="bankName"
+          [bankDetails]="bankAccountList"
+          [isAppPrivate]="isAppPrivate"
+          [deathDate]="deathDate"
+          [birthDate]="contributorDetails?.person?.birthDate"
+          [searchResult]="searchResult"
+          [requestDate]="this.benefitsForm.get('requestDate')?.value"
+          [systemRunDate]="systemRunDate"
+          [nationalityList$]="nationalityList$"
+          [heirs]="heirDetails"
+          [isDraft]="routerData?.draftRequest"
+          [guardianDetails]="guardianDetails"
+          [listOfGuardians]="guardianList"
+          [cityList$]="cityList$"
+          [countryList$]="countryList$"
+          [payeeList]="payeeList"
+          [paymentMethodList]="paymentMethodList$ | async"
+          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+          (searchPerson)="search($event)"
+          (getHeirs)="getHeirs()"
+          (getBankName)="getBankName($event)"
+          (getHeirAttorneyGuardianList)="getHeirAttorneyGuardianList($event)"
+          (getBankDetailsFromApi)="getBankDetailsFromApi($event)"
+          (deathDateChanged)="deathDateChanged($event)"
+        >
+        </bnt-funeral-grant-details-dc>
+      </tab>
+      <!-- BENEFIT DETAILS -->
+      <tab [active]="isTabSlctdInWizard(uiConst.BENEFIT_DETAILS, currentTab, wizardItems)">
+        <div class="row" *ngIf="benefitCalculation">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary" heading="{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}" lessPadding="true">
+              <div class="d-flex flex-row justify-content-between">
+                <gosi-label-dc
+                  id="funeralGrantAmount"
+                  [value]="
+                    'BENEFITS.AVERAGE-AMOUNT'
+                      | translate: { amount: benefitCalculation?.funeralGrantAmount || 0 | number: '1.2-2' }
+                  "
+                  label="{{ 'BENEFITS.FUNERAL-GRANT-AMOUNT' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_DOCUMENTS, currentTab, wizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="pensionTransactionId"
+              [referenceNo]="referenceNo"
+              [documentList]="requiredDocs"
+              [parentForm]="documentForm"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransaction()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+      <div *ngIf="showActionButtons(currentTab, wizardItems)" class="row">
+        <div class="col-auto form-action-btn">
+          <gosi-button-dc
+            id="cancel"
+            name="cancelSubmit"
+            [isFullWidth]="isSmallScreen"
+            type="secondary"
+            (submit)="cancelTransaction()"
+          >
+            {{ 'BENEFITS.CANCEL' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="col-auto float-right form-action-btn">
+          <gosi-button-dc
+            id="previous"
+            *ngIf="isTabSlctdInWizard(uiConst.BENEFIT_DETAILS, currentTab, wizardItems)"
+            [isFullWidth]="isSmallScreen"
+            name="submitTransaction"
+            type="secondary"
+            (submit)="previousForm()"
+          >
+            {{ 'BENEFITS.PRE-SECTION' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="ml-auto col-auto form-action-btn">
+          <gosi-button-dc
+            *ngIf="wizardItems && wizardItems?.length === 1"
+            id="submit"
+            type="primary"
+            [isFullWidth]="isSmallScreen"
+            (submit)="submitFuneralGrant()"
+          >
+            {{ 'BENEFITS.SUBMIT' | translate }}
+          </gosi-button-dc>
+          <gosi-button-dc
+            *ngIf="wizardItems && wizardItems?.length > 1"
+            id="save"
+            type="primary"
+            [disabled]="saveAndNextDisabled"
+            [isFullWidth]="isSmallScreen"
+            (submit)="submitFuneralGrant()"
+          >
+            {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </tabset>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #inEligibleReason>
+  <bnt-eligibility-criteria-dc [benefitInfo]="eligibilityApiResponse" (close)="hideModal()">
+  </bnt-eligibility-criteria-dc>
+</ng-template>

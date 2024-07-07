@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="table-scroll table-responsive">
+        <table class="table table-borderless table-effect">
+          <thead class="table-header">
+            <tr>
+              <th rowspan="2" id="name">
+                {{ 'BILLING.ESTABLISHMENT-NAME' | translate | titlecase }}
+              </th>
+              <th rowspan="2" id="number">
+                {{ 'BILLING.REGISTRATION-NUMBER' | translate | titlecase }}
+              </th>
+              <th rowspan="1" colspan="4" id="periods" class="debit-value" *ngIf="establishmentType === 'GOSI'">
+                {{ 'BILLING.COVERAGE' | translate | titlecase }}
+                <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+              </th>
+              <th rowspan="1" colspan="2" id="periods" class="debit-value" *ngIf="establishmentType === 'PPA'">
+                {{ 'BILLING.COVERAGE' | translate | titlecase }}
+                <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+              <!-- </th> -->
+              <th rowspan="2" id="total">
+                {{ 'BILLING.TOTAL' | translate | titlecase }}
+                <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+              </th>
+              <th></th>
+            </tr>
+            <tr>
+              <th id="annuity" class="debit-value" *ngIf="establishmentType === 'GOSI'">{{ 'BILLING.ANNUITY' | translate | titlecase }}</th>
+               <th id="annuity" class="debit-value" *ngIf="establishmentType === 'PPA'">{{ 'BILLING.PPA-ANNUITY' | translate | titlecase }}</th>
+              <th id="annuity" class="debit-value">{{ 'BILLING.PPA-PENSION' | translate | titlecase }}</th>
+              <th id="oh" class="debit-value" *ngIf="establishmentType === 'GOSI'">
+                {{ 'BILLING.OCCUPATIONAL-HAZARD' | translate | titlecase }}
+              </th>
+              <th id="ui" class="debit-value" *ngIf="establishmentType === 'GOSI'">{{ 'BILLING.UI' | translate | titlecase }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container>
+              <ng-container
+                *ngFor="
+                  let adjustment of debitAdjustmentDetails?.thirdPartyItemizedBillBreakDown
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemsPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: debitAdjustmentDetails?.availableCount
+                        };
+                  let i = index
+                "
+              >
+                <tr class="border-bottom view-link" (click)="getCreditDetails(adjustment.registrationNo)">
+                  <td *ngIf="adjustment.establishmentName.english">
+                    {{ adjustment.establishmentName | bilingualText }}
+                  </td>
+                  <td *ngIf="adjustment.establishmentName.english === null">
+                    {{ adjustment.establishmentName.arabic }}
+                  </td>
+                  <td>{{ adjustment.registrationNo }}</td>
+                  <td class="debit-value" *ngIf="establishmentType === 'GOSI'">
+                    {{ adjustment.thirdPartyContributionShare.establishmentShare.annuity | number: '1.2-2' }}
+                  </td>
+                  <td class="debit-value" *ngIf="establishmentType === 'PPA'">
+                    {{ adjustment.thirdPartyContributionShare.establishmentShare.ppaAnnuity | number: '1.2-2' }}
+                  </td>
+                  <td class="debit-value">
+                    {{ adjustment.thirdPartyContributionShare.establishmentShare.prAnnuity | number: '1.2-2' }}
+                  </td>
+                  <td class="debit-value" *ngIf="establishmentType === 'GOSI'">
+                    {{ adjustment.thirdPartyContributionShare.establishmentShare.oh | number: '1.2-2' }}
+                  </td>
+                  <td class="debit-value" *ngIf="establishmentType === 'GOSI'">
+                    {{ adjustment.thirdPartyContributionShare.establishmentShare.ui | number: '1.2-2' }}
+                  </td>
+                  <td>{{ adjustment.thirdPartyContributionShare.total | number: '1.2-2' }}</td>
+                </tr>
+              </ng-container>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<gosi-pagination-dc
+  *ngIf="debitAdjustmentDetails?.availableCount > itemsPerPage"
+  [totalSize]="debitAdjustmentDetails?.availableCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+  paginationId="paginationId"
+></gosi-pagination-dc>

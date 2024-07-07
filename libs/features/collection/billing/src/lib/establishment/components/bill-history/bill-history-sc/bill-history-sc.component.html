@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!--   Bill History Header Section-->
+<div class="row header-section">
+  <div class="col-auto heading-main border-right">
+    {{ 'BILLING.BILL-HISTORY' | translate }}
+  </div>
+  <div class="col-auto heading-main" *ngIf="establishmentName?.english !== undefined">
+    {{ establishmentName?.english === null ? establishmentName?.arabic : establishmentName?.english }}
+  </div>
+  <div class="d-none d-sm-block col-auto align-self-center mr-auto">
+    ({{ 'BILLING.REGISTRATION-NO' | translate }} : {{ registrationNo }})
+  </div>
+  <div class="d-sm-none pt-2">({{ 'BILLING.REGISTRATION-NO' | translate }} : {{ registrationNo }})</div>
+</div>
+<div class="content container-height">
+  <ng-container *ngIf="billHistoryDetails; else noResultFound">
+    <!--   Bill History Details-->
+    <blg-last-paid-bill-details-dc [billHistoryDetails]="billHistoryDetails"[exchangeRate]="exchangeRate" [debtStartDate]="debtStartDate" [debtStartMonth]="debtStartMonth" (backNavigation)="routeToBillDashboard()"  [establishmentRegistrationNo]="establishmentRegistrationNo" [isMofFlag]="isMofFlag" [miscAdjustmentResponse]="miscAdjustmentResponse">
+    </blg-last-paid-bill-details-dc>
+    <!-- Bill History Table-->
+    <blg-bill-history-table-dc
+      [billHistoryDetails]="billHistoryDetails"
+      [pageDetails]="pageDetails"
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+      [hideColumn]="hideColumn"
+      (selectPageNo)="pageChanged($event)"
+      (routeTo)="routeTo($event)"
+      (SearchAmount)="getBillhistoryDetails($event)"
+      [yesOrNoList]="yesOrNoList$ | async"
+      [billPaymentStatus]="billPaymentStatus$ | async"
+      (filterParamDetails)="getParamDetails($event)"
+    >
+    </blg-bill-history-table-dc>
+  </ng-container>
+
+  <ng-template #noResultFound>
+    <div class="mt-5 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </ng-template>
+</div>
+<div class="container-fluid" *ngIf="viewOldBill">
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <gosi-button-dc
+        class="float-right btn-section btn-payment-padding compliance-value"
+        id="viewRecords"
+        type="primary"
+        [tooltip]="billRecordTemplateValue"
+        (submit)="viewRecords()"
+      >
+        {{ 'BILLING.VIEW-OLD-BILL-RECORDS' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<ng-template #billRecordTemplateValue>
+  {{ 'BILLING.VIEW-RECORD-HISTORY' | translate }}
+</ng-template>

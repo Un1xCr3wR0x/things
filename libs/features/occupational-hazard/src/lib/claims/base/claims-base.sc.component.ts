@@ -1,0 +1,50 @@
+import { Directive } from '@angular/core';
+import { BilingualText, DocumentItem, LovList } from '@gosi-ui/core';
+import { Observable } from 'rxjs';
+import { Establishment, HoldResumeDetails, Pagination } from '../../shared';
+import { ClaimsWrapper } from '../../shared/models/claims-details';
+import { Claims } from '../../shared/models/claims-wrapper';
+
+@Directive()
+export abstract class ClaimsBaseScComponent {
+  claimsDetails = [];
+  claimsWrapper: ClaimsWrapper = new ClaimsWrapper();
+  claimsDetailsForFilter: ClaimsWrapper = new ClaimsWrapper();
+  currentTab = 0;
+  totalAmount = 0;
+  daysDifference: number;
+  document: DocumentItem[] = [];
+  documents: DocumentItem[] = [];
+  injuryId: number;
+  isAppPrivate = false;
+  showHoldInfo = false;
+  holdDetails: HoldResumeDetails;
+  lang = 'en';
+  lighterLabel = '#999999';
+  registrationNo: number;
+  socialInsuranceNo: number;
+  isError = false;
+  isEmployer = false;
+  showFilter = false;
+  count = 0;
+  totalExpense = 0;
+  payeeId: number;
+  complicationId: number;
+  diseaseId: number;
+  injuryNo: number;
+  establishment: Establishment;
+  pagination = new Pagination();
+  isPagination = false;
+  isLoadMore = false;
+  statusEst = 'en';
+  injuryStatus: BilingualText;
+  showNewClaims = true;
+  isEstClosed: boolean;
+  claimList = [];
+  reimbuserRoles = [];
+  claimBreakUpList: Claims[];
+  statusTemp$: Observable<LovList>;
+  status$: Observable<LovList>;
+  claimPayee$: Observable<LovList>;
+  claimType$: Observable<LovList>;
+}

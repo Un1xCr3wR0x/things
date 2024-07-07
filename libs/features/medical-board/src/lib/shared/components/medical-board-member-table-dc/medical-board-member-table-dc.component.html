@@ -1,0 +1,153 @@
+<div class="row">
+  <div class="col-lg-12 warning-message" *ngIf="unAvailableMemberList?.length > 0">
+    <gosi-alert-dc
+      [message]="'MEDICAL-BOARD.MEMBER-AVAILABILITY-WARNING' | translate"
+      type="warning"
+      class="successMessage"
+      noPadding="true"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </div>
+  <div class="col-lg-12">
+    <gosi-card-dc type="secondary">
+      <div class="custom-header">
+        <h3 class="custom-heading sm">
+          {{ 'MEDICAL-BOARD.MEDICALBOARD-MEMBER-DETAILS' | translate }}
+        </h3>
+        <div class="action-btn ml-auto" id="id" *ngIf="!isCompleted">
+          <div class="d-flex flex-row-reverse">
+            <div class="btn-section">
+              <gosi-button-dc
+                type="secondary"
+                size="sm"
+                id="actionsBtns"
+                outsideClick="true"
+                [popover]="addMembersModal"
+                placement="bottom"
+              >
+                {{ 'MEDICAL-BOARD.ADD-MEMBER' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th style="width: 1rem"></th>
+              <th>
+                {{ 'MEDICAL-BOARD.IDENTIFICATION-NUMBER' | translate }}
+              </th>
+              <th>
+                {{ 'MEDICAL-BOARD.DOCTOR-NAME-EN' | translate }}
+              </th>
+              <th>
+                {{ 'MEDICAL-BOARD.SPECIALITY' | translate }}
+              </th>
+              <th>
+                {{ 'MEDICAL-BOARD.SUBSPECIALITY' | translate }}
+              </th>
+              <th>
+                {{ 'MEDICAL-BOARD.MEMBER-TYPE' | translate }}
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-bottom" *ngFor="let item of sessionData?.mbList; let i = index">
+              <td>
+                <fa-icon [icon]="['fas', 'exclamation-triangle']" *ngIf="item.isUnAvailable"></fa-icon>
+              </td>
+              <td>
+                <ng-container *ngIf="item?.identity">
+                  <a class="member-click" (click)="navigateToProfile(item.identity)">{{ item?.identity }}</a>
+                </ng-container>
+              </td>
+              <td>
+                {{
+                  item?.name?.english === null || item?.name?.english?.length === 0
+                    ? item?.name?.arabic
+                    : item?.name?.english
+                }}
+              </td>
+              <td>{{ item?.specialty | bilingualText }}</td>
+              <td>
+                <ng-container *ngFor="let subSpecialty of item?.subSpecialty; let len = index">
+                  <span class="sub-specialty"> {{ subSpecialty | bilingualText }}</span>
+                </ng-container>
+              </td>
+              <td>{{ item?.contractType | bilingualText }}</td>
+              <td>
+                <ng-template #removeBtn>
+                  <ng-container *ngIf="item.canPmbRemove || item.canAmbRemove">
+                    <!-- <ng-container *ngTemplateOutlet="optionsModal; context: { memberindex: i }"></ng-container> -->
+                  </ng-container>
+                </ng-template>
+                <fa-icon
+                  *ngIf="!isAmb"
+                  class="options-icon"
+                  placement="top"
+                  [ngClass]="!item?.canPmbRemove ? 'fa-disabled' : ''"
+                  outsideClick="true"
+                  [popover]="item?.canPmbRemove ? optionsModal : null"
+                  icon="ellipsis-v"
+                  (click)="setIndex(i)"
+                ></fa-icon>
+                <fa-icon
+                  *ngIf="isAmb"
+                  class="options-icon"
+                  placement="top"
+                  [ngClass]="!item?.canAmbRemove ? 'fa-disabled' : ''"
+                  outsideClick="true"
+                  [popover]="item?.canAmbRemove ? optionsModal : null"
+                  icon="ellipsis-v"
+                  (click)="setIndex(i)"
+                ></fa-icon>
+              </td>
+              <ng-template #confirmModal>
+                <gosi-confirm-modal-dc
+                  [message]="removeMemberMessage | bilingualText"
+                  (onConfirm)="removeMedicalMember(item?.mbProfessionId)"
+                  (onCancel)="cancelRemoving()"
+                >
+                </gosi-confirm-modal-dc>
+              </ng-template>
+              <!-- period popup -->
+              <ng-template #optionsModal let-memberindex>
+                <button
+                  type="button"
+                  id="removebtn"
+                  class="d-flex btn text-left action-pop-btn"
+                  (click)="showRemoveModal(memberindex, confirmModal)"
+                >
+                  {{ 'MEDICAL-BOARD.REMOVE-THIS-MEMBER' | translate }}
+                </button>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<ng-template #addMembersModal>
+  <button
+    type="button"
+    id="regular"
+    class="d-flex btn text-left mb-2 action-pop-btn"
+    (click)="onAddContractedMembers()"
+  >
+    {{ 'MEDICAL-BOARD.ADD-CONTRACTED-MEMBER' | translate }}
+  </button>
+  <button
+    *ngIf="isPmbo || !isAmb"
+    type="button"
+    id="ad-hoc"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="onAddGosiDoctors()"
+  >
+    {{ 'MEDICAL-BOARD.ADD-GOSI-DOCTORS' | translate }}
+  </button>
+</ng-template>

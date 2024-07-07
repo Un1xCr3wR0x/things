@@ -1,0 +1,111 @@
+<div class="mt-3">
+    <gosi-card-dc type="secondary">
+        <div class="div-margin">
+            <div class="row" style="margin-top: 24px;">
+                <div class="col-lg-5">
+                    <gosi-input-text-dc  id="stopEmailEmpID"
+                        [label]="'TEAM-MANAGEMENT.STOP-EMAIL-LABEL' | translate" 
+                        [maxLength]="10"
+                        [onlyAlphaNumerics]="true" 
+                        [hideOptionalLabel]="true"
+                        gosiSpecialCharacters>
+                    </gosi-input-text-dc>
+                </div>
+                <div class="col-lg-2">
+                    <gosi-button-dc  id="verify" type="primary"  (click)="loadEmployeeDetails()">
+                        {{ 'TEAM-MANAGEMENT.LOOK-UP' | translate }}
+                    </gosi-button-dc>
+                </div>
+            </div>
+        </div>
+
+        <div class="row col-lg-5 source-details" *ngIf="openEmployeeDetails">
+            <div class="source-emp source-emp-bold">{{ 'TEAM-MANAGEMENT.STOP-EMPLOYEE-DETAILS' | translate }}</div>
+            <div class="source-emp source-emp-display">
+                <div style="margin-top: 1rem;">
+                    <span>{{ 'TEAM-MANAGEMENT.EMPLOYEE-NAME' | translate }} :
+                    </span>
+                    <span class="name-style">{{empName}}</span>
+                </div>
+                <div style="margin-top: .4rem;">
+                    <span>{{ 'TEAM-MANAGEMENT.ROLES' | translate }} :
+                    </span>
+                    <span class="name-style">{{roles}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="card">
+            <div class="card-body">
+         <div *ngIf="blockPeriods?.length > 0">
+            <div class="header">
+              <div class="head header-period">{{ 'TEAM-MANAGEMENT.PERIOD' | translate }}</div>
+              <div class="head header-reason">{{ 'TEAM-MANAGEMENT.REASON' | translate }}</div>
+              <div class="head header-toggle"></div>
+            </div>
+            <div class="item" *ngFor="let item of blockPeriods">
+              <span class="item-period">
+                {{ item.startDate | gosiDate }}
+                <fa-icon class="item-period-icon" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                <fa-icon class="item-period-icon" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                {{ item.endDate | gosiDate }}
+              </span>
+              <span class="item-reason">{{ item.reason }}</span>
+              
+            </div>
+        </div>
+        </div>
+        </div> -->
+         
+        <tm-block-periods-view-dc
+            (addBlock)="openModal(type.ADD_BLOCK)"
+            (modifyBlock)="openModal(type.MODIFY_BLOCK, $event)"
+            (removeBlock)="openModal(type.REMOVE_BLOCK, $event)"
+            [blockPeriods]="blockPeriods">
+         </tm-block-periods-view-dc>
+
+         <ng-template #addBlock>
+          <tm-block-periods-modal-dc
+            (closeModal)="hideModal()"
+            [modalHeader]="'TEAM-MANAGEMENT.ADD_BLOCK_UNAVAILABLE_PERIOD' | translate"
+            [modalType]="type.ADD_BLOCK"
+            [form]="form"
+            (confirm)="setVacationPeriod()"
+          ></tm-block-periods-modal-dc>
+        </ng-template>
+        
+         <ng-template #modifyBlock>
+            <tm-block-periods-modal-dc
+              (closeModal)="hideModal()"
+              [modalHeader]="'TEAM-MANAGEMENT.MODIFY_BLOCK_UNAVAILABLE_PERIOD' | translate"
+              [modalType]="type.MODIFY_BLOCK"
+              [blockPeriod]="blockPeriod"
+              [form]="form"
+              (confirm)="updateVacationPeriod()"
+            ></tm-block-periods-modal-dc>
+          </ng-template>
+          <ng-template #removeBlock>
+            <tm-remove-block-modal-dc
+              (onCancel)="hideModal()"
+              (onConfirm)="onConfirm()"
+              [message]="
+                ('TEAM-MANAGEMENT.REMOVE_BLOCK_PERIOD_MESSAGE' | translate) +
+                ' ' +
+                startDate +
+                ' ' +
+                ('TEAM-MANAGEMENT.TO' | translate) +
+                ' ' +
+                endDate +
+                ' ?'
+              "
+            ></tm-remove-block-modal-dc>
+          </ng-template>
+            
+         
+        <div *ngIf="isErrorOnProfile && invalidEmp" class="emp-margin"  style="max-width: 40rem !important;" >
+            <gosi-alert-dc type="danger" [noPadding]="true" [message]="errorMessage" [dismissible]="false">
+
+            </gosi-alert-dc>
+        </div>
+    </gosi-card-dc>
+</div>

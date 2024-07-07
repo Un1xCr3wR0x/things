@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ tabHeader | translate }}">
+    <span class="arrow-up-period arrow-color" accordion-heading>
+      <span>
+        ({{ 'BILLING.TOTAL' | translate }}:
+        {{ creditTransfers.totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )
+      </span>
+
+      <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+    </span>
+
+    <span class="arrow-down-period arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}:
+        {{ creditTransfers.totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+
+    <div class="table-responsive" id="lateFeeTables">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th id="DateofTranscation">{{ 'BILLING.TRANSACTION-DATE' | translate }}</th>
+
+            <th id="RequestedAmount">{{ 'BILLING.APPROVED-AMOUNT' | translate }}</th>
+
+            <th id="TranferedTo">
+              {{
+                fromPage === 'receipt'
+                  ? ('BILLING.TRANSFERRED-FROM' | translate)
+                  : ('BILLING.TRANSFERRED-TO' | translate)
+              }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <ng-container
+            *ngFor="
+              let item of creditTransfers.transferDetails
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: creditTransfers.numberOfRecords
+                    };
+              let i = index
+            "
+          >
+            <tr class="border-bottom" *ngFor="let itemlist of item.paymentDetails; let j = index">
+              <td [attr.rowspan]="item.paymentDetails.length" *ngIf="j === 0">
+                {{ item.transactionDate.gregorian | date: 'dd/MM/yyyy' }}
+              </td>
+              <td>{{ itemlist.approvedAmount | number: '1.2-2' }}</td>
+              <td>{{ itemlist.registrationNo }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <ng-container>
+      <div>
+        <gosi-pagination-dc
+          *ngIf="creditTransfers.numberOfRecords > itemsPerPage"
+          [totalSize]="creditTransfers.numberOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          paginationId="paginationId"
+        >
+        </gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </accordion-group>
+</accordion>

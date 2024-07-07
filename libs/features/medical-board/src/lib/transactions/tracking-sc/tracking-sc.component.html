@@ -1,0 +1,167 @@
+<ng-container>
+  <div class="row" *ngIf="heirDisabilityAssessment || dependentDisabilityAssessment">
+    <div class="col-md-12">
+      <gosi-card-dc
+        *ngIf="
+          (heirDisabilityAssessment || dependentDisabilityAssessment) && activeBenefitDetails && personalInformation
+        "
+        type="secondary"
+        icon="user"
+        [heading]="
+          heirDisabilityAssessment
+            ? ('MEDICAL-BOARD.HEIR-DETAILS' | translate)
+            : ('MEDICAL-BOARD.DEPENDENT-DETAILS' | translate)
+        "
+      >
+        <mb-tracking-heirdep-details-dc
+          *ngIf="personalInformation && activeBenefitDetails && contributorDetails"
+          [contributor]="contributorDetails"
+          [personalInformation]="personalInformation"
+          [injury]="injury"
+          (onOHClicked)="viewInjuryHistory()"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          [activeBenefitDetails]="activeBenefitDetails"
+          (previousDisability)="navigateToPreviousAssessment($event)"
+          [heirDisabilityAssessment]="heirDisabilityAssessment"
+        >
+        </mb-tracking-heirdep-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+
+  <div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+  <div class="row">
+    <div class="col-md-12" *ngIf="contributorDetails">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate">
+        <mb-tracking-contributor-details-dc
+          [contributor]="contributorDetails"
+          [injury]="injury"
+          (onOHClicked)="viewInjuryHistory()"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+          [heirDisabilityAssessment]="heirDisabilityAssessment || dependentDisabilityAssessment"
+          [activeBenefitDetails]="activeBenefitDetails"
+          (previousDisability)="navigateToPreviousAssessment($event)"
+        ></mb-tracking-contributor-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <ng-container *ngIf="transaction?.transactionId === 101583 && disabilityDetails">
+    <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.DISABILITY-DETAILS' | translate">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6 col-sm-6">
+              <gosi-label-dc
+                id="reason"
+                label="OCCUPATIONAL-HAZARD.EARLY-REASSESSMENT-REASON"
+                [value]="disabilityDetails?.reasonEarly | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-md-6 col-sm-6">
+              <gosi-label-dc
+                id="comments "
+                label="OCCUPATIONAL-HAZARD.COMMENTS"
+                [value]="disabilityDetails?.commentsEarly"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-label-dc
+                id="description"
+                [value]="disabilityDetails?.descriptionEarly"
+                label="OCCUPATIONAL-HAZARD.EARLY-REASSESSMENT-DESCRIPTION"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </ng-container>
+  <div class="row">
+    <div class="col-md-12" *ngIf="disabilityDetails && addVd && disabilityDetails.specialtyList.length > 0">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'MEDICAL-BOARD.DISABILITY-ASSESSMENT' | translate">
+        <mb-disability-details-dc [disabilityDetails]="disabilityDetails" [lang]="lang"></mb-disability-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="isInjuryTracking || isComplicationTracking">
+    <div class="col-md-12">
+      <gosi-card-dc
+        type="secondary"
+        icon="user"
+        [heading]="
+          isInjuryTracking
+            ? ('OCCUPATIONAL-HAZARD.INJURY-CLOSING-DETAILS' | translate)
+            : ('OCCUPATIONAL-HAZARD.COMPLICATION-CLOSING-DETAILS' | translate)
+        "
+      >
+        <mb-tracking-injcomp-details-dc
+          [injury]="injury"
+          (injurySelect)="viewInjury($event)"
+          [complication]="complicationWrapper?.complicationDetailsDto"
+          (injurySelected)="viewInjuryComplication($event)"
+          (complicationSelected)="viewComplication()"
+        ></mb-tracking-injcomp-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" *ngIf="assessmentDetails">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'OCCUPATIONAL-HAZARD.ASSESSMENT-DETAILS' | translate">
+        <mb-tracking-assessment-details-dc
+          [assessmentDetails]="assessmentDetails"
+          [lang]="lang"
+          (onOHClicked)="viewInjuryHistory()"
+          [contributor]="contributorDetails"
+          [previousDisabilityDetails]="previousDisabilityDetails"
+        ></mb-tracking-assessment-details-dc>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<!-- APPEAL DETAILS -->
+<ng-container *ngIf="transaction?.transactionId === 101590 && disabilityDetails">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-card-dc type="secondary" icon="user" [heading]="'BENEFITS.APPEAL-DETAILS' | translate">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="appealParty"
+                  [value]="disabilityDetails?.role | bilingualText"
+                  label="{{ 'OCCUPATIONAL-HAZARD.APPEALED-PARTY' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+                <gosi-label-dc
+                  id="appealReason"
+                  [value]="disabilityDetails?.reasonAppeal | bilingualText"
+                  label="{{ 'OCCUPATIONAL-HAZARD.REASON-APPEAL' | translate }}"
+                ></gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="disabilityDetails?.commentsAppeal">
+                <gosi-label-dc
+                  id="contributorNIN"
+                  [value]="disabilityDetails?.commentsAppeal"
+                  label="{{ 'OCCUPATIONAL-HAZARD.COMMENTS' | translate }}"
+                ></gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+<div class="col-sm-12 col-md-12 col-lg-12 close-injury-details"></div>
+<div class="row">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+  </div>
+</div>

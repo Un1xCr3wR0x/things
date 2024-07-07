@@ -1,0 +1,65 @@
+<div class="row">
+  <div class="col-lg-12">
+    <div class="table-scroll table-responsive">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th>{{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}</th>
+            <th>{{ 'BILLING.VIOLATION-TYPE' | translate }}</th>
+            <th>{{ 'BILLING.VIOLATION-NUMBER' | translate }}</th>
+            <th>{{ 'BILLING.VIOLATION-DATE' | translate }}</th>
+            <th>{{ 'BILLING.AMOUNT' | translate }}({{ 'BILLING.SAR' | translate }})</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="
+              let items of violationDetails?.violatedContributorsList
+                | paginate
+                  : {
+                      id: 'paginationId',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: violationDetails?.violatedContributorsCountAggregate
+                    };
+              let i = index
+            "
+          >
+            <tr>
+              <td>
+                <span *ngIf="(!items?.contributorInfo.person.name.english && lang === 'en') || lang === 'ar'"
+                  >{{ items?.contributorInfo?.person?.name?.arabic }}
+                </span>
+                <span *ngIf="items?.contributorInfo?.person.name.english && lang === 'en'">
+                  {{ items?.contributorInfo?.person.name.english }}
+                </span>
+                <div class="sub-details">
+                  ({{ items?.contributorInfo?.person?.identity[0]?.idType }} :
+                  {{ items?.contributorInfo?.person?.identity[0]?.newNin }})({{
+                    items?.contributorInfo?.person?.nationality | bilingualText
+                  }})
+                </div>
+              </td>
+              <td>{{ items?.violationType | bilingualText }}</td>
+              <td>{{ items?.violationId }}</td>
+              <td>{{ items?.violationDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ items?.contributorInfo?.violationAmount | number: '1.2-2' }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-pagination-dc
+      *ngIf="violationDetails?.violatedContributorsCountAggregate > itemsPerPage"
+      [totalSize]="violationDetails?.violatedContributorsCountAggregate"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      paginationId="paginationId"
+    ></gosi-pagination-dc>
+  </div>
+</div>

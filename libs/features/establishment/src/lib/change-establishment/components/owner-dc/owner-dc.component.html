@@ -1,0 +1,148 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="ownerForm">
+  <!-- Verify Details -->
+  <gosi-card-dc type="secondary" id="verifyOwner{{ index }}" [heading]="'ESTABLISHMENT.VERIFY-OWNER' | translate">
+    <div class="row">
+      <div class="col-md-12">
+        <est-search-person-dc
+          [person]="person"
+          [viewOnly]="ownerForm.get('isVerified').value === true"
+          [parentForm]="ownerForm"
+          [nationalityList$]="nationalityList$"
+          [idValue]="'owner' + index"
+        >
+        </est-search-person-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="ownerForm.get('isSaved').value === false">
+      <div class="col-md-6 col-sm-12 pb-4">
+        <ng-container>
+          <est-footer-buttons-dc
+            [noMarginTop]="true"
+            *ngIf="ownerForm.get('isVerified').value === false; else reset"
+            [showCancel]="false"
+            [showPrevious]="false"
+            [hasOnlyPrimary]="true"
+            primaryId="verifyOwner{{ index }}"
+            primaryLabel="ESTABLISHMENT.VERIFY"
+            (submit)="verify()"
+          ></est-footer-buttons-dc>
+        </ng-container>
+        <ng-template #reset>
+          <est-footer-buttons-dc
+            [noMarginTop]="true"
+            [showCancel]="false"
+            [showPrevious]="false"
+            [hasOnlyPrimary]="true"
+            cancelId="reset{{ index }}"
+            primaryLabel="ESTABLISHMENT.RESET"
+            (submit)="resetEventDetails()"
+          ></est-footer-buttons-dc>
+        </ng-template>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- Person Details  -->
+  <ng-container *ngIf="ownerForm.get('isVerified').value === true">
+    <hr class="line-break" />
+    <gosi-card-dc type="secondary">
+      <est-person-details-dc
+        [parentForm]="ownerForm"
+        [person]="personFormDetail"
+        [genderList]="genderList$ | async"
+        [readOnly]="ownerForm.get('isSaved').value || ownerForm.get('personExists').value"
+        [isSaved]="ownerForm.get('isSaved').value"
+        [customId]="'owner' + index"
+        [hasDateFields]="hasDateFields"
+        [minStartDate]="minStartDate"
+        [isEndDateMandatory]="isEndDateMandatory"
+        [showEndDate]="showEndDate"
+        (dateChangedEvent)="setModifiedAsTrue()"
+        (dateUnchangedEvent)="updateDates()"
+        [personOwnerBirthDate]="personOwnerBirthDate"
+      >
+      </est-person-details-dc>
+    </gosi-card-dc>
+    <hr class="line-break" />
+    <frm-address-dc
+      [hasNationalAddress]="!isGCC"
+      [hasPOAddress]="!isGCC"
+      [isSaudiAddrMandatory]="!isGCC"
+      [hasOverseasAddress]="isGCC"
+      [mandatoryOverseasAddress]="isGCC"
+      [parentForm]="ownerForm"
+      [hasAddressDetailsLabel]="true"
+      [countryList]="countryList$ | async"
+      [cityList]="cityList$ | async"
+      [addressDetails]="person.contactDetail?.addresses"
+      [currentMailingAddress]="person.contactDetail?.currentMailingAddress"
+      [readOnlyAll]="ownerForm.get('isSaved').value"
+      [idValue]="'owner' + index"
+    >
+    </frm-address-dc>
+    <hr class="line-break" />
+    <gosi-card-dc type="secondary" [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate">
+      <frm-contact-dc
+        [parentForm]="ownerForm"
+        [isHeadingRequired]="false"
+        [contactDetails]="person.contactDetail"
+        [readOnlyAll]="ownerForm.get('isSaved').value"
+        [defaultOnly]="defaultToSaudi || ownerForm.get('isSaved').value === true"
+        [idValue]="'owner' + index"
+      >
+      </frm-contact-dc>
+    </gosi-card-dc>
+    <hr
+      class="line-break"
+      *ngIf="
+        ownerForm.get('isSaved').value === false ||
+        (ownerForm.get('isSaved').value === true && ownerForm.get('hasModified').value === true)
+      "
+    />
+    <div class="row ml-3 mr-3 mb-4">
+      <div class="col-md-12">
+        <!-- For saving owner -->
+        <est-footer-buttons-dc
+          *ngIf="ownerForm.get('isSaved').value === false"
+          size="md"
+          [primaryLabel]="'ESTABLISHMENT.SAVE-OWNER' | translate"
+          [primaryId]="'saveOwner' + index"
+          (submit)="saveOwner()"
+          [showPrevious]="false"
+          [showCancel]="true"
+          [cancelId]="'cancelOwner' + index"
+          (cancel)="showModal(deleteOwnerTemplate)"
+        >
+        </est-footer-buttons-dc>
+        <!-- For modifying owner details -->
+        <est-footer-buttons-dc
+          *ngIf="
+            hasDateFields && ownerForm.get('isSaved').value === true && ownerForm.get('hasModified').value === true
+          "
+          size="md"
+          [primaryLabel]="'ESTABLISHMENT.SAVE-OWNER' | translate"
+          [primaryId]="'saveOwner' + index"
+          (submit)="updateDates()"
+          [showPrevious]="false"
+          [showCancel]="true"
+          [cancelId]="'cancelOwner' + index"
+          (cancel)="showModal(deleteOwnerTemplate)"
+        >
+        </est-footer-buttons-dc>
+        <ng-template #deleteOwnerTemplate>
+          <gosi-confirm-modal-dc
+            [message]="'ESTABLISHMENT.CONFIRM-DELETE-OWNER' | translate"
+            (onConfirm)="confirmDelete()"
+            (onCancel)="hideModal()"
+            iconName="warning"
+          ></gosi-confirm-modal-dc>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>

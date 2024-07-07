@@ -1,0 +1,140 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <div class="row justify-content-between align-items-center">
+    <div class="col-md-8 col-lg-8 col-sm-8 float-left">
+      <h4 class="main-heading">
+        {{ 'ESTABLISHMENT.ADD-FLAG' | translate }}
+      </h4>
+    </div>
+  </div>
+  <!-- Comment Section -->
+  <div class="row" *ngIf="isValidator">
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+    </div>
+  </div>
+
+  <!-- progress wizard section -->
+  <gosi-progress-wizard-dc *ngIf="flagWizards" (clickWizard)="selectedWizard($event)" [wizardItems]="flagWizards">
+  </gosi-progress-wizard-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <tabset class="wrapper-tabset" *ngIf="flagForm">
+    <!-- flag details -->
+    <tab [active]="currentTab === 0">
+      <ng-container>
+        <gosi-card-dc type="secondary">
+          <div class="row">
+            <div class="col-md-6">
+              <gosi-input-select-dc
+                id="flagType"
+                [name]="'flagType'"
+                [label]="'ESTABLISHMENT.FLAG-TYPE' | translate"
+                [control]="flagForm.get('flagType')"
+                [list]="flagTypeList"
+                (select)="onSelectFlagType($event)"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <gosi-input-date-dc
+                id="startDate"
+                name="startDate"
+                [minDate]="currentDate"
+                [control]="flagForm.get('startDate').get('gregorian')"
+                [label]="'ESTABLISHMENT.START-DATE' | translate"
+                (changeEvent)="checkDateValidation()"
+              ></gosi-input-date-dc>
+            </div>
+            <div class="col-md-6">
+              <gosi-input-date-dc
+                id="endDate"
+                name="endDate"
+                [minDate]="currentDate"
+                [control]="flagForm.get('endDate').get('gregorian')"
+                [label]="'ESTABLISHMENT.END-DATE' | translate"
+                (changeEvent)="checkDateValidation()"
+                [gosiDateOverlap]="flagForm.get('startDate').get('gregorian')"
+              ></gosi-input-date-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <gosi-input-select-dc
+                id="flagReason"
+                [name]="'flagReason'"
+                [label]="'ESTABLISHMENT.REASON' | translate"
+                [control]="flagForm.get('flagReason')"
+                [lookup]="flagReasonList"
+              >
+              </gosi-input-select-dc>
+            </div>
+            <div class="col-md-6">
+              <gosi-input-text-area-dc
+                id="justification"
+                name="justification"
+                [label]="'ESTABLISHMENT.JUSTIFICATION' | translate"
+                [control]="flagForm.get('justification')"
+                [maxLength]="justificationLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+        </gosi-card-dc>
+      </ng-container>
+      <est-footer-buttons-dc
+        primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+        [showPrevious]="false"
+        (submit)="submitFlagDetails(false)"
+        (cancel)="showModal(cancelTemplate)"
+      >
+      </est-footer-buttons-dc>
+    </tab>
+    <!---------- Document section-->
+    <tab [active]="currentTab === 1">
+      <est-documents-dc
+        [documents]="flagDocuments"
+        [businessKey]="registrationNo"
+        [referenceNo]="referenceNo"
+        [transactionId]="documentTransactionId"
+        (refreshDocument)="refreshDocumentContent($event, registrationNo, documentTransactionType, referenceNo)"
+      >
+      </est-documents-dc>
+      <gosi-card-dc type="secondary" *ngIf="flagForm" [paddingBottom]="true">
+        <gosi-input-text-area-dc
+          [label]="'ESTABLISHMENT.COMMENTS' | translate"
+          id="comments"
+          name="comments"
+          [maxLength]="commentsMaxLength"
+          [control]="flagForm.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </gosi-card-dc>
+      <est-footer-buttons-dc
+        primaryLabel="ESTABLISHMENT.SUBMIT"
+        [showPrevious]="true"
+        (submit)="submitFlagDetails(true)"
+        (cancel)="showModal(cancelTemplate)"
+        (previous)="selectedWizard(0)"
+      >
+      </est-footer-buttons-dc>
+    </tab>
+  </tabset>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

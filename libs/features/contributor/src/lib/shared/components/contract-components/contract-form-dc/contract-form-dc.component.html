@@ -1,0 +1,310 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc type="secondary">
+  <div [formGroup]="contractDetailsForm">
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="lbl-prop pb-2">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+        <gosi-calendar-type-dc
+          id="calenderTypeRadio"
+          *ngIf="contractDetailsForm.get('dateFormat.english').value"
+          (onSelected)="switchCalendarType($event)"
+          [calendarType]="contractDetailsForm.get('dateFormat.english').value"
+        ></gosi-calendar-type-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 col-md-6">
+        <gosi-input-radio-dc
+          id="contractType"
+          name="contractType"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-TYPE'"
+          [control]="contractDetailsForm.get('contractType')"
+          [list]="contractTypeList"
+          (select)="listenForContractType($event)"
+        >
+        </gosi-input-radio-dc>
+      </div>
+      <div class="col-lg-6 col-md-6">
+        <div
+          class="row"
+          *ngIf="contractDetailsForm.get('contractPeriod.years') && contractDetailsForm.get('contractPeriod.months')"
+        >
+          <div class="col-lg-6 col-md-6">
+            <gosi-input-select-dc
+              id="numOfYears"
+              [control]="contractDetailsForm.get('contractPeriod.years')"
+              [label]="'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-PERIOD' | translate"
+              [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NUM_OF_YRS' | translate"
+              [list]="tempYearList"
+              (select)="getMonthList(contractDetailsForm.get('contractPeriod.years.english').value)"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-lg-6 col-md-6 mt-1">
+            <gosi-input-select-dc
+              id="numOfMonths"
+              [control]="contractDetailsForm.get('contractPeriod.months')"
+              [ignoreLabel]="true"
+              [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NUM_OF_MONTH' | translate"
+              [list]="tempMonthList"
+              (select)="getYearList(contractDetailsForm.get('contractPeriod.months.english').value)"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6 col-md-6" formGroupName="startDate">
+        <gosi-input-date-dc
+          *ngIf="contractDetailsForm.get('dateFormat.english').value === typeGregorian"
+          id="startDate"
+          [label]="'CONTRIBUTOR.CONTRACT-START-DATE' | translate"
+          [control]="contractDetailsForm.get('startDate').get('gregorian')"
+          [maxDate]="systemDate"
+          [minDate]="minStartDate?.gregorian"
+        >
+        </gosi-input-date-dc>
+        <gosi-input-hijiri-dc
+          *ngIf="contractDetailsForm.get('dateFormat.english').value === typeHijira"
+          id="startDateHijiri"
+          [label]="'CONTRIBUTOR.CONTRACT-START-DATE' | translate"
+          [control]="contractDetailsForm.get('startDate').get('hijiri')"
+          [minDate]="minStartDate?.hijiri"
+        >
+        </gosi-input-hijiri-dc>
+      </div>
+      <div class="col-lg-6 col-md-6">
+        <gosi-input-number-dc
+          id="probationaryPeriod"
+          [control]="contractDetailsForm.get('workDetails.probationPeriodInDays')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.PROBATION-PERIOD-NO-DAYS' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.PROBATION-PERIOD-NO-DAYS' | translate"
+          [maxLength]="2"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <gosi-input-select-dc
+          id="workingDays"
+          [control]="contractDetailsForm.get('workDetails.workingDays')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.WORKING_DAYS' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.WORKING_DAYS' | translate"
+          [arrayList]="daysOfWeek"
+          (select)="setRestDays($event)"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6">
+        <gosi-input-select-textbox-dc
+          [id]="'actualWorkingHours'"
+          name="actualWorkingHours"
+          [standerdControl]="contractDetailsForm.get('workDetails.workingHoursStandard')"
+          [standerdControlValue]="contractDetailsForm.get('workDetails.workingHoursStandard').value"
+          [control]="contractDetailsForm.get('workDetails.workingHrs')"
+          [dropDownOptions]="tempList"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.ACTUAL-WORKING-HOURS' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.ACTUAL-WORKING-HOURS' | translate"
+          (select)="changeWorkStanderd($event)"
+          [defaultValue]="tempList.items[0].value"
+          [maxLength]="2"
+        >
+        </gosi-input-select-textbox-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <gosi-input-select-dc
+          id="restDays"
+          [control]="contractDetailsForm.get('workDetails.restDaysPerWeek')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.REST-DAY' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.REST-DAY' | translate"
+          [arrayList]="daysOfWeek"
+          [disabled]="true"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6">
+        <gosi-input-select-textbox-dc
+          [id]="'annualLeave'"
+          name="annualLeave"
+          [standerdControl]="contractDetailsForm.get('workDetails.annualLeaveStandard')"
+          [standerdControlValue]="contractDetailsForm.get('workDetails.annualLeaveStandard').value"
+          [control]="contractDetailsForm.get('workDetails.annualLeaveInDays')"
+          [dropDownOptions]="annualLeaveList"
+          [maxLength]="3"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.ANNUAL-LEAVE' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.ANNUAL-LEAVE' | translate"
+          [defaultValue]="annualLeaveList.items[1].value"
+          (select)="changeAnnualLeaveStandard($event)"
+        >
+        </gosi-input-select-textbox-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" *ngIf="contributorType != 'SAUDI'">
+        <gosi-input-number-dc
+          id="noticePeriod"
+          [control]="contractDetailsForm.get('workDetails.noticePeriod')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.NOTICE_PERIOD' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NOTICE_PERIOD' | translate"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-md-6" *ngIf="contractDetailsForm.get('workDetails.location')">
+        <div *ngIf="isContributorAbroad">
+          <gosi-input-select-dc
+            id="empLocation1"
+            [control]="contractDetailsForm.get('workDetails.location')"
+            [label]="'CONTRIBUTOR.PREVIEW-DETAILS.WORK-LOCATION' | translate"
+            [placeholder]="'CONTRIBUTOR.PREVIEW-DETAILS.WORK-LOCATION' | translate"
+            [list]="internationalCountryList"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div *ngIf="!isContributorAbroad">
+          <gosi-input-select-dc
+            id="empLocation2"
+            [control]="contractDetailsForm.get('workDetails.location')"
+            [label]="'CONTRIBUTOR.PREVIEW-DETAILS.WORK-LOCATION' | translate"
+            [placeholder]="'CONTRIBUTOR.PREVIEW-DETAILS.WORK-LOCATION' | translate"
+            [list]="cityList"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+      <div class="col-md-6" *ngIf="contractDetailsForm.get('religion')">
+        <gosi-input-select-dc
+          id="religion"
+          [control]="contractDetailsForm.get('religion')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.RELIGION' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.RELIGION' | translate"
+          [list]="religionList"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6">
+        <gosi-input-currency-dc
+          id="transportationAllowance"
+          [control]="contractDetailsForm.get('workDetails.transportationAllowance')"
+          [label]="'CONTRIBUTOR.CONTRACT-AUTH.TRANSPORTATION-ALLOWANCE' | translate"
+          [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.TRANSPORTATION-ALLOWANCE' | translate"
+          (keyUp)="setTransportValidator()"
+          [separatorLimit]="wageSeparatorLimit"
+        ></gosi-input-currency-dc>
+      </div>
+      <ng-container class="columns">
+        <div [ngClass]="lang === 'en' ? 'first' : 'second'" class="col-md-6">
+          <gosi-input-text-dc
+            id="jobTitle"
+            gosiEnglishMask
+            gosiSpecialCharacters
+            [control]="contractDetailsForm.get('workDetails.jobTitle.english')"
+            [label]="'CONTRIBUTOR.PREVIEW-DETAILS.JOB-TITLE-ENG' | translate"
+            [maxLength]="30"
+            [placeholder]="'CONTRIBUTOR.PREVIEW-DETAILS.JOB-TITLE-ENG' | translate"
+          >
+          </gosi-input-text-dc>
+        </div>
+        <div [ngClass]="lang === 'en' ? 'second' : 'first'" class="col-md-6">
+          <gosi-input-text-dc
+            id="jobTitleArb"
+            gosiArabicMask
+            [control]="contractDetailsForm.get('workDetails.jobTitle.arabic')"
+            [label]="'CONTRIBUTOR.PREVIEW-DETAILS.JOB-TITLE-ARB' | translate"
+            [maxLength]="30"
+            [placeholder]="'CONTRIBUTOR.PREVIEW-DETAILS.JOB-TITLE-ARB' | translate"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</gosi-card-dc>
+<!-- bank details -->
+<div class="row custom-mb">
+  <div class="col-sm-12">
+    <cnt-person-bank-details-dc
+      [bankNameList$]="bankNameList$"
+      [bankDetails]="bankAccount"
+      [parentForm]="parentForm"
+      [isEditMode]="isEditMode"
+      [isBankDetailsPending]="isBankDetailsPending"
+      (IBANChange)="IBAN.emit($event)"
+      (bankEditMode)="toggleBankEditMode($event)"
+    ></cnt-person-bank-details-dc>
+  </div>
+</div>
+
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="col-lg-6 col-md-6">
+      <gosi-input-text-dc
+        id="representedByEng"
+        gosiEnglishMask
+        gosiSpecialCharacters
+        [control]="contractDetailsForm.get('authorisedSignatory.name.english')"
+        [label]="'CONTRIBUTOR.PREVIEW-DETAILS.AUTH-SIGN-ENG' | translate"
+        [maxLength]="30"
+        [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NAME-FIRST-PARTY' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-6 col-md-6">
+      <gosi-input-text-dc
+        id="representedByArb"
+        gosiArabicMask
+        [control]="contractDetailsForm.get('authorisedSignatory.name.arabic')"
+        [label]="'CONTRIBUTOR.PREVIEW-DETAILS.AUTH-SIGN-ARB' | translate"
+        [maxLength]="30"
+        [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.NAME-FIRST-PARTY' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-6 col-md-6">
+      <gosi-input-text-dc
+        id="representedByAsEng"
+        gosiEnglishMask
+        gosiSpecialCharacters
+        [control]="contractDetailsForm.get('authorisedSignatory.role.english')"
+        [label]="'CONTRIBUTOR.PREVIEW-DETAILS.CAP-OF-ENG' | translate"
+        [maxLength]="30"
+        [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.ROLE-FIRST-PARTY' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-6 col-md-6">
+      <gosi-input-text-dc
+        id="representedByAsArb"
+        gosiArabicMask
+        [control]="contractDetailsForm.get('authorisedSignatory.role.arabic')"
+        [label]="'CONTRIBUTOR.PREVIEW-DETAILS.CAP-OF-ARB' | translate"
+        [maxLength]="30"
+        [placeholder]="'CONTRIBUTOR.CONTRACT-AUTH.ROLE-FIRST-PARTY' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<!-- Footer Section -->
+
+<!-- Action area -->
+<div class="row">
+  <div class="col-lg-12">
+    <cnt-action-area-dc
+      primaryButtonLabel="CONTRIBUTOR.SAVE-AND-NEXT"
+      [showPreviousSection]="showPreviousButton"
+      [disablePrimary]="isApiTriggered"
+      (submit)="saveContractDetails()"
+      (previous)="navigateToPreviousSection()"
+      (cancel)="cancelForm()"
+    ></cnt-action-area-dc>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+<div>
+  <gosi-card-dc type="secondary" [heading]="'BENEFITS.CURRENT-BENEFIT-DETAILS' | translate">
+    <div class="row">
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="benefitType"
+          label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+          [value]="currentBenefits?.benefitType | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="benefitAmount"
+          label="{{ 'BENEFITS.BENEFIT-AMOUNT' | translate }}"
+          value="{{ currentBenefits?.benefitAmount | number: '1.2-2' }} {{ 'BENEFITS.SR' | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="benefitPaymentDate"
+          label="{{ 'BENEFITS.BENEFIT-PAYMENT-DATE' | translate }}"
+          value="{{ currentBenefits?.requestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+</div>
+<div>
+  <gosi-card-dc type="secondary">
+    <div class="row" [formGroup]="benefitTypeForm">
+      <div class="col-lg-6">
+        <gosi-input-radio-dc
+          id="benefitType"
+          name="benefitType"
+          label="{{ 'BENEFITS.SELECT' | translate }} {{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+          [control]="benefitTypeForm.get('benefitType')"
+          [list]="benefitTypeList"
+          (select)="listenForBenefitType($event)"
+        ></gosi-input-radio-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+</div>
+<div>
+  <gosi-card-dc type="secondary" [heading]="'BENEFITS.DEP-DETAILS' | translate">
+    <bnt-dependent-listing-dc
+      [tableHeadingAndParams]="tableHeadingAndParams"
+      [listOfValues]="listOfDependents"
+      [systemRunDate]="systemRunDate"
+      [systemParameter]="systemParameter"
+      [annuityRelationShip$]="annuityRelationShip$"
+      [maritalStatus$]="maritalStatus$"
+      [heirStatus$]="heirStatus$"
+      [heirStatusArr]="heirStatusArr"
+      (delete)="onDelete($event)"
+    >
+    </bnt-dependent-listing-dc>
+    <div class="d-flex justify-content-center" *ngIf="!isAddDependent">
+      <gosi-button-dc id="addDependent" type="outline-primary" (submit)="showAddDependent()">{{
+        'BENEFITS.ADD-NEW-DEPENDENT' | translate
+      }}</gosi-button-dc>
+    </div>
+    <div *ngIf="isAddDependent">
+      <!-- component to select relationship-->
+      <bnt-dependent-add-edit-dc
+        *ngIf="currentBenefits?.personId"
+        [update]="false"
+        [lang]="lang"
+        [systemRunDate]="systemRunDate"
+        [maritalStatusList]="maritalStatus$ | async"
+        [dependentDetails]="searchResult"
+        [systemParameter]="systemParameter"
+        [annuityRelationShipList]="annuityRelationShip$ | async"
+        [heirStatusArr]="heirStatusArr"
+        [heirStatusList]="heirStatus$ | async"
+        (validateDependent)="OnAddDependent($event)"
+      ></bnt-dependent-add-edit-dc>
+      <!-- component to select relationship -->
+    </div>
+  </gosi-card-dc>
+</div>
+<div class="row">
+  <div class="col-lg-4">
+    <gosi-button-dc id="cancel" type="secondary" (submit)="benefitTypeCancel()">{{
+      'BENEFITS.CANCEL' | translate
+    }}</gosi-button-dc>
+  </div>
+  <div class="col-lg-4"></div>
+  <div class="col-lg-4 text-right">
+    <gosi-button-dc
+      id="benefitTypeSave"
+      type="primary"
+      [disabled]="!selectedBenefitType"
+      (submit)="benefitTypeSave()"
+      >{{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<ng-container *ngIf="documentType === 'pdf'">
+  <a [href]="fileUrl" target="_blank">
+    <div class="file-info" *ngIf="document.documentContent && document.documentContent !== ''">
+      <div class="file-icon">
+        <fa-icon class="file-icon-fa file-pdf" [icon]="['far', 'file-pdf']"></fa-icon>
+
+        <ng-template #imageView>
+          <a id="openImage" class="custom-icon-button" (click)="openImage()">
+            <fa-icon class="file-icon-fa image" [icon]="['far', 'file-image']"></fa-icon>
+          </a>
+        </ng-template>
+      </div>
+      <div class="file-name">
+        <span *ngIf="!document?.name" class="info-name">{{ fileName }}</span>
+        <span *ngIf="document?.name" class="info-name"
+          >{{ document.name | bilingualText }} {{ showSequenceNo ? document.sequenceNumber : ''
+          }}{{ document.showBusinessKey ? ' - ' + document.businessKey : '' }}
+          <span id="identifier" *ngIf="document.identifier">
+            ({{ 'THEME.ID' | translate }} : {{ document.identifier }} - {{ truncateDocumentAddedBy(document.documentAddedBy) }})</span
+          >
+            <span *ngIf="!document.identifier && document.documentAddedBy">
+              ({{ truncateDocumentAddedBy(document.documentAddedBy) }})</span
+            >
+        </span>
+      </div>
+    </div>
+  </a>
+  <div class="col-lg-12" *ngIf="document.documentClassification === 'Internal' && document.allowPublicAccess === true && !revokeAllowed && appToken === 'PRIVATE'">
+    <gosi-input-checkbox-dc
+      label="THEME.REVOKE-ACCESS"
+      [control]="documentExcludedForm?.get('checkBoxFlag')"
+      (select)="popUp(revokeDocuments)"
+    ></gosi-input-checkbox-dc>
+  </div>
+</ng-container>
+<ng-container *ngIf="documentType !== 'pdf'">
+  <a (click)="openImage()">
+    <div class="file-info" *ngIf="document?.documentContent && document?.documentContent !== ''">
+      <div class="file-icon">
+        <fa-icon class="file-icon-fa image" [icon]="['far', 'file-image']"></fa-icon>
+      </div>
+      <div class="file-name">
+        <span *ngIf="!document?.name" class="info-name">{{ fileName }}</span>
+        <span *ngIf="document?.name" class="info-name"
+          >{{ document.name | bilingualText }} {{ showSequenceNo ? document.sequenceNumber : ''
+          }}{{ document.showBusinessKey ? ' - ' + document.businessKey : '' }}
+          <span id="identifier-pdf" *ngIf="document.identifier">
+            ({{ 'THEME.ID' | translate }} : {{ document.identifier }} - {{ truncateDocumentAddedBy(document.documentAddedBy) }})</span
+          >
+          <span *ngIf="!document.identifier && document.documentAddedBy">
+            ({{ truncateDocumentAddedBy(document.documentAddedBy) }})</span
+          >
+        </span>
+      </div>
+    </div>
+  </a>
+  <div class="col-lg-12"  *ngIf="document.documentClassification === 'Internal' && document.allowPublicAccess === true && !revokeAllowed && appToken === 'PRIVATE'">
+    <gosi-input-checkbox-dc
+      label="THEME.REVOKE-ACCESS"
+      [control]="documentExcludedForm?.get('checkBoxFlag')"
+      (select)="popUp(revokeDocuments)"
+    ></gosi-input-checkbox-dc>
+  </div>
+</ng-container>
+<ng-template #revokeDocuments>
+  <gosi-confirm-modal-dc
+    [message]="'THEME.REVOKE-DOCUMENT'| translate: { documentName: lang === 'en' ? document?.name?.english : document?.name?.arabic }"
+    (onConfirm)="documentExcluded()"
+    (onCancel)="declinePopUp()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+

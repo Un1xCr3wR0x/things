@@ -1,0 +1,171 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <div *ngIf="!isIndividualApp"> -->
+<div class="view-change-eng-accordian">
+  <accordion>
+    <accordion-group [isOpen]="true" class="accordion-group">
+      <span accordion-heading class="accordion-title">
+        <div>{{ 'CONTRIBUTOR.VIOLATION-DETAILS' | translate }}</div>
+      </span>
+      <span accordion-heading class="angle-down">
+        <fa-icon icon="angle-down" class="icon-size"></fa-icon>
+      </span>
+
+      <span accordion-heading class="angle-right">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <span accordion-heading class="angle-left">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <div class="row">
+        <div class="col-lg-4 txn-number">
+          <gosi-label-dc
+            [id]="'violationType'"
+            [control]="
+              violationRequest?.violationSubType
+                ? (violationRequest?.violationSubType | bilingualText)
+                : (violationRequest?.violationType | bilingualText)
+            "
+            [label]="'CONTRIBUTOR.VIOLATION-TYPE' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </accordion-group>
+  </accordion>
+
+  <accordion>
+    <accordion-group [isOpen]="true" class="accordion-group">
+      <span accordion-heading class="accordion-title">
+        <div>{{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }}</div>
+      </span>
+      <span accordion-heading class="angle-down">
+        <fa-icon icon="angle-down" class="icon-size"></fa-icon>
+      </span>
+
+      <span accordion-heading class="angle-right">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <span accordion-heading class="angle-left">
+        <fa-icon icon="angle-up" class="icon-size"></fa-icon>
+      </span>
+      <div class="row">
+        <div class="col-lg-3 txn-number">
+          <gosi-label-dc
+            [id]="'EstName'"
+            [control]="violationRequest?.employmentName"
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-NAME' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-3 txn-number">
+          <gosi-label-dc
+            [id]="'estRegNo'"
+            [control]="violationRequest?.registrationNumber"
+            [label]="'CONTRIBUTOR.ESTABLISHMENT-REG-NO' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-3 txn-number">
+          <gosi-label-dc
+            [id]="'engagementdate'"
+            [value]="
+              violationRequest?.violationSubType?.english === 'Modify Joining Date'
+                ? (violationRequest?.oldJoiningDate?.gregorian | gosiDate)
+                : (violationRequest?.joiningDate?.gregorian | gosiDate)
+            "
+            [label]="'CONTRIBUTOR.ENGAGEMENT-START-DATE' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <div
+          class="col-lg-3 txn-number"
+          *ngIf="
+            violationRequest?.oldLeavingDate && violationRequest?.violationType?.english !== 'Terminate Engagement'
+          "
+        >
+          <gosi-label-dc
+            [id]="'engagementdate'"
+            [value]="violationRequest?.oldLeavingDate?.gregorian | gosiDate"
+            [label]="'CONTRIBUTOR.ENGAGEMENT-LEAVING-DATE' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-3 txn-number">
+          <gosi-label-dc
+            [id]="'engagementStatus'"
+            [value]="
+              ENGAGEMENT_ACTIVE.includes(violationRequest?.engagementStatus) ||
+              (violationRequest?.engagementStatus === CANCEL_IN_PROGRESS && !violationRequest?.leavingDate?.gregorian)
+                ? ('CONTRIBUTOR.ACTIVE' | translate)
+                : ENGAGEMENT_INACTIVE.includes(violationRequest?.engagementStatus) ||
+                  (violationRequest?.engagementStatus === CANCEL_IN_PROGRESS &&
+                    violationRequest?.leavingDate?.gregorian)
+                ? ('CONTRIBUTOR.INACTIVE' | translate)
+                : ('CONTRIBUTOR.CANCELLED' | translate)
+            "
+            [label]="'CONTRIBUTOR.ENGAGEMENT-STATUS' | translate"
+          >
+          </gosi-label-dc>
+        </div>
+        <!-- <div class="col-lg-3 txn-number" *ngIf="violationRequest?.leavingReason && violationRequest?.violationType?.english === 'Terminate Engagement'">
+                <gosi-label-dc
+                  [id]="'terminationreason'"
+                  [value]="violationRequest?.leavingReason | bilingualText"
+                  [label]="'CONTRIBUTOR.REASON-FOR-LEAVING' | translate"
+                >
+                </gosi-label-dc>
+              </div> -->
+      </div>
+    </accordion-group>
+  </accordion>
+
+  <gosi-card-dc
+    *ngIf="violationRequest?.violationType?.english !== 'Cancel Engagement'"
+    heading="{{ 'CONTRIBUTOR.NEW-ENGAGEMENT-DETAILS' | translate }}"
+    type="secondary"
+    headingSize="md"
+  >
+    <div class="row">
+      <div class="col-lg-4 txn-number">
+        <gosi-label-dc
+          [id]="'dateval'"
+          [value]="
+            violationRequest?.violationSubType?.english === 'Modify Leaving Date' ||
+            violationRequest?.violationType?.english === 'Terminate Engagement'
+              ? (violationRequest?.leavingDate?.gregorian | gosiDate)
+              : (violationRequest?.joiningDate?.gregorian | gosiDate)
+          "
+          [label]="
+            violationRequest?.violationSubType?.english === 'Modify Leaving Date' ||
+            violationRequest?.violationType?.english === 'Terminate Engagement'
+              ? 'CONTRIBUTOR.CORRECT-LEAVING-DATE'
+              : 'CONTRIBUTOR.CORRECT-JOINING-DATE'
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-lg-3 txn-number"
+        *ngIf="violationRequest?.leavingReason && violationRequest?.violationType?.english === 'Terminate Engagement'"
+      >
+        <gosi-label-dc
+          [id]="'terminationreason'"
+          [value]="violationRequest?.leavingReason | bilingualText"
+          [label]="'CONTRIBUTOR.REASON-FOR-LEAVING' | translate"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="getCombinedDocuments(documentsByteArray, documents)"
+        [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</div>
+<!-- </div> -->

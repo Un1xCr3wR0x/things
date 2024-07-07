@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.TERMINATE-MB' | translate }}"> </gosi-main-heading-dc>
+    </div>
+  </div>
+  <!-- Progress wizard icons section -->
+  <gosi-progress-wizard-dc
+    *ngIf="activeTab != totalTabs - 1"
+    [wizardItems]="terminateWizardItems"
+    (clickWizard)="selectTerminateWizard($event)"
+    #terminateContractWizard
+  >
+  </gosi-progress-wizard-dc>
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!-- Two tabs for two sections-->
+  <div class="hide-tab">
+    <tabset type="pills" #modifyTab>
+      <!-- Modify terminate details section -->
+      <tab [active]="activeTab === 0">
+        <mb-terminate-details-dc
+          [terminateReasonList]="terminateReasonList | async"
+          [contract]="contract"
+          (submit)="saveDetails($event)"
+          (cancel)="showTemplate(cancelTemplate)"
+          (invalidForm)="showFormInvalid()"
+        >
+        </mb-terminate-details-dc>
+      </tab>
+      <!-- modify documents details section -->
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-12">
+            <mb-document-upload-dc
+              #scanDocsComp
+              [registrationNumber]="contractId"
+              [documentList]="documentList$ | async"
+              [transactionId]="key"
+              [isScan]="true"
+              (submit)="submitDocument($event)"
+              (onDocUploadCancel)="showTemplate(cancelTemplate)"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            ></mb-document-upload-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc [message]="'MEDICAL-BOARD.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</div>

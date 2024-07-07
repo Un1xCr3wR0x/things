@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group
+    class="accordion-group-class"
+    heading="{{ 'THEME.COMMENTS' | translate }}"
+    [isOpen]="comments?.length > 0 || showComments"
+    [isDisabled]="showComments"
+  >
+    <span class="arrow-up" accordion-heading *ngIf="!showComments">
+      <fa-icon icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-down" accordion-heading *ngIf="!showComments">
+      <fa-icon icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container *ngIf="comments?.length > 0; else noComments">
+      <div class="comments">
+        <ng-container *ngFor="let comment of comments | slice: 0:currentCommentLimit; let i = index">
+          <div
+            *ngIf="comment.comments || comment.rejectionReason || comment.returnReason"
+            class="d-flex flex-row comments-block"
+            [ngClass]="i == currentCommentLimit - 1 ? 'no-border' : ''"
+          >
+            <gosi-wizard-circle-dc
+              *ngIf="comment.userName"
+              type="info"
+              size="sm"
+              [value]="comment.userName.english | uppercase"
+            ></gosi-wizard-circle-dc>
+            <div class="d-flex flex-column content-section document-icon-content">
+              <gosi-comment-content-dc
+                [comment]="comment"
+                [showComments]="showComments"
+                [reimbPendingReason]="reimbPendingReason"
+                [reimbRejectionReason]="reimbRejectionReason"
+                [transactionType]="transactionType"
+                [reimbPendingReason]="reimbPendingReason"
+                [reimbRejectionReason]="reimbRejectionReason"
+              >
+              </gosi-comment-content-dc>
+              <div
+                class="d-flex flex-row comments-block document-section"
+                [ngClass]="i == comments?.length - 1 ? 'no-border' : ''"
+                *ngIf="showComments && comment.receiveComments"
+              >
+                <div
+                  class="border rounded-circle document-icon-section d-flex justify-content-center"
+                  *ngIf="comment.tpaName"
+                >
+                  <div class="document-icon-name">{{ setIconName(comment.tpaName) | uppercase }}</div>
+                </div>
+                <div class="d-flex flex-column content-section document-icon-content">
+                  <div class="heading">
+                    <span class="user-name">{{ comment.tpaName | titlecase }}</span>
+                    <span *ngIf="comment.tpaRole" class="role-name role-name-heading"
+                      >({{ comment.tpaRole | titlecase }}) </span
+                    ><span
+                      class="display-date"
+                      *ngIf="comment.receivedDate && (comment.receivedDate.gregorian | timeDifference) !== undefined"
+                    >
+                      {{
+                        (comment.receivedDate.gregorian | timeDifference).key
+                          | translate: (comment.receivedDate.gregorian | timeDifference)
+                      }}
+                    </span>
+                    <div class="comment-section" *ngIf="showComments">
+                      {{ comment.receiveComments }}
+                      <div class="row" *ngIf="comment?.documents?.length > 0">
+                        <div
+                          class="col-lg-4 col-md-4 col-sm-4 hori-align"
+                          *ngFor="let item of comment?.documents; let i = index"
+                        >
+                          <gosi-document-view-dc [document]="item"></gosi-document-view-dc>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            *ngIf="comment.bilingualComments && !comment.comments"
+            class="d-flex flex-row comments-block"
+            [ngClass]="i == comments?.length - 1 ? 'no-border' : ''"
+          >
+            <div class="border rounded-circle icon-section d-flex justify-content-center" *ngIf="comment.userName">
+              <div class="iconName">{{ setIconName(comment.userName.english) | uppercase }}</div>
+            </div>
+            <div class="d-flex flex-column content-section">
+              <gosi-comment-content-dc [comment]="comment"></gosi-comment-content-dc>
+            </div>
+          </div>
+        </ng-container>
+        <div class="show-all-comment" *ngIf="comments?.length > commentLimit">
+          <a (click)="showAllComments()">
+            {{ allCommentsText | translate }}
+            <fa-icon class="fa-icon" [icon]="['fas', isAngleDown ? 'caret-down' : 'caret-up']"></fa-icon>
+          </a>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #noComments>
+      <div class="d-flex justify-content-center no-comments">
+        {{ 'THEME.NO-COMMENTS' | translate }}
+      </div>
+    </ng-template>
+  </accordion-group>
+</accordion>

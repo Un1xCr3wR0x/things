@@ -1,0 +1,208 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}" type="secondary">
+  <div class="row">
+    <div class="col-md-6 col-lg-6">
+      <gosi-input-text-dc
+        id="arabicName"
+        gosiArabicMask
+        name="arabicName"
+        [control]="establishmentDetailsForm.get('name').get('arabic')"
+        [maxLength]="arabicNameMaxLength"
+        [label]="'ESTABLISHMENT.ESTABLISHMENT-NAME-AR' | translate"
+        [disabled]="disableNameArabic"
+      ></gosi-input-text-dc>
+    </div>
+    <div class="col-md-6 col-lg-6">
+      <gosi-input-text-dc
+        id="englishName"
+        gosiEnglishMask
+        name="englishName"
+        [control]="establishmentDetailsForm.get('name').get('english')"
+        [maxLength]="engNameMaxLength"
+        [label]="'ESTABLISHMENT.ESTABLISHMENT-NAME-EN' | translate"
+        [disabled]="disableNameEnglish"
+      ></gosi-input-text-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="!establishment.proactive; else proactive">
+    <div class="col-md-6 col-lg-6">
+      <gosi-input-month-dc
+        id="establishmentStartDate"
+        [dateFormat]="'DD/MM/YYYY'"
+        name="establishmentStartDate"
+        [disabled]="disableStartDate"
+        [control]="establishmentDetailsForm.get('startDate').get('gregorian')"
+        [label]="'ESTABLISHMENT.ESTABLISHMENT-START-DATE' | translate"
+        [minDate]="minDate"
+        [maxDate]="maxDate"
+        [readOnly]="disableStartDate"
+      ></gosi-input-month-dc>
+    </div>
+  </div>
+  <ng-template #proactive>
+    <div class="row">
+      <div class="col-md-6 col-lg-6">
+        <gosi-input-date-dc
+          id="establishmentStartDate"
+          name="establishmentStartDate"
+          [disabled]="true"
+          [control]="establishmentDetailsForm.get('startDate').get('gregorian')"
+          label="ESTABLISHMENT.ESTABLISHMENT-START-DATE"
+        ></gosi-input-date-dc>
+      </div>
+    </div>
+  </ng-template>
+  <div class="row pt-4">
+    <div class="col-md-6 col-lg-6" *ngIf="activityTypeList">
+      <gosi-input-select-dc
+        id="activityType"
+        name="activityType"
+        [label]="'ESTABLISHMENT.ACTIVITY-TYPE' | translate"
+        [control]="establishmentDetailsForm.get('activityType')"
+        [list]="activityTypeList"
+        [disabled]="disableActivityType"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <div class="col-md-6 col-lg-6" *ngIf="nationalityList">
+      <gosi-input-select-dc
+        id="nationality"
+        name="nationality"
+        [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+        [disabled]="disableNationality"
+        [control]="establishmentDetailsForm.get('nationalityCode')"
+        [list]="nationalityList"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <ng-container *ngIf="isValidator">
+      <div class="col-md-6 col-lg-6">
+        <gosi-input-select-dc
+        *ngIf = "establishment.organizationCategory?.english !== 'Non-Government'"
+          id="lawType"
+          [label]="'ESTABLISHMENT.LAW-TYPE' | translate"
+          [control]="establishmentDetailsForm.get('lawType')"
+          [list]="lawTypeList"
+          (select)="selectLawType($event, cancelTemplate)"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6 col-lg-6">
+        <gosi-input-select-dc
+        *ngIf="establishment.organizationCategory?.english === 'GCC'"
+            id="legalEntity"
+            name="legalEntity"
+            [label]="'ESTABLISHMENT.LEGAL-ENTITY' | translate"
+            [control]="establishmentDetailsForm.get('legalEntity')"
+            [lookup]="legalEntityList"
+            [disabled]="!islawTypeSelected || !lawTypeChanged"
+          >
+          </gosi-input-select-dc>
+      </div>
+      <div
+        class="col-md-6 col-lg-6"
+        *ngIf="
+          establishmentDetailsForm?.get('lawType.english')?.value === lawTypeEnum.CIVIL_PENSION_LAW &&
+          establishmentDetailsForm?.get('departmentNumber')
+        "
+      >
+        <gosi-input-text-dc
+          id="departmentId"
+          name="departmentId"
+          [label]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+          [control]="establishmentDetailsForm.get('departmentNumber')"
+          gosiSpecialCharacterMask
+          [onlyAlphaNumerics]="true"
+          [removeSpecialCharacters]="true"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </ng-container>
+    <ng-template #cancelTemplate>
+      <gosi-confirm-modal-dc
+        [customFooter]="customOkButtonRef"
+        [message]="'ESTABLISHMENT.LAW-TYPE-CHECK'"
+        (onCancel)="decline()"
+      >
+      </gosi-confirm-modal-dc>
+    </ng-template>
+  </div> </gosi-card-dc
+><frm-address-dc
+  *ngIf="establishment.organizationCategory?.english != 'GCC'"
+  [idValue]="'establishment'"
+  [cityList]="cityList"
+  [countryList]="gccCountryList"
+  [isSaudiAddrMandatory]="true"
+  [hasNationalAddress]="true"
+  [hasPOAddress]="true"
+  [hasOverseasAddress]="false"
+  [mandatoryOverseasAddress]="false"
+  [currentMailingAddress]="establishment.contactDetails?.currentMailingAddress"
+  #addressDetails
+  [addressDetails]="establishment.contactDetails?.addresses"
+  [parentForm]="addressForm"
+></frm-address-dc>
+<frm-address-dc
+  *ngIf="establishment.organizationCategory?.english === 'GCC'"
+  [idValue]="'establishment'"
+  [cityList]="cityList"
+  [countryList]="gccCountryList"
+  [hasNationalAddress]="false"
+  [hasPOAddress]="false"
+  [countryReadOnly]="false"
+  [addressDetails]="establishment.contactDetails?.addresses"
+  [hasOverseasAddress]="true"
+  [currentMailingAddress]="establishment.contactDetails?.currentMailingAddress"
+  [mandatoryOverseasAddress]="false"
+  [isOptional]="true"
+  [parentForm]="addressForm"
+  #addressDetails
+></frm-address-dc>
+
+<gosi-card-dc heading="{{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}" type="secondary">
+  <frm-contact-dc
+    [isHeadingRequired]="false"
+    #contactDetails
+    [defaultOnly]="!isGccEstablishment"
+    [idValue]="'establishment'"
+    [contactDetails]="establishment.contactDetails"
+    [isOnlyGcc]="false"
+  ></frm-contact-dc>
+</gosi-card-dc>
+
+<est-footer-buttons-dc
+  [showPrevious]="establishment.status.english === registered"
+  primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+  primaryId="saveAndNext"
+  (cancel)="popUp(clearTemplate)"
+  (previous)="previousSection()"
+  (submit)="saveEstablishment()"
+></est-footer-buttons-dc>
+<ng-template #clearTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #resetTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-RESET'"
+    (onConfirm)="confirmReset()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #customOkButtonRef>
+  <div class="btn-section">
+    <gosi-button-dc id="cancelBtn" type="secondary" (submit)="decline()">{{ 'THEME.OK' | translate }} </gosi-button-dc>
+  </div>
+</ng-template>

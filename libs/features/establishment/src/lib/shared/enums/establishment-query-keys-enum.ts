@@ -1,0 +1,52 @@
+/**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */
+
+export enum EstablishmentQueryKeysEnum {
+  REFERENCE_NUMBER = 'referenceNo',
+  BUSINESS_KEY = 'businessKey',
+  TYPE = 'type',
+  STATUS = 'status',
+  NEW_MAIN_REG_NO = 'newMainRegistrationNo',
+  IS_DELINK = 'isDelink',
+  IS_TERMINATE = 'isTerminate',
+  LEGAL_ENTITY = 'legalEntity',
+  DELINKED_ONLY = 'selectDelinkOnly',
+  EXCLUDE_INVALID_MAIN_FOR_DELINK = 'excludeInvalidMainForDelink',
+  MODE = 'mode',
+  DRAFT_MODE = 'draft',
+  INITIATE_MODE = 'started',
+  TERMINATE_INITIATE_MODE = 'initiate',
+  ACTION = 'action',
+  TERMINATE_ACTION = 'TERMINATE',
+  PROACTIVE = 'proactive',
+  REASON = 'reason',
+  INITIATED_BY = 'initiatedBy',
+  START_DATE = 'startDate',
+  END_DATE = 'endDate',
+  TRANSACTION_ID = 'transactionId',
+  HISTORY = 'HISTORY',
+  ACTIVE = 'ACTIVE',
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC',
+  REASON_START_DATE = 'STARTDATE',
+  REASON_END_DATE = 'ENDDATE',
+  INSPECTION_REFERENCE_NUMBER = 'inspectionreferenceNumber',
+  INSPECTION_ID = 'id',
+  FIELD_ACTIVITY_NO = 'fieldActivityNo',
+  DOCUMENT_REFERENCE_NO = 'documentReferenceNo',
+  LICENSE_ISSUING_AUTH = 'licenseIssuingAuthority',
+  LICENSE_NO = 'licenseNumber',
+  INCLUDE_MAIN = 'includeMainInfo',
+  NEW_VALUE = 'NEW_VALUE',
+  OLD_VALUE = 'OLD_VALUE',
+  GET_VALUE = 'getValueType',
+  INCLUDE_TRANSIENT_AUDIT = 'includeTransientAuditDetails',
+  FIELD_OFFICE = 'Field Office',
+  IS_ADMIN_MISSING_DETAILS = 'isAdminMissingDetailsPage',
+  ADMIN_ID = 'adminId',
+  ESTABLISHMENT_OWNERS = 'includeEstablishments',
+  EXCLUDE_PPA_ESTABLISHMENT = 'excludePpaEstablishment'
+}

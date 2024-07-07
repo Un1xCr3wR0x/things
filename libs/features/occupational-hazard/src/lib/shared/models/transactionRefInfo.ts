@@ -1,0 +1,20 @@
+import { BilingualText } from '@gosi-ui/core';
+
+
+/**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */
+
+
+/**
+ * Wrapper class to hold TransactionRefInfo details.
+ *
+ * @export
+ * @class TransactionRefInfo
+ */
+export class TransactionRefInfo {
+    referenceNo : number;
+    type : BilingualText;
+}

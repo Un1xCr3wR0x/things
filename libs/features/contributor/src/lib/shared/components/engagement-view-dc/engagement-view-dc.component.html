@@ -1,0 +1,202 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div [ngClass]="isValidator ? 'col-sm-6 col-md-6 col-lg-6' : 'col-lg-4'">
+    <div
+      *ngIf="
+        violationDetails?.violationType?.english === 'Modify Engagement' &&
+          violationDetails?.violationSubType?.english === 'Modify Joining Date';
+        else modifyJoiningDate
+      "
+    >
+      <div class="form-group form-label fc-margin">
+        <label class="label-color m-0">
+          {{ 'CONTRIBUTOR.JOINING-DATE' | translate }}
+        </label>
+        <div class="label-value">
+          <!-- Est Admin view & validator view Joining date-->
+          <span *ngIf="violationDetails?.joiningDate" class="cancel-value">{{
+            violationDetails?.joiningDate?.gregorian | date: 'dd/MM/yyyy'
+          }}</span>
+          <!-- Est Admin view -->
+          <span *ngIf="!isValidator && violationDetails?.joiningDate" class="mr-2"></span>
+          <span
+            *ngIf="!isValidator && engagement?.joiningDate"
+            [adaptivePosition]="false"
+            [tooltip]="modifyTemplate"
+            placement="top"
+            >(<span class="strike-through">{{ engagement?.joiningDate?.gregorian | date: 'dd/MM/yyyy' }}</span
+            >)</span
+          >
+        </div>
+      </div>
+    </div>
+    <!-- Cancel engagement joiningDate -->
+    <ng-template #modifyJoiningDate>
+      <gosi-label-dc
+        id="'joiningDate'"
+        [control]="engagement?.joiningDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+      ></gosi-label-dc>
+    </ng-template>
+  </div>
+  <!-- Leaving Date -->
+  <div
+    [ngClass]="isValidator ? 'col-sm-6 col-md-6 col-lg-6' : 'col-lg-4'"
+    *ngIf="engagement?.leavingDate?.gregorian || violationDetails?.violationType?.english === 'Terminate Engagement'"
+  >
+    <div
+      *ngIf="
+        (violationDetails?.violationType?.english === 'Modify Engagement' &&
+          violationDetails?.violationSubType?.english === 'Modify Leaving Date') ||
+          violationDetails?.violationType?.english === 'Terminate Engagement';
+        else modifyLeavingDate
+      "
+    >
+      <div class="form-group form-label fc-margin">
+        <label class="label-color m-0">
+          {{ 'CONTRIBUTOR.LEAVING-DATE' | translate }}
+        </label>
+        <div class="label-value">
+          <!-- Leaving Date modify est admin and validator view -->
+          <span *ngIf="violationDetails?.leavingDate" class="cancel-value">
+            {{ violationDetails?.leavingDate?.gregorian | date: 'dd/MM/yyyy' }}
+          </span>
+          <!-- Leaving Date modify est admin -->
+          <span
+            *ngIf="
+              !isValidator &&
+              violationDetails?.leavingDate &&
+              violationDetails?.violationType?.english !== 'Terminate Engagement'
+            "
+            class="mr-2"
+          ></span>
+          <span
+            *ngIf="
+              !isValidator &&
+              engagement?.leavingDate &&
+              violationDetails?.violationType?.english !== 'Terminate Engagement'
+            "
+            [adaptivePosition]="false"
+            [tooltip]="modifyTemplate"
+            placement="top"
+            >(<span class="strike-through">{{ engagement?.leavingDate?.gregorian | date: 'dd/MM/yyyy' }}</span
+            >)</span
+          >
+        </div>
+      </div>
+    </div>
+    <!-- Cancel engagement leavingDate -->
+    <ng-template #modifyLeavingDate>
+      <gosi-label-dc
+        id="leavingDate"
+        [control]="engagement?.leavingDate?.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+      ></gosi-label-dc>
+    </ng-template>
+  </div>
+  <!-- Leaving Reason -->
+  <div
+    [ngClass]="isValidator ? 'col-sm-12 col-md-12 col-lg-12' : 'col-lg-4'"
+    *ngIf="engagement?.leavingDate?.gregorian || violationDetails?.violationType?.english === 'Terminate Engagement'"
+  >
+    <div *ngIf="violationDetails?.violationType?.english !== 'Terminate Engagement'; else leavingReasonHighlighted">
+      <gosi-label-dc
+        id="leavingReason"
+        [control]="violationDetails?.violationSubType?.english === 'Modify Leaving Date' ? (violationDetails?.leavingReason !== null ? violationDetails?.leavingReason : engagement?.leavingReason) : engagement?.leavingReason"
+        [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+      >
+      </gosi-label-dc>
+    </div>
+    <ng-template #leavingReasonHighlighted>
+      <div class="table-padding">
+        <label class="label-color m-0">
+          {{ 'CONTRIBUTOR.LEAVING-REASON' | translate }}
+        </label>
+        <div class="label-value">
+          <span class="cancel-value">
+            {{ violationDetails?.leavingReason | bilingualText }}
+          </span>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+<div
+  *ngIf="
+    violationDetails?.violationType?.english === 'Modify Engagement' &&
+    violationDetails?.violationSubType?.english === 'Modify Wage And Occupation'
+  "
+>
+  <div class="row">
+    <div class="'col-sm-6 col-md-6 col-lg-6'">
+      <gosi-label-dc
+        id="'employeeid'"
+        [control]="engagement?.companyWorkerNumber"
+        [label]="'CONTRIBUTOR.EMPLOYEE-ID' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="'col-sm-6 col-md-6 col-lg-6'">
+      <gosi-label-dc
+        id="'employeeid'"
+        [control]="engagement?.status"
+        [label]="'CONTRIBUTOR.STATUS' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="'col-sm-6 col-md-6 col-lg-6'">
+      <gosi-label-dc
+        id="'employeeid'"
+        [control]="engagement?.workType"
+        [label]="'CONTRIBUTOR.WORK-TYPE' | translate"
+      ></gosi-label-dc>
+    </div>
+    <div class="'col-sm-6 col-md-6 col-lg-6'">
+      <gosi-label-dc
+        id="'employeeid'"
+        [control]="engagement?.contributorAbroad"
+        [label]="'CONTRIBUTOR.CONTRIBUTOR-IS-ABROAD' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="'col-sm-6 col-md-6 col-lg-6'">
+      <gosi-label-dc
+        id="'employeeid'"
+        [control]="violationDetails.joiningDate.gregorian | date: 'dd/MM/yyyy'"
+        [label]="'CONTRIBUTOR.WAGE.APPLICABLE-FROM' | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</div>
+
+<!-- tooltip in Est Admin View -->
+<ng-template #modifyTemplate>
+  <ng-container>
+    <div class="d-flex flex-column align-items-start px-3">
+      <div>
+        {{ 'CONTRIBUTOR.COMPLIANCE.SYSTEM-DATA' | translate }}:
+        <span *ngIf="violationDetails?.violationSubType?.english === 'Modify Joining Date'; else systemLeavingDate">
+          {{ engagement?.joiningDate?.gregorian | date: 'dd/MM/yyyy' }}
+        </span>
+        <ng-template #systemLeavingDate>{{ engagement?.leavingDate?.gregorian | date: 'dd/MM/yyyy' }}</ng-template>
+      </div>
+      <div>
+        {{ 'CONTRIBUTOR.COMPLIANCE.CONTRIBUTOR-REQUEST' | translate }}:
+        <span
+          *ngIf="violationDetails?.violationSubType?.english === 'Modify Joining Date'; else contributorLeavingDate"
+        >
+          {{ violationDetails?.joiningDate?.gregorian | date: 'dd/MM/yyyy' }}
+        </span>
+        <ng-template #contributorLeavingDate>{{
+          violationDetails?.leavingDate?.gregorian | date: 'dd/MM/yyyy'
+        }}</ng-template>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>

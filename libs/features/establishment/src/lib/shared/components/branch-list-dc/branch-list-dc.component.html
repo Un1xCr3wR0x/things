@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="branch-list">
+  <ng-container *ngIf="establishments && establishments.length > 0 && !isResultEmpty">
+    <gosi-alert-dc
+      *ngIf="warningKey"
+      [noPadding]="true"
+      message=" {{ warningKey | translate: { noOfEstPending: proactiveStatusPending } }}"
+      type="warning"
+      [dismissible]="false"
+    ></gosi-alert-dc>
+    <div class="row no-gutters search-result" *ngIf="searchParam">
+      <div class="col-sm-auto selected-count mb-4">
+        <est-search-result-dc [count]="totalBranches" [value]="searchParam"> </est-search-result-dc>
+      </div>
+    </div>
+    <div class="row no-gutters mt-2 mt-md-0 search-result" *ngIf="selectedBranchesCount">
+      <div class="col-sm-auto selected-count mb-4">
+        <div>{{ selectedBranchesCount }}</div>
+        {{ 'ESTABLISHMENT.SELECTED-FOR-DELINK' | translate }}
+      </div>
+    </div>
+    <div
+      class="branch-list-item"
+      *ngFor="
+        let establishment of establishments
+          | paginate
+            : {
+                id: paginationId,
+                itemsPerPage: itemsPerPage,
+                currentPage: currentPage,
+                totalItems: totalBranches
+              }
+      "
+      [ngClass]="{
+        'selected-branch': selectedBranchesRegNo.includes(establishment.registrationNo),
+        'main-branch': establishment.establishmentType.english === main,
+        'closed-branch': establishment.status.english === closedStatus
+      }"
+    >
+      <est-branch-item-dc
+        [establishment]="establishment"
+        (selectedEstablishment)="selectRegNoDetails($event)"
+        [showNewStatus]="establishment?.delinked && showNewStatus"
+        [showDelinkStatus]="establishment?.delinked && showDelinkStatus"
+        [showRole]="showRole"
+      ></est-branch-item-dc>
+    </div>
+  </ng-container>
+  <div class="branch-list-item loading" *ngIf="isLoading">
+    <est-loading-dc></est-loading-dc>
+  </div>
+  <div *ngIf="isResultEmpty">
+    <div class="row no-gutters">
+      <div class="col-sm-auto selected-count" *ngIf="searchParam">
+        <est-search-result-dc [count]="0" [value]="searchParam"> </est-search-result-dc>
+      </div>
+    </div>
+    <div class="noresult">
+      <est-no-result-dc></est-no-result-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="establishments && establishments.length > 0 && !isResultEmpty">
+    <div class="col">
+      <gosi-pagination-dc
+        *ngIf="totalBranches > itemsPerPage"
+        class="pagination"
+        [totalSize]="totalBranches"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+        [paginationId]="paginationId"
+      ></gosi-pagination-dc>
+    </div>
+  </div>
+</div>

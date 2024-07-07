@@ -1,0 +1,159 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="custom-row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ 'BENEFITS.MODIFY-PAYMENT-AND-PAYEE-DETAILS' | translate }}
+    </div>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div [ngClass]="{ hide: wizardItems?.length <= 1 }">
+    <gosi-progress-wizard-dc (clickWizard)="selectWizard($event)" [wizardItems]="wizardItems" #modifyBenefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <!-- main content begins here -->
+  <div class="hide-tab">
+    <tabset type="pills">
+      <!-- disability details tab -->
+      <tab [active]="currentTab === 0">
+        <div class="row">
+          <div class="overflow-auto w-100">
+            <bnt-payment-bank-details-dc
+              [benefitPayDetails]="benefitPayDetails"
+              [modifyCommitmentDetails]="modifyCommitmentDetails"
+              [isEditMode]="isEditMode"
+              [isIndividualApp]="isIndividualApp"
+              [verificationStatus]="verificationStatus"
+              [lang]="lang"
+            ></bnt-payment-bank-details-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" *ngIf="commitmentPaymentDetails && commitmentPaymentDetails?.personId">
+            <gosi-card-dc type="secondary" heading="{{ 'BENEFITS.PAYMENT-DETAILS' | translate }}">
+              <bnt-payment-method-details-dc
+                #paymentDetailsComponent
+                [isValidatorEdit]="isEditMode"
+                [isAddressReadOnly]="checkAddessDetails(commitmentPaymentDetails?.contactDetail)"
+                [attorneyList]="commitmentPaymentDetails?.authorizedPersonDetails"
+                [guardianList]="commitmentPaymentDetails?.guardianPersonDetails"
+                [bankAccountList]="commitmentPaymentDetails?.bankList"
+                [heirDetail]="commitmentPaymentDetails"
+                [newBankName]="commitmentPaymentDetails.bankName"
+                [personId]="commitmentPaymentDetails?.personId"
+                [payeeList]="payeeList"
+                [isHeir]="false"
+                [isDead]="isDead"
+                [lang]="lang"
+                [listYesNo]="listYesNo$ | async"
+                [paymentModeList]="paymentModeList$ | async"
+                [cityList$]="cityList$"
+                [countryList$]="countryList$"
+                [isModifybank]="true"
+                [isIndividualApp]="isIndividualApp"
+                [activeBenefit]="activeBenefit"
+                (payeeDetailEvent)="setPaymentDetails($event)"
+                (getAuthorizedPersonEvent)="getAttorneyListById($event)"
+                (getBankDetailsEvent)="getBankList($event)"
+                (editEvent)="saveBankDetails($event)"
+                (existingIbanEvent)="existingIban($event)"
+              ></bnt-payment-method-details-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+        <div class="row form-action-buttons">
+          <div class="col-auto form-action-btn">
+            <gosi-button-dc
+              [ngClass]="isSmallScreen ? '' : 'float-left'"
+              id="cancelButton"
+              [isFullWidth]="isSmallScreen"
+              type="secondary"
+              (submit)="popUp(cancelTemplate)"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="ml-auto col-auto form-action-btn" *ngIf="!isIndividualApp">
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              type="primary"
+              [disabled]="isInvalidIban"
+              [isFullWidth]="isSmallScreen"
+              (submit)="saveModifyDetails()"
+            >
+              <!-- [disabled]="isExistingIban" -->
+              {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="ml-auto col-auto form-action-btn" *ngIf="isIndividualApp">
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              type="primary"
+              [disabled]="isInvalidIban"
+              [isFullWidth]="isSmallScreen"
+              (submit)="saveModifyDetails()"
+            >
+              <!-- [disabled]="isExistingIban" -->
+              {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </tab>
+      <!-- document details tab -->
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              *ngIf="documentForm"
+              #documentComponent
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="modifyTransactionConstant"
+              [referenceNo]="isEditMode ? referenceNo : referenceNumber"
+              [documentList]="requiredDocs"
+              [isWorkflow]="false"
+              [parentForm]="documentForm"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              [isEditMode]="isEditMode"
+              (cancelDoc)="cancelTransactions()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="submitCommitmentDetails($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

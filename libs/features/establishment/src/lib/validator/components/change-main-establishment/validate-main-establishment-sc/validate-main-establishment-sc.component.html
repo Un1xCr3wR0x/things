@@ -1,0 +1,85 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishment"
+          [estHeading]="'ESTABLISHMENT.MAIN-EST-DETAILS'"
+        ></est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishmentToValidate"
+          [estHeading]="'ESTABLISHMENT.NEW-MAIN-EST-DETAILS'"
+          [canEdit]="!canReturn"
+          (onEdit)="navigateToChangeMainEst()"
+        >
+        </est-establishment-content-dc>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        (approveEvent)="approveTransaction(changeMainEstForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(changeMainEstForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(changeMainEstForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="changeMainEstForm"
+    heading="ESTABLISHMENT.REJECT.CHG-MAIN"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(changeMainEstForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="changeMainEstForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(changeMainEstForm)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="changeMainEstForm"
+    heading="ESTABLISHMENT.RETURN.CHG-MAIN"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(changeMainEstForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>

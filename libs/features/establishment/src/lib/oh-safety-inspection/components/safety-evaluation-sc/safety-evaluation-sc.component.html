@@ -1,0 +1,453 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <!-- Heading -->
+  <est-heading-dc [isTransparent]="false" [showBackArrow]="false" [showSeparator]="false">
+    <div class="margin-left">{{ heading | translate }}</div>
+    <div
+      id="action-item"
+      class="menu row no-gutters align-items-center"
+      *ngIf="estData?.remainingGracePeriod !== null && estData?.remainingGracePeriod >= 0"
+    >
+      <div class="col-md-auto col-sm-12 no-gutters d-flex flex-nowrap">
+        <div>
+          <gosi-count-down-timer-dc
+            [endDate]="estData?.gracePeriodEndDate"
+            timerHeadingLabel="ESTABLISHMENT.TIMER-LABEL"
+          ></gosi-count-down-timer-dc>
+        </div>
+      </div>
+    </div>
+  </est-heading-dc>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+
+  <!--Establishment section -->
+  <gosi-card-dc
+    [heading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate"
+    type="secondary"
+    [paddingBottom]="true"
+    icon="building"
+  >
+    <div class="row">
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="registrationNo"
+          [value]="estData?.registrationNo"
+          label="ESTABLISHMENT.REGISTRATION-NO"
+          [isLink]="true"
+          (select)="navigateToProfile()"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="est-name"
+          [control]="estData?.establishmentName | bilingualText: true"
+          label="ESTABLISHMENT.ESTABLISHMENT-NAME"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="current-oh-rate"
+          control="{{ estData?.currentOhRate + '%' }}"
+          label="ESTABLISHMENT.CURRENT-OH-RATE"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-label-dc
+          id="current-oh-rate"
+          [value]="estData?.selfEvaluationReason"
+          label="ESTABLISHMENT.EVALUATION-REASON"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!--violations by admin section -->
+  <!-- estData?.latestSubmissions?.establishmentSafetyViolations?.length > 0 ||  -->
+  <gosi-card-dc
+    *ngIf="estData?.allSubmissions?.length > 0"
+    [heading]="'ESTABLISHMENT.ADMIN-IDENTIFIED-VIOLATIONS-SC' | translate"
+    type="secondary"
+    [paddingBottom]="true"
+    icon="clipboard-list"
+  >
+    <div class="row">
+      <div class="col-md-12">
+        <div class="d-inline-block violation-type">
+          <div class="pick-violation-type">
+            <div
+              *ngIf="estData?.latestSubmissions?.establishmentSafetyViolations?.length > 0"
+              class="column-left violation-text"
+              [ngClass]="{
+                'violation-type-selected': violationSelectionForm?.value === 'Latest',
+                'violation-type-unselected ': violationSelectionForm?.value === 'Previous',
+                'only-tab': estData?.allSubmissions?.length <= 0
+              }"
+              (click)="setViolationType('Latest')"
+            >
+              {{ 'ESTABLISHMENT.LATEST-SUBMISSION' | translate }}
+            </div>
+            <div
+              *ngIf="estData?.allSubmissions?.length > 0"
+              class="column-right violation-text"
+              [ngClass]="{
+                'violation-type-selected': violationSelectionForm?.value === 'Previous',
+                'violation-type-unselected ': violationSelectionForm?.value === 'Latest',
+                'only-tab': estData?.latestSubmissions?.establishmentSafetyViolations?.length <= 0
+              }"
+              (click)="setViolationType('Previous')"
+            >
+              {{ 'ESTABLISHMENT.PREVIOUS-SUBMISSIONS' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 dc components section for latest and previous value -->
+    <div class="row" *ngIf="violationSelectionForm?.value === 'Latest'">
+      <div class="col-md-12">
+        <est-safety-check-violations-list-dc
+          [violationData]="estData?.latestSubmissions"
+        ></est-safety-check-violations-list-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="violationSelectionForm?.value === 'Previous'">
+      <div class="col-md-6">
+        <!-- dates dropdown -->
+        <gosi-input-select-dc
+          id="previousSubmittedDatesList"
+          (selectLov)="selectPreviousSubmissionDate($event)"
+          [name]="'previousSubmittedDatesList'"
+          [label]="'ESTABLISHMENT.SUBMISSION-DATE' | translate"
+          [control]="previousSubmissionDateForm"
+          [list]="previousSubmissionDatesList"
+          [hideOptionalLabel]="true"
+          [hideClear]="true"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-md-6" *ngIf="previousSubmittedData?.referenceNumber">
+        <!-- previous section -->
+        <gosi-label-dc
+          id="previousReferenceNumber"
+          [value]="previousSubmittedData?.referenceNumber"
+          label="ESTABLISHMENT.TRANSACTION-ID"
+          [isLink]="false"
+        >
+          <!-- (select)="navigateToTransactionTracking(previousSubmittedData?.referenceNumber)" -->
+        </gosi-label-dc>
+      </div>
+      <div class="col-md-12">
+        <est-safety-check-violations-list-dc
+          [violationData]="previousSubmittedData"
+        ></est-safety-check-violations-list-dc>
+      </div>
+    </div>
+    <!-- <div class="row mb-5" *ngIf="violationSelectionForm?.value === 'Previous'">
+      <div class="col-md-12">
+        <a class="link-clr" (click)="viewFullCheckList(previousSubmittedData?.referenceNumber)"
+          >{{ 'ESTABLISHMENT.VIEW-FULL-CHECKLIST' | translate }}
+        </a>
+      </div>
+    </div> -->
+  </gosi-card-dc>
+
+  <!--safety checklist section -->
+  <gosi-card-dc
+    [heading]="'ESTABLISHMENT.SAFETY-CHECK-LIST' | translate"
+    type="secondary"
+    [paddingBottom]="true"
+    icon="clipboard-list"
+  >
+    <div class="row pb-3">
+      <div class="col-lg-12">
+        <div class="form-value" *ngIf="estData?.allSubmissions.length <= 0">
+          {{ 'ESTABLISHMENT.CHECKLIST-INFO-MSG-FIRST-CYCLE' | translate }}
+        </div>
+        <div class="form-value" *ngIf="estData?.allSubmissions.length > 0">
+          {{ 'ESTABLISHMENT.CHECKLIST-INFO-MSG-REMAINING-CYCLE' | translate }}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="estData?.totalGracePeriod !== null">
+        <gosi-label-dc
+          id="grace-period"
+          value="{{ estData?.totalGracePeriod | number: '1.0-0' }} 
+          {{
+            estData?.totalGracePeriod === 2
+              ? ('ESTABLISHMENT.DAYS' | translate | titlecase)
+              : estData?.totalGracePeriod === 1
+              ? ('ESTABLISHMENT.DAY' | translate | titlecase)
+              : estData?.totalGracePeriod > 2 && estData?.totalGracePeriod < 11
+              ? ('ESTABLISHMENT.DAYS-3-10' | translate | titlecase)
+              : estData?.totalGracePeriod >= 11
+              ? ('ESTABLISHMENT.DAYS-11' | translate | titlecase)
+              : ('ESTABLISHMENT.DAY-0' | translate | titlecase)
+          }}"
+          label="ESTABLISHMENT.GRACE-PERIOD-TO-BECOME-COMPLIANT"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="estData?.remainingGracePeriod !== null">
+        <gosi-label-dc
+          id="remaining-days"
+          value="{{ (estData?.remainingGracePeriod >= 0 ? estData?.remainingGracePeriod : 0) | number: '1.0-0' }} 
+        {{
+            estData?.remainingGracePeriod === 2
+              ? ('ESTABLISHMENT.DAYS' | translate | titlecase)
+              : estData?.remainingGracePeriod === 1
+              ? ('ESTABLISHMENT.DAY' | translate | titlecase)
+              : estData?.remainingGracePeriod > 2 && estData?.remainingGracePeriod < 11
+              ? ('ESTABLISHMENT.DAYS-3-10' | translate | titlecase)
+              : estData?.remainingGracePeriod >= 11
+              ? ('ESTABLISHMENT.DAYS-11' | translate | titlecase)
+              : ('ESTABLISHMENT.DAY-0' | translate | titlecase)
+          }}"
+          label="ESTABLISHMENT.REMAINING-GRACE-PERIOD"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <!-- checklist section -->
+    <div class="row">
+      <div class="col-lg-12">
+        <accordion *ngFor="let category of checkList?.establishmentSafetyChecklists; let catIndex = index">
+          <accordion-group
+            id="{{ 'checkList' + catIndex }}"
+            class="accordion-group-class"
+            [ngClass]="category?.highLightError === true ? 'accordion-error' : ''"
+            (isOpenChange)="selectPanel($event, catIndex + 1)"
+            [isOpen]="accordionPanel === catIndex + 1"
+          >
+            <div accordion-heading>
+              <span class="name-value">
+                {{ category?.mainCategory | bilingualText | titlecase }}
+              </span>
+            </div>
+            <div accordion-heading class="symbol-adjust">
+              <span accordion-heading>
+                <ng-container *ngIf="category?.selectedCount">
+                  <!-- count section -->
+                  <span class="selected-item-count"> {{ category?.selectedCount }}</span>
+                </ng-container>
+              </span>
+              <span accordion-heading class="pl-2 pr-2">
+                <ng-container *ngIf="category?.selectedCount > 0">
+                  <!-- icon section -->
+                  <img alt="documentName" src="assets/icons/check-list.svg" />
+                </ng-container>
+              </span>
+              <span class="arrow-up-period arrow-color" accordion-heading>
+                <span>
+                  <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+                </span>
+              </span>
+              <span class="arrow-down-period arrow-color" accordion-heading>
+                <span>
+                  <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+                </span>
+              </span>
+            </div>
+            <ng-container *ngFor="let subCategory of category?.subCategory; let subIndex = index">
+              <ng-container *ngIf="subCategory?.valueType !== valueTypeSingle">
+                <div class="row pb-3">
+                  <div class="col-lg-12">
+                    <span class="value">{{ subCategory?.subCategory | bilingualText | titlecase }}</span>
+                  </div>
+                </div>
+                <ng-container *ngFor="let guideLine of subCategory?.guideLines; let guideIndex = index">
+                  <div class="checkbox">
+                    <div>
+                      <gosi-input-checkbox-dc
+                        id="{{ 'guideline' + guideLine?.guidelineId }}"
+                        [label]="guideLine?.guideline | bilingualText"
+                        [control]="
+                          selfEvaluationForm
+                            ?.get('checkListForm')
+                            ?.get('categoryForm')
+                            ?.controls[catIndex]?.get('subCategoryForm')
+                            ?.controls[subIndex]?.get('guideLineForm')
+                            ?.controls[guideIndex]?.get('isSelected')
+                        "
+                        (select)="guideLineChecked($event, catIndex, subIndex, guideIndex)"
+                      >
+                        <!-- add condition to make checkbox disabled -->
+                        <!-- [disabled]="guideLine?.isDisabled" -->
+                      </gosi-input-checkbox-dc>
+                    </div>
+                    <ng-container
+                      *ngIf="
+                        guideLine?.additionalInfoList?.length > 0 &&
+                        selfEvaluationForm
+                          ?.get('checkListForm')
+                          ?.get('categoryForm')
+                          ?.controls[catIndex]?.get('subCategoryForm')
+                          ?.controls[subIndex]?.get('guideLineForm')
+                          ?.controls[guideIndex]?.get('isSelected').value === true
+                      "
+                    >
+                      <div class="row add-info">
+                        <ng-container *ngFor="let addInfo of guideLine?.additionalInfoList; let addInfoIndex = index">
+                          <div class="col-lg-4">
+                            <gosi-input-text-dc
+                              id="{{ 'addInfo' + addInfo?.addInfoId }}"
+                              [label]="addInfo?.additionalInfo | bilingualText"
+                              [extraLabel]="addInfo?.unit"
+                              [hideOptionalLabel]="true"
+                              [control]="
+                                selfEvaluationForm
+                                  ?.get('checkListForm')
+                                  ?.get('categoryForm')
+                                  ?.controls[catIndex]?.get('subCategoryForm')
+                                  ?.controls[subIndex]?.get('guideLineForm')
+                                  ?.controls[guideIndex]?.get('addInfoForm')
+                                  ?.controls[addInfoIndex]?.get('addInfoValue')
+                              "
+                              (blur)="addInfoValueOnBlur(catIndex, subIndex, guideIndex, addInfoIndex)"
+                            ></gosi-input-text-dc>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </ng-container>
+                  </div>
+                </ng-container>
+              </ng-container>
+              <ng-container *ngIf="subCategory?.valueType === valueTypeSingle">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <gosi-input-radio-dc
+                      id="{{ 'complaince' + catIndex + '' + subIndex }}"
+                      name="{{ 'isCompliant' + catIndex + '' + subIndex }}"
+                      [label]="subCategory?.subCategory | bilingualText"
+                      [control]="
+                        selfEvaluationForm
+                          ?.get('checkListForm')
+                          ?.get('categoryForm')
+                          ?.controls[catIndex]?.get('complainceStatus')
+                      "
+                      [list]="category?.complianceList"
+                      [noMargin]="true"
+                      (select)="setCompliance($event, catIndex)"
+                      [disabledValues]="
+                        checkList?.establishmentSafetyChecklists[catIndex]?.disabledComplainceValueValues
+                      "
+                    >
+                      <!-- set disabled values in case of disabling the radio btns 
+                     [disabledValues]="
+                      checkList?.establishmentSafetyChecklists[catIndex]?.disabledComplainceValueValues
+                      [disabledValues]="disabledComplainceValueValues"
+                      -->
+                    </gosi-input-radio-dc>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </accordion-group>
+        </accordion>
+      </div>
+    </div>
+
+    <!--Comments section -->
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="admin-comments"
+          gosiSpecialCharacterMask
+          [maxLength]="maxLengthComments"
+          [hideOptionalLabel]="true"
+          label="ESTABLISHMENT.COMMENTS"
+          [control]="selfEvaluationForm.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!--declaration section -->
+  <gosi-card-dc type="secondary" [heading]="'ESTABLISHMENT.DECLARATION' | translate">
+    <div class="row checkbox">
+      <div class="col-lg-12 d-flex">
+        <gosi-input-checkbox-dc
+          id="declaration"
+          name="declaration"
+          [label]="'ESTABLISHMENT.SAFETY-SELF-EVALUATION-DECLARATION' | translate"
+          [control]="declarationForm"
+        >
+        </gosi-input-checkbox-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- button sections -->
+  <div class="row form-action">
+    <div class="col-md-12">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="submitbtn" type="primary" (click)="submitSelfEvaluation(true)">
+          {{ 'ESTABLISHMENT.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-right btn-section">
+        <gosi-button-dc id="save-later-btn" type="primary" [outlineOnly]="true" (click)="submitSelfEvaluation(false)">
+          {{ 'ESTABLISHMENT.SAVE-CONTINUE-LATER' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancel-next" type="secondary" (click)="showModal(cancelTemplate)">
+          {{ 'ESTABLISHMENT.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #submitConfirmationTemplate>
+  <gosi-modal-dc>
+    <div modalContent>
+      <gosi-alert-dc
+        *ngIf="estData?.allSubmissions?.length > 0"
+        [message]="'ESTABLISHMENT.SC-CONFIRM-POPUP-WARNING-MSG' | translate"
+        type="warning"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+      <div class="row confirm-msg" [ngClass]="{ 'confirm-warning': estData?.allSubmissions?.length <= 0 }">
+        <div class="col-lg-12 text-center">{{ 'ESTABLISHMENT.SC-CONFIRM-POPUP-MSG' | translate }}</div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="row">
+        <div class="col-md-12 form-action">
+          <div class="float-right btn-section">
+            <gosi-button-dc id="confirm" type="primary" (submit)="confirmSubmit()">
+              {{ 'ESTABLISHMENT.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="float-left btn-section">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="hideModal()">
+              {{ 'ESTABLISHMENT.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

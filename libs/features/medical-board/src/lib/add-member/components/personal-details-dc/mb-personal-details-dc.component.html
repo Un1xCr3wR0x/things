@@ -1,0 +1,197 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc type="secondary" *ngIf="verified">
+  <ng-container>
+    <div class="row">
+      <div class="col-lg-4">
+        <gosi-label-dc [label]="'MEDICAL-BOARD.NATIONALITY' | translate" [value]="nationality | bilingualText">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <div *ngFor="let item of person.identity">
+          <div *ngIf="item.idType === typeNIN">
+            <gosi-label-dc [label]="'MEDICAL-BOARD.NATIONAL-IDENTIFICATION-NUMBER' | translate" [value]="item.newNin">
+            </gosi-label-dc>
+          </div>
+          <div *ngIf="item.idType === typeNATIONALID">
+            <gosi-label-dc [label]="'MEDICAL-BOARD.GCC-ID' | translate" [value]="item.id"></gosi-label-dc>
+          </div>
+          <div *ngIf="item.idType === typeIQAMA">
+            <gosi-label-dc [label]="'MEDICAL-BOARD.IQAMA-NUMBER' | translate" [value]="item.iqamaNo"></gosi-label-dc>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc [label]="'MEDICAL-BOARD.DATE-OF-BIRTH'" [value]="birthDate"></gosi-label-dc>
+      </div>
+    </div>
+    <div class="row col-lg-4" *ngIf="!editMode">
+      <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="resetInfo()"
+        >{{ 'MEDICAL-BOARD.RESET' | translate }}
+      </gosi-button-dc>
+    </div>
+  </ng-container>
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="col-md-6 col-lg-3">
+      <gosi-input-text-dc
+        id="firstName"
+        [readOnly]="readOnly"
+        name="arabicFirstName"
+        gosiArabicMask
+        [label]="'MEDICAL-BOARD.MEMBER-NAME-ARABIC' | translate"
+        [placeholder]="'MEDICAL-BOARD.FIRST-NAME' | translate"
+        [control]="personForm.get('name').get('arabic').get('firstName')"
+        [maxLength]="arabicNameMax"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <gosi-input-text-dc
+        id="secondName"
+        [readOnly]="readOnly"
+        gosiArabicMask
+        name="arabicSecondName"
+        [ignoreLabel]="true"
+        [placeholder]="'MEDICAL-BOARD.SECOND-NAME' | translate"
+        [control]="personForm.get('name').get('arabic').get('secondName')"
+        [maxLength]="arabicNameMax"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <gosi-input-text-dc
+        id="thirdName"
+        [readOnly]="readOnly"
+        gosiArabicMask
+        name="arabicThirdName"
+        [ignoreLabel]="true"
+        [placeholder]="'MEDICAL-BOARD.THIRD-NAME' | translate"
+        [control]="personForm.get('name').get('arabic').get('thirdName')"
+        [maxLength]="arabicNameMax"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <gosi-input-text-dc
+        id="familyName"
+        [readOnly]="readOnly"
+        gosiArabicMask
+        name="arabicFamilyName"
+        [ignoreLabel]="true"
+        [placeholder]="'MEDICAL-BOARD.FAMILY-NAME' | translate"
+        [control]="personForm.get('name').get('arabic').get('familyName')"
+        [maxLength]="arabicNameMax"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-6 col-lg-6">
+      <gosi-input-text-dc
+        id="englishName"
+        [readOnly]="readOnly"
+        gosiEnglishMask
+        name="englishName"
+        [label]="'MEDICAL-BOARD.MEMBER-NAME-ENGLISH' | translate"
+        [control]="personForm.get('name').get('english').get('name')"
+        [maxLength]="englishNameMax"
+      >
+      </gosi-input-text-dc>
+    </div>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="genderList">
+    <gosi-input-radio-dc
+      name="Gender"
+      [disabled]="readOnly"
+      [label]="'MEDICAL-BOARD.GENDER' | translate"
+      id="GenderId"
+      [list]="genderList"
+      [control]="personForm.get('sex')"
+    ></gosi-input-radio-dc>
+  </div>
+</gosi-card-dc>
+
+<ng-container *ngIf="verified">
+  <frm-address-dc
+    [idValue]="'memberInfo'"
+    [cityList]="cityList"
+    [countryList]="gccCountryList"
+    [isSaudiAddrMandatory]="true"
+    [hasNationalAddress]="true"
+    [hasPOAddress]="true"
+    [hasOverseasAddress]="false"
+    [mandatoryOverseasAddress]="false"
+    [nationalAlwaysMandatory]="true"
+    [currentMailingAddress]="person?.contactDetail?.currentMailingAddress"
+    #addressDetails
+    [addressDetails]="person?.contactDetail?.addresses"
+    [parentForm]="addressForm"
+  ></frm-address-dc>
+
+  <gosi-card-dc [heading]="'MEDICAL-BOARD.CONTACT-DETAILS' | translate" type="secondary">
+    <frm-contact-dc
+      #contactDetails
+      [isHeadingRequired]="false"
+      [contactDetails]="person?.contactDetail"
+      [defaultOnly]="!isGccPerson"
+      [readOnlyAll]="false"
+      [enableEmail]="true"
+      [emailMandatory]="true"
+    >
+    </frm-contact-dc>
+  </gosi-card-dc>
+
+  <gosi-card-dc [heading]="'MEDICAL-BOARD.BANK-DETAILS' | translate" type="secondary">
+    <div class="row">
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-text-dc
+          [readOnly]="false"
+          name="AccountNumber"
+          id="AccountNumber"
+          [label]="'MEDICAL-BOARD.IBAN-NUMBER' | translate"
+          [control]="BankDetailsForm.get('ibanAccountNo')"
+          hideOptionalLabel="true"
+          (blur)="getBranchList()"
+          [maxLength]="minMaxLengthAccountNo"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-select-dc
+          id="bankName"
+          [name]="'bankName'"
+          [label]="'MEDICAL-BOARD.BANK-NAME' | translate"
+          [control]="BankDetailsForm.get('bankName.english')"
+          [list]="list"
+          [disabled]="false"
+          hideOptionalLabel="true"
+        ></gosi-input-select-dc>
+      </div>
+      <div class="col-md-6 col-sm-12" *ngIf="person?.bankAccount || BankDetailsForm.get('status').value">
+        <gosi-label-dc
+          [label]="'MEDICAL-BOARD.BANK-STATUS' | translate"
+          [control]="BankDetailsForm.get('status').value"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <div class="d-flex flex-wrap form-action" [ngClass]="{ 'no-margin': true }">
+    <div class="btn-section order-2 order-md-0">
+      <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="cancel.emit()"
+        >{{ 'MEDICAL-BOARD.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section order-0 order-md-2" [ngClass]="{ 'ml-auto': true }">
+      <gosi-button-dc id="savenext" type="primary" (submit)="savePersonDetails()"
+        >{{ 'MEDICAL-BOARD.SAVE-AND-NEXT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!-- header part -->
+<div class="content">
+  <est-heading-dc (backEvent)="cancelContactDetailsTransaction()" [backLink]="routeToView" [shouldPrompt]="false">
+    {{ 'ESTABLISHMENT.EDIT-CONTACT-DETAILS' | translate }}
+  </est-heading-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc [establishment]="establishmentProfile" heading="ESTABLISHMENT.EST-BASIC-DETAILS">
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+  <!-- Contact details card  Section -->
+  <gosi-card-dc heading="{{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}" type="secondary">
+    <div class="contactDetails">
+      <frm-contact-dc
+        [isHeadingRequired]="false"
+        [idValue]=""
+        #contactDetails
+        [contactDetails]="establishmentToChange.contactDetails"
+        [defaultOnly]="!isGcc"
+        [parentForm]="changeContactDetailsForm"
+      ></frm-contact-dc>
+    </div>
+  </gosi-card-dc>
+  <est-documents-dc
+    *ngIf="!isGol"
+    [uuid]="uuid"
+    [documents]="contactDetailsDocuments"
+    [businessKey]="registrationNo"
+    [transactionId]="documentTransactionId"
+    [referenceNo]="referenceNo"
+    (refreshDocument)="bindDocContent($event)"
+  >
+  </est-documents-dc>
+  <!-- Comment Section -->
+  <gosi-card-dc type="secondary" *ngIf="changeContactDetailsForm && !isGol" [paddingBottom]="true">
+    <gosi-input-text-area-dc
+      label="ESTABLISHMENT.COMMENTS"
+      id="comments"
+      name="comments"
+      [maxLength]="commentsMaxLength"
+      [control]="changeContactDetailsForm?.get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </gosi-card-dc>
+  <est-footer-buttons-dc
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="updateContactDetails()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,137 @@
+<gosi-card-dc type="secondary">
+  <div class="row">
+    <div class="col-lg-12">
+      <div [formGroup]="exceptionalPenaltyWaiverForm">
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-radio-dc
+              id="searchEstablishment"
+              [label]="'BILLING.WAIVER-APPLICATION' | translate"
+              [control]="exceptionalPenaltyWaiverForm.get('option')"
+              (select)="selectValues($event)"
+              [list]="optionList"
+              [noMargin]="true"
+            ></gosi-input-radio-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="exceptionalPenaltyWaiverForm.get('option.english').value === 'Registration Number'">
+          <div class="col-lg-6">
+            <gosi-input-number-dc
+              id="registrationNumber"
+              [label]="'BILLING.REGISTRATION-NUMBER' | translate"
+              [ignoreLabel]="false"
+              [placeholder]="'BILLING.REGISTRATION-NUMBER' | translate"
+              [control]="exceptionalPenaltyWaiverForm.get('regNumber')"
+            >
+            </gosi-input-number-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 pt-1">
+            <gosi-input-select-dc
+              *ngIf="exceptionalPenaltyWaiverForm.get('option.english').value === 'Segmentation Criterion'"
+              name="segmentationList"
+              [ignoreLabel]="true"
+              [placeholder]="'BILLING.SELECT-EST-GRP-FRM-LIST' | translate"
+              id="segmentationList"
+              [list]="establishmentSegmentList | async"
+              [control]="exceptionalPenaltyWaiverForm.get('estSegment')"
+              (select)="selectedSegmentOptions()"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-multi-select-dropdown-dc
+              *ngIf="
+                exceptionalPenaltyWaiverForm.get('estSegment.english').value !== null &&
+                exceptionalPenaltyWaiverForm.get('option.english').value === 'Segmentation Criterion' &&
+                exceptionalPenaltyWaiverForm.get('estSegment.english').value !== 'All'
+              "
+              name="segmentsList"
+              [label]="heading | bilingualText"
+              [placeholder]="'BILLING.SELECT-EST-GRP-FRM-LIST' | translate"
+              id="segmentsList"
+              [list]="segmentsList | async"
+              [control]="exceptionalPenaltyWaiverForm.get('selectedtSegment')"
+              (selected)="selectedValue($event)"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-multi-select-dropdown-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-select-dc
+              name="reasonList"
+              [label]="'BILLING.WAIVER-REASON' | translate"
+              id="reasonList"
+              [placeholder]="'BILLING.WAIVER-REASON' | translate"
+              [control]="exceptionalPenaltyWaiverForm.get('reason')"
+              [list]="penalityWaiverReason | async"
+              (select)="otherValueSelected()"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div id="otherReason" class="col-lg-6" *ngIf="otherReasonsFlag">
+            <gosi-input-text-dc
+              id="otherReason"
+              [control]="exceptionalPenaltyWaiverForm.get('ReasonOthers')"
+              [placeholder]="'BILLING.OTHER-REASON' | translate"
+              [ignoreLabel]="true"
+              [maxLength]="200"
+            >
+            </gosi-input-text-dc>
+          </div>
+        </div>
+        <div
+          id="processCSV"
+          class="row"
+          *ngIf="exceptionalPenaltyWaiverForm.get('option.english').value === 'Upload file of a customized segment'"
+        >
+          <div class="col-lg-12">
+            <gosi-input-csv-sc
+              documentName="BILLING.BULK-WAGE.BULK-WAGE-UPDATE-DOCUMENT"
+              invalidTypeKey="BILLING.BULK-WAGE.INVALID-FILE-TYPE"
+              sizeExceededError="BILLING.SIZE-EXCEEDED-ERROR"
+              [fileDetails]="bulkFile"
+              (autoUpload)="processCSVFile($event)"
+              [actionKey]="'BILLING.PROCEED'"
+              [isProcessing]="false"
+              (deleted)="deleteCsv($event)"
+              [showProceed]="false"
+              [isWorkflowInProgress]="false"
+              [uploadFailed]="uploadFailed"
+            ></gosi-input-csv-sc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+<div
+  class="row"
+  *ngIf="exceptionalPenaltyWaiverForm.get('option.english').value === 'Upload file of a customized segment'"
+>
+  <div class="col-lg-12">
+    <div class="float-right">
+      <gosi-button-dc id="processCsv" type="primary" (submit)="verifyCsvDetails()">{{
+        'BILLING.PROCEED' | translate
+      }}</gosi-button-dc>
+    </div>
+  </div>
+</div>
+
+<!-- Action area -->
+<div
+  class="row"
+  *ngIf="exceptionalPenaltyWaiverForm.get('option.english').value !== 'Upload file of a customized segment'"
+>
+  <div class="col-lg-12">
+    <blg-action-area-dc
+      primaryButtonLabel="BILLING.PROCEED"
+      secondaryButtonLabel="BILLING.RESET"
+      (submit)="verifyDetails()"
+      (cancel)="resetForm()"
+    ></blg-action-area-dc>
+  </div>
+</div>

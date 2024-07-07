@@ -1,0 +1,225 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="row" *ngIf="document">
+    <div class="col-lg-12 file-upload-wrapper">
+      <!-- is-invalid class for making file upload as invalid -->
+      <div class="document-container" [ngClass]="(document.uploadFailed || noFilesError) ? 'is-invalid' : ''">
+        <div class="document-button-wrapper gosi-scrollbar"
+        gosiDragDrop (fileDropped)="fileDropped($event)">
+          <div class="document-wrapper" id="document{{ index }}">
+            <div class="document-label">
+              <span
+                >{{ document.name | bilingualText }} {{ showSequenceNumber ? document.sequenceNumber : '' }}
+                <span id="identifier" *ngIf="document.identifier && !document.isIndividualProfile">
+                  ({{ 'THEME.ID' | translate }} : {{ document.identifier }})</span
+                >
+                <span id="mandatory" *ngIf="!document.required">({{ 'THEME.OPTIONAL' | translate }})</span>
+              </span>
+            </div>
+            <div class="upload-message" *ngIf="!document.documentContent  && !document.isUploading">
+            {{ 'THEME.DRAG-AND-DROP-TEXT' | translate }}
+            </div>
+  
+            <div class="file-info">
+              <div class="file-icon" *ngIf="fileType">
+                <fa-icon
+                  class="file-icon-fa"
+                  [ngClass]="documentType === 'pdf' ? 'file-pdf' : 'image'"
+                  [icon]="documentType === 'pdf' ? 'file-pdf' : 'image'"
+                ></fa-icon>
+              </div>
+              <div class="upload-progress" *ngIf="document.isUploading">
+                <div class="progress-percent">{{ document.percentageLoaded }}%</div>
+                <div class="progress-bar-outer">
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    [ngStyle]="{ width: document.percentageLoaded + '%' }"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+                <div class="file-name">
+                  <span class="file-title">{{ document.fileName }}</span>
+                  <span class="file-size">{{ document.size }}</span>
+                </div>
+              </div>
+              <div class="file-name" *ngIf="document.documentContent && !document.isUploading">
+                <span class="info-name">
+                  {{
+                    isSequenceNo
+                      ? document.fileName
+                          .split('.')[0]
+                          .replace('_null', '')
+                          .concat(
+                            '_',
+                            this.document && this.document.sequenceNumber && this.document.sequenceNumber.toString(),
+                            '.',
+                            document.fileName.split('.')[1]
+                          )
+                      : document.fileName
+                  }}</span
+                >
+                <span class="info-size" dir="ltr">{{ document.size }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="document-preview" *ngIf="document.documentContent && !document.isUploading">
+            <div class="doc-btn open-document" >
+              <a
+                *ngIf="documentType === 'pdf'; else imageView"
+                id="openDocument{{ index }}"
+                class="custom-icon-button"
+                [href]="fileUrl"
+                target="_blank"
+              >
+                <gosi-button-dc
+                  type="secondary"
+                  outlineOnly="true"
+                  size="md"
+                  (click)="openDocument()"
+                  [mobFullWidth]="false"
+                >
+                  <fa-icon class="icon-space" size="lg" icon="expand"></fa-icon>
+                  {{ 'THEME.OPEN-DOCUMENT' | translate }}
+                </gosi-button-dc>
+              </a>
+              <ng-template #imageView>
+                <gosi-button-dc
+                  type="secondary"
+                  outlineOnly="true"
+                  size="md"
+                  (submit)="openImage()"
+                  [mobFullWidth]="false"
+                >
+                  <fa-icon class="icon-space" size="lg" icon="expand"></fa-icon>
+                  {{ 'THEME.OPEN-DOCUMENT' | translate }}
+                </gosi-button-dc>
+              </ng-template>
+            </div>
+            <div class="doc-btn preview-document" *ngIf="documentService.selectedIndex !== index && !hideDeleteAction">
+              <gosi-button-dc
+                id="previewDocument{{ index }}"
+                type="secondary"
+                outlineOnly="true"
+                size="md"
+                (submit)="previewDocument()"
+                [mobFullWidth]="false"
+              >
+                <fa-icon class="icon-space" size="lg" icon="eye"></fa-icon>
+                {{ 'THEME.OPEN-PREVIEW' | translate }}
+              </gosi-button-dc>
+            </div>
+  
+            <div class="doc-btn close-preview" *ngIf="documentService.selectedIndex === index">
+              <gosi-button-dc
+                type="secondary"
+                outlineOnly="true"
+                size="md"
+                id="cancelBtn{{ index }}"
+                (submit)="closeDocument()"
+                [mobFullWidth]="false"
+              >
+                <fa-icon class="icon-space" size="lg" icon="times"></fa-icon>
+                {{ 'THEME.CLOSE-PREVIEW' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+          <div class="col-lg-12" *ngIf="!document.documentContent && !document.isUploading && document.documentClassification === 'Internal' && appToken === 'PRIVATE' && document.userAccessList">
+            <gosi-input-checkbox-dc
+              label="THEME.DOC-EXCLUDED"
+              [control]="documentExcludedForm?.get('checkBoxFlag')"
+              (click)="documentExcludedForm?.get('checkBoxFlag')?.value ? unChecked() : popUp(allowDocuments)"
+            ></gosi-input-checkbox-dc>
+          </div>
+        </div>
+  
+        <!-- Section to handle events upload,scan and cancel upload -->
+        <div class="document-event" *ngIf="!document.documentContent" [ngClass]="isScanAndUpload ? 'width-unset' : ''">
+          <div
+            class="upload-btn upload"
+            *ngIf="(!isScan || isScanAndUpload) && !document.isUploading"
+           
+            (click)="inputFile()"
+          >
+            <input style="display: none" type="file" id="fileInput" (change)="handleFileInput($event.target.files)" #fileInput />
+            <fa-icon id="uploadDocument{{ index }}" class="upload-icon" icon="upload" size="2x"></fa-icon>
+          </div>
+          <div class="upload-btn cancel" *ngIf="document.isUploading">
+            <fa-icon class="upload-icon" icon="times" size="2x"></fa-icon>
+          </div>
+          <div
+            class="upload-btn scan"
+            id="scanDocument{{ index }}"
+            *ngIf="(isScan || isScanAndUpload) && !document.documentContent"
+            (click)="doScan()"
+            [ngClass]="isScanAndUpload ? 'button-right' : ''"
+          >
+            <img class="scan-btn" alt="" src="assets/icons/svg/scan_icon.svg" />
+          </div>
+          <div
+            id="refreshDocument{{ index }}"
+            [ngClass]="isScanAndUpload ? 'button-right' : ''"
+            class="upload-btn refresh"
+            *ngIf="(isScan || isScanAndUpload) && !document.documentContent && document.isScanning"
+            (click)="refreshDocument()"
+          >
+            <fa-icon class="upload-icon" icon="sync" size="2x"></fa-icon>
+          </div>
+        </div>
+  
+        <!-- Section to handle delete event -->
+        <div class="delete-block" *ngIf="document.documentContent && !document.isUploading && !hideDeleteAction">
+          <a
+            id="deleteDocument{{ index }}"
+            class="delete-icon"
+            [ngClass]="{ disabled: !document.canDelete }"
+            href="javascript:void(0)"
+            (click)="!document.canDelete ? null : popUp(deleteDocuments)"
+          >
+            <fa-icon [icon]="['far', 'trash-alt']" class="delete-icon-fa"></fa-icon>
+          </a>
+        </div>
+        <!-- Delete document template -->
+        <ng-template #deleteDocuments>
+          <gosi-confirm-modal-dc
+            iconName="delete"
+            [message]="'THEME.CONFIRM-DELETE-DOCUMENT'"
+            (onConfirm)="deleteDocument()"
+            (onCancel)="declinePopUp()"
+          >
+          </gosi-confirm-modal-dc>
+        </ng-template>
+      </div>
+      <div class="invalid-feedback" *ngIf="noFilesError">
+        {{ 'THEME.INVALID-FILE-NUMBER' | translate }}
+      </div>
+    </div>
+    <div
+      class="col-lg-12 form-action image-preview"
+      id="documentPreview{{ index }}"
+      *ngIf="documentService.selectedIndex === index"
+    >
+      <div *ngIf="fileUrl; else empty">
+        <ng-container *ngIf="documentType === 'pdf'; else imageView">
+          <object [data]="fileUrl"></object>
+        </ng-container>
+        <ng-template #imageView>
+          <img alt="" [src]="fileUrl" />
+        </ng-template>
+      </div>
+      <ng-template class="form-action" #empty>{{ 'THEME.NOT-AVAILABLE' | translate }}</ng-template>
+    </div>
+  </div>
+  <ng-template #allowDocuments>
+    <gosi-confirm-modal-dc
+      [message]="'THEME.ALLOW-DOCUMENT'| translate : { documentName: lang === 'en' ? document?.name?.english : document?.name?.arabic }"
+      (onConfirm)="documentExcluded()"
+      (onCancel)="declineDocPopUp()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  

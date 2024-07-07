@@ -1,0 +1,124 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="row">
+  <div class="col-md-12">
+    <ces-summary-details-dc
+      [workflow]="workflow"
+      [comment]="comment"
+      [canEdit]="canEdit"
+      [typeLabel]="typeLabel"
+      [subTypeLabel]="subTypeLabel"
+      [dateLabel]="dateLabel"
+      [timeLabel]="timeLabel"
+      [detailLabel]="detailLabel"
+      [summaryHeading]="summaryHeading"
+      [isIndividualApp]="isIndividualApp"
+      [transactionSummary]="transactionSummary"
+      [simisTransactionSummary]="simisTransactionSummary"
+      (priority)="showPopUp(editPriority)"
+      (raiseTicket)="navigateTo()"
+      [documents]="documents"
+      [transactionType]="category"
+      [isBack]="false"
+      [isPrivate]="isPrivate"
+      [header]="header"
+      [isTypeLabel]="isTypeLabel"
+      [customerSummary]="customerSummary"
+      [establishmentSummary]="establishmentSummary"
+      [canRaiseItsm]="canRaiseItsm"
+      (showPreviousTransactions)="onShowPreviousTransactions()"
+      [ticketHistory]="ticketHistory"
+      (navigateToSaedni)="onNavigateToSaedni($event)"
+      (onITSMDetails)="onITSMDetails($event)"
+      (navigate)="onNavigateToTransaction($event)"
+      [itsmDetails]="itsmDetails"
+      (onSubmit1)="onSubmit1($event)"
+    >
+    </ces-summary-details-dc>
+  </div>
+</div>
+<ces-action-area-dc *ngIf="!isTicketNumber"
+  [actions]="actions"
+  [departmentList]="departmentList$ | async"
+  [resubmitHeader]="resubmitHeader"
+  [clerkList]="clerkList$ | async"
+  [locationList]="locationList$ | async"
+  (cancel)="onCancel()"
+  (info)="getInfoDetails($event)"
+  [uuid]="uuid"
+  [category]="category"
+  [referenceNo]="transactionTraceId"
+  [transactionId]="transactionId"
+  (refresh)="refreshDocument($event)"
+  [documents]="uploadDocuments"
+  [parentForm]="actionForm"
+  (show)="openModal($event)"
+  (remove)="removeDocuments($event)"
+  (location)="getDepartmentDetails($event)"
+  [currentRole]="assignedRole"
+  (add)="getRequiredDocuments()"
+  [transactionSummary]="transactionSummary"
+  [categoryList]="categoryList$ | async"
+  [transactionTypeList]="transactionTypeList"
+></ces-action-area-dc>
+<div class="row" *ngIf="!isTicketNumber">
+  <div class="col-md-12 form-action">
+    <div class="complaint-value">
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancel" (submit)="showModal(cancelTemplate, '')" [type]="'secondary'">
+          {{ 'COMPLAINTS.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc id="submit" (submit)="submitComplaint(confirmTemplate, '')" [type]="'primary'">
+          {{ 'COMPLAINTS.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<!--Confirm template-->
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'COMPLAINTS.' + message | translate"
+    (onConfirm)="confirmEvent()"
+    (onCancel)="decline()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--Cancel template-->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="COMPLAINTS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--priority template-->
+<ng-template #editPriority>
+  <ces-modify-transaction-dc
+    [typeLabel]="typeLabel"
+    [subTypeLabel]="subTypeLabel"
+    [canEditPriorityOnly]="canEditPriorityOnly"
+    [isTypeSelected]="isTypeSelected"
+    (confirm)="modifyAction()"
+    (hide)="hideModal()"
+    [transactionSummary]="transactionSummary"
+    (typeSelect)="onTypeSelect($event)"
+    [typeList]="typeList$ | async"
+    [parentForm]="transactionTypeForm"
+    [subTypeList]="subTypeList$ | async"
+    [heading]="heading"
+    [priorityList]="priorityList"
+  >
+  </ces-modify-transaction-dc>
+</ng-template>
+<ng-template #previousTxnTemplate>
+  <ces-previous-transactions-dc
+    [previousTransactions]="presentPreviousTransactions"
+    (hide)="hideModal()"
+    (load)="getTransactions()"
+    (select)="filterCategory($event)"
+    [transactionCount]="previousTransactions.length"
+    [isLoading]="isLoading"
+  ></ces-previous-transactions-dc>
+</ng-template>

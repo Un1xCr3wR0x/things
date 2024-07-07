@@ -1,0 +1,204 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<gosi-breadcrumb-dc #brdcmb> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">{{ stopHeading | translate }}</div>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div [ngClass]="{ hide: stopWizards.length <= 1 }">
+    <gosi-progress-wizard-dc (clickWizard)="selectWizard($event)" [wizardItems]="stopWizards" #stopBenefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="hide-tab">
+    <tabset class="pills">
+      <tab [active]="currentTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-benefit-details-stopped-dc
+              [benefitType]="benefitType"
+              [activeBenefitDetails]="activeBenefitDetails"
+              [lang]="lang"
+              (onViewBenefitDetails)="onViewBenefitDetails()"
+            ></bnt-benefit-details-stopped-dc>
+            <bnt-request-date-dc
+              [parentForm]="requestDetailsForm"
+              [systemRunDate]="systemRunDate"
+              [maxDate]="maxDate"
+              [showConfirmButton]="false"
+            ></bnt-request-date-dc>
+            <div class="row pt-4">
+              <div class="col-sm-12" *ngIf="DateCheck() === 1">
+                <gosi-alert-dc
+                  message="{{ 'BENEFITS.REQUEST-DATE-ALERT' | translate }}"
+                  type="warning"
+                  [noPadding]="true"
+                ></gosi-alert-dc>
+              </div>
+            </div>
+            <!--            <gosi-card-dc type="secondary" headingSize="md" heading="{{ 'BENEFITS.REQUEST-DETAILS' | translate }}">-->
+            <!--              <div class="row">-->
+            <!--                <div class="col-md-6">-->
+            <!--                  <gosi-input-date-dc-->
+            <!--                    id="requestDate"-->
+            <!--                    label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"-->
+            <!--                    [control]="requestDetailsForm.get('requestDate').get('gregorian')"-->
+            <!--                    [maxDate]="maxDate"-->
+            <!--                    [noMargin]="true"-->
+            <!--                  >-->
+            <!--                  </gosi-input-date-dc>-->
+            <!--                </div>-->
+            <!--              </div>-->
+            <!--              <div class="row pt-4">-->
+            <!--                <div class="col-sm-12" *ngIf="DateCheck() === 1">-->
+            <!--                  <gosi-alert-dc-->
+            <!--                    message="{{ 'BENEFITS.REQUEST-DATE-ALERT' | translate }}"-->
+            <!--                    type="warning"-->
+            <!--                    [noPadding]="true"-->
+            <!--                  ></gosi-alert-dc>-->
+            <!--                </div>-->
+            <!--              </div>-->
+            <!--            </gosi-card-dc>-->
+            <gosi-card-dc type="secondary" headingSize="md" heading="{{ 'BENEFITS.BENEFIT-STOP-HEADING' | translate }}">
+              <div class="row">
+                <div class="col-lg-6">
+                  <gosi-input-select-dc
+                    [label]="'BENEFITS.REASON-FOR-STOP' | translate"
+                    id="stopReason"
+                    [list]="reasonListSorted"
+                    (select)="getStopReasonDate($event)"
+                    [control]="stopReasonForm.get('stopReason')"
+                    [placeholder]="'BENEFITS.REASON-FOR-STOP' | translate | lowercase"
+                  ></gosi-input-select-dc>
+                </div>
+                <div
+                  class="col-md-6"
+                  *ngIf="
+                    stopReasonForm.get('stopReason').value.english === 'Beneficiary is dead' ||
+                    stopReasonForm.get('stopReason').value.english === 'Joining work'
+                  "
+                >
+                  <gosi-input-date-dc
+                    id="stopReasonDate"
+                    label="{{
+                      (stopReasonForm.get('stopReason').value.english === 'Beneficiary is dead'
+                        ? 'BENEFITS.DATE-OF-DEATH'
+                        : 'BENEFITS.DATE-OF-STOPPING'
+                      ) | translate
+                    }}"
+                    [control]="stopReasonForm.get('stopReasonDate').get('gregorian')"
+                    [maxDate]="maxDate"
+                    [noMargin]="true"
+                  >
+                  </gosi-input-date-dc>
+                </div>
+                <div
+                  class="col-md-6"
+                  *ngIf="stopReasonForm.get('stopReason').value.english === 'Beneficiary is missing'"
+                >
+                  <gosi-input-date-dc
+                    id="missingDate"
+                    label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+                    [control]="stopReasonForm.get('stopReasonDate').get('gregorian')"
+                    [maxDate]="maxDate"
+                    [noMargin]="true"
+                  >
+                  </gosi-input-date-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12">
+                  <gosi-input-text-area-dc
+                    [label]="'BENEFITS.NOTES' | translate"
+                    id="stopNotes"
+                    name="stopNotes"
+                    [maxLength]="stopNotesMaxLength"
+                    [control]="stopReasonForm.get('stopNotes')"
+                    [noMargin]="true"
+                  >
+                  </gosi-input-text-area-dc>
+                </div>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="stopTransactionConstant"
+              [referenceNo]="inStopEditMode ? referenceNo : referenceNumber"
+              [isEditMode]="inStopEditMode"
+              [documentList]="requiredDocs"
+              [isWorkflow]="false"
+              [parentForm]="documentForm"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransactions(cancelTemplate)"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess()"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousFormDetails()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+    <div class="row" *ngIf="currentTab === 0">
+      <div class="col-lg-12 mt-4">
+        <div class="float-right btn-section">
+          <gosi-button-dc
+            id="save"
+            type="primary"
+            (click)="saveAndNext()"
+            [disabled]="
+              stopReasonForm.invalid ||
+              requestDetailsForm.invalid ||
+              (!stopReasonForm.dirty && !requestDetailsForm.dirty)
+            "
+            >{{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="float-left btn-section">
+          <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(applyCancelTemplate)">{{
+            'BENEFITS.CANCEL' | translate
+          }}</gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #applyCancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirmApplyCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

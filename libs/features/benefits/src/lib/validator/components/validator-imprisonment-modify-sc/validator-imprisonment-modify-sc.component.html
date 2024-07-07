@@ -1,0 +1,142 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <ng-container>
+    <frm-main-heading-dc
+      [heading]="'BENEFITS.JAILED-CONTRIBUTOR-MODIFY-IMPRISONMENT' | translate"
+    ></frm-main-heading-dc>
+  </ng-container>
+
+  <frm-main-content-dc [documents]="documentList" [showComments]="showComments" [comments]="transactionRefData">
+    <div id="contentArea">
+      <bnt-imprisonment-modify-details-sc
+        *ngIf="socialInsuranceNo && requestId && routerData"
+        [routerData]="routerData"
+        [socialInsuranceNo]="socialInsuranceNo"
+        [requestId]="requestId"
+        [referenceNo]="referenceNo"
+      ></bnt-imprisonment-modify-details-sc>
+    </div>
+    <div id="actionArea">
+      <div class="row">
+        <div class="col-lg-12 form-action">
+          <ng-container>
+            <div class="btn-section float-right">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="approve"
+                [disabled]="disableApprove"
+                type="primary"
+                (submit)="approveTransaction(approveTemplate)"
+              >
+                {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+            <div class="btn-section float-right" *ngIf="canReject">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                type="danger"
+                id="reject"
+                (submit)="rejectTransaction(rejectLumpsumTemplate)"
+              >
+                {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+          </ng-container>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="return"
+              (submit)="returnTransaction(returnTemplate)"
+            >
+              {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <!--<div class="btn-section float-right" *ngIf="routerData.assignedRole === rolesEnum.VALIDATOR_1">
+            <gosi-button-dc type="secondary" id="request" (click)="requestInspection(requestInspectionTemplate)">
+              {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+            >
+          </div>-->
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showCancelTemplate(cancelTemplate)"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #optionsModal>
+  <!--<button type="button" class="d-flex btn text-left more-action-button">
+    {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+  </button>-->
+</ng-template>
+<!-- approve template -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="'BENEFITS.CONFIRM_MODIFY_IMPRISONMENT_HEADING'"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="imprisonmentForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveLumpsum()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!-- reject template -->
+<ng-template #rejectLumpsumTemplate>
+  <frm-reject-template-dc
+    [heading]="'BENEFITS.REJECT-MODIFY-IMPRISONMENT-HEADING'"
+    [rejectReasonList$]="rejectReasonList"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="imprisonmentForm"
+    (rejectEvent)="confirmRejectLumpsum()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<!-- return template -->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    [heading]="'BENEFITS.RETURN-MODIFY-IMPRISONMENT-HEADING'"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="imprisonmentForm"
+    (returnEvent)="returnLumpsum()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!----Request Inspection---->
+<ng-template #requestInspectionTemplate>
+  <bnt-inspection-request-dc
+    [heading]="'BENEFITS.REQUEST-INSPECTION'"
+    (cancelEvent)="hideModal()"
+    (submitEvent)="confirmInspection()"
+    [parentForm]="imprisonmentForm"
+    [inspectionList$]="inspectionList"
+  >
+  </bnt-inspection-request-dc>
+</ng-template>
+<!-- cancel template -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>

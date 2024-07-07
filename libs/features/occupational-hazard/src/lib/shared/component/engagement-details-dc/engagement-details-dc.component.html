@@ -1,0 +1,204 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div
+  class="row"
+  *ngIf="heirDisabilityAssessment || showNonOCCDisability || showHeading || nonOccDisabilityReassessment"
+>
+  <div class="col-md-12">
+    <ng-container
+      *ngIf="showHeading || showNonOCCDisability || heirDisabilityAssessment || nonOccDisabilityReassessment"
+    >
+      <frm-content-heading-dc icon="user" heading="OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS" [canEdit]="false">
+      </frm-content-heading-dc>
+    </ng-container>
+    <div class="row">
+      <ng-container
+        *ngIf="
+          (showNonOCCDisability ? showNonOCCDisability && contributor : contributor) ||
+          heirDisabilityAssessment ||
+          nonOccDisabilityReassessment
+        "
+      >
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <gosi-label-dc
+            *ngIf="!heirDisabilityAssessment"
+            id="contributorNIN"
+            [value]="primaryIdentity.id"
+            label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-ID"
+            isLink="true"
+            (click)="navigateToContributor()"
+          ></gosi-label-dc>
+          <gosi-label-dc
+            *ngIf="heirDisabilityAssessment"
+            id="contributorNIN"
+            [value]="primaryIdentity.id || activeBenefitDetails?.contributorId"
+            label="OCCUPATIONAL-HAZARD.NATIONAL-IDENTIFICATION-NO"
+            isLink="true"
+            (click)="navigateToContributor()"
+          ></gosi-label-dc>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="contributorName"
+            [value]="personNameEnglish"
+            label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="contributorName"
+            [value]="personNameArabic"
+            label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME-AR"
+          ></gosi-label-dc>
+        </div>
+        <ng-container *ngIf="showNonOCCDisability || nonOccDisabilityReassessment">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dateOfBirth"
+              date="true"
+              [control]="contributor?.person?.birthDate?.gregorian"
+              label="OCCUPATIONAL-HAZARD.DATE-OF-BIRTH"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="occupation"
+              [value]="activeBenefitDetails?.occupation | bilingualText"
+              label="OCCUPATIONAL-HAZARD.OCCUPATION"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="mobileNo"
+              [value]="contributor?.person?.contactDetail?.mobileNo?.primary"
+              label="OCCUPATIONAL-HAZARD.MOBILE-NUMBER"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="city"
+              [value]="cityLocation | bilingualText"
+              label="OCCUPATIONAL-HAZARD.LOCATION"
+            ></gosi-label-dc>
+          </div>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="establishment && !isMbTransaction">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <gosi-label-dc
+            id="regNo"
+            [value]="registrationNo"
+            label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-ID"
+            isLink="true"
+            (click)="navigateToDashboard()"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="establishmentName"
+            [value]="establishment.name.english"
+            label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="establishmentName"
+            [value]="establishment.name.arabic"
+            label="OCCUPATIONAL-HAZARD.ESTABLISHMENT-NAME-AR"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="disabilty || heirDisabilityAssessment || OH">
+        <gosi-label-dc
+          *ngIf="disabilty && !heirDisabilityAssessment || OH"
+          id="disabiltydetails"
+          value=" {{ contributor?.person?.birthDate?.gregorian | date: getDateFormat(lang) }} ({{
+            'OCCUPATIONAL-HAZARD.AGE-TITLE' | translate
+          }}:{{ contributor?.person?.ageInHijiri }})"
+          label="OCCUPATIONAL-HAZARD.DATE-OF-BIRTH"
+        ></gosi-label-dc>
+        <gosi-label-dc
+          *ngIf="heirDisabilityAssessment"
+          id="disabiltydetails"
+          date="true"
+          [control]="contributor?.person?.birthDate?.gregorian"
+          label="OCCUPATIONAL-HAZARD.DATE-OF-BIRTH"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heirDisabilityAssessment">
+        <gosi-label-dc
+          id="disabiltydetails"
+          value="{{ activeBenefitDetails?.deathDate?.gregorian | date: 'dd/MM/yyyy' }} ({{
+            'OCCUPATIONAL-HAZARD.AGE-TITLE' | translate
+          }}:{{ activeBenefitDetails?.age }})"
+          label="OCCUPATIONAL-HAZARD.DATE-OF-DEATH"
+        ></gosi-label-dc>
+      </div>
+      <ng-container *ngIf="disabilty">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="disabiltydetails"
+            [value]="
+              isComplication === true
+                ? (complicationOccupation | bilingualText)
+                : disabilty && injury
+                ? (injury.occupation | bilingualText)
+                : null
+            "
+            label="OCCUPATIONAL-HAZARD.OCCUPATION"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="disabiltydetails"
+            [value]="contributor?.person?.contactDetail?.mobileNo?.primary"
+            label="OCCUPATIONAL-HAZARD.MOBILE-NUMBER"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="disabiltydetails"
+            [value]="cityLocation === null ? null : (cityLocation | bilingualText)"
+            label="OCCUPATIONAL-HAZARD.LOCATION"
+          ></gosi-label-dc>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="nonOccDisabilityReassessment || disabilty || showNonOCCDisability">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-button-dc
+            id="contributor"
+            type="secondary"
+            [outlineOnly]="true"
+            size="md"
+            (click)="previousAssessment(previousAssessmentModal)"
+          >
+            {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isBenefitNonOcc">
+          <gosi-button-dc
+            id="contributor"
+            type="secondary"
+            [outlineOnly]="true"
+            size="md"
+            (click)="previousOhDetails.emit()"
+          >
+            {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}</gosi-button-dc
+          >
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+<ng-template #previousAssessmentModal>
+  <oh-previous-assessment-details-dc
+    [previousDisabilityDetails]="previousDisabilityDetails"
+    (onAssessmentIdClicked)="viewAssessmentById($event)"
+    (close)="hideModal()"
+  ></oh-previous-assessment-details-dc>
+</ng-template>

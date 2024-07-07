@@ -1,0 +1,919 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="user"
+      heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+      [canEdit]="validatorCanEdit"
+      (onEdit)="navigateToDependentScreen()"
+    >
+    </frm-content-heading-dc>
+    <!--&&
+        !isHeirBenefit &&
+          (this.requestType === benefitTypes.startBenefitWaive || this.requestType === benefitTypes.stopBenefitWaive)-->
+    <div class="row">
+      <div class="col-sm-12 col-md-12 col-lg-12">
+        <gosi-label-dc
+          id="contributorNIN"
+          [value]="identity?.id"
+          label="{{ identityLabel | translate }}"
+          isLink="true"
+          (click)="viewContributorDetails()"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorNameArabic"
+          [value]="personNameArabic"
+          label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="contributorNameEnglish"
+          [value]="personNameEnglish"
+          label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="dob"
+          value="{{ annuityBenefitDetails?.dateOfBirth?.gregorian | date: 'dd/MM/yyyy' }} ({{
+            'BENEFITS.AGE-TITLE' | translate
+          }}:{{ annuityBenefitDetails?.ageInGregorian }})"
+          label="BENEFITS.DATE-OF-BIRTH"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="dobHijiri"
+          label="{{ 'BENEFITS.DATE-OF-BIRTH-HIJIRI' | translate }}"
+          value="{{ annuityBenefitDetails?.dateOfBirth?.hijiri | date: 'dd/MM/yyyy' }} ({{
+            'BENEFITS.AGE-TITLE' | translate
+          }}:{{ annuityBenefitDetails?.age }})"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.missingDate && isHeirBenefit">
+        <gosi-label-dc
+          id="dateOfMissing"
+          [value]="annuityBenefitDetails?.missingDate | dateType"
+          label="{{ 'BENEFITS.MISSING-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.deathDate && isHeirBenefit">
+        <gosi-label-dc
+          id="dateOfDeath"
+          [value]="annuityBenefitDetails?.deathDate | dateType"
+          label="{{ 'BENEFITS.DEATH-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div *ngIf="benefitType === benefitTypes.funeralGrant">
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="dod"
+            label="BENEFITS.DATE-OF-DEATH"
+            [value]="
+              (funeralBeneficiaryDetails?.beneficiaryDetails?.deathDate
+                ? funeralBeneficiaryDetails?.beneficiaryDetails?.deathDate
+                : annuityBenefitDetails?.deathDate
+              ) | dateType
+            "
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--<div *ngIf="!isHeirBenefit && requestType !== benefitTypes.addModifyHeir" class="row">
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      *ngIf="annuityBenefitDetails.disabled"
+      id="userDisabled"
+      [value]="annuityBenefitDetails.disabled | bilingualText"
+      label="{{ 'BENEFITS.DISABLED' | translate }}"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      *ngIf="annuityBenefitDetails.helperNeeded"
+      id="helperNeeded"
+      [value]="annuityBenefitDetails.helperNeeded | bilingualText"
+      label="{{ 'BENEFITS.HELPER-REQUIRED' | translate }}"
+    ></gosi-label-dc>
+  </div>
+</div>-->
+
+  <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="requestType !== benefitTypes.funeralGrant">
+    <div
+      *ngIf="
+        (personDetails?.personType === 'Self' && annuityBenefitDetails?.paymentMethod?.english === 'Cheque') ||
+        (!isHeirBenefit &&
+          annuityBenefitDetails?.benefitType?.english !== benefitTypes.hazardousLumpsum &&
+          requestType !== benefitTypes.addModifyBenefit &&
+          !(
+            (benefitType === 'Non-Occupational Disability Lumpsum Benefit' ||
+              benefitType === 'Non-Occupational Disability Pension Benefit' ||
+              benefitType === 'Non-Occupational Disability Benefit') &&
+            (assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+          ))
+      "
+    >
+      <!-- defect 493705, story 451873 Changes for non occ section manager screen -->
+      <!-- Defect 493632: contact details and address details are not showing under contributor details  -->
+      <!-- Defect 438133 : Contact details displayed in v1 screen, not mentioned in ac/vd -->
+      <bnt-person-contact-details-dc
+        *ngIf="personDetails?.contactDetail"
+        [contactDetail]="personDetails?.contactDetail"
+      >
+      </bnt-person-contact-details-dc>
+    </div>
+
+    <div *ngIf="dependentDetails">
+      <bnt-dependent-details-dc
+        *ngIf="
+          requestType === benefitTypes.addModifyBenefit ||
+            requestType === benefitTypes.holdbenefit ||
+            requestType === benefitTypes.stopbenefit ||
+            requestType === benefitTypes.restartbenefit ||
+            (benefitType === 'Retirement Pension Benefit' &&
+              requestType !== benefitTypes.startBenefitWaive &&
+              requestType !== benefitTypes.stopBenefitWaive) ||
+            (!requestType && !isHeirBenefit && requestType !== benefitTypes.addModifyHeir) ||
+            benefitType === 'Non-Occupational Disability Pension Benefit' ||
+            (isHeirBenefit &&
+              (requestType === benefitTypes.startBenefitWaive || requestType === benefitTypes.stopBenefitWaive));
+          else heirDetails
+        "
+        [lang]="lang"
+        [isHeirBenefit]="isHeirBenefit"
+        [benefitType]="benefitType"
+        [requestType]="requestType"
+        [dependentDetails]="dependentDetails"
+        [notificationDate]="notificationDate"
+        [dependentHistory]="dependentHistory"
+        (getDependentHistory)="getDependentHistory($event)"
+        (onViewBenefitDetails)="onViewBenefitDetails()"
+      >
+      </bnt-dependent-details-dc>
+
+      <!-- Old component for req heir & add/modify heir -->
+      <!-- <bnt-validator-heir-details-dc
+        *ngIf="requestType === benefitTypes.addModifyHeir"
+        [benefitType]="benefitType"
+        [requestType]="requestType"
+        [heirDetails]="dependentDetails"
+        [notificationDate]="notificationDate"
+      >
+      </bnt-validator-heir-details-dc> -->
+      <ng-template #heirDetails>
+        <!--TODO backdated Heir && add/Modify backdated heir details -->
+        <bnt-heirs-details-dc
+          *ngIf="dependentDetails || benefitCalculationDetails"
+          [benefitType]="benefitType"
+          [requestType]="requestType"
+          [heirDetails]="dependentDetails"
+          [systemRunDate]="systemRunDate"
+          [benefitCalculation]="benefitCalculationDetails"
+          [isModify]="isModifyBenefit"
+          (onViewBenefitDetails)="onViewBenefitDetails()"
+        >
+        </bnt-heirs-details-dc>
+      </ng-template>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div *ngIf="benefitType === 'Woman Lumpsum Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.WOMAN-LUMPSUM-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Retirement Lumpsum Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.RETIREMENT-LUMSPUM-PENSION' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Retirement Pension Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.RETIREMENT-PENSION-BENEFITS-DETAIL' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Early Retirement Pension Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.EARLY-RETIREMENT-PENSION' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div
+      *ngIf="
+        benefitType === 'Non-Occupational Disability Lumpsum Benefit' &&
+        !(assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      "
+    >
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.NON-OCC-LUMPSUM-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div
+      *ngIf="
+        benefitType === 'Non-Occupational Disability Pension Benefit' &&
+        !(assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      "
+    >
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.NON-OCC-PENSION-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Jailed Contributor Pension Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.JAILED-CONTRIBUTOR-PESION-BENEFIT' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <div *ngIf="benefitType === 'Jailed Contributor Lumpsum Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.JAILED-CONTRIBUTOR-LUMPSUM-BENEFIT' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <div *ngIf="benefitType === 'Retirement Pension Benefit (Hazardous Occupation)'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HAZARDOUS-PENSION-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <div *ngIf="benefitType === 'Retirement Lumpsum Benefit (Hazardous Occupation)'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HAZARDOUS-LUMPSUM-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <div *ngIf="benefitType === 'Heir Pension Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HEIR-PENSION-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Moved to Public Pension Lumpsum (RPA) Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.RPA-LUMPSUM-BENEFIT-HEADING' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <!-- <div
+      *ngIf="
+        (benefitType === 'Heir Pension Missing Contributor Benefit' ||
+          benefitType === 'Heir Pension Death Contributor Benefit') &&
+        requestType !== benefitTypes.startBenefitWaive &&
+        requestType !== benefitTypes.stopBenefitWaive &&
+        requestType !== benefitTypes.restartbenefit &&
+        requestType !== benefitTypes.holdbenefit
+      "
+    >
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HEIR-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div> -->
+    <!-- (requestType === benefitTypes.startBenefitWaive ||
+          requestType === benefitTypes.stopBenefitWaive ||
+          requestType === benefitTypes.addModifyHeir) -->
+
+    <div
+      class="pt-4"
+      *ngIf="
+        isHeirBenefit &&
+        benefitType !== 'Heir Lumpsum Benefit' &&
+        benefitType !== 'Heir Lumpsum Missing Contributor Benefit' &&
+        benefitType !== 'Heir Lumpsum Dead Contributor Benefit'
+      "
+    >
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HEIR-BENEFIT-DETAIL' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Return Lumpsum Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.RETURN-BENEFIT-AMOUNT' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <div
+      *ngIf="
+        benefitType === 'Heir Lumpsum Benefit' ||
+        benefitType === 'Heir Lumpsum Missing Contributor Benefit' ||
+        benefitType === 'Heir Lumpsum Dead Contributor Benefit'
+      "
+    >
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.HEIR-LUMPSUM-BENEFIT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+
+    <!-- Occ benefit details heading -->
+    <div *ngIf="benefitType === 'Occupational Disability Pension Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        heading="{{ 'BENEFITS.OCC-PENSION-DISABILITY-BENEFIT-DETAILS' | translate }}"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === 'Occupational Disability Lumpsum Benefit'">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        heading="{{ 'BENEFITS.OCC-LUMPSUM-DISABILITY-BENEFIT-DETAILS' | translate }}"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div *ngIf="benefitType === benefitTypes.funeralGrant">
+      <frm-content-heading-dc
+        icon="Benefits"
+        isSvg="true;"
+        [canEdit]="false"
+        heading="{{ 'BENEFITS.FUNERAL-GRANT-DETAILS' | translate }}"
+      >
+      </frm-content-heading-dc>
+    </div>
+    <div class="row" *ngIf="requestType === benefitTypes.addModifyBenefit">
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="requestDate"
+          [value]="
+            (annuityBenefitDetails?.modificationRequestDate?.gregorian
+              ? annuityBenefitDetails?.modificationRequestDate?.gregorian
+              : annuityBenefitDetails?.requestDate?.gregorian
+            ) | date: 'dd/MM/yyyy'
+          "
+          label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div
+      class="row"
+      *ngIf="
+        requestType !== benefitTypes.addModifyBenefit &&
+        requestType !== benefitTypes.stopbenefit &&
+        requestType !== benefitTypes.startBenefitWaive &&
+        requestType !== benefitTypes.stopBenefitWaive &&
+        benefitType !== benefitTypes.funeralGrant &&
+        !(
+          (benefitType === 'Non-Occupational Disability Lumpsum Benefit' ||
+            benefitType === 'Non-Occupational Disability Pension Benefit' ||
+            benefitType === 'Non-Occupational Disability Benefit') &&
+          (assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+        )
+      "
+    >
+      <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc
+          id="requestDate"
+          [value]="annuityBenefitDetails?.requestDate | dateType"
+          label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isHeirBenefit || requestType === benefitTypes.addModifyHeir">
+        <gosi-label-dc
+          id="benefitType"
+          [value]="annuityBenefitDetails?.benefitType | bilingualText"
+          label="{{ 'BENEFITS.BENEFIT-TYPE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="
+          annuityBenefitDetails?.disabilityDate &&
+          benefitType !== benefitTypes.occPension &&
+          benefitType !== benefitTypes.nonOccPensionBenefitType
+        "
+      >
+        <gosi-label-dc
+          id="disabilityDate"
+          [value]="annuityBenefitDetails?.disabilityDate | dateType"
+          label="{{ 'BENEFITS.INJURY-CLOSING-DATE' | translate }}"   
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit">
+        <gosi-label-dc
+          *ngIf="
+            annuityBenefitDetails?.terminationDate &&
+            (benefitType !== benefitTypes.retirementPension || requestType === benefitTypes.holdbenefit) &&
+            benefitType !== benefitTypes.occPension &&
+            benefitType !== benefitTypes.nonOccPensionBenefitType
+          "
+          id="terminationDate"
+          [value]="annuityBenefitDetails?.terminationDate | dateType"
+          label="{{
+            benefitType === benefitTypes.rpaBenefit
+              ? ('BENEFITS.ENGAGEMENT-TERMINATION-DATE' | translate)
+              : ('BENEFITS.TERMINATION-DATE' | translate)
+          }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.heirBenefitReason">
+        <gosi-label-dc
+          id="heirBenefitReason"
+          [value]="annuityBenefitDetails?.heirBenefitReason | bilingualText"
+          label="{{ 'BENEFITS.REASON_BENEFIT' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.deathDate && !isHeirBenefit">
+        <gosi-label-dc
+          id="deathDate"
+          [value]="annuityBenefitDetails?.deathDate | dateType"
+          label="{{ 'BENEFITS.DEATH-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="annuityBenefitDetails?.missingDate">
+        <gosi-label-dc
+          id="heirBenefitReason"
+          [value]="annuityBenefitDetails?.missingDate | dateType"
+          label="{{ 'BENEFITS.CONTRIBUTOR-REPORT-MSSING-DATE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+
+      <!-- BA confirmed - CALCULATED-LUMPSUM-AMOUNT not required : Defect 453473 -->
+      <!-- <div
+        class="col-sm-6 col-md-6 col-lg-6"
+        *ngIf="
+          benefitType === benefitTypes.heirMissingLumpsum || benefitType === benefitTypes.heirLumpsumDeadContributor
+        "
+      >
+        <gosi-label-dc
+          id="calculatedLumpsumAmount"
+          [value]=""
+          label="{{ 'BENEFITS.CALCULATED-LUMPSUM-AMOUNT' | translate }}"
+        ></gosi-label-dc>
+      </div> -->
+
+      <div
+        class="col-md-12 pb-2"
+        *ngIf="
+          (benefitType === benefitTypes.heirMissingLumpsum ||
+            benefitType === benefitTypes.heirLumpsumDeadContributor) &&
+          benefitCalculationDetails?.adjustmentCalculationDetails?.previousAdjustmentAmount
+        "
+      >
+        <!-- API Integration pending -->
+        <a id="viewPrevAdjustment" routerLinkActive="active">
+          <u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u>
+        </a>
+      </div>
+      <div class="col-md-12" *ngIf="imprisonmentDetails?.enteringDate">
+        <div class="row">
+          <div class="col-md-12 mb-4 sub-header">{{ 'BENEFITS.IMPRISONMENT-DETAILS' | translate }}</div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="period"
+              [value]="imprisonmentPeriod | bilingualText"
+              label="{{ 'BENEFITS.IMPRISONMENT-PERIOD' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="imprisonmentDetails?.hasCertificate">
+            <gosi-label-dc
+              id="certificateAvailable"
+              [value]="'BENEFITS.YES' | translate"
+              label="{{ 'BENEFITS.IMPRISONMENT-CERT-AVAILABLE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!imprisonmentDetails?.hasCertificate">
+            <gosi-label-dc
+              id="certificateAvailable"
+              [value]="'BENEFITS.NO' | translate"
+              label="{{ 'BENEFITS.IMPRISONMENT-CERT-AVAILABLE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="row"
+      *ngIf="
+        !isHeirBenefit &&
+        requestType !== benefitTypes.addModifyBenefit &&
+        requestType !== benefitTypes.startBenefitWaive &&
+        requestType !== benefitTypes.stopBenefitWaive &&
+        benefitType !== benefitTypes.funeralGrant &&
+        !(
+          (benefitType === 'Non-Occupational Disability Lumpsum Benefit' ||
+            benefitType === 'Non-Occupational Disability Pension Benefit' ||
+            benefitType === 'Non-Occupational Disability Benefit') &&
+          (assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+        )
+      "
+    >
+      <div class="col-md-12 mb-2 sub-header">
+        {{ 'BENEFITS.PAYMENT-DETAILS' | translate }}
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit">
+        <gosi-label-dc
+          id="payee"
+          [value]="annuityBenefitDetails.payeeType | bilingualText"
+          label="{{ 'BENEFITS.PAYEE' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit">
+        <gosi-label-dc
+          id="paymentmethod"
+          [value]="annuityBenefitDetails.paymentMethod | bilingualText"
+          label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+        ></gosi-label-dc>
+      </div>
+      <!--      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit && bankDetails?.ibanBankAccountNo">-->
+      <!--        <gosi-label-dc-->
+      <!--          id="accountNumber"-->
+      <!--          label="{{ 'BENEFITS.IBANACCOUNT-NUMBER' | translate }}"-->
+      <!--          [value]="bankDetails?.ibanBankAccountNo"-->
+      <!--        >-->
+      <!--        </gosi-label-dc>-->
+      <!--      </div>-->
+      <!--      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit && bankDetails?.bankName">-->
+      <!--        <gosi-label-dc-->
+      <!--          id="bankName"-->
+      <!--          label="{{ 'BENEFITS.BANK-NAME' | translate }}"-->
+      <!--          [value]="bankDetails?.bankName | bilingualText"-->
+      <!--        >-->
+      <!--        </gosi-label-dc>-->
+      <!--      </div>-->
+    </div>
+    <!-- TODO payment details section not required for req backdated heir/dep -->
+    <!-- <div class="row mb-3">
+          <div
+            *ngIf="
+              isHeirBenefit &&
+              requestType !== benefitTypes.addModifyHeir &&
+              requestType !== benefitTypes.startBenefitWaive &&
+              requestType !== benefitTypes.stopBenefitWaive &&
+              requestType !== benefitTypes.holdbenefit &&
+              requestType !== benefitTypes.stopbenefit &&
+              requestType !== benefitTypes.restartbenefit &&
+              benefitType !== benefitTypes.funeralGrant
+            "
+            class="col-sm-12 col-md-12 col-lg-12"
+          >
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>
+                    {{ 'BENEFITS.HEIR_NAME' | translate | titlecase }}
+                  </th>
+                  <th>
+                    {{ 'BENEFITS.PAYEE' | translate }}
+                  </th>
+                  <th>
+                    {{ 'BENEFITS.PAYMENT-METHOD' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody *ngFor="let heir of dependentDetails; let i = index" class="heir-benefit-details-body">
+                <tr class="data-row">
+                  <td class="date-value">{{ heir?.name | nameToString: true }}</td>
+                  <td class="date-value">{{ heir.payeeType | bilingualText }}</td>
+                  <td class="date-value">{{ heir.paymentMode | bilingualText }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div> -->
+    <div *ngIf="requestType && benefitType !== benefitTypes.funeralGrant">
+      <div class="row">
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="
+            isHeirBenefit &&
+            (requestType === benefitTypes.startBenefitWaive ||
+              requestType === benefitTypes.stopBenefitWaive ||
+              requestType === benefitTypes.addModifyBenefit)
+          "
+        >
+          <gosi-label-dc
+            id="requestDate"
+            [value]="annuityBenefitDetails?.requestDate | dateType"
+            label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <ng-container
+          *ngIf="
+            benefitCalculationDetails &&
+            requestType !== benefitTypes.stopbenefit &&
+            !(
+              (benefitType === 'Non-Occupational Disability Lumpsum Benefit' ||
+                benefitType === 'Non-Occupational Disability Pension Benefit' ||
+                benefitType === 'Non-Occupational Disability Benefit') &&
+              (assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+            )
+          "
+        >
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+
+          >
+            <gosi-label-dc
+              id="pensionBenefitAmount"
+              [value]="
+              benefitCalculationDetails?.totalBenefitAmount
+                ? ('BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: benefitCalculationDetails?.totalBenefitAmount | number: '1.2-2' })
+                : '-'
+            "
+              label="{{ 'BENEFITS.PENSION-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+
+          </div>
+          <div class="col-6">
+            <gosi-label-dc
+              id="benefitStartDate"
+              [value]="annuityBenefitDetails?.benefitStartDate | dateType"
+              label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </ng-container>
+        <!--        <div-->
+        <!--          class="col-sm-6 col-md-6 col-lg-6"-->
+        <!--          *ngIf="-->
+        <!--            benefitCalculationDetails &&-->
+        <!--            isHeirBenefit &&-->
+        <!--            (requestType === benefitTypes.startBenefitWaive || requestType === benefitTypes.stopBenefitWaive)-->
+        <!--          "-->
+        <!--        >-->
+        <!--          <gosi-label-dc-->
+        <!--            id="additionalContributionAmt"-->
+        <!--            [value]="-->
+        <!--              'BENEFITS.AMOUNT-MONTHS'-->
+        <!--                | translate-->
+        <!--                  : {-->
+        <!--                      amount:-->
+        <!--                        benefitCalculationDetails?.additionalContribution?.additionalContributionAmount || 0-->
+        <!--                        | number: '1.2-2'-->
+        <!--                    }-->
+        <!--            "-->
+        <!--            label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+        <!--          ></gosi-label-dc>-->
+        <!--        </div>-->
+        <!--        <div-->
+        <!--          class="col-sm-6 col-md-6 col-lg-6"-->
+        <!--          *ngIf="-->
+        <!--            requestType !== benefitTypes.holdbenefit &&-->
+        <!--            requestType !== benefitTypes.stopbenefit &&-->
+        <!--            requestType !== benefitTypes.restartbenefit &&-->
+        <!--            oldBenefitDetails &&-->
+        <!--            oldBenefitDetails.additionalContribution &&-->
+        <!--            oldBenefitDetails.additionalContribution.paymentAmount-->
+        <!--          "-->
+        <!--        >-->
+        <!--          <gosi-label-dc-->
+        <!--            [value]="-->
+        <!--              'BENEFITS.AMOUNT-MONTHS'-->
+        <!--                | translate: { amount: oldBenefitDetails.additionalContribution.paymentAmount | number: '1.2-2' }-->
+        <!--            "-->
+        <!--            label="{{ 'BENEFITS.ADDITIONAL-CONTRIBUTION-BENEFIT-AMT' | translate }}"-->
+        <!--          ></gosi-label-dc>-->
+        <!--        </div>-->
+        <!--changed based on defect 453710 -->
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="requestType === benefitTypes.startBenefitWaive || requestType === benefitTypes.stopBenefitWaive"
+        >
+          <gosi-label-dc
+            id="benefitRequestDate"
+            [value]="annuityBenefitDetails?.requestDate | dateType"
+            label="{{ 'BENEFITS.BENEFIT-REQUEST-DATE' | translate }}"
+          ></gosi-label-dc>
+        </div>
+        <!-- commenting as part of defect 500648 -->
+        <!-- <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="
+            annuityBenefitDetails &&
+            annuityBenefitDetails.benefitStartDate &&
+            requestType !== benefitTypes.startBenefitWaive &&
+            requestType !== benefitTypes.stopBenefitWaive &&
+            requestType !== benefitTypes.holdbenefit &&
+            requestType !== benefitTypes.stopbenefit &&
+            requestType !== benefitTypes.restartbenefit &&
+            requestType !== benefitTypes.addModifyBenefit
+          "
+        >
+          <gosi-label-dc
+            id="benefitStartDate"
+            [value]="annuityBenefitDetails?.benefitStartDate | dateType"
+            label="{{ 'BENEFITS.BENEFIT-START-DATE' | translate }}"
+          ></gosi-label-dc>
+        </div> -->
+        <div
+          class="col-sm-6 col-md-6 col-lg-6"
+          *ngIf="!isHeirBenefit && requestType === benefitTypes.startBenefitWaive"
+        >
+          <gosi-label-dc
+            id="benefitStatus"
+            [value]="annuityBenefitDetails?.status | bilingualText"
+            label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="!isHeirBenefit && requestType === benefitTypes.stopBenefitWaive">
+          <gosi-label-dc
+            id="stopWaivebenefitStatus"
+            [value]="annuityBenefitDetails?.beneficiaryBenefitStatus | bilingualText"
+            label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+          ></gosi-label-dc>
+        </div>
+      </div>
+      <div
+        *ngIf="
+          (benefitCalculationDetails || oldBenefitDetails) &&
+          !isHeirBenefit &&
+          (requestType === benefitTypes.holdbenefit || requestType === benefitTypes.restartbenefit)
+        "
+      >
+        <div class="row py-4">
+          <div class="col-md-12 col-lg-12 sub-header">{{ 'BENEFITS.BENEFIT-AFTER-UPDATE' | translate }}</div>
+        </div>
+        <div class="row" *ngIf="benefitCalculationDetails">
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dependentCompAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: benefitCalculationDetails.dependentAmount | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.DEPENDENT-COMP-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="contributorCompAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: benefitCalculationDetails.contributorAmount | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.CONTRIBUTOR-COMP-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="benefitCalculationDetails">
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="pensionBenefitAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: benefitCalculationDetails.totalBenefitAmount | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-6 col-lg-6"></div>
+        </div>
+
+        <div class="row py-4">
+          <div class="col-md-12 col-lg-12 sub-header">{{ 'BENEFITS.BENEFIT-BEFORE-UPDATE' | translate }}</div>
+        </div>
+        <div class="row" *ngIf="oldBenefitDetails">
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dependentCompAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: oldBenefitDetails.dependentAmount || '0' | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.DEPENDENT-COMP-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="contributorCompAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS'
+                  | translate: { amount: oldBenefitDetails.contributorAmount || '0' | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.CONTRIBUTOR-COMP-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="oldBenefitDetails">
+          <div class="col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="pensionBenefitAmount"
+              [value]="
+                'BENEFITS.AMOUNT-MONTHS' | translate: { amount: oldBenefitDetails.amount || '0' | number: '1.2-2' }
+              "
+              label="{{ 'BENEFITS.TOTAL-BENEFIT-AMOUNT' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-6 col-lg-6"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4" *ngIf="benefitType !== benefitTypes.funeralGrant && isHeirBenefit">
+      <div class="col-lg-12 benefit-details-pad" *gosiShow="viewOnly">
+        <!-- <span class="full-benefit-details">{{ 'BENEFITS.VIEW-FULL-BENEFIT-DETAILS' | translate }}</span> -->
+        <!--433108-->
+        <span (click)="viewHistory()" class="full-benefit-details">{{
+          'BENEFITS.VIEW-BENEFIT-HISTORY' | translate
+          }}</span>
+      </div>
+    </div>
+
+    <div class="row mb-4" *ngIf="annuityBenefitDetails?.prevRejectedTransaction">
+      <div class="col-lg-12 benefit-details-pad">
+        <!-- <span class="full-benefit-details">{{ 'BENEFITS.VIEW-FULL-BENEFIT-DETAILS' | translate }}</span> -->
+        <!--433108-->
+        <span (click)="viewTranscationHistory()" class="full-benefit-details">{{
+          'BENEFITS.VIEW-TRANSCATION-HISTORY' | translate
+          }}</span>
+      </div>
+    </div>
+  </div>
+  <div
+    class="col-sm-12 col-md-12 col-lg-12"
+    *ngIf="
+      !isHeirBenefit &&
+      requestType !== benefitTypes.funeralGrant &&
+      (requestType === benefitTypes.startBenefitWaive || requestType === benefitTypes.stopBenefitWaive)
+    "
+  >
+    <bnt-benefit-waive-details-dc [annuityBenefitDetails]="annuityBenefitDetails"></bnt-benefit-waive-details-dc>
+  </div>
+  <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="benefitType === benefitTypes.funeralGrant">
+    <bnt-funeral-heir-details-dc
+      *ngIf="annuityBenefitDetails"
+      [lang]="lang"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [benefitCalculationDetails]="benefitCalculationDetails"
+      [funeralBeneficiaryDetails]="funeralBeneficiaryDetails"
+    ></bnt-funeral-heir-details-dc>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+
+<cnt-e-establishment-details-dc
+[engDetails]="engDetails"
+[inEditMode]="inEditMode"
+></cnt-e-establishment-details-dc>
+
+<cnt-e-engagements-details-dc
+    *ngIf="engagementDetailsForm"
+    [leavingReasonList]="leavingReasonList"
+    [systemParams]="systemParams"
+    [engagementDetails]="engagementDetails"
+    [backdatedContributor]="backdatedContributor"
+    [engagementDetailsForm]="engagementDetailsForm"
+    [engagementWageDetails]="engagementWageDetails"
+    [eEngDetails]="eEngDetails"
+    [eWageDetails]="eWageDetails"
+    [person]="person"
+    [inEditMode]="inEditMode"
+    [(joiningDate)]="joiningDate"
+    [(leavingDate)]="leavingDate"
+    [(disableWageAddSection)]="disableWageAddSection"
+    (resetEngagementWages)="resetEngagementWages()"
+    (setWageValidation)="setWageValidation()"
+    (setWagePeriodEndDate)="setWagePeriodEndDate()"
+    [engDetails]="engDetails"
+></cnt-e-engagements-details-dc>
+
+
+<div class="row">
+    <div class="col-md-12">
+      <div class="card">
+            <div class="row justify-content-between">
+              <h4 class="card-heading">
+                {{ 'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate }}
+              </h4>
+                <div *ngIf="isWageInfoVisible && engagementWageDetails.length > 0">
+                  <gosi-button-dc
+                    type="outline-primary"
+                    id="addadditionalperiod"
+                    size="md"
+                    (submit)="addAdditionalPeriod()"
+                    [disabled]="isPeriodEditOn"
+                  >
+                    <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+                    {{ 'CONTRIBUTOR.ADD-ADDITIONAL-PERIOD' | translate }}
+                  </gosi-button-dc>
+                </div>
+            </div>
+            <div class="card-body">
+                <cnt-e-wage-add-dc
+                [minWageAddDate]="minDateWageAdd"
+                [maxWageAddDate]="maxWageAddDate"
+                [occupationList]="occupationList"
+                [engagementWageDetails]="engagementWageDetails"
+                [joiningDate]="joiningDate"
+                [disableAll]="disableWageAddSection"
+                [disableJoining]="engagementWageDetails.length === 0"
+                (addWageEvent)="addWagePeriod($event)"
+                (cancelWageEvent)="cancelAddWagePeriod()"
+                ></cnt-e-wage-add-dc>
+
+                <br />
+                <cnt-e-wage-history-dc
+                [(engagementWageDetails)]="engagementWageDetails"
+                [occupationList]="occupationList"
+                [hideWageInfoSection]="isWageInfoVisible"
+                [isWageAdditionOn]="isWageAdditionOn"
+                [inEditMode]="inEditMode"
+                (editWageEvent)="addWagePeriod($event)"
+                (removeWageEvent)="removeWagePeriod($event)"
+                (showError)="showAlertError($event)"
+                (wagePeriodUpdate)="handleWagePeriodChange($event)"
+                (periodEditOn)="isPeriodEditOn = $event"
+                ></cnt-e-wage-history-dc>
+            </div>
+      </div>
+    </div>
+</div>
+
+<cnt-action-area-dc
+    [primaryButtonLabel]="isSubmit ? 'CONTRIBUTOR.SUBMIT' : 'CONTRIBUTOR.SAVE-AND-NEXT'"
+    [showPreviousSection]="!registered"
+    [disablePrimary]="isApiTriggered"
+    idValue="1"
+    (submit)="saveEngagementDetails()"
+    (previous)="navigateTopreviousTab()"
+    (cancel)="showTemplate(cancelEngagementTemplate)"
+></cnt-action-area-dc>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+

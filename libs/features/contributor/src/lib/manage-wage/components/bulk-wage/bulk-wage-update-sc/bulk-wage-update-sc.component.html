@@ -1,0 +1,69 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content" *ngIf="isAppPrivate; else mainContent">
+  <!-- Section to show any eligibility error if any -->
+  <ng-container *ngIf="!isValid; else bulkWage">
+    <gosi-alert-sc></gosi-alert-sc>
+  </ng-container>
+  <!-- Bulk wage content for app private -->
+  <ng-template #bulkWage>
+    <cnt-header-section-dc
+      heading="CONTRIBUTOR.WAGE.FILE-UPDATE"
+      (goBack)="checkForChanges(cancelTemplate)"
+    ></cnt-header-section-dc>
+    <gosi-alert-sc></gosi-alert-sc>
+    <ng-container *ngTemplateOutlet="mainContent"></ng-container>
+  </ng-template>
+</div>
+
+<!-- Main content for bulk wage update -->
+<ng-template #mainContent>
+  <div [ngClass]="{ 'p-4': !isAppPrivate }">
+    <div class="row" [ngClass]="{ 'mt-4': isAppPrivate }">
+      <div class="col-lg-12">
+        <cnt-bulk-wage-upload-dc
+          [isProcessing]="isProcessing"
+          [isWorkflowInProgress]="isWorkflowInProgress"
+          [bulkFile]="bulkFile"
+          [parentForm]="bulkWageForm"
+          [totalContributors]="totalContributors"
+          [isEditMode]="isEditMode"
+          [transactionNo]="transactionNo"
+          (downloadAll)="downloadAllActiveContributorsCSV()"
+          (processFile)="startBulkWageFileProcessing($event)"
+          [isPPAEst]="isPPAEst"
+        ></cnt-bulk-wage-upload-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="totalNumberOfFiles > 0 && !isEditMode">
+        <cnt-bulk-wage-upload-history-dc
+          [uploadHistoryList]="uploadFileHistory"
+          [id]="paginationId"
+          [currentPage]="pageDetails.currentPage"
+          [pageSize]="itemsPerPage"
+          [totalSize]="totalNumberOfFiles"
+          (fetchReport)="fetchReport($event)"
+          [isPPAEst]="isPPAEst"
+        ></cnt-bulk-wage-upload-history-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="totalNumberOfFiles > 4 && !isEditMode">
+        <!-- Pagination starts -->
+        <gosi-pagination-dc
+          [totalSize]="totalNumberOfFiles"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="paginateFiles($event)"
+          [itemType]="'CONTRIBUTOR.BULK-WAGE.UPLOADED-FILE-HISTORY' | translate"
+          [paginationId]="paginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.CONFIRM-CANCEL'" (onConfirm)="navigateBack()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

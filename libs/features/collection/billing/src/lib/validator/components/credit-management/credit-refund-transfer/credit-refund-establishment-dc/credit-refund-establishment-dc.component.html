@@ -1,0 +1,286 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- establishment details -->
+<ng-container *ngIf="establishmentDetails && !contributorDetails">
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentType"
+          [control]="establishmentDetails.registrationNo"
+          label="BILLING.REGISTRATION-NO"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="establishmentDetails.name !== undefined">
+        <gosi-label-dc
+          id="establishmentName"
+          [control]="
+            establishmentDetails.name.english === null
+              ? establishmentDetails.name.arabic
+              : (establishmentDetails.name | bilingualText)
+          "
+          label="BILLING.ESTABLISHMENT-NAME"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="legalEntity"
+          [control]="
+            establishmentDetails.legalEntity.english == null
+              ? establishmentDetails.legalEntity.arabic
+              : (establishmentDetails.legalEntity | bilingualText)
+          "
+          label="BILLING.LEGAL-ENTITY"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentType"
+          [control]="establishmentDetails.establishmentType"
+          label="BILLING.ESTABLISHMENT-TYPE"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" [control]="establishmentDetails.status" label="BILLING.STATUS"> </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<!-- end of establishment details -->
+<!-- contributor details -->
+<ng-container *ngIf="contributorDetails">
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="lang === 'en'">
+        <gosi-label-dc
+          id="contributorName"
+          [control]="
+            contributorDetails?.person?.name?.english.name !== undefined
+              ? contributorDetails?.person?.name?.english.name
+              : arabicName
+          "
+          [label]="'BILLING.CONTRIBUTOR-NAME'"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="lang === 'ar'">
+        <gosi-label-dc id="contributorName" [control]="arabicName" [label]="'BILLING.CONTRIBUTOR-NAME'">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="socialInsuranceNo"
+          [control]="contributorDetails?.socialInsuranceNo"
+          label="BILLING.SOCIAL-INSURANCE-NO"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" value="{{ contributorStatus | translate }}" label="BILLING.STATUS"> </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<!-- end of contributor details -->
+<!-- available credit details -->
+<div class="sub-content-item">
+  <div class="row">
+    <div class="col-lg-12">
+      <frm-content-heading-dc
+        [isSvg]="true"
+        icon="refund-credit-balance"
+        heading="BILLING.REFUND-CREDIT-BAL-DETAILS"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="heading-font">{{ 'BILLING.PAYMENT-DETAILS' | translate }}</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="transferMode"
+        [label]="'BILLING.PAYMENT-METHOD'"
+        [value]="CreditRefundDetails?.paymentMode | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="CreditRefundDetails?.paymentMode.english === 'Bank Transfer'">
+    <div class="col-lg-6" class="iban-value pl-3">
+      <gosi-label-dc
+        id="contributorIBAN"
+        [label]="fromPage === 'est' ? 'BILLING.ESTABLISHMENT-IBAN' : 'BILLING.CONTRIBUTOR-IBAN'"
+        [value]="CreditRefundDetails?.iban"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-label-dc id="bankName" [label]="'BILLING.BANK-NAME'" [value]="bankName | bilingualText"> </gosi-label-dc>
+    </div>
+  </div>
+</div>
+<ng-container *ngIf="iscreditRefund">
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="transferMode"
+        [label]="'BILLING.REFUND-CREDIT-BALANCE-TYPE'"
+        [value]="CreditRefundDetails?.creditRetainIndicator | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+</ng-container>
+<!------------------------------------REFUND-CREDIT-BAL-DETAILS---------------------------------------------->
+<ng-container *ngIf="CreditRefundDetails?.creditAccountDetail">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="heading-font">
+        {{ 'BILLING.REFUND-CREDIT-BAL-DETAILS' | translate }}
+        <span class="suffix">{{ 'BILLING.AT-THE-TIME-OF-SUBMISSION' | translate }}</span>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="CreditRefundDetails?.creditRetainIndicator.english === 'Do not Retain Amount'">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="CreditRefundDetails?.creditAccountDetail?.transferableBalance !== undefined">
+        <gosi-currency-label-dc
+          id="transferbleCredit"
+          [label]="'BILLING.MAX-REFUNDABLE-CREDIT-BAL'"
+          [currencyTo]="CreditRefundDetails?.creditAccountDetail?.totalCreditBalance"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="CreditRefundDetails?.creditRetainIndicator.english !== 'Do not Retain Amount'">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="CreditRefundDetails?.creditAccountDetail?.transferableBalance !== undefined">
+        <gosi-currency-label-dc
+          id="transferbleCredit"
+          [label]="'BILLING.MAX-REFUNDABLE-CREDIT-BAL'"
+          [currencyTo]="CreditRefundDetails?.creditAccountDetail?.transferableBalance"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="CreditRefundDetails?.creditAccountDetail?.totalCreditBalance !== undefined">
+        <gosi-currency-label-dc
+          id="creditBalance"
+          [label]="'BILLING.TOTAL-CREDIT-BALANCE'"
+          [currencyTo]="CreditRefundDetails?.creditAccountDetail?.totalCreditBalance"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6" *ngIf="CreditRefundDetails?.creditAccountDetail?.retainedBalance !== undefined">
+        <gosi-currency-label-dc
+          id="retainedBalance"
+          [label]="'BILLING.CREDIT-BALANCE-RETAINED'"
+          [currencyTo]="CreditRefundDetails?.creditAccountDetail?.retainedBalance.toString()"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-lg-6"></div>
+    </div>
+  </ng-container>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-currency-label-dc
+        id="retainedBalance"
+        [label]="'BILLING.REFUND-AMOUNT'"
+        [currencyTo]="CreditRefundDetails?.requestedAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+  </div>
+</ng-container>
+<!----------------------------------CURRENT-REFUND-CREDIT-BAL-DETAILS---------------------------------------------->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="heading-font">{{ 'BILLING.CURRENT-REFUND-CREDIT-BAL-DETAILS' | translate }}</div>
+  </div>
+</div>
+<ng-container *ngIf="CreditRefundDetails?.creditRetainIndicator.english === 'Do not Retain Amount'">
+  <div class="row">
+    <div class="col-lg-6" *ngIf="CreditRefundDetails?.creditAccountDetail?.transferableBalance !== undefined">
+      <gosi-currency-label-dc
+        id="transferbleCredit"
+        [label]="'BILLING.MAX-REFUNDABLE-CREDIT-BAL'"
+        [currencyTo]="CreditRefundDetails?.currentAccountDetail?.totalCreditBalance"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="CreditRefundDetails?.creditRetainIndicator.english !== 'Do not Retain Amount'">
+  <div class="row">
+    <div class="col-lg-6" *ngIf="CreditRefundDetails?.currentAccountDetail?.transferableBalance !== undefined">
+      <gosi-currency-label-dc
+        id="transferbleCredit"
+        [label]="'BILLING.MAX-REFUNDABLE-CREDIT-BAL'"
+        [currencyTo]="CreditRefundDetails?.currentAccountDetail?.transferableBalance"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="CreditRefundDetails?.currentAccountDetail?.totalCreditBalance !== undefined">
+      <gosi-currency-label-dc
+        id="creditBalance"
+        [label]="'BILLING.TOTAL-CREDIT-BALANCE'"
+        [currencyTo]="CreditRefundDetails?.currentAccountDetail?.totalCreditBalance"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6" *ngIf="CreditRefundDetails?.currentAccountDetail?.retainedBalance !== undefined">
+      <gosi-currency-label-dc
+        id="retainedBalance"
+        [label]="'BILLING.CREDIT-BALANCE-RETAINED'"
+        [currencyTo]="CreditRefundDetails?.currentAccountDetail?.retainedBalance.toString()"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+  </div>
+</ng-container>
+<div class="row">
+  <div class="col-lg-6">
+    <gosi-currency-label-dc
+      id="retainedBalance"
+      [label]="'BILLING.CURRENT-REFUND-AMOUNT'"
+      [currencyTo]="CreditRefundDetails?.approvedAmount"
+      [countryCodeFrom]="'BILLING.SAR' | translate"
+    >
+    </gosi-currency-label-dc>
+  </div>
+</div>
+
+<!-- end of available credit details -->

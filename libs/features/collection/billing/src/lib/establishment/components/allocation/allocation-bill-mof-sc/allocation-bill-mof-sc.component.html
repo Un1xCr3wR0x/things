@@ -1,0 +1,199 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="billing-breadcrumb">
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+</div>
+<!-------------------------------------------------------Header Section-------------------------------------------------------->
+<div class="row header-section" id="mof-allocation">
+  <div class="col-auto heading-main border-right">
+    {{ 'BILLING.ALLOCATION' | translate }}
+  </div>
+  <div class="col-auto heading-main mr-auto">
+    {{ 'BILLING.MOF' | translate }}
+  </div>
+  <div class="col-auto heading-main mr-auto establishmentName-margin" id="Mof-Est-Est-Name">
+    <div *ngIf="lang === 'en'">
+      {{ establishmentHeader?.name?.english === null ? establishmentName?.arabic : establishmentName?.english }}
+    </div>
+    <div *ngIf="lang === 'ar'">
+      {{ establishmentName?.arabic }}
+    </div>
+  </div>
+  <div class="col-auto" id="mof-allocation-icons" style="display: none">
+    <img
+      class="icon pr-3 image-size"
+      id="pdfDownloadMofAllocationBill"
+      alt="pdfDownloadAllocationBills"
+      (click)="downloadMofAllocationBill()"
+      title="{{ 'BILLING.DOWNLOAD-BILL-AS-PDF' | translate }}"
+      [src]="pdfImgSrc"
+      (mouseover)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-hover.svg'"
+      (mouseout)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-normal.svg'"
+    />
+
+    <img
+      class="icon pr-3 image-size"
+      id="excelDownloadsMofAllocationBill"
+      alt="excelDownloadsAllocationBills"
+      title="{{ 'BILLING.DOWNLOAD-BILL-AS-EXCEL' | translate }}"
+      (click)="downloadMofAllocationBill()"
+      [src]="excelImgSrc"
+      (mouseover)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-hover.svg'"
+      (mouseout)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-normal.svg'"
+    />
+    <img
+      class="icon pe-3 image-size"
+      id="printMofAllocationBills"
+      alt="printAllocationBillss"
+      (click)="printMofAllocationBill()"
+      title="{{ 'BILLING.PRINT' | translate }}"
+      [src]="printImgSrc"
+      (mouseover)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-hover.svg'"
+      (mouseout)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-normal.svg'"
+    />
+  </div>
+</div>
+<div class="row regno" id="id-number">
+  <span class="col-lg-12"> </span>
+</div>
+<!------------------------------------Header Section Ends--------------------------------------------->
+
+<div class="content">
+  <!---------------------Content Head Section-------------------->
+  <div class="align-heading">
+    <div class="align-self-center">
+      <span class="back-button">
+        <a (click)="navigateBackToMofBillHistory()">
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'en'"
+            [icon]="['far', 'arrow-alt-circle-left']"
+            size="2x"
+          ></fa-icon>
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'ar'"
+            [icon]="['far', 'arrow-alt-circle-right']"
+            size="2x"
+          ></fa-icon>
+        </a>
+      </span>
+      <span class="col-auto allocation-header" id="mof-allocation-header">
+        {{ 'BILLING.ALLOCATION-DUR-THE-MONTH' | translate }}
+      </span>
+    </div>
+    <div class="bill-month col-lg-auto col-sm-12" id="mof-Allocation-date-picker">
+      <gosi-input-month-dc
+        id="bill-month-selector"
+        [ignoreLabel]="true"
+        [disabled]="false"
+        [dateFormat]="dateFormat"
+        [minDate]="monthPickerMinDate"
+        [maxDate]="monthPickerMaxDate"
+        [control]="monthPickerForm.get('month').get('gregorian')"
+        [readOnly]="true"
+        class="billMonth"
+        (blur)="onSelectedMonthChange($event)"
+      >
+      </gosi-input-month-dc>
+    </div>
+    <div class="closed-label">{{ 'BILLING.CLOSED-ON' | translate }} {{ closedMonth }}</div>
+  </div>
+  <!----------------------------------Content Head Section Ends-------------------------------------------->
+  <!----------------------------------Allocation Summary Table--------------------------------------------->
+  <div class="subheading">
+    {{ 'BILLING.ALLOCATION-SUMMARY' | translate }}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-borderless">
+      <thead class="thead-light">
+        <tr>
+          <th>
+            {{ 'BILLING.TOTAL-CREDIT-AMOUNT-ALLOCATION' | translate }}
+            <span class="currency-sizes">({{ currentCurrencyLable | translate }})</span>
+          </th>
+          <th>
+            {{ 'BILLING.TOTAL-DEBIT-AMOUNT' | translate }}
+            <span class="currency-sizes">({{ currentCurrencyLable | translate }})</span>
+          </th>
+          <th>
+            {{ 'BILLING.TOTAL-ALLOCATED-AMOUNT' | translate }}
+            <span class="currency-sizes"> ({{ currentCurrencyLable | translate }})</span>
+          </th>
+          <th>
+            {{ 'BILLING.BALANCE-AFTER-ALLOCATION' | translate }}
+            <span class="currency-sizes"> ({{ currentCurrencyLable | translate }})</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ allocationCreditTotal * exchangeRate | number: '1.2-2' }}</td>
+          <td>{{ mofAllocationDetails?.totalDebitAmount * exchangeRate | number: '1.2-2' }}</td>
+          <td>{{ mofAllocationDetails?.totalAllocatedAmount * exchangeRate | number: '1.2-2' }}</td>
+          <td>
+            {{ balanceAmount * exchangeRate | number: '1.2-2' }}
+            <span *ngIf="isDebitFlag"> ({{ 'BILLING.DEBIT' | translate }}) </span>
+            <span *ngIf="!isDebitFlag"> ({{ 'BILLING.CREDITS' | translate }}) </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!----------------------------------Allocation Summary Table Ends------------------------------------------>
+  <!----------------------------------Tabset------------------------------------------>
+  <div class="add-margin-top" id="Mof-allocation-tabset">
+    <blg-allocation-tabset-dc
+      [selectedTab]="selectedTab"
+      [selectedDate]="dateSelected"
+      [fromPage]="'contributorAllocation'"
+      (tabSelected)="goToNewTab($event)"
+      [billIssueDate]="billIssueDate"
+      [tabList]="tabList"
+    ></blg-allocation-tabset-dc>
+  </div>
+
+  <!----------------------------------Tabset Ends------------------------------------------>
+
+  <div class="tables-align">
+    <!----------------------------------Credit--------------------------------------------->
+    <div *ngIf="selectedTab === 'BILLING.CREDITS'">
+      <blg-allocation-credit-summary-dc
+        [allocationDetails]="mofAllocationDetails"
+        [exchangeRate]="exchangeRate"
+        [currentCurrency]="currentCurrency"
+        [fromPage]="'mofAllocation'"
+      ></blg-allocation-credit-summary-dc>
+    </div>
+    <!----------------------------------Allocation of Credits----------------------------------->
+    <div *ngIf="selectedTab === 'BILLING.ALLOCATION-OF-CREDITS'">
+      <blg-mof-allocation-of-credit-table-dc
+        #mofAllocationTableComponent
+        [itemlist]="allocationOfCredits?.thirdPartyBillAllocations"
+        [noOfRecords]="allocationOfCredits?.totalNoOfEstablishments"
+        [pageDetails]="pageDetail"
+        [currentCurrency]="selectedCurrency"
+        (filterDetails)="applyFilter($event)"
+        (selectPageNo)="onPageChange($event)"
+        (onSearch)="onSearch($event)"
+        (navigateToEstAllocation)="navigateToEstAllocation($event)"
+      >
+      </blg-mof-allocation-of-credit-table-dc>
+    </div>
+    <!----------------------------------Summary of contribution and late fee---------------------------->
+    <div *ngIf="selectedTab === 'BILLING.SUMMARY-CONTRIBUTION-LATEFEE'">
+      <blg-allocation-contribution-summary-dc
+        [establishmentType]="establishmentType"
+        [currentCurrency]="currentCurrency"
+        [exchangeRate]="exchangeRate"
+        [fromPage]="'mofAllocation'"
+        [mofAllocationSummaryDetails]="mofAllocationDetails?.allocationSummaries"
+      >
+      </blg-allocation-contribution-summary-dc>
+    </div>
+  </div>
+</div>

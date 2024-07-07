@@ -1,0 +1,159 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container *ngIf="complicationDetails">
+  <div class="row">
+    <div class="col-lg-3">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DATE"
+        id="complicationDate"
+        [value]="complicationDetails.complicationDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <!--Rejection reason and date-->
+    <div
+      class="col-lg-3"
+      *ngIf="
+        complicationDetails.rejectionReason &&
+        !this.showReopenReason &&
+        complicationDetails.status.english === 'Rejected' &&
+        !complicationDetails.hasRejectionInprogress &&
+        !complicationDetails.hasPendingChangeRequest
+      "
+    >
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.INJ-REJECT-REASON"
+        id="reasonForRejection"
+        [value]="complicationDetails.rejectionReason | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-lg-3"
+      *ngIf="
+        complicationDetails.rejectInitiatedDate &&
+        !this.showReopenReason &&
+        complicationDetails.status.english === 'Rejected' &&
+        !complicationDetails.hasRejectionInprogress &&
+        !complicationDetails.hasPendingChangeRequest
+      "
+    >
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.REJECTION-DATE"
+        id="rejectionDate"
+        [value]="complicationDetails.rejectInitiatedDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <!--Closing Date and Status-->
+    <ng-container
+      class="row"
+      *ngIf="
+        complicationDetails.closingDate &&
+        !this.showReopenReason &&
+        (complicationDetails.status.english === 'Cured With Disability' ||
+          complicationDetails.status.english === 'Cured Without Disability' ||
+          complicationDetails.status.english === 'Closed without continuing treatment' ||
+          complicationDetails.status.english === 'Resulted in Death') &&
+        !complicationDetails.hasPendingChangeRequest
+      "
+    >
+      <div class="col-lg-3" *ngIf="complicationDetails.closingDate && !this.showReopenReason">
+        <gosi-label-dc
+          id="closingStatus"
+          label="OCCUPATIONAL-HAZARD.CLOSING-STATUS"
+          [value]="complicationDetails.status | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="complicationDetails.closingDate && !this.showReopenReason">
+        <gosi-label-dc
+          id="closingDate"
+          label="OCCUPATIONAL-HAZARD.CLOSING-DATE"
+          [value]="complicationDetails.closingDate.gregorian | date: 'dd/MM/yyyy'"
+        >
+        </gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-lg-3" *ngIf="complicationDetails.workDisabilityDate">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+        [value]="complicationDetails.workDisabilityDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="!isContributor">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+        id="employeeInformedOn"
+        [value]="complicationDetails.employeeInformedDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="isContributor">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE-IND"
+        id="employeeInformedOn"
+        [value]="complicationDetails.employeeInformedDate.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    
+    <div class="col-lg-3" *ngIf="complicationDetails.employerInformedDate && !isContributor">
+      <gosi-label-dc
+        label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+        id="employerInformedOn"
+        [value]="complicationDetails.employerInformedDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- write in a single class -->
+    <div class="emergency-no" class="col-lg-3">
+      <gosi-label-dc
+        id="emergencyContactNumber"
+        [control]="complicationDetails.emergencyContactNo.primary"
+        label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+        ><span id="prefixValue">{{ idCode }}</span>
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="complicationLeadtoDeath"
+        label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-LEADS-TO-DEATH"
+        [value]="complicationDetails.complicationLeadsToDeathIndicator | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3" *ngIf="complicationDetails.complicationToDeathIndicator">
+      <gosi-label-dc
+        id="deathDate"
+        label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+        [control]="complicationDetails.deathDate.gregorian | date: 'dd/MM/yyyy'"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc
+        id="treatmentIsCompleted"
+        label="OCCUPATIONAL-HAZARD.TREATMENT-COMPLETED"
+        [value]="complicationDetails.treatmentCompletionIndicator | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc *ngIf="!isContributor"
+        id="reasonForDelay"
+        label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR"
+        [value]="complicationDetails.reasonForDelay | bilingualText"
+      >
+      </gosi-label-dc>
+      <gosi-label-dc *ngIf="isContributor"
+        id="reasonForDelay"
+        label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR-IND"
+        [value]="complicationDetails.reasonForDelay | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+</ng-container>

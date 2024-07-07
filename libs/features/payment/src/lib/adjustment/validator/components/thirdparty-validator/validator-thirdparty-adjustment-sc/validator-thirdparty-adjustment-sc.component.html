@@ -1,0 +1,100 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <ng-container>
+    <frm-main-content-dc [documents]="documents" [comments]="comments">
+      <div id="mainHeading">
+        <frm-main-heading-dc [heading]="'ADJUSTMENT.ADD-THIRDPARTY-ADJUSTMENT' | translate"> </frm-main-heading-dc>
+      </div>
+      <div id="contentArea">
+        <frm-content-heading-dc
+          icon="user"
+          [canEdit]="canEdit"
+          heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+          (click)="navigateToTpaEdit()"
+        >
+        </frm-content-heading-dc>
+        <pmt-third-party-adjustment-contributor-dc
+          [adjustmentValues]="adjustmentValues"
+          [lang]="lang"
+          (navigateOnLinkClick)="navigateOnLinkClick()"
+        >
+        </pmt-third-party-adjustment-contributor-dc>
+        <!------------------Adjustment Details----------------------->
+        <pmt-third-party-adjustment-benefit-dc
+          [adjustmentValues]="adjustmentValues"
+          [benefitValues]="benefit"
+          [benefitAmount]="benefitAmount"
+          [subsequentAmount]="subsequentAmount"
+          [basicBenefitAmount]="basicBenefitAmount"
+          [initialAmount]="initialAmount"
+          [payeeDetails]="payeeDetails"
+          [payeebankName]="payeebankName"
+          [dependentAmount]="dependentAmount"
+          [helperAmount]="helperAmount"
+          [benefitStatus]="benefitStatus"
+          [benefitAmountAfterDeduction]="benefitAmountAfterDeduction"
+          (navigateToBenefitViewPage)="navigateToBenefitViewPage($event)"
+        >
+        </pmt-third-party-adjustment-benefit-dc>
+      </div>
+      <!----------- Validator action buttons ------------->
+
+      <div id="actionArea">
+        <frm-action-area-dc
+          [canReject]="canReject"
+          [canReturn]="canReturn"
+          (approveEvent)="showModal(approveTpaTemplate)"
+          (rejectEvent)="showModal(rejectTpaTemplate)"
+          (returnEvent)="showModal(returnTpaTemplate)"
+          (cancelEvent)="showModal(cancelTpaTemplate)"
+        >
+        </frm-action-area-dc>
+      </div>
+    </frm-main-content-dc>
+  </ng-container>
+
+  <!----Approve template---->
+  <ng-template #approveTpaTemplate>
+    <frm-approve-template-dc
+      [heading]="approveHeading"
+      (cancelEvent)="hideModal()"
+      [parentForm]="tpaValidatorForm"
+      (approveEvent)="confirmApproveTpAdjustment()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectTpaTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      [heading]="rejectHeading"
+      [parentForm]="tpaValidatorForm"
+      (cancelEvent)="hideModal()"
+      warningMessage="ADJUSTMENT.TPA-VALIDATOR-ONE-REJECTION-NOTE"
+      (rejectEvent)="confirmRejectTpAdjustment()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTpaTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      [heading]="returnHeading"
+      [parentForm]="tpaValidatorForm"
+      (cancelEvent)="hideModal()"
+      warningMessage="ADJUSTMENT.RETURN-MSG"
+      (returnEvent)="confirmReturnTpAdjustment()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+
+  <!----Cancel template---->
+  <ng-template #cancelTpaTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</div>

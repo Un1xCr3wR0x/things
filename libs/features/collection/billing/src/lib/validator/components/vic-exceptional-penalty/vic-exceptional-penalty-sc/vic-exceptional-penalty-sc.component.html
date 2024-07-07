@@ -1,0 +1,69 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [documents]="documents" [comments]="comments">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'BILLING.EXCEPTIONAL-LATE-FEE-WAIVER' | translate"> </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea">
+      <frm-content-heading-dc icon="user" heading="BILLING.CONTRIBUTOR-DETAILS" [canEdit]="false">
+      </frm-content-heading-dc>
+      <blg-exceptional-penalty-details-dc
+        [vicExceptionalFlag]="vicExceptionalFlag"
+        [waiverDetails]="waiverDetails"
+      ></blg-exceptional-penalty-details-dc>
+    </div>
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        (approveEvent)="approveVicTransactions(approveTemplate)"
+        (rejectEvent)="rejectVicTransactions(rejectTemplate)"
+        (returnEvent)="returnVicTransactions(returnTemplate)"
+        (cancelEvent)="showModals(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="confirmCancelBtn()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      [parentForm]="exceptionalVicForm"
+      (cancelEvent)="hideModals()"
+      (approveEvent)="confirmApproveForVic()"
+    ></frm-approve-template-dc>
+  </ng-template>
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [parentForm]="exceptionalVicForm"
+      [heading]="rejectHeadingValue"
+      (cancelEvent)="hideModals()"
+      [rejectReasonList$]="rejectReasonList"
+      (rejectEvent)="confirmRejectForVic()"
+      warningMessage="CORE.INFO.REJECT-TRANSACTION-INFO"
+      [transactionNumber]="transactionNumber"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [parentForm]="exceptionalVicForm"
+      [heading]="returnHeadingValue"
+      [returnReasonList$]="returnReasonList"
+      (cancelEvent)="hideModals()"
+      [warningMessage]="
+        fcReturnFlag ? 'BILLING.RETURN-TO-GDISO-TRANSACTION-INFO' : 'BILLING.RETURN-TO-GDIC-TRANSACTION-INFO'
+      "
+      (returnEvent)="confirmReturnForVic()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

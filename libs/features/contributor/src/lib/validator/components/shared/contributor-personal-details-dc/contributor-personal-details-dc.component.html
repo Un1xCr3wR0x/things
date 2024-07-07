@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<frm-content-heading-dc
+  icon="user"
+  heading="CONTRIBUTOR.PERSONAL-DETAILS"
+  [canEdit]="canEdit"
+  [badge]="isBeneficiary ? ('CONTRIBUTOR.BENEFICIARY' | translate) : ''"
+  (onEdit)="onEditPersonalDetails()"
+>
+</frm-content-heading-dc>
+<div class="row no-gutters" [ngClass]="{ 'sub-content-item': contributor.person.contactDetail }" *ngIf="contributor">
+  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="contributor.person.name && contributor.person.name.english">
+    <gosi-label-dc
+      id="contributorNameEnglish"
+      [control]="contributor.person.name.english.name"
+      label="CONTRIBUTOR.CONTRIBUTOR-NAME-EN"
+    ></gosi-label-dc>
+  </div>
+  <div id="contributorArabicName" class="col-sm-6 col-md-6 col-lg-6 form-group">
+    <label class="label-color">{{ 'CONTRIBUTOR.CONTRIBUTOR-NAME-AR' | translate }} </label>
+    <div *ngIf="!checkNull(contributor.person.name.arabic)">
+      {{ contributor.person.name.arabic.firstName }}
+      {{ contributor.person.name.arabic.secondName }}
+      {{ contributor.person.name.arabic.thirdName }}
+      {{ contributor.person.name.arabic.familyName }}
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      id="nationality"
+      [control]="contributor.person.nationality"
+      label="CONTRIBUTOR.NATIONALITY"
+    ></gosi-label-dc>
+  </div>
+  <ng-container *ngIf="!checkNull(contributor.person.identity)">
+    <ng-container *ngFor="let item of contributor.person.identity">
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="item.newNin">
+        <gosi-label-dc id="nin" [control]="item.newNin" label="CONTRIBUTOR.NATIONAL-ID"> </gosi-label-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="!age; else gender">
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="status"
+        label="CONTRIBUTOR.STATUS"
+        [value]="
+          contributor.statusType === statusType
+            ? ('CONTRIBUTOR.ACTIVE' | translate)
+            : ('CONTRIBUTOR.INACTIVE' | translate)
+        "
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+  <!-- Gender is required to be shown in change engagement validator screen,
+  instead of status -->
+  <ng-template #gender>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+      <gosi-label-dc
+        id="gender"
+        [value]="contributor.person.sex | bilingualText"
+        label="CONTRIBUTOR.GENDER"
+      ></gosi-label-dc>
+    </div>
+  </ng-template>
+
+  <div class="col-sm-6 col-md-6 col-lg-6">
+    <gosi-label-dc
+      id="birthDate"
+      [date]="age ? false : true"
+      [control]="age ? 
+        (age === 1
+          ? ('CONTRIBUTOR.AGE-IN-YEAR' | translate: { age: age }) 
+          : age === 2
+          ? ('CONTRIBUTOR.AGE-IN-YEARS' | translate: { age: age }) 
+          : (age > 2 && age < 11)
+          ? ('CONTRIBUTOR.AGE-IN-YEARS-3-10' | translate: { age: age })
+          : ('CONTRIBUTOR.AGE-IN-YEARS-11' | translate: { age: age }))
+      : contributor.person.birthDate.gregorian"
+      label="CONTRIBUTOR.DATE-OF-BIRTH"
+      ><span *ngIf="age" id="prefixValue">{{
+        contributor?.person?.birthDate?.gregorian | date: 'dd/MM/yyyy'
+      }}</span></gosi-label-dc
+    >
+  </div>
+</div>
+<div class="row" *ngIf="contributor">
+  <ng-container *ngIf="contributor.person.contactDetail">
+    <div class="col-sm-12 col-md-12">
+      <h4 class="sub-heading">
+        {{ 'CONTRIBUTOR.WAGE.CONTACT-DETAILS' | translate }}
+      </h4>
+    </div>
+    <div class="col-sm-6 col-md-6">
+      <gosi-label-dc
+        id="contributorMobileNo"
+        [control]="contributor.person.contactDetail.mobileNo.primary"
+        label="CONTRIBUTOR.WAGE.MOBILE-NUMBER"
+        ><span id="prefixValue">{{ getISDCodePrefix() }}</span></gosi-label-dc
+      >
+    </div>
+    <div class="col-sm-6 col-md-6">
+      <gosi-label-dc
+        id="contributorPhoneNo"
+        [value]="contributor.person.contactDetail.telephoneNo.primary"
+        label="CONTRIBUTOR.PHONE-NUMBER"
+        labelsuffix="CONTRIBUTOR.OPTIONAL"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6">
+      <gosi-label-dc
+        id="contributorEmailId"
+        [value]="contributor.person.contactDetail.emailId?.primary"
+        label="CONTRIBUTOR.WAGE.EMAIL-ID"
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+</div>

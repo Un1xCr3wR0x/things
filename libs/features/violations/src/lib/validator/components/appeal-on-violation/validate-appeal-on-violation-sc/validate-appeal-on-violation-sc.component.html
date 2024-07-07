@@ -1,0 +1,128 @@
+<!--
+  ~  Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-dc
+    [message]="'CORE.ERROR.MANDATORY-FIELDS' | translate"
+    type="danger"
+    *ngIf="validMandatory"
+  ></gosi-alert-dc>
+  <frm-main-content-dc [documents]="documents" [comments]="transactionReferenceData" [canEdit]="false">
+    <!-- Heading Section -->
+    <div id="mainHeading">
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-main-heading-dc [header]="'VIOLATIONS.APPEAL_DETAILS' | translate"></gosi-main-heading-dc>
+        </div>
+        <div class="col-md-6">
+          <div class="float-right sub-item">
+            <div class="d-flex justify-content-end">
+              <div *ngIf="referenceNo" class="info-tag flex-column">
+                <div class="sub-item-label">
+                  {{ 'CORE.TRANSACTION-NUMBER' | translate }}
+                </div>
+                <div class="sub-item-value">{{ referenceNo }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="referenceNo" class="info-tag flex-column">
+      <div class="sub-item-label">
+        {{ 'CORE.TRANSACTION-NUMBER' | translate }}
+      </div>
+      <div class="sub-item-value">{{ referenceNo }}</div>
+    </div>
+    <div id="contentArea">
+      <appeal-violation-dc
+        [transactionDetails]="transactionDetails"
+        [documentList]="documentList"
+        [referenceNumber]="referenceNo"
+      ></appeal-violation-dc>
+      <appeal-requestor-details-dc [customerSummary]="appeal?.customerSummary"></appeal-requestor-details-dc>
+      <appeal-contributors-details-dc
+        [opinionList]="opinionList$ | async"
+        [validatorType]="assignedRole"
+        [isSpecialist]="isSpecialist"
+        [parentForm]="formValidatorAppeal"
+        (submitAppealContributor)="submitAppealContributor($event)"
+        [transactionDetails]="appeal"
+        [docs]="documents"
+        [legalOpinionsList]="legalOpinionsList"
+        [appealSearchList]="appealSearchList"
+        [referenceNo]="referenceNo"
+      ></appeal-contributors-details-dc>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="float-right">
+          <gosi-button-dc id="save-next" type="primary" (click)="confirmCancel()">
+            {{ 'VIOLATIONS.SAVE-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReject]="canReject"
+        [canReturn]="canReturn"
+        [canAssignToSpecialist]="canAssignToSpecialist"
+        [canApprove]="true"
+        (approveEvent)="showModal(approveTemplate, true)"
+        (cancelEvent)="showModal(cancelTemplate, false)"
+        (returnEvent)="showReturnModal(ReturnToUserDialog, true)"
+        (assignToSpecialist)="onAssignToSpecialistClicked(AssignToSpecialist)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------------------------  Modals ------------------------>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorMemberForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="manageWorkflowTransaction(0)"
+    [isCommentsMandatory]="isSpecialist"
+  ></frm-approve-template-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'VIOLATIONS.APPEAL-CONFIRM-RETURN'"
+    (onConfirm)="manageWorkflowTransaction(2)"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'VIOLATIONS.APPEAL-CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #AssignToSpecialist>
+  <vol-assign-to-specialist
+    *ngIf="appealSpecialistList"
+    [appealSpecialistList]="appealSpecialistList"
+    class="allow-pointer-e"
+    (closeModal)="hideModal()"
+    (confirm)="onAssignToSpecialistConfirmed($event)"
+  ></vol-assign-to-specialist>
+</ng-template>
+
+<ng-template #ReturnToUserDialog>
+  <vol-return-to-user-dialog
+    class="allow-pointer-e"
+    [assignedRole]="assignedRole"
+    (closeModal)="hideModal()"
+    (confirm)="onReturnToUserConfirmed($event)"
+  >
+  </vol-return-to-user-dialog>
+</ng-template>

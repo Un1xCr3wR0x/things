@@ -1,0 +1,254 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- heading -->
+  <div *ngIf="isEditMode">
+    <div id="mainHeading">
+      <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.MODIFY-AD-HOC-SESSION' | translate }}"> </gosi-main-heading-dc>
+    </div>
+  </div>
+  <!-- Title For Modifying the Adhoc session  -->
+
+  <div *ngIf="!isEditMode">
+    <div id="mainHeading">
+      <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.CREATE-NEW-AD-HOC-SESSION' | translate }}">
+      </gosi-main-heading-dc>
+    </div>
+  </div>
+
+  <!-- content -->
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-details-dc
+        [configurationDetails]="configurationDetails"
+        [sessionList]="sessionFrequencyList"
+        [parentForm]="regularSessionForm"
+        [isEditMode]="isEditMode"
+        [isRegularSession]="false"
+        [isInCharge]="isInCharge"
+        [mbDetails]="mbDetails"
+        (changeValue)="onChangeValue($event)"
+        (unAvailableList)="getUnAvailableList($event)"
+      >
+      </mb-session-details-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <mb-medicalboard-member-details-dc
+        *ngIf="configurationDetails || officeLocation"
+        label="MEMBER-DETAILS"
+        [isEditMode]="isEditMode"
+        [configurationDetails]="configurationDetails"
+        [specialityList]="specialityList"
+        [officeLocation]="officeLocation"
+        [parentForm]="regularSessionForm"
+        (addMember)="onAddContractedDoctor(addMemberTemplate, false)"
+        (addDoctor)="onAddContractedDoctor(addDoctorTemplate, true)"
+        [selectedMembers]="selectedMembers"
+        [selectedDoctors]="selectedDoctors"
+        [isAdhocSession]="true"
+        [isAmb]="isAdhocAmb"
+        (remove)="onRemoveIndex($event)"
+        (onRemove)="onAddMembers(removeMember)"
+        (navigateToProfile)="navigateToProfile($event)"
+        [isModify]="isEditMode"
+        [unAvailableMemberList]="unAvailableMemberList"
+        [sessionData]="sessionData"
+        [submitDisable]="submitDisable"
+        [isInCharge]="isInCharge"
+        [isNotOfficer]="isNotOfficer"
+      >
+      </mb-medicalboard-member-details-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="isAddparticpantbyMb">
+    <div class="col-md-12">
+      <mb-particpants-list-assign-dc
+        [configurationDetails]="configurationDetails"
+        [isAmb]="isAmb"
+        (replace)="setReplaceIndex($event)"
+        (remove)="setRemoveIndex($event)"
+        (onRemove)="onAddMembers(removeConfirm)"
+        (navToProfile)="navigateToParticipantProfile($event)"
+        [isInCharge]="isInCharge"
+        [isNotOfficer]="isNotOfficer"
+      >
+      </mb-particpants-list-assign-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="isEditMode">
+    <div class="col-md-12">
+      <mb-particpants-list-dc
+        [configurationDetails]="configurationDetails"
+        [isAmb]="isAmb"
+        (addByNin)="onAddMembers(addByNinModal)"
+        (addParticpant)="onAddParticipants(addParticipantTemplate, 'add')"
+        (replace)="setReplaceIndex($event)"
+        (onReplace)="onAddParticipants(addParticipantTemplate, 'replace')"
+        (remove)="setRemoveIndex($event)"
+        (onRemove)="onAddMembers(removeConfirm)"
+        (navToProfile)="navigateToParticipantProfile($event)"
+        [isEditMode]="isEditMode"
+        [isInCharge]="isInCharge"
+        [isNotOfficer]="isNotOfficer"
+      >
+      </mb-particpants-list-dc>
+    </div>
+  </div>
+  <!-- member details section -->
+  <div class="row">
+    <div class="col-md-12">
+      <mb-session-slot-details-dc
+        [parentForm]="regularSessionForm"
+        [isEditMode]="isEditMode"
+        [configurationDetails]="configurationDetails"
+        [sessionDetails]="sessionDetails"
+        [isRequired]="isRequired"
+        [mbDetails]="mbDetails"
+        [isInCharge]="isInCharge"
+        [getSessionChannel]="getSessionChannel"
+        [participantLength]="participantLength"
+        [isAddparticpantbyMb]="isAddparticpantbyMb"
+      ></mb-session-slot-details-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="form-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel(cancelTemplate)">
+            {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right" *ngIf="!isEditMode">
+          <gosi-button-dc id="submit" (submit)="onCreateAdhocSession()" type="primary">
+            {{ 'MEDICAL-BOARD.CREATE-SESSION' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right" *ngIf="isEditMode">
+          <gosi-button-dc id="submit" (submit)="onCreateAdhocSession()" type="primary" [disabled]="submitDisable">
+            {{ 'MEDICAL-BOARD.MODIFY-SESSION' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="MEDICAL-BOARD.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #addMemberTemplate>
+  <mb-add-contracted-members-dc
+    #addMembersList
+    [contractedMembers]="contractedMembers"
+    (paginate)="onLimit($event)"
+    [limit]="sessionRequest?.limit"
+    (navigate)="navigateToProfile($event)"
+    [totalResponse]="totalResponse"
+    (cancel)="declineValue()"
+    [isAmb]="isAmb"
+    [isAdhoc]="true"
+    (update)="onAddContractedMembers($event)"
+    [specialityLists]="specialityList$ | async"
+    [fieldOfficeLists]="region$ | async"
+    (filter)="onFilterApply($event)"
+    (search)="onSearchMember($event)"
+    [addMembers]="false"
+    [addedMembersList]="selectedMembers"
+  ></mb-add-contracted-members-dc>
+</ng-template>
+<ng-template #addDoctorTemplate>
+  <mb-add-gosi-doctors-dc
+    #addDoctorList
+    (cancel)="declineValue()"
+    (update)="onAddDoctorMembers($event)"
+    (select)="onLimit($event)"
+    [limitItem]="sessionRequest?.limit"
+    (navigate)="navigateToProfile($event)"
+    [gosiDoctors]="contractedMembers"
+    [totalRecords]="totalResponse"
+    [fieldOfficeLists]="locationList$ | async"
+    (onFilter)="onFilterApply($event)"
+    (search)="onSearchMember($event)"
+    [addDoctors]="false"
+    [addedDoctorsList]="selectedMembers"
+  ></mb-add-gosi-doctors-dc>
+  <!-- [addedDoctorsList]="selectedDoctors" defect 540325 -->
+</ng-template>
+<ng-template #addParticipantTemplate>
+  <mb-add-participants-dc
+    (paginate)="onLimit($event)"
+    (cancel)="declineValue()"
+    [action]="action"
+    [configurationType]="'adhoc'"
+    (update)="addParticipants($event)"
+    (add)="bulkParticipant($event)"
+    (replaceAdhoc)="replaceMember($event)"
+    (navigate)="navigateToParticipantProfile($event)"
+    (search)="onSearchParticipants($event)"
+    [addParticipantsList]="participantsDetails"
+    [totalResponse]="totalParticipants"
+    [allowedParticipant]="sessionStatusDetails.allowedParticipantMap"
+    [allowedSpecialityList]="sessionStatusDetails.allowedSpecialityList"
+    [selectSpeciality]="sessionStatusDetails?.mbList[0]?.specialty"
+    [addParticipants]="true"
+    [isHold]="isHold"
+    [assessmentTypeLists]="assessmentTypeLists$ | async"
+    [specialtyLists]="specialityList$ | async"
+    [locationLists]="fieldOfficeList$ | async"
+    [officeLocation]="configurationDetails?.officeLocation"
+    [medicalBoardType]="regularSessionForm.get('sessionDetails')?.value?.medicalBoardList"
+    (filter)="onFilterValue($event)"
+    [assessmentTypeLists]="assessmentTypeLists$ | async"
+    [addParticipantsList]="participantsDetails"
+    [totalResponse]="totalParticipants"
+    [totalNoOfParticipantRecords]="configurationDetails.participantList.length"
+    [maxParticipants]="configurationDetails.maximumBeneficiaries"
+    [addedParticipantsList]="configurationDetails.participantList"
+  >
+  </mb-add-participants-dc>
+</ng-template>
+<ng-template #removeConfirm>
+  <gosi-confirm-modal-dc
+    class="hold-modal"
+    [message]="lang === 'en' ? removeMessage?.english : removeMessage?.arabic"
+    (onConfirm)="removeParticipant()"
+    (onCancel)="declineValue()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #removeMember>
+  <gosi-confirm-modal-dc
+    class="hold-modal"
+    [message]="lang === 'en' ? memberRemoveMessage?.english : memberRemoveMessage?.arabic"
+    (onConfirm)="removeAddedMember()"
+    (onCancel)="declineValue()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #addByNinModal>
+  <mb-add-participant-modal-dc
+    *ngIf="configurationDetails || sessionStatusDetails"
+    (adhocEvent)="addParticipants($event)"
+    (cancelEvent)="declineValue()"
+    (search)="onSearchParticipants($event)"
+    [isHold]="isHold"
+    [parentForm]="regularSessionForm"
+    [searchedParticipant]="searchedParticipant"
+    [configurationDetails]="configurationDetails"
+    [allowedParticipant]="sessionStatusDetails.allowedParticipantMap"
+    [totalNoOfParticipantRecords]="configurationDetails?.participantList?.length"
+    [officeLocation]="configurationDetails.officeLocation"
+    [maxParticipants]="configurationDetails?.maximumBeneficiaries"
+    [addedParticipantsList]="configurationDetails.participantList"
+    [addParticipantsList]="participantsDetails"
+    [type]="'adhoc'"
+  ></mb-add-participant-modal-dc>
+</ng-template>

@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <dsb-card-slider-dc
+    (onLeftClick)="onLeftClick()"
+    (onRightClick)="onRightClick()"
+    [showLeft]="showLeft"
+    [showRight]="showRight"
+    [lang]="lang"
+  >
+    <ng-container *ngFor="let eligibileValue of eligiblity; let i = index">
+      <div
+        [ngClass]="[eligiblity?.length === 1 ? 'col-lg-12' : 'col-lg-6']"
+        *ngIf="(!mobileView && (i === currentIndex || i === currentIndex + 1)) || (mobileView && i === currentIndex)"
+      >
+        <gosi-card-dc
+          type="primary"
+          [noBorder]="eligiblity?.length === 1"
+          [ngClass]="[eligiblity?.length > 2 ? 'card-value' : eligiblity?.length === 2 ? 'name-value' : '']"
+          [noPadding]="eligiblity?.length === 1"
+        >
+          <div class="row">
+            <div [ngClass]="[eligiblity?.length === 1 && !isAppProfile ? 'col-lg-3' : 'col-lg-12']" class="pb-2">
+              <div class="flex flex-column" [ngClass]="[eligiblity?.length === 1 ? 'single-value' : '']">
+                <div class="response-header">
+                  {{ eligibileValue.benefitType | bilingualText | titlecase }}
+                </div>
+
+                <div class="text-value">
+                  {{ 'CUSTOMER-INFORMATION.APPLY-BEFORE' | translate }}
+                  {{ eligibileValue?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12 mt-3">
+              <gosi-currency-label-dc
+                id="eligibileValue"
+                [label]="'CUSTOMER-INFORMATION.ELIGIBLE-AMOUNT'"
+                [currencyTo]="eligibileValue?.amount"
+                [countryCodeFrom]="'CUSTOMER-INFORMATION.SAR' | translate"
+              ></gosi-currency-label-dc>
+            </div>
+
+            <div
+              class="col-lg-12"
+              *ngIf="
+                eligibileValue.status === 'NEW' &&
+                ((eligibileValue.benefitType.english != 'Unemployment Insurance' && eligibileValue.eligible) ||
+                  eligibileValue.benefitType.english == 'Unemployment Insurance')
+              "
+            >
+              <gosi-button-dc
+                *gosiShow="isAppProfile ? csrModify : true"
+                type="primary"
+                size="md"
+                (submit)="apply(eligibileValue)"
+              >
+                {{ 'CUSTOMER-INFORMATION.APPLY-NOW' | translate }}
+              </gosi-button-dc>
+              <!-- [disabled]="isHeir && eligibileValue.retirementEligibility?.eligibleForRetirementBenefit" -->
+            </div>
+          </div>
+        </gosi-card-dc>
+      </div>
+    </ng-container>
+  </dsb-card-slider-dc>
+</ng-container>

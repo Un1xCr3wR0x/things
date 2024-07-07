@@ -1,0 +1,353 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div>
+  <gosi-breadcrumb-dc #brdcmb> </gosi-breadcrumb-dc>
+</div>
+<div class="content" *ngIf="!eligibilityApiResponse">
+  <div id="mainHeading">
+    <ng-container>
+      <frm-main-heading-dc *ngIf="!subHeading && !stopWaive && !startWaive" [heading]="heading | translate">
+      </frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="subHeading && !stopWaive && !startWaive && (isHoldBenefit || isRestartBenefit) && isHeir"
+        [heading]="'BENEFITS.' + subHeading | translate: { benefitType: 'BENEFITS.HEIR-BENEFIT' | translate }"
+      >
+      </frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="subHeading && !stopWaive && !startWaive && !(isHeir && isHoldBenefit) && !(isHeir && isRestartBenefit)"
+        [heading]="'BENEFITS.' + subHeading | translate: { benefitType: heading | translate }"
+      >
+      </frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="stopWaive"
+        heading="{{ 'BENEFITS.STOP-WAIVING' | translate: { benefitType: subHeading | translate } }}"
+      >
+      </frm-main-heading-dc>
+      <frm-main-heading-dc
+        *ngIf="startWaive"
+        heading="{{ 'BENEFITS.WAIVING' | translate: { benefitType: subHeading | translate } }}"
+      >
+      </frm-main-heading-dc>
+    </ng-container>
+
+    <div class="col-md-12" *ngIf="isPersonWithoutId">
+      <gosi-alert-dc
+        type="danger"
+        [dismissible]="false"
+        [message]="'BENEFITS.NO-PERSONAL-DETAILS-ERROR' | translate"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-md-12" *ngIf="isHeir && isRestartBenefit">
+      <gosi-alert-dc
+        type="warning"
+        [message]="'BENEFITS.VALIDATE-HEIR' | translate"
+      >
+      </gosi-alert-dc>
+    </div>
+    <frm-main-content-dc
+      [canEdit]="docsCanEdit"
+      [documents]="documentList"
+      [showComments]="showComments"
+      [comments]="transactionRefData"
+      (onEdit)="navigateToEdit()"
+    >
+      <div id="contentArea">
+        <bnt-retirement-pension-details-sc
+          *ngIf="annuityBenefitDetails && retirementForm && routerData"
+          [routerData]="routerData"
+          [retirementForm]="retirementForm"
+          [annuityBenefitDetails]="annuityBenefitDetails"
+          [systemParameter]="systemParameter"
+          [lang]="lang"
+          (samaDisable)="samaDisableVal($event)"
+        ></bnt-retirement-pension-details-sc>
+      </div>
+      <div id="actionArea" class="row form-action">
+        <div class="col-lg-12 action-requests">
+          <div class="btn-section float-right" *ngIf="isDoctor">
+            <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="dApprove"
+                [disabled]="disableApprove || samaReject"
+                type="primary"
+                (submit)="updateDisabilityDetails()"
+              >
+                {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+              >
+            </ng-container>
+          </div>
+
+          <ng-container *ngIf="!isDoctor">
+            <div class="btn-section float-right">
+              <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  id="approve"
+                  [disabled]="disableApprove || samaReject"
+                  type="primary"
+                  (submit)="approveTransaction(approveTemplate, annuityBenefitDetails.hideBenefitDetails)"
+                >
+                  {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+                >
+              </ng-container>
+            </div>
+            <!-- if (personWithoutIdentifier) person is without ID, txn should be able to be rejected  -->
+            <!-- if (personWithoutIdentifier) person is without ID, txn should be NOT able to be Approved  -->
+            <ng-container *ngIf="!isPersonWithoutId">
+              <div class="btn-section float-right" *ngIf="canReject && !isHeirBenefit">
+                <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    [disabled]="false"
+                    (submit)="rejectTransaction(rejectTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </ng-container>
+              </div>
+              <div class="btn-section float-right" *ngIf="canReject && isHeirBenefit">
+                <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    [disabled]="false"
+                    (submit)="rejectTransaction(rejectHeirTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="isPersonWithoutId">
+              <div class="btn-section float-right" *ngIf="!isHeirBenefit">
+                <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    [disabled]="false"
+                    (submit)="rejectTransaction(rejectTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </ng-container>
+              </div>
+              <div class="btn-section float-right" *ngIf="isHeirBenefit">
+                <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    [disabled]="false"
+                    (submit)="rejectTransaction(rejectHeirTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </ng-container>
+              </div>
+            </ng-container>
+            <div class="btn-section float-right" *ngIf="canReturn">
+              <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc type="secondary" id="return" (submit)="returnTransaction(returnTemplate)">
+                  {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                >
+              </ng-container>
+            </div>
+            <ng-container *gosiShow="validatorAccess">
+              <div *ngIf="annuityBenefitDetails?.isDecisionChange" class="btn-section float-right">
+                <gosi-button-dc type="secondary" id="reportCalculation" (submit)="showModal(reportCalcTemplate)">
+                  {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+                </gosi-button-dc>
+              </div>
+            </ng-container>
+            <!-- Request inspection button not required for add/modify (Heir & dep), whether it is Batch or not -->
+            <!-- <div
+              class="btn-section float-right"
+            >
+              <gosi-button-dc
+                *ngIf="routerData?.assignedRole | hasThisRole: [rolesEnum.VALIDATOR_1]"
+                type="secondary"
+                id="request"
+                (click)="requestInspection(requestInspectionTemplate)"
+              >
+                {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+              >
+            </div> -->
+            <!-- <div class="btn-section float-right">
+          <gosi-button-dc type="secondary" id="actionButton" [popover]="optionsModal" placement="bottom right">
+            {{ 'BENEFITS.MORE-OPTIONS' | translate }}
+            <fa-icon class="action-more-icon" icon="ellipsis-v"></fa-icon>
+          </gosi-button-dc>
+        </div> -->
+          </ng-container>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="cancel"
+                type="secondary"
+                (submit)="showCancelTemplate(cancelEngagementTemplate)"
+              >
+                {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+              >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<!--Not using anymore-->
+<ng-template #optionsModal>
+  <gosi-button-dc
+    *ngIf="canReturn"
+    isTransparent="true"
+    outlineOnly="true"
+    type=""
+    id="return"
+    (submit)="returnTransaction(returnTemplate)"
+  >
+    {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+  >
+  <!--<ng-container
+    *ngIf="
+      !isStartBenefitWaive &&
+      !isStopBenefitWaive &&
+      !(requestType === BenefitType.addModifyBenefit || requestType === BenefitType.addModifyHeir)
+    "
+  >
+    <gosi-button-dc
+      *ngIf="routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.VALIDATOR_1, rolesEnum.BOSH]"
+      isTransparent="true"
+      outlineOnly="true"
+      type=""
+      id="request"
+      (click)="requestInspection(requestInspectionTemplate)"
+    >
+      {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}</gosi-button-dc
+    >
+  </ng-container>-->
+</ng-template>
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE' | translate }} - {{
+      subHeading && !stopWaive && !startWaive
+        ? ('BENEFITS.' + subHeading | translate: { benefitType: heading | translate })
+        : stopWaive || startWaive
+        ? ('BENEFITS.WAIVING' | translate: { benefitType: subHeading | translate })
+        : (heading | translate)
+    }}"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="retirementForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprovePension()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{
+      subHeading && !stopWaive && !startWaive
+        ? ('BENEFITS.' + subHeading | translate: { benefitType: heading | translate })
+        : stopWaive || startWaive
+        ? ('BENEFITS.WAIVING' | translate: { benefitType: subHeading | translate })
+        : (heading | translate)
+    }}"
+    [warningMessage]="
+      isHoldBenefit || isStopBenefit || isRestartBenefit
+        ? ('BENEFITS.INFO-VALIDATOR-REJECTION-HOLD-RESTART-STOP' | translate: { transactionNo: referenceNo })
+        : ('BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo })
+    "
+    [parentForm]="retirementForm"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="confirmRejectPension()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #requestInspectionTemplate>
+  <bnt-inspection-request-dc
+    [heading]="'BENEFITS.REQUEST-INSPECTION'"
+    (cancelEvent)="hideModal()"
+    (submitEvent)="confirmInspection()"
+    [parentForm]="retirementForm"
+    [inspectionList$]="inspectionList"
+  >
+  </bnt-inspection-request-dc>
+</ng-template>
+<!----Reject Heir template---->
+<ng-template #rejectHeirTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{
+      subHeading && !stopWaive && !startWaive
+        ? ('BENEFITS.' + subHeading | translate: { benefitType: heading | translate })
+        : stopWaive || startWaive
+        ? ('BENEFITS.WAIVING' | translate: { benefitType: subHeading | translate })
+        : (heading | translate)
+    }}"
+    [warningMessage]="
+      isHoldBenefit || isStopBenefit || isRestartBenefit
+        ? ('BENEFITS.INFO-VALIDATOR-REJECTION-HOLD-RESTART-STOP' | translate: { transactionNo: referenceNo })
+        : ('BENEFITS.INFO-HEIR-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo })
+    "
+    [parentForm]="retirementForm"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="confirmRejectPension()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{
+      subHeading && !stopWaive && !startWaive
+        ? ('BENEFITS.' + subHeading | translate: { benefitType: heading | translate })
+        : stopWaive || startWaive
+        ? ('BENEFITS.WAIVING' | translate: { benefitType: subHeading | translate })
+        : (heading | translate)
+    }}"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    [parentForm]="retirementForm"
+    (returnEvent)="returnRetirementPension()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #eligibilityCriteria>
+  <bnt-eligibility-criteria-dc
+    (close)="location.back()"
+    [benefitRequestCancelled]="true"
+    [benefitInfo]="eligibilityApiResponse"
+  >
+  </bnt-eligibility-criteria-dc>
+</ng-template>
+<!--Report Calculation Issue Template-->
+<ng-template #reportCalcTemplate>
+  <bnt-report-recalculation-template-dc
+    *ngIf="retirementForm"
+    heading="{{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}"
+    [parentForm]="retirementForm"
+    [isCommentsMandatory]="true"
+    [infoMessage]="'BENEFITS.INCORRECT-CALC-BENEFIT' | translate: { id: referenceNo }"
+    (submitEvent)="raiseItsmTicket()"
+    (cancelEvent)="commonModalRef.hide()"
+  >
+  </bnt-report-recalculation-template-dc>
+</ng-template>
+
+<!-- (navigateToViewDetails)="navigateToViewDetails()" -->

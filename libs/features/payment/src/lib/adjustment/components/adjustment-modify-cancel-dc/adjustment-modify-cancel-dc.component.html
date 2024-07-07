@@ -1,0 +1,177 @@
+<div class="row custom-container">
+  <div class="col-lg-12 px-4 py-3">
+    <div class="row m-0 mb-4">
+      <div class="col-lg-12 custom-heading">{{ 'ADJUSTMENT.MODIFY-CANCEL-ADJUSTMENT' | translate }}</div>
+    </div>
+    <div class="row m-0">
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="currentAdjustmentAmount"
+          [control]="
+            getCurrency(
+              isValidator && adjustmentDetail?.modificationDetails?.beforeModification?.adjustmentAmount
+                ? adjustmentDetail?.modificationDetails?.beforeModification?.adjustmentAmount
+                : adjustmentDetail?.adjustmentAmount
+            )
+          "
+          [label]="'ADJUSTMENT.CURRENT-ADJUSTMENT-AMOUNT' | translate"
+          [isBackgroundWhite]="true"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-4" *ngIf="adjustmentDetail?.adjustmentType?.english === 'Debit'">
+        <gosi-label-dc
+          id="currentDebitPercentage"
+          [control]="adjustmentDetail?.adjustmentPercentage"
+          [label]="'ADJUSTMENT.CURRENT-DEBIT-PERCENTAGE' | translate"
+          [isBackgroundWhite]="true"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-4" *ngIf="adjustmentDetail?.adjustmentType?.english === 'Debit'">
+        <gosi-label-dc
+          id="currentBalanceAmount"
+          [control]="
+            getCurrency(
+              isValidator && adjustmentDetail?.modificationDetails?.beforeModification?.adjustmentBalance
+                ? adjustmentDetail?.modificationDetails?.beforeModification?.adjustmentBalance
+                : adjustmentDetail?.adjustmentBalance
+            )
+          "
+          [label]="'ADJUSTMENT.CURRENT-BALANCE-AMOUNT' | translate"
+          [isBackgroundWhite]="true"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="currentAjustmentReason"
+          [control]="adjustmentDetail?.adjustmentReason | bilingualText"
+          [label]="'ADJUSTMENT.CURRENT-ADJUSTMENT-REASON' | translate"
+          [isBackgroundWhite]="true"
+        ></gosi-label-dc>
+      </div>
+    </div>
+    <div class="row m-0 custom-padding-bottom">
+      <div class="col-lg-12">
+        <pmt-switch-type-dc [switchType]="switchCase" (onSelected)="setSwitch($event)"></pmt-switch-type-dc>
+      </div>
+    </div>
+    <div *ngIf="switchCase === 'switch1'">
+      <div class="row mx-0 custom-margin-bottom">
+        <div class="col-lg-6 custom-input-dc">
+          <gosi-input-currency-dc
+            [id]="'newAdjustmentAmount'"
+            [control]="modifyadjustmentForm.get('adjustmentAmount')"
+            [placeholder]="'ADJUSTMENT.NEW-ADJUSTMENT-NAME' | translate"
+            [label]="'ADJUSTMENT.NEW-ADJUSTMENT-AMOUNT' | translate"
+            [hideOptionalLabel]="true"
+            [separatorLimit]="separatorLimit"
+            (blur)="getBalanceAmount()"
+          >
+          </gosi-input-currency-dc>
+          <div *ngIf="getValue() && getValue() < 0" id="warningSection">
+            <span id="warningIcon">
+              <img class="warning-icon" src="assets/icons/alert-icon.svg" alt="benefit-logo" />
+            </span>
+            <span id="warningText" class="custom-warn-text">{{
+              'ADJUSTMENT.BALANCE-AMOUNT-NEGATIVE' | translate
+            }}</span>
+          </div>
+        </div>
+        <div class="col-lg-6" *ngIf="newBalanceAmount && adjustmentDetail?.adjustmentType?.english === 'Debit'">
+          <gosi-label-dc
+            id="newBalanceAmount"
+            [control]="newBalanceAmount"
+            [label]="'ADJUSTMENT.NEW-BALANCE-AMOUNT' | translate"
+            [isBackgroundWhite]="true"
+          ></gosi-label-dc>
+        </div>
+      </div>
+      <div class="row mx-0">
+        <div class="col-lg-6" *ngIf="modifyadjustmentForm.get('adjustmentPercentage')">
+          <gosi-input-select-dc
+            id="newDebitPercentage"
+            [control]="modifyadjustmentForm.get('adjustmentPercentage')"
+            [label]="'ADJUSTMENT.NEW-DEBIT-PERCENTAGE' | translate"
+            [placeholder]="'ADJUSTMENT.NEW-DEBIT-NAME' | translate"
+            [list]="debitPercentageList"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-lg-6">
+          <gosi-input-select-dc
+            id="newAdjustmentReason"
+            [control]="modifyadjustmentForm.get('adjustmentReason')"
+            [label]="'ADJUSTMENT.NEW-ADJUSTMENT-REASON' | translate"
+            [placeholder]="'ADJUSTMENT.NEW-ADJUSTMENT-REASON-NAME' | translate"
+            [list]="adjustmentReasonList$"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+      <div class="row m-0">
+        <div class="col-lg-12">
+          <gosi-input-text-area-dc
+            [id]="'notes'"
+            [label]="'ADJUSTMENT.NOTES' | translate"
+            [control]="modifyadjustmentForm.get('notes')"
+            [name]="'notes'"
+            [maxLength]="500"
+            [pmtMaxCharacters]="500"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <pmt-action-area-dc
+            [idValue]="'editadjustmentSave'"
+            [primaryButtonLabel]="'ADJUSTMENT.SAVE'"
+            [showPreviousSection]="false"
+            [disablePrimary]="!modifyadjustmentForm.valid || getValue() < 0 || !modifyadjustmentForm.dirty"
+            (submit)="modifyAdjustment()"
+            (onCancelAction)="cancelModifyTransaction()"
+          ></pmt-action-area-dc>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="switchCase === 'switch2'">
+      <div class="row m-0">
+        <div class="col-lg-6">
+          <gosi-input-text-dc
+            id="reasonForCancellation"
+            [placeholder]="'ADJUSTMENT.REASON-FOR-CANCEL-NAME' | translate"
+            [label]="'ADJUSTMENT.REASON-FOR-CANCEL' | translate"
+            [control]="canceladjustmentForm.get('rejectionReason')"
+            [maxLength]="120"
+          >
+          </gosi-input-text-dc>
+        </div>
+      </div>
+      <div class="row m-0">
+        <div class="col-lg-12">
+          <gosi-input-text-area-dc
+            [id]="'notesForCancel'"
+            [label]="'ADJUSTMENT.NOTES' | translate"
+            [control]="canceladjustmentForm.get('notes')"
+            [name]="'notes'"
+            [maxLength]="500"
+            [pmtMaxCharacters]="500"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+      </div>
+      <gosi-alert-dc [alert]="cancelInfo"></gosi-alert-dc>
+      <div class="row">
+        <div class="col-lg-12">
+          <pmt-action-area-dc
+            [idValue]="'canceladjustmentSave'"
+            [primaryButtonLabel]="'ADJUSTMENT.SAVE'"
+            [showPreviousSection]="false"
+            [disablePrimary]="!canceladjustmentForm.valid || !canceladjustmentForm.dirty"
+            (submit)="cancelAdjustment()"
+            (onCancelAction)="cancelAdjustmentTransaction()"
+          ></pmt-action-area-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

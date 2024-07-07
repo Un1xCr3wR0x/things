@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+ -->
+<div class="contributor-list-table table-responsive gosi-scrollbar">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'CONTRIBUTOR.CONTRIBUTOR-NAME' | translate | titlecase }}</th>
+        <th scope="col">{{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.ID' | translate }}</th>
+        <th scope="col">{{ 'CONTRIBUTOR.NATIONALITY' | translate | titlecase }}</th>
+        <th scope="col">{{ 'CONTRIBUTOR.GENDER' | translate | titlecase }}</th>
+        <th scope="col">{{ 'CONTRIBUTOR.JOINING-DATE' | translate | titlecase }}</th>
+        <th *ngIf="isAllContributor" scope="col">{{ 'CONTRIBUTOR.STATUS' | translate | titlecase }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="
+          let contributor of contributorList
+            | paginate: { id: id, itemsPerPage: 10, currentPage: currentPage, totalItems: totalSize }
+        "
+      >
+        <td class="contributor-name">
+          <a title="Navigate to Contributor profile" (click)="navigateToContProfile.emit(contributor.socialInsuranceNo)"
+            >{{ contributor.person.name | nameToString: true }}
+          </a>
+        </td>
+        <td>{{ getIdentity(contributor) }}</td>
+        <td>{{ contributor.person.nationality | bilingualText }}</td>
+        <td>{{ contributor.person.sex | bilingualText }}</td>
+        <td *ngIf="contributor?.latestJoiningdatewithEst?.entryFormat == 'GREGORIAN'">{{ contributor?.latestJoiningdatewithEst?.gregorian | date:'dd/MM/yyyy'}}</td>
+        <td *ngIf="contributor?.latestJoiningdatewithEst?.entryFormat == 'HIJIRA'">{{ contributor?.latestJoiningdatewithEst?.hijiri | date:'dd/MM/yyyy'}}</td>
+        <td *ngIf="isAllContributor">
+          <ng-container
+            *ngTemplateOutlet="
+              contributor.statusType === 'ACTIVE' ? active : contributor.statusType === 'INACTIVE' ? inactive : pending
+            "
+          ></ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #active
+  ><span class="active">{{ 'CONTRIBUTOR.ACTIVE' | translate }}</span></ng-template
+>
+<ng-template #inactive>{{ 'CONTRIBUTOR.INACTIVE' | translate }}</ng-template>
+<ng-template #pending>{{ 'CONTRIBUTOR.PENDING-WITH-CONTRIBUTOR' | translate }}</ng-template>

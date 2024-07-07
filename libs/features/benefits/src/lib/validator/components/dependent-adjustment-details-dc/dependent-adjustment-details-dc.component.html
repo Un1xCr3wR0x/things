@@ -1,0 +1,84 @@
+<ng-container *ngIf="adjustments?.length > 0">
+  <span class="annuity-type">{{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}</span>
+  <div class="table-scroll table-responsive table-adjustmentDetails pt-3">
+    <div class="table-responsive" *ngIf="adjustments?.length">
+      <table class="table table-borderless">
+        <thead class="table-header">
+          <tr>
+            <th>{{ 'BENEFITS.BENEFIT-PERIOD' | translate }}</th>
+            <th>{{ 'BENEFITS.ADJUSTMENT-TYPE-SANED' | translate }}</th>
+            <!-- <th>{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}</th>ss -->
+            <th>{{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}</th>
+            <th>{{ 'BENEFITS.ADJUSTMENT-AMOUNT-SANED-SAR' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let eachAdjustment of adjustments" class="data-row border-bottom">
+            <!-- <td>
+                            <div *ngIf="eachAdjustment?.createdDate" class="d-block nin-text">
+                              {{ eachAdjustment?.createdDate | dateType }}
+                            </div>
+                          </td> -->
+            <td>
+              <ng-container *ngIf="showAdjustmentDate(eachAdjustment); else noPeriod">
+                <span>
+                  {{ eachAdjustment?.adjustmentStartDate | dateType }}
+                </span>
+                <span *ngIf="lang === 'en'">
+                  <fa-icon icon="angle-right" class="icon-size" size="1x"></fa-icon>
+                </span>
+                <span *ngIf="lang === 'ar'">
+                  <fa-icon icon="angle-left" class="icon-size" size="1x"></fa-icon>
+                </span>
+                <span *ngIf="eachAdjustment?.adjustmentStopDate?.gregorian; else onwards">
+                  {{ eachAdjustment?.adjustmentStopDate | dateType }}
+                  <ng-container *ngIf="eachAdjustment?.noOfMonths || eachAdjustment?.noOfDays">
+                    (<span *ngIf="eachAdjustment?.noOfMonths">
+                      {{ eachAdjustment?.noOfMonths }} {{ 'BENEFITS.MONTHS' | translate }}</span
+                    >
+                    <span *ngIf="eachAdjustment?.noOfDays">
+                      {{ eachAdjustment?.noOfDays }} {{ 'BENEFITS.DAYS' | translate }}</span
+                    >)</ng-container
+                  >
+                </span>
+                <ng-template #onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+                <!-- <span>
+                                {{
+                                  eachAdjustment?.adjustmentStopDate?.entryFormat === 'HIJIRA'
+                                    ? (eachAdjustment?.adjustmentStopDate?.hijiri | date: 'dd/MM/yyyy')
+                                    : (eachAdjustment?.adjustmentStopDate | dateType)
+                                }}
+                              </span> -->
+              </ng-container>
+              <ng-template #noPeriod> - </ng-template>
+            </td>
+            <td>
+              {{ eachAdjustment?.adjustmentType | bilingualText }}
+            </td>
+            <td>
+              {{ eachAdjustment?.adjustmentReason | bilingualText }}
+            </td>
+            <td class="amount">
+              {{ eachAdjustment?.adjustmentAmount | number: '1.2-2' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="d-flex justify-content-end py-3 mx-2">
+        {{ 'BENEFITS.TOTAL-ADJUSTMENT-LBL' | translate }} :
+        <span
+          [ngClass]="
+            adjustmentDetails?.adjustmentCalculationDetails?.totalAdjustmentAmount > 0
+              ? 'text-success'
+              : adjustmentDetails?.adjustmentCalculationDetails?.totalAdjustmentAmount < 0
+              ? 'text-danger'
+              : ''
+          "
+        >
+          {{ Math.abs(adjustmentDetails?.adjustmentCalculationDetails?.totalAdjustmentAmount?.toFixed(2)) }}
+          {{ 'BENEFITS.SR' | translate }}
+        </span>
+      </div>
+    </div>
+  </div>
+</ng-container>

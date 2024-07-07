@@ -1,0 +1,82 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <div class="col-lg-12">
+    <table class="table table-borderless">
+      <thead class="thead-light">
+        <tr>
+          <th>{{ 'OCCUPATIONAL-HAZARD.AUDITOR.SELECTED-SERVICE' | translate }}</th>
+          <th style="text-align: center">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.UNITS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let claim of selectionTreatmentlist; let i = index">
+          <td class="service-style">
+            {{ claim.serviceDescription }}
+            <br />
+            <span class="descript"
+              >{{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICE' | translate }} # {{ claim.serviceId }}
+            </span>
+          </td>
+          <td class="unit-style" *ngIf="auditRejectList">
+            <gosi-input-select-dc
+              id="unit"
+              [name]="'unit'"
+              [control]="
+                auditRejectList.controls[i].get('serviceDetails').get('serviceRejectionDetails').get('disputedUnits')
+              "
+              [list]="claim.unitLovList"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-select-dc>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-container *ngIf="showmandatory">
+    <div class="col-lg-12 col-sm-12 col-md-12">
+      <gosi-alert-dc [message]="'CORE.ERROR.MANDATORY-FIELDS'" type="danger" [dismissible]="true"> </gosi-alert-dc>
+    </div>
+  </ng-container>
+  <div class="col-lg-12">
+    <div class="row" *ngIf="auditRejectList">
+      <div class="col-lg-12 col-sm-12 col-md-12">
+        <gosi-input-select-dc
+          (select)="commentsSelection()"
+          id="rejectionReason"
+          [placeholder]="'OCCUPATIONAL-HAZARD.AUDITOR.SELECT-REASON' | translate"
+          [label]="'OCCUPATIONAL-HAZARD.AUDITOR.REJECTION-REASON' | translate"
+          [control]="auditRejectForm.get('serviceDetails').get('serviceRejectionDetails').get('rejectionReason')"
+          [list]="rejectReasonList$ | async"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-sm-12 col-md-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          [label]="'CORE.COMMENTS' | translate"
+          [name]="'auditComments'"
+          [control]="auditRejectForm.get('comments')"
+          [maxLength]="commentsMaxlength"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-12 col-sm-12 col-md-12">
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancelAuditBtn" type="secondary" (submit)="cancelRejection()">
+        {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="confirmAuditBtn" type="primary" (submit)="confirmRejectionDetails()">
+        {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</div>

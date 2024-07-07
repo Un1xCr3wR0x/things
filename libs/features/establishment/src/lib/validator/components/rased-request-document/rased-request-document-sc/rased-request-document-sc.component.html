@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <est-heading-dc [isTransparent]="false" [canNavigate]="false" (backEvent)="navigateBack()">
+    {{ 'ESTABLISHMENT.REQUEST-CONTRIBUTOR-DOCUMENTS' | translate }}
+  </est-heading-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <est-request-details-dc
+    [inspectionDetails]="inspectionDetails"
+    [uploadDocumentsDetails]="uploadDocumentsDetails"
+    [establishment]="establishment"
+  ></est-request-details-dc>
+
+  <accordion class="contributor-accordion">
+    <ng-container *ngFor="let contributor of uploadDocumentsDetails?.contributors; let i = index">
+      <gosi-card-dc type="secondary contributor-card">
+        <accordion-group
+          class="wrapper-accordion-group"
+          id="{{ i }}"
+          (isOpenChange)="selectPanel($event, i + 1)"
+          [isOpen]="accordionPanel === i + 1"
+        >
+          <div accordion-heading class="contributor-name float-left">
+            <div class="name-identity-container d-flex">
+              <div class="name">
+                {{ contributor?.contrName }}
+              </div>
+              <ng-container *ngIf = "registeredContributor">
+              <div class="identity-role ml-1">
+                ( {{ contributorsMap.get(estContributor)?.identity | translate }} :
+                <ng-container
+                  *ngIf="contributorsMap.get(estContributor); else noValueTemplate"
+                >
+                  {{ contributor?.nationalId }}
+                </ng-container>
+                <ng-template #noValueTemplate>
+                  <span class="null-value">
+                    {{ 'THEME.NOT-AVAILABLE' | translate }}
+                  </span>
+                </ng-template>
+                )
+              </div>
+            </ng-container>
+            <ng-container *ngIf = "notRegisteredContributor">
+              <div class="identity-role ml-1">
+                ( {{ contributorsMap.get(estContributor)?.identity | translate }} :
+                <ng-container
+                  *ngIf="contributorsMap.get(estContributor); else noValueTemplate"
+                >
+                  {{ contributor?.partyId }}
+                </ng-container>
+                <ng-template #noValueTemplate>
+                  <span class="null-value">
+                    {{ 'THEME.NOT-AVAILABLE' | translate }}
+                  </span>
+                </ng-template>
+                )
+              </div>
+            </ng-container>
+            </div>
+          </div>
+          <div class="header-wrapper ml-auto" accordion-heading>
+            <span class="arrow-up">
+              <fa-icon icon="angle-up" size="2x"></fa-icon>
+            </span>
+            <span class="arrow-down" accordion-heading>
+              <fa-icon icon="angle-down" size="2x"></fa-icon>
+            </span>
+          </div>
+          <div>
+            <ng-container *ngIf = "contributor?.partyId == null">
+            <est-documents-dc
+              [showHeading]="false"
+              [documents]="contributorsMap.get(contributor?.nationalId)?.documents"
+              [businessKey]="contributor?.nationalId"
+              [transactionId]="documentTransactionId"
+              [referenceNo]="referenceNo"
+            ></est-documents-dc>
+          </ng-container>
+          <ng-container *ngIf = "contributor?.partyId">
+            <est-documents-dc
+            [showHeading]="false"
+            [documents]="contributorsMap.get(contributor?.partyId)?.documents"
+            [businessKey]="contributor?.partyId"
+            [transactionId]="documentTransactionId"
+            [referenceNo]="referenceNo"
+          ></est-documents-dc>
+        </ng-container>
+          </div>
+        </accordion-group>
+      </gosi-card-dc>
+    </ng-container>
+  </accordion>
+
+  <est-footer-buttons-dc
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="submitTransaction()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!--This html is used for terminating vic-->
+<div class="content">
+  <!-- Terminate vic content-->
+  <ng-container *ngIf="activeTab < totalTab">
+    <cnt-header-section-dc
+      heading="CONTRIBUTOR.TERMINATE-VIC.TERMINATE-VIC-TITLE"
+      (goBack)="cancelTerminateVic(cancelTemplate)"
+    >
+    </cnt-header-section-dc>
+
+    <!-- Contributor banner-->
+    <div class="row mt-4" *ngIf="contributor">
+      <div class="col-lg-12">
+        <cnt-contributor-banner-dc
+          [contributor]="contributor"
+          [requiredFields]="terminateVicBanner"
+        ></cnt-contributor-banner-dc>
+      </div>
+    </div>
+
+    <gosi-alert-sc></gosi-alert-sc>
+
+    <!-- Progress wizard icons section -->
+    <gosi-progress-wizard-dc
+      *ngIf="activeTab < totalTab"
+      [wizardItems]="wizardItems"
+      (clickWizard)="selectFormWizard($event)"
+      #progressWizardItems
+    ></gosi-progress-wizard-dc>
+  </ng-container>
+
+  <!-- Tab section -->
+  <div class="hide-tab">
+    <tabset class="pills">
+      <!-- Terminate Vic Details section -->
+      <tab [active]="activeTab === 0">
+        <div class="row mt-4">
+          <div class="col-lg-12">
+            <cnt-terminate-vic-details-dc
+              [terminationReasonList]="terminationReasonList$ | async"
+              [canEdit]="true"
+              [engagementDetails]="vicEngagementDetails"
+              [vicTerminateDetails]="vicTerminateDetails"
+              [isPREligible]="isPREligible"
+              [parentForm]="terminateVicForm"
+              [showPreviousSection]="false"
+              [bankNameList$]="bankNameList$"
+              [vicContributionDetails]="vicContributionDetails"
+              [bankDetails]="bankAccount"
+              [isEditMode]="isEditMode"
+              [lang]="lang"
+              [isBankDetailsPending]="isBankDetailsPending"
+              (IBANChange)="getBankDetails($event)"
+              (save)="onSaveTerminateVic($event)"
+              (cancel)="cancelTerminateVic(cancelTemplate)"
+              (terminationDateChange)="terminationDateChange($event)"
+              (showError)="showErrorByKey($event)"
+              (clearError)="clearErrorAlerts()"
+            >
+            </cnt-terminate-vic-details-dc>
+          </div>
+        </div>
+      </tab>
+      <!-- Document upload section -->
+      <tab [active]="activeTab === 1">
+        <div class="row" *ngIf="documents.length > 0">
+          <div class="col-12">
+            <cnt-document-upload-dc
+              [documentList]="documents"
+              [businessKey]="engagementId"
+              [transactionId]="transactionId"
+              [parentForm]="terminateVicForm"
+              [referenceNo]="referenceNo"
+              [showDocuments]="true"
+              (refresh)="refreshDoc($event)"
+              [showComments]="true"
+            ></cnt-document-upload-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <cnt-action-area-dc
+              primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+              showPreviousSection="true"
+              (previous)="setPreviousSection()"
+              (submit)="onSubmitTerminateVic()"
+              (cancel)="cancelTerminateVic(cancelTemplate)"
+            >
+            </cnt-action-area-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<!-- Modals -->
+
+<!-- Cancel Confirmation Template -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<!-- VIC Confirmation Template -->
+<ng-template #vicConfirmationMessage>
+  <gosi-modal-dc>
+    <div modalContent>
+      <div class="row">
+        <div class="modal-head col-12">
+          <span>{{ 'CONTRIBUTOR.TERMINATE-VIC.TERMINATE-VIC-ENGAGEMENT' | translate }}</span>
+        </div>
+        <div
+          *ngIf="vicContributionDetails?.refundableCreditBalance > 0"
+          class="modal-message col-12"
+          [innerHTML]="'CONTRIBUTOR.TERMINATE-VIC.CREDIT-AMOUNT-INFO' | translate"
+        ></div>
+        <div
+          class="modal-message col-12"
+          [innerHTML]="'CONTRIBUTOR.TERMINATE-VIC.CREDIT-CONFIRMATION-QS' | translate: personName"
+        ></div>
+      </div>
+    </div>
+
+    <div modalAction>
+      <div class="form-action d-flex justify-content-between">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="hideModal()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc id="confirm" type="primary" (submit)="submitVicTermination()">
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

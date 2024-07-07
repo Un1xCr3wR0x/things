@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary" [heading]="header | translate" [isRequired]="isMandatory">
+  <div class="pb-3" *ngIf="infoMessage">
+    <label>{{ infoMessage | translate }}</label>
+  </div>
+  <div class="row" [formGroup]="bankAccountDetailsForm">
+    <div class="col-sm-6 col-md-6">
+      <gosi-input-text-dc
+        id="iBanAccountNumber"
+        name="iBanAccountNumber"
+        [label]="'FORM-FRAGMENTS.IBANACCOUNT-NUMBER' | translate"
+        [control]="bankAccountDetailsForm.get('ibanAccountNo')"
+        (blur)="getBank()"
+        [maxLength]="minMaxLengthAccountNo"
+        [onlyAlphaNumerics]="true"
+        gosiSpecialCharacterMask
+        [removeSpecialCharacters]="true"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div
+      class="col-sm-6 col-md-6"
+      *ngIf="
+        isGcc
+          ? bankAccountDetailsForm?.get('ibanAccountNo')?.valid
+          : bankAccountDetailsForm?.get('bankName')?.get('english')?.value || !isIbanMapped
+      "
+    >
+      <gosi-input-select-dc
+        id="bankName"
+        name="bankName"
+        [label]="'FORM-FRAGMENTS.BANK-NAME' | translate"
+        [control]="bankAccountDetailsForm.get('bankName')"
+        [list]="!isGcc ? list : (bankNameList$ | async)"
+        [disabled]="
+          isGcc
+            ? !(
+                bankAccountDetailsForm?.get('ibanAccountNo')?.value &&
+                bankAccountDetailsForm?.get('ibanAccountNo')?.valid
+              )
+            : isIbanMapped
+        "
+      >
+      </gosi-input-select-dc>
+    </div>
+  </div>
+  <div *ngIf="isProactive">
+    <div class="row">
+      <div>
+        <gosi-button-dc id="verifyBtn" class="btn" type="primary" [disabled]="isVerified || !bankAccountDetailsForm.get('bankName')?.get('english')?.value" (submit)="verifyIban()">
+          {{ 'ESTABLISHMENT.VERIFY' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <span>
+      <gosi-alert-dc #verifyAlert
+                     [noPadding]="false"
+                     [bilingualMessage]="verifyMessage"
+                     [type]="verifyType"
+                     [dismissible]="false"
+      ></gosi-alert-dc>
+    </span>
+    <br>
+    <div class="row">
+      <gosi-label-dc
+        class="col-md-4 col-sm-12"
+        *ngIf="showAccountStatus"
+        id="accountStatus"
+        label="{{ 'ESTABLISHMENT.BANK-ACCOUNT.STATUS' | translate }}"
+        [control]="accountStatus | translate"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>

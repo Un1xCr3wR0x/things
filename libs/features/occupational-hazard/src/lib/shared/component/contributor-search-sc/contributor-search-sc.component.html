@@ -1,0 +1,147 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="report-oh-frame content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.REPORT-OCCUPATIONAL-HAZARD' | translate }}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-alert-sc *ngIf="!noInjuryList || isEstClosed"></gosi-alert-sc>
+      <oh-report-type-dc
+        (alert)="clearAlerts()"
+        (selectType)="setReportType($event)"
+        [selectedValue]="selectedType"
+      ></oh-report-type-dc>
+    </div>
+    <div class="col-md-12 mb-4" *ngIf="selectedType && !isEstClosed">
+      <oh-contributor-search-dc #ohSearch (next)="searchContributor($event)" [parentForm]="searchContributorForm">
+      </oh-contributor-search-dc>
+    </div>
+  </div>
+
+  <!--Group injury label(Bulk Report)-->
+
+  <div class="or-label" *ngIf="selectedType === 'Injury' && !isEstClosed">
+    <div class="row">
+      <div class="col-lg-12 report-bulk-injury">
+        {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.OR' | translate }}
+        <a class="bulk-injury-link" type="primary" (click)="reportGroupInjury()">
+          {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.BULK-REPORT' | translate }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contributor search result-->
+
+  <div class="mt-4" *ngIf="hasSearchResult">
+    <div class="row justify-content-center search-heading">
+      <div class="col-md-10">
+        <label>{{ 'OCCUPATIONAL-HAZARD.SEARCH-RESULT' | translate }}</label>
+        <gosi-alert-sc *ngIf="noInjuryList"></gosi-alert-sc>
+      </div>
+    </div>
+    <div class="row" *ngIf="selectedType === 'Injury' ">
+      <ng-container *ngIf="contributors && contributors[0]">
+        <div class="col-md-12">
+          <oh-search-item-dc
+            [contributor]="contributors[0]"
+            (selectContributor)="selectContributor($event)"
+            (alert)="contributorSearchError()"
+          >
+          </oh-search-item-dc>
+        </div>
+      </ng-container>
+    </div>
+    <div class="row" *ngIf="selectedType === 'Complication'">
+      <ng-container *ngIf="contributors && contributors[0]">
+        <div class="col-md-12">
+          <oh-search-item-dc
+            [contributor]="contributors[0]"
+            (selectContributor)="selectContributor($event)"
+            (alert)="contributorSearchError()"
+          >
+          </oh-search-item-dc>
+        </div>
+      </ng-container>
+    </div>
+      <div class="row" *ngIf="selectedType === 'Disease'">
+      <ng-container *ngIf="contributors && contributors[0]">
+        <div class="col-md-12">
+          <oh-search-item-dc
+            [contributor]="contributors[0]"
+            (selectContributor)="showModal(reportDiseaseModal, 'xl')"
+            (alert)="contributorSearchError()"
+          >
+          </oh-search-item-dc>
+        </div>
+      </ng-container>
+    </div> 
+  </div>
+
+  <ng-template #reportDiseaseModal>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="row">
+          <div class="col-md-12 ml-sm-3 pl-5 pt-4">
+            <div class="main-heading imp-info">{{ 'OCCUPATIONAL-HAZARD.DISEASE.IMP-INFO' | translate }}</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12 pl-5 pr-5">
+            <ol class="row pl-md-5 pr-5">
+              <li>
+                <div class="row pb-3">
+                  <div class="col-12">
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-1' | translate }}
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="row pb-3">
+                  <div class="col-12">
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-2' | translate }}
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="row pb-3">
+                  <div class="col-12">
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-3' | translate }}
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="row pb-3">
+                  <div class="col-12">
+                    {{ 'OCCUPATIONAL-HAZARD.DISEASE.DISEASE-4' | translate }}
+                  </div>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="row pb-3 pl-5 pr-5">
+          <div class="col-md-12 form-action">
+            <div class="float-right btn-section">
+              <gosi-button-dc id="reportDisease" type="primary" [size]="'md'" (submit)="addNewDisease()">
+                {{ 'OCCUPATIONAL-HAZARD.DISEASE.PROCEED-DISEASE' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="float-left btn-section">
+              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>

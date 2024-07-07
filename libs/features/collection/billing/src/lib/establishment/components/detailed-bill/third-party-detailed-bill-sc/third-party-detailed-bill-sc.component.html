@@ -1,0 +1,136 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="billing-breadcrumb">
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+</div>
+
+<div class="row header-section">
+  <div class="col-auto heading-main border-right">
+    {{ 'BILLING.BILL' | translate }}
+  </div>
+  <div class="col-auto heading-main mr-auto mof-margin">
+    {{ 'BILLING.MOF' | translate }}
+  </div>
+  <div class="col-auto" style="display: none">
+    <img
+      class="icon pr-3 img-size"
+      alt="pdfDownloadThirdPartyDetailedBill"
+      (click)="downloadThirdPartyDetailedBill()"
+      title="{{ 'BILLING.DOWNLOAD-BILL-AS-PDF' | translate }}"
+      [src]="pdfImgSrc"
+      (mouseover)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-hover.svg'"
+      (mouseout)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-green-bg-normal.svg'"
+    />
+
+    <img
+      class="icon pr-3 img-size"
+      alt="excelDownloadThirdPartyDetailedBill"
+      title="{{ 'BILLING.DOWNLOAD-BILL-AS-EXCEL' | translate }}"
+      [src]="excelImgSrc"
+      (click)="downloadThirdPartyTransaction()"
+      (mouseover)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-hover.svg'"
+      (mouseout)="excelImgSrc = 'assets/images/downloadicons/xcel-on-green-bg-normal.svg'"
+    />
+    <img
+      class="icon pe-3 img-size"
+      alt="printThirdPartyDetailedBill"
+      (click)="printThirdPartyDetailedBill()"
+      title="{{ 'BILLING.PRINT' | translate }}"
+      [src]="printImgSrc"
+      (mouseover)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-hover.svg'"
+      (mouseout)="printImgSrc = 'assets/images/downloadicons/print-on-green-bg-normal.svg'"
+    />
+  </div>
+</div>
+
+<div class="content">
+  <div class="row">
+    <div class="col-lg-12">
+      <blg-itemized-bill-details-dc
+        [itemizedBillDetails]="mofEstablishmentBill"
+        [accountDetails]="accountDetails"
+        (itemizedDate)="getDate($event)"
+        [isAdmin]="isAdmin"
+        [exchangeRate]="exchangeRate"
+        [isGccCountry]="isGccCountry"
+        [currencyType]="currencyType"
+        (itemizedDetails)="getMofDashboardBillDetails()"
+        [selectedDate]="selectedDate"
+        [isMofFlag]="isMofFlag"
+        [errorMessage]="errorMessage"
+        [isBillNumber]="isBillNumber"
+        [billStartDate]="billStartDate"
+        [initialStartDate]="initialStartDate"
+      >
+      </blg-itemized-bill-details-dc>
+    </div>
+  </div>
+  <!----------------------------------Tabset------------------------------------------>
+  <div class="add-margin-top" id="Mof-itemised-bill-tabset" *ngIf="!isBillNumber">
+    <blg-allocation-tabset-dc
+      [selectedTab]="selectedTab"
+      [selectedDate]="dateSelected"
+      [fromPage]="'contributorAllocation'"
+      (tabSelected)="goToNewTab($event)"
+      [billIssueDate]="billIssueDate"
+      [tabList]="tabList"
+    ></blg-allocation-tabset-dc>
+  </div>
+
+  <!----------------------------------Tabset Ends------------------------------------------>
+  <div class="tables-align" *ngIf="!isBillNumber">
+    <!-------------------------Contribution Tab------------------------------------------------------>
+    <blg-itemized-bill-contribution-month-dc
+      *ngIf="selectedTab === 'BILLING.CONTRIBUTION'"
+      [itemizedContributionMonth]="itemizedContributionMonth"
+      [establishmentType]="establishmentType"
+      (selectPageNo)="getselectPageNo($event)"
+      (registrationNo)="getRegistrationNo($event, 'contribution')"
+      [mofContributionSortFields]="mofContributionSort$ | async"
+      (sortListValues)="getSortValuesForMofContribution($event)"
+      [yesOrNoList]="yesOrNoList$ | async"
+      (mofContributionFilterValues)="applyFilterDetails($event)"
+      (searchValue)="getSerachValues($event)"
+    >
+    </blg-itemized-bill-contribution-month-dc>
+    <!-------------------------Contribution Tab Ends------------------------------------------------------>
+    <!-------------------------Debit adjustment Tab-------------------------------------------------->
+    <ng-container *ngIf="selectedTab === 'BILLING.DEBIT-ADJUSTMENT'">
+      <blg-itemized-bill-debit-adjustment-dc
+        [debitAdjustmentDetails]="debitAdjustmentDetails"
+        [establishmentType]="establishmentType"
+        (selectPageNo)="getDebitAdjustmentSelectPageNo($event)"
+        (regNo)="getRegistrationNo($event, 'receipt-credit')"
+      >
+      </blg-itemized-bill-debit-adjustment-dc>
+    </ng-container>
+    <!-------------------------Debit adjustment Tab Ends------------------------------------------------------>
+    <!-------------------------Receipt & Credit Tab------------------------------------------------------>
+    <ng-container *ngIf="selectedTab === 'BILLING.RECEIPTS-AND-CREDITS'">
+      <blg-itemized-bill-payment-receipt-details-dc
+        [ReceiptDetails]="ReceiptDetails"
+        [exchangeRate]="exchangeRate"
+        [currencyType]="currencyType"
+        (receiptSelectPageNo)="getReceiptSelectPageNo($event)"
+        (sortListDet)="getReceiptSortList($event)"
+        (SearchReceiptNo)="getPaymentReceiptList($event)"
+        (filter)="getPaymentReceiptList($event)"
+        [receiptSort]="receiptSort$"
+      >
+      </blg-itemized-bill-payment-receipt-details-dc>
+      <blg-itemized-bill-credit-adjustment-details-dc
+        [creditAdjustmentDetails]="creditAdjustmentDetails"
+        [establishmentType]="establishmentType"
+        [exchangeRate]="exchangeRate"
+        [currencyType]="currencyType"
+        (selectPageNo)="getCreditAdjustmentSelectPageNo($event)"
+        (regNo)="getRegistrationNo($event, 'receipt-credit')"
+      ></blg-itemized-bill-credit-adjustment-details-dc>
+    </ng-container>
+    <!-------------------------Receipt & Credit Tab End------------------------------------------------------>
+  </div>
+</div>

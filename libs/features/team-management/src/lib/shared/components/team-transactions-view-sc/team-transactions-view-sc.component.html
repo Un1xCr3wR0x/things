@@ -1,0 +1,119 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="container-fluid">
+  <div class="team-member">
+    <tm-team-transactions-side-dc
+      [teamMemberList]="reporteesList"
+      [allTransactionsCount]="allTransactionsCount"
+      [onholdTransactionsCount]="onholdTransactionsCount"
+      (changeMember)="sideMenuChange($event)"
+      [selectedTab]="selectedTab"
+      [showCount]="showCount"
+    ></tm-team-transactions-side-dc>
+  </div>
+
+  <div class="team-entries overflow-hidden" id="main">
+    <tm-team-transactions-summary-dc
+      *ngIf="
+        !(selectedTab === tabProps.ALL_TRANSACTIONS || selectedTab === tabProps.ONHOLD_TRANSACTIONS) &&
+        priorityResponse &&
+        countResponse
+      "
+      [highPriorityTransactions]="priorityResponse.high"
+      [mediumPriorityTransactions]="priorityResponse.medium"
+      [lowPriorityTransactions]="priorityResponse.low"
+      [totalCount]="totalCount"
+      [pendingTransactions]="countResponse.pending"
+      [olaExceededTransactions]="countResponse.olaExceeded"
+    ></tm-team-transactions-summary-dc>
+    <gosi-alert-dc
+      *ngIf="noOfTransactons >= 10"
+      message="{{ 'TEAM-MANAGEMENT.MULTI-SELECT-INFO' | translate }}"
+      type="info"
+      [noPadding]="true"
+      [dismissible]="false"
+    ></gosi-alert-dc>
+    <tm-team-transactions-nav-dc
+      #navbar
+      [totalTransactions]="unViewed"
+      [selectedTransactions]="selectedTransactions.length"
+      [action]="selectedTab === tabProps.ONHOLD_TRANSACTIONS ? tabProps.ONHOLD_TRANSACTIONS : ''"
+      [activeTab]="selectedTab"
+      (searchValue)="searchTransactionsWithId($event)"
+      [searchParam]="searchParam"
+      (filterEvent)="onFilterTransactions($event)"
+      (slaOlaFilter)="slaOlaFilter($event)"
+      (modalEvent)="modalChange($event)"
+      (clearSelection)="clearSelectedTransactions()"
+      [sortItem]="sortItem"
+      [sortList]="sortList"
+      (sort)="onSort($event)"
+    ></tm-team-transactions-nav-dc>
+    <tm-team-transactions-entries-dc
+      #entries
+      [transactions]="bpmTaskResponse"
+      [pageDetails]="pageDetails"
+      [unViewed]="unViewed"
+      (pageChanged)="selectPage($event)"
+      [sortItem]="sortItem"
+      [form]="formArray"
+      [selectedTransactions]="selectedTransactions"
+      (updateSelection)="transactionInObservableArray($event)"
+      [isOnHoldMenu]="selectedTab === tabProps.ONHOLD_TRANSACTIONS"
+      (navigate)="navigateToTransaction($event)"
+    ></tm-team-transactions-entries-dc>
+    <div *ngIf="this.bpmTaskResponse?.tasks.length == 0">
+      <gosi-no-result-dc></gosi-no-result-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #reassignModal>
+  <tm-reassign-transactions-modal-dc
+    [selectedTransactions]="selectedTransactions"
+    [teamMemberList]="teamMemberList"
+    (closeModal)="hideModal()"
+    [modalHeader]="'TEAM-MANAGEMENT.REASSIGN_TRANSACTIONS'"
+    [actionButton]="'TEAM-MANAGEMENT.ASSIGN'"
+    [modalType]="modalType"
+    [reassignForm]="reassignForm"
+    (action)="actionEvent()"
+    [isUnHold]="false"
+  ></tm-reassign-transactions-modal-dc>
+</ng-template>
+<ng-template #unholdReassignModal>
+  <tm-reassign-transactions-modal-dc
+    [selectedTransactions]="selectedTransactions"
+    [teamMemberList]="teamMemberList"
+    (closeModal)="hideModal()"
+    [modalHeader]="'TEAM-MANAGEMENT.UNHOLD_REASSIGN_TRANSACTIONS'"
+    [actionButton]="'TEAM-MANAGEMENT.UNHOLD_ASSIGN'"
+    [modalType]="modalType"
+    [reassignForm]="reassignForm"
+    (action)="unholdAndReassignEvent()"
+    [isUnHold]="true"
+  ></tm-reassign-transactions-modal-dc>
+</ng-template>
+<ng-template #holdModal>
+  <tm-reassign-transactions-modal-dc
+    [selectedTransactions]="selectedTransactions"
+    (closeModal)="hideModal()"
+    [modalHeader]="'TEAM-MANAGEMENT.HOLD_TRANSACTIONS'"
+    [actionButton]="'TEAM-MANAGEMENT.HOLD'"
+    [modalType]="modalType"
+    [commentForm]="commentForm"
+    (action)="holdEvent()"
+  ></tm-reassign-transactions-modal-dc>
+</ng-template>
+<ng-template #unholdModal>
+  <tm-unhold-transactions-modal-dc
+    [selectedTransactions]="selectedTransactions"
+    (closeModal)="hideModal()"
+    [modalType]="modalType"
+    (action)="unHoldEvent()"
+  ></tm-unhold-transactions-modal-dc>
+</ng-template>

@@ -1,0 +1,94 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- bank details -->
+<gosi-card-dc
+  *ngIf="!noBankProvided; else noBankDetailsTemplate"
+  heading="{{ 'FORM-FRAGMENTS.BANK-ACCOUNT-DETAILS' | translate }}"
+  type="secondary"
+  [canEdit]="isEditMode || isBankDetailsPending ? false : canEdit && !showBankEdit"
+  (edit)="toggleBankEdit(true)"
+>
+  <div class="row mb-3" *ngIf="isBankDetailsPending && !isEditMode">
+    <div class="col-lg-12">
+      <gosi-alert-dc
+        type="warning"
+        message="CONTRIBUTOR.BANK-WORKFLOW-IN-PROGRESS"
+        [dismissible]="false"
+        [noPadding]="true"
+      ></gosi-alert-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <gosi-label-dc
+        id="iBanAccountNumber"
+        [label]="'FORM-FRAGMENTS.IBANACCOUNT-NUMBER' | translate"
+        [value]="bankDetails?.ibanAccountNo"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-6 col-sm-12">
+      <gosi-label-dc
+        id="bankName"
+        [label]="'FORM-FRAGMENTS.BANK-NAME' | translate"
+        [value]="bankDetails?.bankName | bilingualText"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div class="update-bank" *ngIf="showBankEdit">
+    <div class="row mt-4 mx-3" *ngIf="!ibanChanged || showMandatoryError">
+      <div class="col-lg-12">
+        <gosi-alert-dc
+          [type]="showMandatoryError ? 'danger' : 'warning'"
+          [message]="showMandatoryError ? 'CORE.ERROR.MANDATORY-FIELDS' : 'CONTRIBUTOR.BANK-MODIFY-NO-CHANGE-INFO'"
+          [dismissible]="true"
+          [noPadding]="true"
+        ></gosi-alert-dc>
+      </div>
+    </div>
+    <frm-bank-details-dc
+      [bankNameList$]="bankNameList$"
+      [parentForm]="parentForm"
+      isMandatory="true"
+      noBottomMargin="true"
+      [header]="'CONTRIBUTOR.TERMINATE-VIC.UPDATE-BANK-DETAILS' | translate"
+      (IBAN)="handleIbanChange($event)"
+    ></frm-bank-details-dc>
+    <div class="d-flex justify-content-center update-buttons">
+      <gosi-button-dc
+        type="secondary"
+        id="cancelBankUpdate"
+        (submit)="cancelBankEdit()"
+        outlineOnly="true"
+        size="md"
+        class="btn cancel-btn"
+      >
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+      >
+      <gosi-button-dc
+        id="updateBankDet"
+        type="primary"
+        class="btn save-btn"
+        size="md"
+        outlineOnly="true"
+        (submit)="updateBankDetails()"
+      >
+        {{ 'CONTRIBUTOR.SAVE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-card-dc>
+<ng-template #noBankDetailsTemplate>
+  <frm-bank-details-dc
+    [bankNameList$]="bankNameList$"
+    [parentForm]="parentForm"
+    [bankAccount]="bankDetails"
+    [isMandatory]="noMandatory"
+    noBottomMargin="true"
+    [infoMessage]="'CONTRIBUTOR.NO-BANK-DETAILS-AVAILABLE'"
+    [header]="'CONTRIBUTOR.TERMINATE-VIC.UPDATE-BANK-DETAILS' | translate"
+    (IBAN)="IBANChange.emit($event)"
+  ></frm-bank-details-dc>
+</ng-template>

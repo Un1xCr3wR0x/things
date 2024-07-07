@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="annuity-summary">
+  <div class="d-flex flex-row-reverse py-3">
+    <div *gosiShow="viewHistory">
+      <a class="view-link" (click)="navigateToViewHistory()">{{ 'BENEFITS.VIEW-HISTORY' | translate }}</a>
+    </div>
+    <div class="pr-3" *ngIf="!isIndividualApp">
+      <ng-container *gosiShow="contributorVisitAccess">
+      <a class="view-link" (click)="navigateToContributorVisit()">{{
+        'BENEFITS.CONTRIBUTOR-VISITS-PAGE' | translate
+      }}</a>
+      </ng-container>
+    </div>
+  </div>
+  <!-- UI benefit heading and sub paragraph area -->
+  <ng-container *ngIf="uibenefits && uibenefits?.benefitType && uibenefits?.applicable">
+    <div class="benefit-set">
+      <div class="d-flex py-2">
+        <div class="">
+          <span class="annuity-type pt-4">{{ uibenefits.benefitGroup | bilingualText }}</span>
+        </div>
+        <!-- *ngIf="!uibenefits.eligible && !isSanedReopen"
+          (submit)="ShowEligibilityPopup(eligibilityCriteria, uibenefits)"
+        -->
+        <!--        <div class="ml-auto px-4 pt-3" *ngIf="false"> -->
+        <!--          <gosi-button-dc            -->
+        <!--            [size]="'sm'"-->
+        <!--            [outlineOnly]="true"-->
+        <!--            type="secondary"-->
+        <!--            >{{ 'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate }}</gosi-button-dc-->
+        <!--          >-->
+        <!--        </div>-->
+        <!-- Eligibility criteria button for different benefits -->
+        <div class="ml-auto px-4 pt-2">
+          <gosi-button-dc
+            *ngIf="isIndividualApp && !isSanedActive && !uibenefits.eligible && !isSanedReopen"
+            [size]="'sm'"
+            [outlineOnly]="true"
+            (submit)="ShowEligibilityPopup(eligibilityCriteria, uibenefits)"
+            type="secondary"
+          >
+            {{ 'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+      <!-- content after benefit heading start here -->
+      <div class="benefit-content">
+        <div *ngIf="uibenefits.benefitGroup?.english === typeUi">
+          <span>{{ 'BENEFITS.UI-BENEFIT-DESCRIPTION' | translate }}</span>
+        </div>
+
+        <div class="statusMessage">
+          <fa-icon class="blue-circle" icon="info-circle" size="md"></fa-icon>
+          <span
+            *ngIf="isIndividualApp && (!isSanedEligible || !uibenefits?.eligible || uibenefits?.appeal) ? true : false"
+          >
+            {{ 'BENEFITS.NON-ELIGIBLE-MSG' | translate }}
+          </span>
+          <span *ngIf="isEligibleCheck()">{{ 'BENEFITS.ELIGIBLE-MSG' | translate }}</span>
+          <span *ngIf="isSanedReopen">{{ 'BENEFITS.REOPEN-STATUS-TEXT' | translate }}</span>
+          <span *ngIf="!isSanedEligible && !isSanedReopen">{{
+            'BENEFITS.ELIGIBLE-ACTIVE-WORKFLOW-MSG' | translate
+          }}</span>
+          <!-- <a
+            *ngIf="uibenefits.appeal && uibenefits.status !== benefitValues.workflow"
+            (click)="navigateToRaiseAppeal()"
+            class="ml-2 raise-appeal-text"
+            >{{ 'BENEFITS.RAISE-APPEAL' | translate }}</a
+          > -->
+        </div>
+        <div *ngIf="uibenefits.appeal && uibenefits.status !== benefitValues.workflow && !isSanedReopen">
+          <ng-container *gosiShow="isIndividualApp ? true : viewAppeal"
+          >
+            <gosi-button-dc
+            [id]="'sanedRaiseAppeal'"
+            type="primary"
+            (submit)="apply()"
+            [disabled]="isIndividualApp"
+          >
+            {{ 'BENEFITS.APPLY-NOW' | translate }}
+          </gosi-button-dc>
+        </ng-container>
+        </div>
+        <!-- defect - 536828 - enabled for individual app -->
+        <div class="apply-btn" *ngIf="isSanedEligible && !isSanedReopen && !uibenefits?.appeal">
+          <a (click)="apply()">
+            <ng-container *gosiShow="isIndividualApp ? true : viewModify"
+            >
+            <gosi-button-dc
+              id="applyButton"
+              type="primary"
+              [disabled]="isIndividualApp ? !isSanedEligible || !uibenefits?.eligible : !isSanedEligible"
+              (submit)="isEligibleCheck() ? apply() : ''"
+            >
+              {{ 'BENEFITS.APPLY-NOW' | translate }}</gosi-button-dc
+            >
+          </ng-container>
+          </a>
+        </div>
+        <div class="apply-btn" *ngIf="isSanedReopen">
+          <a (click)="navigateToReopen()">
+            <ng-container *gosiShow="isIndividualApp ? true : viewModify"
+            >
+            <gosi-button-dc
+              id="reopenButton"
+              type="primary"
+              (submit)="navigateToReopen()"
+            >
+              {{ 'BENEFITS.REACTIVATE' | translate }}</gosi-button-dc
+            >
+          </ng-container>
+          </a>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="!uibenefits || !uibenefits?.applicable">
+    <p class="ml-2">
+      {{ 'BENEFITS.NO-ITEM-FOUND' | translate }}
+    </p>
+  </ng-container>
+</div>
+<ng-template #eligibilityCriteria>
+  <bnt-eligibility-criteria-demo-dc (close)="hideModal()" [isSaned]="true" [benefitInfo]="uibenefits">
+  </bnt-eligibility-criteria-demo-dc>
+</ng-template>

@@ -1,0 +1,79 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="document-view">
+  <accordion-group
+    class="accordion-group-class"
+    [ngClass]="{ disabled: collapseView }"
+    id="owner{{ index }}"
+    heading="{{ documentName | bilingualText }} {{ showName ? (idTitle) : '' }} {{ showDocumentBusinessKey ? ' - ' + businessKey : '' }}"
+    (isOpenChange)="previewDocument()"
+    [isOpen]="isOpen"
+  >
+    <span class="arrow-up" accordion-heading>
+      <img *ngIf="(documentClassification === 'Internal' && allowPublicAccess === true && appToken === 'PRIVATE') || (documentClassification === 'External' && appToken === 'PRIVATE')" src="assets/icons/svg/public.svg" size="md"/>
+      <img *ngIf="(documentClassification === 'Internal' && allowPublicAccess === false && appToken === 'PRIVATE') || revokeAllowed" src="assets/icons/svg/internal.svg" size="md"/>
+      <fa-icon icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-down" accordion-heading>
+      <img *ngIf="(documentClassification === 'Internal' && allowPublicAccess === true && appToken === 'PRIVATE') || (documentClassification === 'External' && appToken === 'PRIVATE')" src="assets/icons/svg/public.svg" size="md"/>
+      <img *ngIf="(documentClassification === 'Internal' && allowPublicAccess === false && appToken === 'PRIVATE') || revokeAllowed" src="assets/icons/svg/internal.svg" size="md"/>
+      <fa-icon icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <div class="row">
+      <div class="float-left customeraccess">
+        <gosi-button-dc *ngIf="(documentClassification === 'Internal' && allowPublicAccess === true && appToken === 'PRIVATE' && !revokeAllowed)" type="secondary" outlineOnly="true" size="md"(submit)="popUp(revokeDocuments)">
+          <img class="revoke-icon" src="assets/icons/svg/internal.svg" size="lg"/>
+          {{ 'THEME.REVOKE-ACCESS' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="col" id="documentPreview{{ index }}">
+        <div class="float-right document-preview">
+          <div *ngIf="content && content !== 'NULL'" class="doc-btn open-document">
+            <a
+              *ngIf="documentType === 'pdf'; else imageView"
+              id="openDocument{{ index }}"
+              class="custom-icon-button"
+              [href]="fileUrl"
+              target="_blank"
+            >
+              <gosi-button-dc type="secondary" outlineOnly="true" size="md">
+                <fa-icon class="open-document-icon" size="lg" icon="expand"></fa-icon>
+                {{ 'THEME.OPEN-DOCUMENT' | translate }}
+              </gosi-button-dc>
+            </a>
+            <ng-template #imageView>
+              <gosi-button-dc type="secondary" outlineOnly="true" size="md" (submit)="openImage()">
+                <fa-icon class="open-document-icon" size="lg" icon="expand"></fa-icon>
+                {{ 'THEME.OPEN-DOCUMENT' | translate }}
+              </gosi-button-dc>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col" id="documentPreview{{ index }}">
+        <div class="document-content" *ngIf="content && content !== 'NULL'; else empty">
+          <ng-container *ngIf="documentType === 'pdf'; else imageView">
+            <object #objectRef [data]="fileUrl"></object>
+          </ng-container>
+          <ng-template #imageView>
+            <img alt="" [src]="fileUrl" />
+          </ng-template>
+        </div>
+        <ng-template #empty>
+          <span class="no-preview">{{ 'THEME.NO-DOCUMENT-ATTACHED' | translate }}</span>
+        </ng-template>
+      </div>
+    </div>
+  </accordion-group>
+</div>
+<ng-template #revokeDocuments>
+  <gosi-confirm-modal-dc
+    [message]="'THEME.REVOKE-DOCUMENT'| translate: { documentName: lang === 'en' ? documentName?.english :  documentName?.arabic }"
+    (onConfirm)="revokeAccess()"
+    (onCancel)="declinePopUp()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

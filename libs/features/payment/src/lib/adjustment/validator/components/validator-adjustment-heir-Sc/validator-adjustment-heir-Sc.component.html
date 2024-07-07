@@ -1,0 +1,292 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [documents]="isDocuments ? documents : []" [comments]="comments">
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc [heading]="lang === 'en' ? payload?.titleEnglish : payload?.titleArabic">
+      </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="personDetails">
+          <!--------------------------Contributor Details-------------------------------------->
+          <frm-content-heading-dc
+            icon="user"
+            [canEdit]="validatorCanEdit && activeAdjustments?.heirList?.length > 0"
+            heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+            (onEdit)="navigateToEdit()"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <pmt-validator-adjustment-contributor-dc
+                [personDetails]="personDetails"
+                [lang]="lang"
+                (onContributorIdClicked)="viewContributorInfo()"
+              ></pmt-validator-adjustment-contributor-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--------------------------Adjustment Details-------------------------------------->
+      <div class="row" *ngIf="activeAdjustments">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="money-bill"
+            [canEdit]="false"
+            heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="adjustmentType"
+                label="{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate }}"
+                [value]="activeAdjustments?.adjustmentType | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="activeAdjustments?.adjustmentType?.english === 'Debit'">
+              <gosi-label-dc
+                id="debitPercent"
+                label="{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate }}"
+                value="{{ activeAdjustments?.adjustmentPercentage }} {{ '%' }}"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="adjustmentReason"
+                label="{{ 'ADJUSTMENT.ADJUSTMENT-REASON' | translate }}"
+                [value]="activeAdjustments?.adjustmentReason | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="adjustmentAmount"
+                label="{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}"
+                [value]="activeAdjustments?.adjustmentAmount"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-label-dc id="notes" label="{{ 'ADJUSTMENT.NOTES' | translate }}" [value]="activeAdjustments?.notes">
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-------------------------- Heir Adjustment Details-------------------------------------->
+      <div class="row custom-margin">
+        <div class="col-lg-12 pb-3 heading">{{ 'ADJUSTMENT.HEIR-ADJUSTMENT-DETAILS' | translate }}</div>
+        <div class="col-lg-12" *ngFor="let eachHeir of activeAdjustments?.heirList; let i = index">
+          <gosi-accordion-dc
+            [closeOthers]="true"
+            [id]="'heir-adjustment-' + i"
+            [isPrimaryColor]="false"
+            class="modify-accordion"
+          >
+            <div header>
+              <div class="heading-wrapper">
+                <div class="row align-items-center d-flex justify-content-between">
+                  <div class="accordion-heading-type col-auto">
+                    <!-- To display name in arabic in case english name null -->
+                    {{ eachHeir?.name | nameToString: true }}
+                    ({{ eachHeir?.relationship | bilingualText }})
+                  </div>
+                  <div class="status ml-auto d-flex">
+                    {{ 'BENEFITS.AMOUNT_ONLY' | translate }} : {{ eachHeir?.adjustmentAmount | number: '1.2-2'
+                    }}{{ 'BENEFITS.SR' | translate }}
+                  </div>
+                  <div class="col-auto d-flex justify-content-end mr-0">
+                    <span class="arrow-up">
+                      <fa-icon icon="angle-up" size="lg"></fa-icon>
+                    </span>
+                    <span class="arrow-down">
+                      <fa-icon icon="angle-down" size="lg"></fa-icon>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div body>
+              <div class="row">
+                <div class="col-lg-5" *ngIf="eachHeir?.identity[0]">
+                  <gosi-label-dc
+                    id="heirNIN"
+                    [value]="getHeir(eachHeir.identity)?.id"
+                    label="{{ 'BENEFITS.' + getHeir(eachHeir.identity)?.idType | translate }}"
+                  ></gosi-label-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4 pb-3">
+                  <label class="mb-0 custom-label">{{ 'BENEFITS.PRE-ADJUSTMENT' | translate }}</label>
+                  <div
+                    id="previousAdjustment"
+                    class="custom-value"
+                    ngClass="{{
+                      eachHeir?.previousAdjustmentAmount > 0
+                        ? 'text-success'
+                        : eachHeir?.previousAdjustmentAmount < 0
+                        ? 'text-danger'
+                        : ''
+                    }}"
+                  >
+                    {{ Math.abs(eachHeir?.previousAdjustmentAmount.toFixed(2)) }} {{ 'BENEFITS.SR' | translate }}
+                  </div>
+                </div>
+                <div class="col-lg-8">
+                  <gosi-label-dc
+                    id="previousAdjustment"
+                    [label]="'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate"
+                    [value]="'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate"
+                    (select)="navigateToHeirDetails(eachHeir?.heirPersonId)"
+                    [ignoreLabel]="true"
+                    [isLink]="true"
+                  >
+                  </gosi-label-dc>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4" *ngIf="eachHeir?.netAdjustmentAmount != null">
+                  <label class="mb-0 custom-label">{{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }}</label>
+                  <div
+                    id="netAdjustmentAmount"
+                    class="custom-value"
+                    ngClass="{{
+                      eachHeir?.netAdjustmentAmount > 0
+                        ? 'text-success'
+                        : eachHeir?.netAdjustmentAmount < 0
+                        ? 'text-danger'
+                        : ''
+                    }}"
+                  >
+                    {{ Math.abs(eachHeir?.netAdjustmentAmount.toFixed(2)) }} {{ 'BENEFITS.SR' | translate }}
+                  </div>
+                </div>
+              </div>
+              <div
+                class="row mx-0 mt-5"
+                *ngIf="eachHeir?.netAdjustmentAmount != null && checkForm && checkForm?.controls[i]?.get('personId')"
+              >
+                <div class="col-lg-12 px-0">
+                  <gosi-input-checkbox-dc
+                    id="directPayment"
+                    name="directPayment"
+                    [control]="checkForm.controls[i].get('directPayment')"
+                    [label]="'ADJUSTMENT.ALLOW-DIRECT-PAYMENT' | translate"
+                    [disabled]="
+                      routerData?.assignedRole === rolesEnum.CNT_FC_APPROVER ||
+                      routerData.assignedRole === 'FC Approver'
+                    "
+                  >
+                  </gosi-input-checkbox-dc>
+                </div>
+              </div>
+            </div>
+          </gosi-accordion-dc>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+  <div id="actionArea">
+    <div class="row form-action">
+      <div class="col-lg-12">
+        <div class="action-requests">
+          <div class="btn-section float-right" *ngIf="canApprove">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="dApprove"
+              [disabled]="disableApprove"
+              type="primary"
+              (submit)="approveTransaction(approveTemplate)"
+              >{{ 'BENEFITS.APPROVE' | translate }}
+            </gosi-button-dc>
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReject">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="danger"
+              id="reject"
+              (submit)="rejectTransaction(rejectTemplate)"
+              >{{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="return"
+              (submit)="returnTransaction(returnTemplate)"
+            >
+              {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showCancelTemplate(cancelAdjustmentTemplate)"
+              >{{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      heading="{{ 'PAYMENT.APPROVE' | translate }} - {{
+        (isAddModify ? 'ADJUSTMENT.ADD-MODIFY-CANCEL' : 'ADJUSTMENT.ADD-ADJUSTMENT') | translate
+      }}"
+      [isCommentsMandatory]="approveComments"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="confirmApprovePayment()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <ng-template #cancelAdjustmentTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      heading="{{ 'PAYMENT.REJECT' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+      [warningMessage]="rejectWarningMessage | translate: { transactionNo: transactionNumber }"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (rejectEvent)="confirmRejectPayment()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <!----Return template---->
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      heading="{{ 'PAYMENT.RETURN' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+      [warningMessage]="
+        routerData.assignedRole === RoleConst.VALIDATOR_2
+          ? 'PAYMENT.INFO-VALIDATOR-RETURN-VALIDATOR'
+          : 'PAYMENT.INFO-FC-RETURN-VALIDATOR'
+      "
+      [parentForm]="form"
+      (returnEvent)="returnPayment()"
+      (cancelEvent)="hideModal()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

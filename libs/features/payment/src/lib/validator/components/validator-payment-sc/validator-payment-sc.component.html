@@ -1,0 +1,148 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content">
+  <frm-main-content-dc [documents]="isDocuments ? documents : []" [comments]="comments">
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc [heading]="'PAYMENT.DIRECT-PAYMENT' | translate"> </frm-main-heading-dc>
+    </div>
+    <gosi-alert-dc> </gosi-alert-dc>
+    <div id="contentArea">
+      <gosi-card-dc type="secondary">
+        <!--------------------------Contributor Details-------------------------------------->
+        <div class="row">
+          <div class="col-lg-12 p-0">
+            <frm-content-heading-dc
+              icon="user"
+              [canEdit]="validatorCanEdit && bankDetails"
+              heading="{{ 'PAYMENT.PERSON-DETAILS' | translate }}"
+              (onEdit)="navigateToEdit()"
+            >
+            </frm-content-heading-dc>
+          </div>
+        </div>
+        <pmt-validator-contribute-dc
+          [personDetails]="validDetails?.person"
+          [lang]="lang"
+          (onNinClicked)="navigateToContributorDetails()"
+        ></pmt-validator-contribute-dc>
+        <div class="col-lg-12 p-0" *ngIf="validDetails?.contactDetail && validDetails?.contactDetail?.currentMailingAddress">
+          <pmt-person-contact-details-dc
+            [contactDetail]="validDetails?.contactDetail"
+          ></pmt-person-contact-details-dc>
+        </div>
+        <!------------------Payment Details----------------------->
+        <div class="row mt-5">
+          <frm-content-heading-dc
+            icon="money-bill"
+            [canEdit]="false"
+            heading="{{ 'PAYMENT.PAYMENT-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+        </div>
+        <pmt-validator-payment-dc [paymentRequest]="validDetails"></pmt-validator-payment-dc>
+        <!-----Bank Details----->
+        <pmt-validator-bank-details-dc
+          *ngIf="validDetails"
+          [validDetails]="validDetails"
+          [bankDetails]="bankDetails"
+          [isIbanVerified]="isIbanVerified"
+          [bankName]="bankName"
+        ></pmt-validator-bank-details-dc>
+      </gosi-card-dc>
+    </div>
+  </frm-main-content-dc>
+  <div id="actionArea">
+    <div class="row form-action">
+      <div class="col-lg-12">
+        <div class="action-requests">
+          <div class="btn-section float-right" *ngIf="canApprove">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="dApprove"
+              [disabled]="disableApprove"
+              type="primary"
+              (submit)="showModal(approveTemplate)"
+            >
+              {{ 'BENEFITS.APPROVE' | translate }}
+            </gosi-button-dc>
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReject">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc type="danger" id="reject" (submit)="showModal(rejectTemplate)">
+              {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="return"
+              (submit)="showModal(returnTemplate)"
+            >
+              {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showModal(cancelPaymentTemplate)"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      heading="{{ 'PAYMENT.APPROVE' | translate }} - {{ 'PAYMENT.DIRECT-PAYMENT' | translate }}"
+      [isCommentsMandatory]="approveComments"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="confirmApprovePayment()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <ng-template #cancelPaymentTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      heading="{{ 'PAYMENT.REJECT' | translate }} - {{ 'PAYMENT.DIRECT-PAYMENT' | translate }}"
+      [warningMessage]="'PAYMENT.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: transactionNumber }"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (rejectEvent)="confirmRejectPayment()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <!----Return template---->
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      heading="{{ 'PAYMENT.RETURN' | translate }} - {{ 'PAYMENT.DIRECT-PAYMENT' | translate }}"
+      [warningMessage]="
+        routerData.assignedRole === RoleConst.VALIDATOR_2
+          ? 'PAYMENT.INFO-VALIDATOR-RETURN-VALIDATOR'
+          : 'PAYMENT.INFO-FC-RETURN-VALIDATOR'
+      "
+      [parentForm]="form"
+      (returnEvent)="returnPayment()"
+      (cancelEvent)="hideModal()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

@@ -1,0 +1,241 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-modal-dc
+  *ngIf="benefitDetails"
+  [modalHeader]="'BENEFITS.CONTRIBUTION-DETAILS' | translate"
+  [needCloseButton]="true"
+  (closeModal)="closeModal()"
+>
+  <div modalContent>
+    <div class="row">
+      <div class="col-lg-12 align-items-center table-view">
+        <table class="table table-borderless">
+          <thead>
+            <tr>
+              <th>
+                {{ 'BENEFITS.PERIOD' | translate }}
+              </th>
+              <th class="text-right">{{ 'BENEFITS.NO-OF-MONTHS' | translate }}</th>
+              <!-- average wage label chnge for Defect 468940 -->
+
+              <ng-container *ngIf="isPpaOhDeath && heirBenefit; else pensionReformEligible">
+                <th class="text-right">
+                  {{ 'BENEFITS.LAST-MONTHLY-WAGE' | translate }}
+                </th>
+              </ng-container>
+
+              <ng-template #pensionReformEligible>
+                <ng-container *ngIf="isPensionReform(); else nonReform">
+                  <th class="text-right">
+                    {{ 'BENEFITS.TOTAL-ANNUITY-CONTRIBUTION-AMOUNT' | translate }}
+                  </th>
+                </ng-container>
+              </ng-template>
+
+              <ng-template #nonReform>
+                <th class="text-right">
+                  {{ 'BENEFITS.AVG-WAGE' | translate
+                  }}<span class="sar-table-head"> ({{ 'BENEFITS.SR' | translate }})</span>
+                </th>
+              </ng-template>
+            </tr>
+          </thead>
+          <tbody *ngFor="let eachAmw of benefitDetails?.averageMonthlyWagePeriods">
+            <tr>
+              <td>
+                <ng-container *ngIf="eachAmw?.startDate || eachAmw?.endDate; else noDate">
+                  <span>{{ eachAmw?.startDate | dateType }} </span>
+                  <fa-icon icon="arrow-right" *ngIf="lang === 'en'"></fa-icon>
+                  <fa-icon icon="arrow-left" *ngIf="lang === 'ar'"></fa-icon>
+                  <span> {{ eachAmw?.endDate | dateType }}</span>
+                  <span class="month-text">({{ eachAmw?.period | bilingualText }})</span>
+                </ng-container>
+                <ng-template #noDate>
+                  <span class="month-text">{{ eachAmw?.period | bilingualText }}</span>
+                </ng-template>
+              </td>
+              <td class="text-right">{{ eachAmw?.contributionMonths | bilingualText }}</td>
+              <td class="text-right">{{ eachAmw?.averageMonthlyWage | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- <div class="justify-content-between d-flex px-3 pb-5" *ngIf="isEligible">
+          <span
+            ><b>{{ 'BENEFITS.AVG-MONTHLY-WAGE-PENSION-REFORM' | translate }}</b></span
+          >
+          <span class="text-right"
+            ><b>{{ benefitDetails?.averageMonthlyContributoryWage | number: '1.2-2' }}</b></span
+          >
+        </div> -->
+
+        <div class="justify-content-between d-flex px-3 pb-5" *ngIf="!isPensionReform()">
+          <span
+            ><b>{{ 'BENEFITS.NET-AMW' | translate }}</b></span
+          >
+          <span class="text-right"
+            ><b>{{ benefitDetails?.averageMonthlyContributoryWage | number: '1.2-2' }}</b></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Contributory Wages for for each period -->
+    <div class="row">
+      <div class="col-lg-12" *ngFor="let eachAmw of benefitDetails.averageMonthlyWagePeriods">
+        <gosi-accordion-dc *ngIf="eachAmw?.monthlyContributoryWages?.length > 0">
+          <div header>
+            <div class="heading-wrapper">
+              <div
+                [ngClass]="
+                  mobileView
+                    ? 'custom-mobile-row align-items-center d-md-flex justify-content-between'
+                    : 'custom-row align-items-center d-md-flex justify-content-between'
+                "
+              >
+                <div class="accordion-heading-type col-lg-8 col-auto">
+                  <span *ngIf="wagePeriodHeading[eachAmw?.period?.english]; else noPredefinedHeading">
+                    {{ wagePeriodHeading[eachAmw?.period?.english] | translate }}
+                  </span>
+                  <ng-template #noPredefinedHeading>
+                    <span>
+                      {{ eachAmw?.period | bilingualText }}
+                    </span>
+                  </ng-template>
+                </div>
+                <div class="col-lg-1 col-auto d-flex justify-content-end">
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div body>
+            <div class="row">
+              <div class="col-lg-12 align-items-center table-view">
+                <table class="table table-borderless">
+                  <thead>
+                    <tr>
+                      <th>
+                        {{ 'BENEFITS.PERIOD' | translate | titlecase }}
+                      </th>
+                      <th class="text-right">{{ 'BENEFITS.NO-OF-MONTHS' | translate }}</th>
+                      <th
+                        class="text-right"
+                        *ngIf="
+                          wagePeriodHeading[eachAmw.period?.english] ===
+                            'BENEFITS.ADJUSTMENT-AMOUNT-FIRST-EXTRA-PERIOD' ||
+                          wagePeriodHeading[eachAmw.period?.english] ===
+                            'BENEFITS.ADJUSTMENT-AMOUNT-SECOND-EXTRA-PERIOD'
+                        "
+                      >
+                        {{ 'BENEFITS.ADJUSTMENT-AMOUNT-SAR-AMW' | translate }}
+                      </th>
+                      <th
+                        class="text-right"
+                        *ngIf="
+                          wagePeriodHeading[eachAmw?.period?.english] !==
+                            'BENEFITS.ADJUSTMENT-AMOUNT-FIRST-EXTRA-PERIOD' &&
+                          wagePeriodHeading[eachAmw?.period?.english] !==
+                            'BENEFITS.ADJUSTMENT-AMOUNT-SECOND-EXTRA-PERIOD'
+                        "
+                      >
+                        {{ 'BENEFITS.CONTRIBUTORY-WAGE' | translate
+                        }}<span class="sar-table-head">({{ 'BENEFITS.SR' | translate }})</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody *ngFor="let item of eachAmw.monthlyContributoryWages; let i = index">
+                    <tr class="data-row">
+                      <td>
+                        <span>{{ item?.startDate | dateType }} </span>
+                        <fa-icon icon="arrow-right" *ngIf="lang === 'en'"></fa-icon>
+                        <fa-icon icon="arrow-left" *ngIf="lang === 'ar'"></fa-icon>
+                        <span> {{ item?.endDate | dateType }}</span>
+                      </td>
+                      <td class="text-right">{{ item?.noOfMonths | number: '1.2-2' }}</td>
+                      <td class="text-right">
+                        {{ item?.amount | number: '1.2-2' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </gosi-accordion-dc>
+      </div>
+    </div>
+    <!-- Contributory Wages for for each period -->
+    <!-- calcualtion details with formula -->
+    <div class="row">
+      <div class="col-lg-12" *ngFor="let eachCalc of benefitDetails?.calculationGuides; let i = index">
+        <gosi-accordion-dc [id]="'calculation-' + i">
+          <div header>
+            <div class="heading-wrapper">
+              <div
+                [ngClass]="
+                  mobileView
+                    ? 'custom-mobile-row align-items-center d-md-flex justify-content-between'
+                    : 'custom-row align-items-center d-md-flex justify-content-between'
+                "
+              >
+                <div class="accordion-heading-type col-auto">
+                  {{ eachCalc?.calculationType | bilingualText }}
+                </div>
+                <div class="col-lg-1 col-auto d-flex justify-content-end">
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div body *ngFor="let subCalc of eachCalc?.subCalculations; let j = index">
+            <div class="sub-calculations row">
+              <div class="col-lg-12 align-items-center">
+                <div *ngIf="subCalc?.subCalculation" class="pt-3 pb-3">
+                  <b>{{ subCalc?.subCalculation | bilingualText }}</b>
+                </div>
+                <div *ngIf="subCalc?.description" class="pt-3 pb-3" class="newline-style">
+                  {{ subCalc.description | bilingualText }}
+                </div>
+                <div *ngIf="subCalc?.formula" class="pt-3">
+                  {{ subCalc.formula | bilingualText }}
+                </div>
+                <div *ngIf="subCalc?.parameters?.length && !eligibleForPensionReform" class="pt-3 pb-2">
+                  {{ 'BENEFITS.WHERE' | translate }}
+                </div>
+                <div
+                  [ngClass]="{ 'pt-1': k > 0 }"
+                  *ngFor="let eachParam of subCalc?.parameters; let k = index"
+                  class="parameters"
+                >
+                  {{ eachParam | bilingualText }}
+                </div>
+              </div>
+            </div>
+            <div
+              [ngClass]="{ 'horizontal-line': subCalc?.subCalculation }"
+              *ngIf="j + 1 != eachCalc?.subCalculations?.length"
+              class="pt-3"
+            ></div>
+          </div>
+        </gosi-accordion-dc>
+      </div>
+    </div>
+    <!-- calcualtion details with formula -->
+  </div>
+  <div modalAction>
+    <gosi-button-dc class="d-flex close-content mb-3" id="closeButton" type="secondary" (submit)="closeModal()">
+      {{ 'BENEFITS.CLOSE' | translate }}</gosi-button-dc
+    >
+  </div>
+</gosi-modal-dc>

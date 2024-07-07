@@ -1,0 +1,119 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <ng-container id="ExceptionalPenalityWaiver">
+    <div class="row extra-margin heading-margin">
+      <span class="header"> {{ 'BILLING.EXCEPTIONAL-LATE-FEE-WAIVER' | translate }}</span>
+    </div>
+    <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+    <div class="row" *ngIf="isCommentsPresent">
+      <div class="col-12">
+        <gosi-comments-dc [comments]="comments"> </gosi-comments-dc>
+      </div>
+    </div>
+    <span *ngIf="searchOption !== 'registration'">
+      <gosi-alert-dc message="BILLING.EXCEPTION-WAIVER-INFO" type="info" [dismissible]="true" [noPadding]="true">
+      </gosi-alert-dc>
+    </span>
+    <div class="row">
+      <div class="col-lg-12" *ngIf="searchOption !== 'registration'">
+        <blg-waiver-segment-details-dc
+          [establishmentSegment]="establishmentSegment"
+          [establishmentSegmentMultiSelect]="establishmentSegmentMultiSelect"
+          [vicExceptionalFlag]="false"
+          [entityFlag]="false"
+          [csvUploadFlag]="csvUploadFlag"
+          [csvDataList]="csvDataList"
+          [bulkpenaltyCount]="bulkpenaltyCount"
+        >
+        </blg-waiver-segment-details-dc>
+      </div>
+
+      <div class="col-lg-12" *ngIf="searchOption === 'registration'">
+        <blg-waiver-establishment-info-dc
+          [establishmentDetails]="establishmentDetails"
+          [wavierDetails]="wavierDetails"
+          [documents]="documents"
+          (doc)="refreshDocuments($event)"
+          [isScan]="isAppPrivate"
+        >
+        </blg-waiver-establishment-info-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="searchOption === 'registration'">
+        <blg-waiver-account-details-dc
+          [isPpa]="isPpa"
+          [wavierDetails]="wavierDetails"
+          [parentForm]="wavierPenalityMainForm"
+          [previousInstallment]="previousInstallment"
+          [penaltyType]="entity"
+        >
+        </blg-waiver-account-details-dc>
+      </div>
+      <div class="col-lg-12">
+        <gosi-card-dc type="secondary">
+          <blg-penalty-waiver-calculation-dc
+            [searchOption]="searchOption"
+            [penaltyWaiverReason]="penalityWaiverSelectedReason"
+            [penaltyWaiverOtherReason]="penalityWaiverSelectedOtherReason"
+            [waiverPeriodPenaltyAmount]="wavierDetails?.waiverPeriodPenaltyAmount"
+            (waiverPeriod)="getWaiverAmount($event)"
+            (eligiblePenaltyAmount)="passEligiblePenaltyAmount($event)"
+            [parentForm]="wavierPenalityMainForm"
+            [wavierDetails]="wavierDetails"
+            [validatorFlag]="inWorkflow"
+            [waiverDetailsOnEdit]="waiverDetailsOnEdit"
+            [penaltyType]="entity"
+          ></blg-penalty-waiver-calculation-dc>
+        </gosi-card-dc>
+      </div>
+      <div class="col-lg-12" *ngIf="searchOption === 'registration'">
+        <gosi-card-dc type="secondary">
+          <blg-penalty-payment-details-dc
+            [wavierDetails]="wavierDetails"
+            [parentForm]="wavierPenalityMainForm"
+            [eligibleWaiveOffAmount]="eligibleWaiveOffAmount"
+            (extensionValues)="getExtensionValuesData($event)"
+            (paymentRequired)="getPaymentValue($event)"
+            [validatorFlag]="inWorkflow"
+            [waiverDetailsOnEdit]="waiverDetailsOnEdit"
+          ></blg-penalty-payment-details-dc>
+        </gosi-card-dc>
+      </div>
+      <div class="col-lg-12">
+        <gosi-card-dc type="secondary">
+          <blg-waiver-document-upload-dc
+            (doc)="refreshDocuments($event)"
+            [documents]="documents"
+            [isScan]="isAppPrivate"
+            [parentForm]="wavierPenalityMainForm"
+            [csrFlag]="true"
+            [transactionId]="documentTransactionId"
+            [businessKey]="idNumber"
+            [uuid]="uuid"
+            [referenceNumber]="referenceNumber"
+          ></blg-waiver-document-upload-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <!-- Action area -->
+    <div class="row">
+      <div class="col-lg-12">
+        <blg-action-area-dc
+          primaryButtonLabel="BILLING.SUBMIT"
+          secondaryButtonLabel="BILLING.CANCEL"
+          (submit)="onSubmitEstPenality()"
+          (cancel)="showModal(cancelTemplate, 'md')"
+        ></blg-action-area-dc>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BILLING.INFO-CANCEL'" (onConfirm)="navigateBack()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

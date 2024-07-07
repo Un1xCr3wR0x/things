@@ -1,0 +1,345 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<ng-container *ngIf="transaction?.transactionId === 300347">
+  <!-- violation details -->
+  <div class="row">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.VIOLATIONS-DETAILS' | translate }}">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="row">
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="ViolationType"
+                  [control]="violationDetail?.violationType"
+                  label="VIOLATIONS.VIOLATION-TYPE"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="ViolationNumber"
+                  [control]="violationDetail?.violationId"
+                  label="VIOLATIONS.VIOLATION-NUMBER"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- establishment details -->
+  <div class="row">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="row">
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="registrationnumber"
+                  [control]="violationDetail?.establishmentDetails?.registrationNo"
+                  label="ESTABLISHMENT.REGISTRATION-NO"
+                >
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-12 col-md-4 col-lg-4">
+                <gosi-label-dc
+                  id="arabicName"
+                  [control]="violationDetail?.establishmentDetails?.name?.arabic"
+                  label="ESTABLISHMENT.ESTABLISHMENT-NAME-AR"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- modification details -->
+  <div class="row">
+    <div class="col-md-12">
+      <vol-transactions-accordion-dc heading="{{ 'VIOLATIONS.PENALTY-AMOUNT-DETAILS' | translate }}">
+        <ng-container *ngIf="violationDetail.isSimisViolation === false">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="row">
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-label-dc
+                    id="Reasonforcancellation"
+                    [control]="violationDetail?.modificationReason"
+                    label="VIOLATIONS.REASON-FOR-MODIFICATION"
+                  >
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <div class="block">{{ 'VIOLATIONS.REQUESTED-BY' | translate }}</div>
+                  <div class="value">
+                    {{ violationDetail?.requestedBy }}
+                    <span class="lighter-label">({{ violationDetail?.role | bilingualText }}) </span>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-currency-label-dc
+                    id="currentPenaltyAmount"
+                    [currencyTo]="violationDetail?.currentPenaltyAmount"
+                    [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"
+                    label="VIOLATIONS.CURRENT-PENALITY-AMOUNT"
+                  >
+                  </gosi-currency-label-dc>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                  <gosi-currency-label-dc
+                    id="newPenaltyAmount"
+                    [currencyTo]="violationDetail?.newPenaltyAmount"
+                    [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"
+                    label="VIOLATIONS.NEW-PENALITY-AMOUNT"
+                  >
+                  </gosi-currency-label-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- contributor details -->
+
+          <div class="mobile-view">
+            <div
+              *ngFor="
+                let contributor of violationDetail?.contributors
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: itemPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: noOfRecords
+                      };
+                let i = index;
+                let odd = odd
+              "
+            >
+              <div
+                class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                [ngClass]="odd ? 'odd' : 'even'"
+              >
+                <div class="card-body align-items-center">
+                  <div class="first-row d-flex flex-row justify-content-between my-2">
+                    <div class="first-cell">
+                      <p class="title">
+                        {{
+                          contributor.contributorName.english === null
+                            ? contributor.contributorName.arabic
+                            : (contributor.contributorName | bilingualText)
+                        }}
+                      </p>
+                      <ng-container *ngIf="checkForSIN(contributor.identity) === 1; else checkSinTemplate">
+                        <div *ngFor="let identifier of contributor?.identity">
+                          <div *ngIf="identifier?.idType === 'NIN'">
+                            <div class="text-grayed sub-title">
+                              {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                            </div>
+                          </div>
+                          <div *ngIf="identifier?.idType === 'IQAMA'">
+                            <div class="text-grayed sub-title">
+                              {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                            </div>
+                          </div>
+                          <div *ngIf="identifier?.idType === 'GCCID'">
+                            <div class="text-grayed sub-title">
+                              {{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}
+                            </div>
+                          </div>
+                        </div>
+                      </ng-container>
+                      <ng-template #checkSinTemplate>
+                        <div class="text-grayed sub-title">
+                          {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                        </div>
+                      </ng-template>
+                      <p *ngIf="!isOtherViolation" class="title-two">
+                        {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }} :
+                        {{ contributor.currentPenaltyAmount | number: '1.2-2' }}
+                      </p>
+                      <p *ngIf="!isOtherViolation" class="title-two">
+                        {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }} :
+                        {{ contributor.newPenaltyAmount | number: '1.2-2' }}
+                      </p>
+                    </div>
+                    <div class="second-cell">
+                      <span class="exclude-modify-label">{{(contributor?.isExcluded
+                        ? ('VIOLATIONS.EXCLUDED' | translate)
+                        : contributor?.modified
+                        ? ('VIOLATIONS.MODIFIED' | translate)
+                        : '')}} </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="desktop-view">
+            <div class="table-penalty">
+              <table class="table-borderless w-100" id="penalty-table">
+                <thead class="thead-light">
+                  <tr class="table-row">
+                    <th style="width: 30%" class="table-head" id="contributor-heading">
+                      {{ 'VIOLATIONS.CONTRIBUTOR' | translate }}
+                    </th>
+
+                    <th *ngIf="!isOtherViolation" style="width: 30%" class="table-head" id="contributor-current-penalty-amount">
+                      {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}
+                      <span class="lighter-label">
+                        {{ 'VIOLATIONS.SAR' | translate }}
+                      </span>
+                    </th>
+                    <th *ngIf="!isOtherViolation" style="width: 30%" class="table-head" id="contributor-new-penalty-amount">
+                      {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}
+                      <span class="lighter-label">
+                        {{ 'VIOLATIONS.SAR' | translate }}
+                      </span>
+                    </th>
+                    <th style="width: 10%" class="table-head" id="status-excluded"></th>
+                  </tr>
+                </thead>
+                <tbody class="tbody-body">
+                  <tr
+                    class="content border-bottom"
+                    *ngFor="
+                      let contributor of violationDetail?.contributors
+                        | paginate
+                          : {
+                              id: 'paginationId',
+                              itemsPerPage: itemPerPage,
+                              currentPage: pageDetails.currentPage,
+                              totalItems: noOfRecords
+                            };
+                      let i = index
+                    "
+                  >
+                    <td class="table-body">
+                      <div class="settlement" id="contributor-name-value">
+                        {{
+                          contributor.contributorName.english === null
+                            ? contributor.contributorName.arabic
+                            : (contributor.contributorName | bilingualText)
+                        }}
+                      </div>
+                      <ng-container *ngIf="checkForSIN(contributor.identity) === 1; else checkForSinTemplate">
+                        <div class="identifier-section" *ngFor="let identifier of contributor?.identity">
+                          <div *ngIf="identifier?.idType === 'NIN'">
+                            <div class="lighter-label">
+                              {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                            </div>
+                          </div>
+                          <div *ngIf="identifier?.idType === 'IQAMA'">
+                            <div class="lighter-label">
+                              {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                            </div>
+                          </div>
+                          <div *ngIf="identifier?.idType === 'GCCID'">
+                            <div class="lighter-label">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}</div>
+                          </div>
+                        </div>
+                      </ng-container>
+                      <ng-template #checkForSinTemplate>
+                        <div class="text-grayed sub-title">
+                          {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                        </div>
+                      </ng-template>
+                    </td>
+
+                    <td *ngIf="!isOtherViolation" class="table-body">
+                      <div class="col-md-4" id="old-penalty-value">
+                        {{ contributor.currentPenaltyAmount | number: '1.2-2' }}
+                      </div>
+                    </td>
+                    <td *ngIf="!isOtherViolation" class="table-body">
+                      <div class="col-md-4">
+                        {{ contributor.newPenaltyAmount | number: '1.2-2' }}
+                      </div>
+                    </td>
+                    <td class="table-body">
+                      <div class="lighter-label modifyvio ">
+                        <span class="exclude-modify-label">{{(contributor?.isExcluded
+                          ? ('VIOLATIONS.EXCLUDED' | translate | uppercase)
+                          : contributor?.modified
+                          ? ('VIOLATIONS.MODIFIED' | translate | uppercase)
+                          : '')}} </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div *ngIf="noOfRecords > itemPerPage">
+            <div class="border-bottom p-3">
+              <ng-container>
+                <gosi-pagination-dc
+                  [totalSize]="noOfRecords"
+                  [itemsPerPage]="itemPerPage"
+                  [pageDetails]="pageDetails"
+                  (pageChange)="selectPage($event)"
+                  paginationId="paginationId"
+                ></gosi-pagination-dc>
+              </ng-container>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container class="termination-table" *ngIf="violationDetail.isSimisViolation === true">
+          <table class="table">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td class="termination-head">{{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}</td>
+                <td class="termination-tail">
+                  {{ violationDetail?.currentPenaltyAmount | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+              <tr>
+                <td class="termination-head">{{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}</td>
+                <td class="termination-tail">
+                  {{ violationDetail?.newPenaltyAmount | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row form-label" id="simis-label">
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                [label]="'VIOLATIONS.REASON-FOR-MODIFICATION' | translate"
+                [control]="violationDetail?.modificationReason | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="violationDetail?.comments">
+              <gosi-label-dc [label]="'VIOLATIONS.COMMENTS' | translate" [value]="violationDetail?.comments">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" id="simis-violation-request">
+              <div class="block">{{ 'VIOLATIONS.REQUESTED-BY' | translate }}</div>
+              <div class="value" id="simis-emp-name">
+                {{ violationDetail?.requestedBy }}
+                <span class="lighter-label">({{ violationDetail?.role | bilingualText }}) </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </vol-transactions-accordion-dc>
+    </div>
+  </div>
+  <!-- Documents section -->
+  <div class="row">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

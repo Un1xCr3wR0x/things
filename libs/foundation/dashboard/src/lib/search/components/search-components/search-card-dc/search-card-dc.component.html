@@ -1,0 +1,354 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="isTransaction">
+  <ng-container
+    *ngFor="
+      let item of transactionEntry
+        | paginate
+          : {
+              id: estPagination,
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: totalSize
+            }
+    "
+  >
+    <div (click)="navigateTo(item)" class="row search-view">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <span class="title">
+              {{ item.title | bilingualText }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="description">
+              {{ item.description | bilingualText }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.INITIATED-DATE' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item?.initiatedDate?.gregorian | gosiDate }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.TRANSACTION-NUMBER' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.transactionRefNo | bilingualText }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.ENTRY-CHANNEL' | translate }}
+            </span>
+            <span class="refNo" [ngClass]="[item.channel ? '' : 'not-available']">
+              {{ item.channel ? (item.channel | bilingualText) : ('DASHBOARD.NOT-AVAILABLE' | translate) }}
+            </span>
+          </div>
+
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.PENDING-WITH' | translate }}
+            </span>
+            <span class="refNo" [ngClass]="[item.assignedTo ? '' : 'not-available']">
+              <ng-container *ngIf="item?.status?.english === 'In Progress'; else noResults">
+                {{
+                  item?.pendingWith?.english
+                    ? item.pendingWith.english === 'itsm-prj.ITSM'
+                      ? ('DASHBOARD.ITSM' | translate)
+                      : (item.pendingWith | bilingualText)
+                    : ('DASHBOARD.NOT-AVAILABLE' | translate)
+                }}
+              </ng-container>
+              <ng-template #noResults>
+                {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+              </ng-template>
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.STATUS' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.status | bilingualText }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="isIndividual">
+  <ng-container
+    *ngFor="
+      let item of individualEntry
+        | paginate
+          : {
+              id: estPagination,
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: totalSize
+            }
+    "
+  >
+    <div
+      (click)="navigateTo(item)"
+      class="row search-view"
+      [ngClass]="[item.socialInsuranceNumber?.length === 0 ? 'non-contributor-card' : '']"
+    >
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <span class="title">
+              {{ 'DASHBOARD.FULL-NAME' | translate }}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <span class="refNo">
+              {{ item.name.arabic.firstName ? item.name.arabic.firstName : ' ' }}
+              {{ item.name.arabic.secondName ? item.name.arabic.secondName : ' ' }}
+              {{ item.name.arabic.thirdName ? item.name.arabic.thirdName : ' ' }}
+              {{ item.name.arabic.familyName ? item.name.arabic.familyName : ' ' }}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <span class="description">
+              {{ item.name.english.name }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.IDENTIFICATION-NO' | translate }}
+            </span>
+            <span
+              class="refNo d-flex flex-column"
+              *ngFor="let identity of getIdentificationNumberDetails(item.identity)"
+            >
+              <span>{{
+                identity.identificationNumber ? identity.identificationNumber : ('DASHBOARD.NOT-AVAILABLE' | translate)
+              }}</span>
+              <span class="identity-label">({{ 'DASHBOARD.' + identity.label | translate }})</span>
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.NATIONALITY' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.nationality ? (item.nationality | bilingualText) : ('DASHBOARD.NOT-AVAILABLE' | translate) }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.DOB' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item?.birthDate ? (item?.birthDate?.gregorian | gosiDate) : ('DASHBOARD.NOT-AVAILABLE' | translate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="isEstablishment && isPrivate">
+  <ng-container
+    *ngFor="
+      let item of establishmentEntry
+        | paginate
+          : {
+              id: estPagination,
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: totalSize
+            }
+    "
+  >
+    <div class="row search-view" (click)="navigateTo(item.registrationNo)">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <span class="title">
+              {{ 'DASHBOARD.ESTABLISHMENT-NAME' | translate }}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <span class="refNo">
+              {{ item.name.arabic }}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <span class="description">
+              {{ item.name.english }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.REGISTRATION-NUMBER' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.registrationNo }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.FIELD-OFFICE-LOCATION' | translate }}
+            </span>
+            <span class="refNo">
+              {{
+                item.fieldOfficeName ? (item.fieldOfficeName | bilingualText) : ('DASHBOARD.NOT-AVAILABLE' | translate)
+              }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.LEGAL-ENTITY' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.legalEntity | bilingualText }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.STATUS' | translate }}
+            </span>
+            <span class="refNo">
+              {{ item.status | bilingualText }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="isWorkflow && transactionDetails?.length !== 0">
+  <ng-container *ngFor="let transaction of transactionDetails">
+    <div class="row search-view">
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="title" *ngIf="transaction.title !== null">
+              {{ transaction.title | bilingualText }}
+            </div>
+            <div class="title" *ngIf="transaction.title === null">
+              {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+            </div>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="description">
+              {{ transaction.description | bilingualText }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.DATE' | translate }}
+            </span>
+            <span class="refNo">
+              {{ transaction?.lastActionedDate?.gregorian | gosiDate }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.TRANSACTION' | translate }}
+            </span>
+            <span class="refNo">
+              {{ transaction.transactionRefNo }}
+            </span>
+          </div>
+          <div class="col-md-6 spacing">
+            <span class="title">
+              {{ 'DASHBOARD.STATUS' | translate }}
+            </span>
+            <span class="refNo">
+              {{ transaction.status | bilingualText }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="isEstablishment && !isPrivate">
+  <ng-container
+    *ngFor="
+      let item of establishmentEntry
+        | paginate
+          : {
+              id: estPagination,
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: totalSize
+            }
+    "
+  >
+    <div class="establishment-view" (click)="navigateTo(item.registrationNo)">
+      <div class="row">
+        <fa-icon
+          *ngIf="!isPrivate"
+          class="icon-wrapper"
+          [ngClass]="[selectedLang === 'en' ? 'mr-2' : 'ml-2']"
+          icon="building"
+          size="md"
+        ></fa-icon>
+        <div class="col-md-6">
+          <span class="row-heading admin-value"> {{ 'DASHBOARD.ESTABLISHMENT-NAME' | translate | uppercase }}</span>
+          <div class="float-right">
+            <fa-icon class="icon-more" [icon]="['fas', 'ellipsis-v']"></fa-icon>
+          </div>
+        </div>
+      </div>
+      <div class="spacing">
+        <div class="col-md-6 admin-value">
+          <span class="refNo">
+            {{ item.name.arabic }}
+          </span>
+        </div>
+        <div class="col-md-6 admin-value">
+          <span class="description">
+            {{ item.name.english }}
+          </span>
+        </div>
+      </div>
+      <div class="spacing text-left">
+        <div
+          [ngClass]="[
+            selectedLang === 'en'
+              ? 'col-md-6 d-flex justify-content-left-end'
+              : 'col-md-6 d-flex justify-content-right-end'
+          ]"
+        >
+          <div class="row">
+            <div class="col profile-item">
+              <div class="label">{{ 'DASHBOARD.REGISTRATION-NUMBER' | translate | uppercase }}</div>
+              <div class="value">{{ item.registrationNo }}</div>
+            </div>
+            <div class="profile-item">
+              <div class="label">{{ 'DASHBOARD.STATUS' | translate | uppercase }}</div>
+              <div class="value">{{ item.status | bilingualText }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
+<div class="page-value">
+  <gosi-pagination-dc
+    #paginationComponent
+    *ngIf="totalSize > itemsPerPage"
+    [totalSize]="totalSize"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    [paginationId]="estPagination"
+  >
+  </gosi-pagination-dc>
+</div>

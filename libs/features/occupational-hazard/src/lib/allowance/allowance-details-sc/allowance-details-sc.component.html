@@ -1,0 +1,179 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<ng-container *ngIf="allowanceDetails">
+  <ng-container *ngIf="successMessage">
+    <gosi-alert-dc [bilingualMessage]="successMessage" type="success" class="successMessage"> </gosi-alert-dc>
+  </ng-container>
+  <ng-container *ngIf="infoMessage">
+    <gosi-alert-dc [bilingualMessage]="infoMessage" type="info" class="successMessage"> </gosi-alert-dc>
+  </ng-container>
+  <ng-container *ngIf="!showHeader">
+    <gosi-alert-dc
+      [message]="'OCCUPATIONAL-HAZARD.ALLOWANCE.NOT-PAYEE' | translate"
+      type="warning"
+      class="successMessage"
+    >
+    </gosi-alert-dc>
+  </ng-container>
+  <div class="row allowance-content">
+    <ng-container>
+      <div class="col-md-4 allowance-card">
+        <gosi-card-dc type="secondary" lessPadding="true">
+          <div class="allowance-card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL-ALLOWANCE' | translate | uppercase }}
+          </div>
+          <ng-container *ngIf="showHeader; else showNone"
+            >{{ totalAllowance }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</ng-container
+          >
+          <ng-template #showNone>XXXX</ng-template>
+        </gosi-card-dc>
+      </div>
+      <div class="col-md-4 allowance-card">
+        <gosi-card-dc type="secondary" lessPadding="true">
+          <div class="allowance-card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-PERIOD' | translate | uppercase }}
+          </div>
+          <ng-container *ngIf="allowanceDetails.startDate; else notAvailable">
+            <div>
+              {{ allowanceDetails.startDate.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+              <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment"></fa-icon>
+              <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+              {{ allowanceDetails.endDate.gregorian | date: 'dd/MM/yyyy':'+0000' }}
+              <span class="view-details"> ({{ daysDifference }} {{ 'OCCUPATIONAL-HAZARD.DAYS' | translate }})</span>
+            </div>
+          </ng-container>
+
+          <ng-template #notAvailable>{{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}</ng-template>
+        </gosi-card-dc>
+      </div>
+      <div class="col-md-4 allowance-card">
+        <gosi-card-dc type="secondary" lessPadding="true">
+          <div class="allowance-card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate | uppercase }}
+          </div>
+          {{ allowancePayee ? allowancePayee : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate) }}
+          <span *ngIf="lang === 'ar' && !isDiseasePresent">
+            <fa-icon
+              icon="pencil-alt"
+              size="lg"
+              [ngClass]="disable === true ? 'not-active-ar ml-auto' : 'edit-icon-ar ml-auto'"
+              id="editPayee"
+              *gosiShow="permittedRoles; regNo: establishment?.registrationNo"
+              (click)="onEditContent()"
+            ></fa-icon>
+          </span>
+          <span *ngIf="lang === 'en' && !isDiseasePresent">
+            <fa-icon
+              icon="pencil-alt"
+              size="lg"
+              [ngClass]="disable === true ? 'not-active-en ml-auto' : 'edit-icon-en ml-auto'"
+              id="editPayee"
+              *gosiShow="permittedRoles; regNo: establishment?.registrationNo"
+              (click)="onEditContent()"
+            ></fa-icon>
+          </span>
+        </gosi-card-dc>
+      </div>
+    </ng-container>
+  </div>
+  <span *ngFor="let item of alertErr">
+    <gosi-alert-dc
+      [alert]="item.type !== 'success' ? item : ''"
+      noPadding="true"
+      [type]="'danger'"
+      [dismissible]="false"
+    >
+    </gosi-alert-dc>
+  </span>
+  <ng-container *ngIf="showHoldInfo && showHeader">
+    <gosi-alert-dc
+      [message]="
+        'OCCUPATIONAL-HAZARD.ALLOWANCE.HOLD-INFO'
+          | translate
+            : { date: holdResumeDetails.holdFromDate.gregorian | date: 'dd/MM/yyyy', reason: holdResumeDetails.reason }
+      "
+      [dismissible]="false"
+      [type]="'warning'"
+      noPadding="true"
+    >
+    </gosi-alert-dc>
+  </ng-container>
+  <ng-container *ngIf="allowanceDetails?.invalidWage && showHeader">
+    <gosi-alert-dc
+      [message]="'OCCUPATIONAL-HAZARD.ALLOWANCE.INVALID-WAGE' | translate"
+      type="warning"
+      class="successMessage"
+      [dismissible]="false"
+      noPadding="true"
+    >
+    </gosi-alert-dc>
+  </ng-container>
+  <div class="row" *ngIf="allowanceDetails.allowances && allowanceDetails.allowances.length > 0 && showHeader">
+    <div class="col-md-6">
+      <fa-icon [icon]="['fas', 'coins']" class="allowance"></fa-icon>
+      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCES' | translate }}
+    </div>
+    <div class="col-md-6">
+      <div class="float-right">
+        <a (click)="navigateTimelineView()">
+          <fa-icon
+            [icon]="['fas', 'stream']"
+            class="timeline"
+            [ngStyle]="currentTab == 1 ? { color: lighterLabel } : ''"
+          ></fa-icon>
+        </a>
+        <span class="border-style"></span>
+        <a (click)="navigateTableView()">
+          <fa-icon
+            [icon]="['fas', 'table']"
+            class="timeline"
+            [ngStyle]="currentTab === 0 ? { color: lighterLabel } : ''"
+          ></fa-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="noAllowance">
+  <div class="container">
+    <img src="assets/images/Pattern.svg" alt="noAllowances" />
+    <div class="centered">
+      <fa-icon [icon]="['fas', 'coins']" class="no-allowance"></fa-icon>
+    </div>
+    <div class="row no-allowance-message justify-content-center">
+      {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.NO-ALLOWANCE' | translate }}
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="currentTab === 0 && allowanceDetails?.allowances && allowanceDetails?.allowances?.length > 0">
+  <oh-allowance-details-timeline-dc
+    [socialInsuranceNo]="socialInsuranceNo"
+    [registrationNumber]="registrationNo"
+    [injuryId]="injuryId"
+    [allowanceDetails]="allowanceDetails"
+    [rejectedList]="rejectedAllowanceList?.allowances"
+    [workDisabilityDate]="workDisabilityDate"
+    (loadMore)="loadMore($event)"
+    [allowanceList]="allowanceDetails.allowances"
+    [documents]="documents"
+  >
+  </oh-allowance-details-timeline-dc>
+</ng-container>
+<ng-container
+  class="row"
+  *ngIf="currentTab === 1 && allowanceDetails?.allowances && allowanceDetails?.allowances?.length > 0"
+>
+  <oh-allowance-details-table-dc
+    [socialInsuranceNo]="socialInsuranceNo"
+    [registrationNumber]="registrationNo"
+    [rejectedList]="rejectedAllowanceList?.allowances"
+    [injuryId]="injuryId"
+    [allowanceDetails]="allowanceDetails"
+    [workDisabilityDate]="workDisabilityDate"
+    (selectPageNo)="onPagination($event)"
+    [documents]="documents"
+  >
+  </oh-allowance-details-table-dc>
+</ng-container>

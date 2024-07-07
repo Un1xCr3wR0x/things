@@ -1,0 +1,90 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <ng-container>
+    <!-- Heading -->
+  <cnt-header-section-dc
+  heading="CONTRIBUTOR.REACTIVATE-VIC-ENGAGEMENT"
+  (goBack)="checkForChanges(cancelTemplate)"
+></cnt-header-section-dc>
+
+    <!-- Contributor details banner -->
+    <ng-container>
+      <div class="row mt-4">
+        <div class="col">
+          <cnt-contributor-banner-dc [contributor]="contributor"> </cnt-contributor-banner-dc>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Alert -->
+    <gosi-alert-sc></gosi-alert-sc>
+
+    <!-- Progress Wizard -->
+    <ng-container>
+      <gosi-progress-wizard-dc
+        *ngIf="activeTab < totalTabs"
+        [wizardItems]="wizardItems"
+        [isMargin]="true"
+        (clickWizard)="selectWizard($event)"
+        #reActivateWizard
+      >
+      </gosi-progress-wizard-dc>
+    </ng-container>
+  </ng-container>
+
+  <!-- Four tabs for four section-->
+  <div class="hide-tab">
+    <tabset type="pills">
+      <tab [active]="activeTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- dc -->
+            <cnt-reactivate-dc 
+              [reactivateReasonList]="reactivateReasonList$ | async" 
+              [engagement]="engagement" 
+              [reactivateEngagements]="reactivateEngagements"  
+              (save)="saveEngagementDetails($event)" 
+              (reset)="checkRevertRequired()"
+              [ValidatorForm]="validatorForm" 
+              [isEditMode]="isEditMode"
+              [lang]="lang"
+              >
+            </cnt-reactivate-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- documents section -->
+            <cnt-reactivate-document-dc 
+              [documentList]="documents"
+              [referenceNo]="referenceNo"
+              (previous)="previous()"
+              (submit)="submit($event)"
+              [engagementId]="engagementId"
+              (refresh)="refreshDocumentItem($event)"
+              (showError)="showAlertError($event)"
+              (reset)="checkRevertRequired()"
+              >
+            </cnt-reactivate-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<!-- <ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleApprove()"
+  ></frm-approve-template-dc>
+</ng-template> -->
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="checkRevertRequired()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

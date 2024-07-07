@@ -1,0 +1,175 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!------------------ BANK-ACCOUNT-DETAILS --------------->
+<gosi-card-dc type="secondary" [showCard]="showCard" lessPadding="true">
+  <div class="col-md-12 bank-header" *ngIf="isSaned">
+    {{ 'BENEFITS.BANK-DETAILS' | translate }}
+  </div>
+  <gosi-alert-dc
+    *ngIf="!_bankDetails?.bankAccountList?.length"
+    [message]="'BENEFITS.NO-BANK-DETAILS-FOUND' | translate"
+    type="info"
+    [dismissible]="false"
+  >
+  </gosi-alert-dc>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="d-inline-block pt-2 bank-type">
+        <div class="bank-method-toggler">
+          <div
+            class="column-left bank-text"
+            [ngClass]="{
+              'bank-type-selected': bankType === 'selectIBAN',
+              'bank-type-unselected': bankType === 'addNewIBAN',
+              'div-disable': isDisableSelectIban
+            }"
+            (click)="bankTypeChange('selectIBAN')"
+          >
+            {{ 'BENEFITS.SELECT-IBAN' | translate }}
+          </div>
+          <div
+            class="column-right bank-text"
+            [ngClass]="{
+              'bank-type-selected': bankType === 'addNewIBAN',
+              'bank-type-unselected': bankType === 'selectIBAN'
+            }"
+            (click)="bankTypeChange('addNewIBAN')"
+          >
+            {{ 'BENEFITS.ADD-NEW-IBAN' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <gosi-alert-dc
+        *ngIf="ibanAlreadyAvailable"
+        [message]="'BENEFITS.IBAN-ERROR' | translate"
+        type="info"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <!-- select existing IBAN from dropdown -->
+
+  <div class="row pt-2" *ngIf="bankType == 'selectIBAN'">
+    <div class="col-md-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.IBAN-NUMBER' | translate"
+        id="existingIban"
+        [control]="bankForm?.get('ibanBilingual')"
+        [arrayList]="ibanList"
+        [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+        (select)="getBank($event)"
+      ></gosi-input-select-dc>
+    </div>
+    <div class="col-md-6">
+      <gosi-label-dc
+        id="bank-name"
+        [control]="bankForm?.get('bankName')?.value"
+        label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+      ></gosi-label-dc>
+    </div>
+  </div>
+
+  <!-- Defect 504301: International Bank account for non Saudi - Needed for all benefits except Saned -->
+
+  <!-- Saudi or Non-Saudi check -->
+  <div class="row" *ngIf="showInternationalBank && newIban && !isIndividualApp && listYesNo">
+    <div class="col-md-12">
+      <gosi-input-radio-dc
+        [label]="'BENEFITS.BANK-IS-IN-SAUDI' | translate"
+        [id]="'isBankInSaudi' + personId + paymentIndex"
+        [name]="'isBankInSaudi' + personId + paymentIndex"
+        [control]="bankForm?.get('nationality')"
+        [list]="listYesNo"
+        [noMargin]="true"
+        (select)="selectNationality($event)"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+
+  <!-- Select Add New Iban Display -->
+  <div
+    class="row"
+    *ngIf="newIban && showSaudiAddnewIban && bankForm && bankForm?.get('nationality')?.get('english')?.value === 'Yes'"
+  >
+    <div class="col-md-6">
+      <gosi-input-text-dc
+        id="new-iban"
+        [label]="'BENEFITS.IBAN-NUMBER' | translate"
+        [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+        [control]="bankForm.get('ibanBilingual.english')"
+        (blur)="getBank(bankForm.get('ibanBilingual.english')?.value, true)"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-6">
+      <gosi-label-dc
+        id="bank-name"
+        [control]="bankForm.get('bankName')?.value"
+        label="BENEFITS.BANK-NAME"
+      ></gosi-label-dc>
+    </div>
+
+    <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="bankForm && !bankInfo?.ibanBankAccountNo">
+      <gosi-alert-dc
+        [noPadding]="'true'"
+        [message]="'BENEFITS.IBAN-BANKDETAIL-WARN' | translate"
+        type="warning"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+
+  <!-- Defect 504301: International Bank account for non Saudi - Needed for all benefits except Saned -->
+  <div
+    class="row pt-2"
+    *ngIf="
+      newIban && bankForm && (!showSaudiAddnewIban || bankForm?.get('nationality')?.get('english')?.value === 'No')
+    "
+  >
+    <div class="col-sm-12 col-md-12 col-lg-12">
+      <gosi-alert-dc
+        [noPadding]="'true'"
+        [message]="'BENEFITS.IBAN-BANKDETAIL-ACCHOLDER-WARN' | translate"
+        type="warning"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-input-text-dc
+        id="new-iban"
+        [label]="'BENEFITS.IBAN-NUMBER' | translate"
+        [placeholder]="'BENEFITS.IBAN-NUMBER' | translate"
+        [control]="bankForm?.get('ibanBankAccountNo')"
+        (blur)="getBank(bankForm.get('ibanBankAccountNo')?.value, true)"
+        [maxLength]="30"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-input-text-dc
+        id="bank-name"
+        [control]="lang === 'en' ? bankForm.get('bankName')?.get('english') : bankForm.get('bankName')?.get('arabic')"
+        [label]="'BENEFITS.BANK-NAME' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-input-text-dc
+        id="swiftCode"
+        [control]="bankForm?.get('swiftCode')"
+        [label]="'BENEFITS.SWIFT-CODE' | translate"
+      >
+      </gosi-input-text-dc>
+    </div>
+  </div>
+</gosi-card-dc>

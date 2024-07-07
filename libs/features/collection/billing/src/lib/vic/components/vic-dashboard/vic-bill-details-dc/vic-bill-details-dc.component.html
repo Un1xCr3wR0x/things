@@ -1,0 +1,494 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content">
+  <div class="row">
+    <div class="menu" *ngIf="!showNewMonthPicker">
+      <div class="col-auto bill-headers">
+        {{ 'BILLING.BILL-FOR' | translate }}
+      </div>
+      <div class="col-lg-auto bill-month col-sm-12">
+        <gosi-input-month-dc
+          *ngIf="isGregorianFormat"
+          id="billMonthSelected"
+          [ignoreLabel]="true"
+          [dateFormat]="dateFormat"
+          [maxDate]="maxDate"
+          [control]="billingForms.get('month').get('gregorian')"
+          [minDate]="minimumDate"
+          [readOnly]="true"
+          (blur)="onSelectStartDate($event)"
+        >
+        </gosi-input-month-dc>
+      </div>
+    </div>
+    <div class="menu" *ngIf="showNewMonthPicker">
+        <div class="col-auto bill-headers">
+          {{ 'BILLING.BILL-FOR-EMPLOYER' | translate }}
+        </div>
+        <div class="billPeriodYear">
+          <gosi-input-select-dc
+            [list]="billPeriods"
+            [control]="billPeriodFormYear"
+            (selectLov)="onSelectStartYear($event)"
+            [hideClear]="true"
+            >
+          </gosi-input-select-dc>
+        </div>
+        <div class="billPeriodMonth">
+          <gosi-input-select-dc
+            [list]="monthLov"
+            [control]="billPeriodFormMonth"
+            (selectLov)="onSelectStartMonth($event)"
+            [hideClear]="true"
+            >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+    <div class="col-lg-auto bill-month col-sm-12 p-0"*ngIf="!showNewMonthPicker">
+      <gosi-input-hijiri-dc
+        *ngIf="isHijiriFormat"
+        id="billMonthSelected"
+        [control]="billingForms.get('month').get('hijiri')"
+        [maxDate]="maxDateHijiri"
+        [minDate]="minimumDateHijiri"
+        [readOnly]="true"
+        [ignoreLabel]="true"
+      >
+      </gosi-input-hijiri-dc>
+    </div>
+    <ng-container *ngIf="!isBillNumber">
+      <div class="col-auto sub-values border-right" id="billNumber">
+        {{ 'BILLING.BILL-NUMBER' | translate }}: {{ billDetails.billNo }}
+      </div>
+      <div id="billIssueDate" class="col-auto sub-values mr-auto" *ngIf="!paidFlag">
+        {{ 'BILLING.BILL-ISSUE-DATE' | translate }}:
+        {{ billIssueMonths | translate: billIssueDates }}
+      </div>
+      <div id="BILL-ISSUE-DATE" class="col-auto sub-values" *ngIf="paidFlag">
+        {{ 'BILLING.BILL-ISSUE-DATE' | translate }}:
+        {{ billIssueMonths | translate: billIssueDates }}
+      </div>
+      <span  class="paid-icon-align overlap-position" *ngIf="billDetails.reactivateFlag">
+        <ng-template #overlapMessage>
+          <span class="small-label"> {{ 'CONTRIBUTOR.REACT-EGMNT' | translate }}</span>
+        </ng-template>
+        <img
+          src="assets/icons/Reactivated.svg"
+          placement="top"
+          class="image-ppa"
+          [tooltip]="overlapMessage"
+          alt="annuity"
+        />
+      </span>
+      <span class="paid-icon-align"
+        ><fa-icon *ngIf="paidFlag" class="icon-wrapper-check-circle top-align" icon="check-circle" size="2x"></fa-icon>
+      </span>
+    
+      <div class="col-auto mr-auto sub-values" *ngIf="paidFlag">
+        {{ 'BILLING.PAID' | translate }}
+      </div>
+
+      <div class="col-auto top-align top-marg">
+        <img 
+          class="icons pr-3 image-size"
+          alt="pdfDownloadBillDetail"
+          title="{{ 'BILLING.DOWNLOAD-BILL-AS-PDF' | translate }}"
+          [src]="pdfImgSrc"
+          (click)="downloadVicBill()"
+          (mouseover)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-white-bg-hover.svg'"
+          (mouseout)="pdfImgSrc = 'assets/images/downloadicons/pdf-on-white-bg-normal.svg'"
+        />
+        <div style="display: none">
+        <img
+          class="icons pr-3 image-size"
+          alt="excelDownloadBillDetail"
+          title="{{ 'BILLING.DOWNLOAD-BILL-AS-EXCEL' | translate }}"
+          [src]="excelImgSrc"
+          (mouseover)="excelImgSrc = 'assets/images/downloadicons/xcel-on-white-bg-hover.svg'"
+          (mouseout)="excelImgSrc = 'assets/images/downloadicons/xcel-on-white-bg-normal.svg'"
+        />
+        <img
+          class="icon img-size"
+          alt="printBillDetail"
+          title="{{ 'BILLING.PRINT' | translate }}"
+          [src]="printImgSrc"
+          (click)="printVicBill()"
+          (mouseover)="printImgSrc = 'assets/images/downloadicons/print-on-white-bg-hover.svg'"
+          (mouseout)="printImgSrc = 'assets/images/downloadicons/print-on-white-bg-normal.svg'"
+        />
+      </div>
+      </div>
+    </ng-container>
+  </div>
+  <ng-container *ngIf="!isBillNumber">
+    <div class="row mt-4">
+      <div class="col-lg-6 border-right">
+        <div class="row" *ngIf="billDetails.previousBill >= 0">
+          <div class="col-lg-6 col-view-6 sub-labels bill-label">
+            {{ 'BILLING.PREVIOUS-BILL-AMOUNT' | translate }}
+          </div>
+          <div class="col-lg-4 col-view-4 amount" id="previousbillAmt" *ngIf="billDetails.previousBill === 0">
+            {{ billDetails.previousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div class="col-lg-4 col-view-4 amount danger" id="previousBillAmount" *ngIf="billDetails.previousBill > 0">
+            {{ billDetails.previousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row" *ngIf="billDetails.previousBill < 0">
+          <div class="col-lg-6 col-view-6 sub-labels bill-label">
+            {{ 'BILLING.CREDIT-FROM-PREVIOUS-BILL' | translate }}
+          </div>
+          <div class="col-lg-4 col-view-4 amount primary" id="previousBillAmount" *ngIf="billDetails.previousBill < 0">
+            {{ newPreviousBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-lg-6 col-view-6 sub-labels">
+            <span class="bill-label">{{ 'BILLING.CURRENT-ANNUITY-CONTRIBUTION' | translate }}</span>
+            <fa-icon class="ml-2 mr-2" [icon]="['fas', 'info-circle']" placement="bottom" [tooltip]="wageTemplate">
+            </fa-icon>
+          </div>
+          <div class="col-lg-4 col-view-4 amount danger" id="currentMonthDueValue">
+            {{ billDetails.currentBill * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="billDetails.adjustmentContribution !== 0">
+          <div class="col-lg-6 col-view-6 sub-labels bill-label">
+            {{ 'BILLING.ADJUSTMENT-CONTRIBUTION' | translate }}
+            <fa-icon class="ml-2 mr-2" [icon]="['fas', 'info-circle']" placement="bottom" [tooltip]="toolTemplateInfo">
+            </fa-icon>
+          </div>
+          <div class="col-lg-4 col-view-4 amount danger" id="currentMonthDueValue">
+            {{ billDetails.adjustmentContribution * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="billDetails.lateFee !== null">
+          <div class="col-lg-6 col-view-6 sub-labels show-detail">
+            <span class="bill-label">{{ 'BILLING.LATE-PAYMENT-FEES' | translate }}</span>
+            <gosi-button-dc
+              class="button-labels"
+              [outlineOnly]="true"
+              id="view"
+              type="secondary"
+              [size]="'sm'"
+              (submit)="showModal(lateFeeBreakupDetails)"
+              >{{ 'BILLING.SHOW-DETAILS' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="col-lg-4 col-view-4 amount danger" id="lateFeeValue">
+            {{ billDetails.lateFee * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+
+        <div class="row my-3" *ngIf="billDetails?.totalCreditRefund !== 0">
+          <div class="col-lg-6 col-view-6 sub-labels show-detail">
+            <span class="bill-label">{{ 'BILLING.CREDIT-REFUND' | translate }}</span>
+
+            <gosi-button-dc
+              class="button-labels"
+              [outlineOnly]="true"
+              id="view"
+              type="secondary"
+              [size]="'sm'"
+              (submit)="showModal(creditRefund)"
+              >{{ 'BILLING.SHOW-DETAILS' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="col-lg-4 col-view-4 amount danger" id="creditAmountValue">
+            {{ billDetails.totalCreditRefund | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row my-3">
+          <div class="col-lg-6 col-view-6 sub-labels show-detail">
+            <span class="bill-label">{{ 'BILLING.CREDIT-DURING-THE-MONTH' | translate }}</span>
+
+            <gosi-button-dc
+              *ngIf="!showDetailsFlag"
+              class="button-labels"
+              [outlineOnly]="true"
+              id="view"
+              type="secondary"
+              [size]="'sm'"
+              (submit)="showModal(availableCreditBreakupDetails)"
+            >
+              {{ 'BILLING.SHOW-DETAILS' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div
+            class="col-lg-4 col-view-4 amount primary"
+            id="creditAmountValue"
+            *ngIf="
+              billDetails.billBreakUp.accountBreakUp !== null || billDetails.billBreakUp.accountBreakUp !== undefined
+            "
+          >
+            {{ billDetails.billBreakUp.accountBreakUp.availableCredit * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div
+            class="col-lg-4 amount primary"
+            id="creditAmountValue"
+            *ngIf="
+              billDetails.billBreakUp.accountBreakUp === null || billDetails.billBreakUp.accountBreakUp === undefined
+            "
+          >
+            {{ 0 | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="col-lg-10 border-bottom"></div>
+        <div class="row mt-3" *ngIf="creditFlag; else billValue">
+          <div class="col-lg-6 col-view-6 sum-label">
+            <span class="bill-label">{{ 'BILLING.CREDIT-FROM-LAST-BILL' | translate }}</span>
+          </div>
+          <div class="col-lg-4 col-view-6 sum-amount credit-amount-value" id="creditAmount">
+            {{ creditAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <ng-template #billValue>
+          <div class="row mt-3 no-wrap">
+            <div class="col-lg-6 col-view-6 sum-label bill-label">
+              {{ 'BILLING.BILL-AMOUNT' | translate }}
+            </div>
+            <div class="col-lg-4 col-view-4 sum-amount bill-amount-value" id="totalAmountValue">
+              {{ billAmt * exchangeRate | number: '1.2-2' }}
+              {{ currencyType | bilingualText }}
+            </div>
+          </div>
+        </ng-template>
+      </div>
+      <div class="col-lg-6 extra-padding-top">
+        <gosi-card-dc type="secondary">
+          <div class="row">
+            <div class="col-lg-7 header">
+              <div>
+                {{ 'BILLING.NO-OF-PAID-MONTHS' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="paidInfoMessageToolTemplate"></fa-icon>
+              </div>
+              <div>
+                <b>
+                  {{ billDetails.noOfPaidContribution }}
+                  <span>{{ monthLabelDueDate | translate }}</span>
+                </b>
+              </div>
+            </div>
+            <div class="col-lg-5 header extra-padding-top">
+              <div>
+                
+                {{ 'BILLING.NO-OF-UNPAID' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="unpaidInfoMessageToolTemplate"></fa-icon>
+
+              </div>
+              <div>
+                <b
+                  >{{ billDetails.noOfDelayedPayments }}
+                  <span>{{ monthLabelDelayed | translate }}</span>
+                </b>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #paidInfoMessageToolTemplate>
+            <div class="tooltip-info-message">
+
+                <ng-container >
+                    <div class="d-flex flex-column">
+                      <div>{{ 'BILLING.STATIC-INFO-MESSAGE-FOR-PAID-MONTHS' | translate}}</div>
+                    </div>
+                  </ng-container>
+
+            </div>
+            
+        </ng-template>
+        <ng-template #unpaidInfoMessageToolTemplate>
+
+          <div class="tooltip-info-message">
+              <ng-container >
+                  <div class="d-flex flex-column">
+                    <div>{{ 'BILLING.STATIC-INFO-MESSAGE-FOR-UNPAID-MONTHS' | translate}}</div>
+                  </div>
+                </ng-container>
+
+          </div>
+          
+      </ng-template>
+
+        </gosi-card-dc>
+        <div class="row mt-4">
+          <div class="col-auto due-date-icon">
+            <fa-icon icon="stopwatch"></fa-icon>
+          </div>
+          <div class="col-auto due-date-info due-date-width">
+            <div class="row no-gutters">
+              {{ 'BILLING.PAYMENT-DUE-DATE:' | translate }}
+              <span class="due-date">
+                {{ paymentsMonth | translate: paymentDate }}
+              </span>
+            </div>
+            <div class="row no-gutters">
+              {{ 'BILLING.SUBJECT-TO-PENALITIES' | translate }}
+            </div>
+          </div>
+        </div>
+        <ng-template #lateFeeBreakupDetails>
+          <div class="custom-modal">
+            <gosi-modal-dc [modalHeader]="'BILLING.LATE-PAYMENT-FEES' | translate">
+              <div class="total" modalSubHeading>
+                {{ 'BILLING.TOTAL' | translate }}: {{ billDetails.lateFee * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+              <blg-vic-late-fees-breakup-dc
+                modalContent
+                [lateFeesBreakup]="billDetails.billBreakUp.lateFeeBreakUp"
+                [lateFeeTotal]="billDetails.lateFee"
+                [exchangeRate]="exchangeRate"
+                [currencyType]="currencyType"
+              >
+              </blg-vic-late-fees-breakup-dc>
+              <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" (submit)="hideModal()">
+                {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+              >
+            </gosi-modal-dc>
+          </div>
+        </ng-template>
+
+        <ng-template #availableCreditBreakupDetails>
+          <div class="custom-modal" *ngIf="billDetails.billBreakUp.accountBreakUp !== undefined">
+            <gosi-modal-dc [modalHeader]="'BILLING.CREDIT-DURING-THE-MONTH' | translate">
+              <div class="total" modalSubHeading>
+                {{ 'BILLING.TOTAL' | translate }}:
+                {{ billDetails.billBreakUp.accountBreakUp.availableCredit * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+              <blg-vic-available-credit-breakup-dc
+                modalContent
+                [exchangeRate]="exchangeRate"
+                [currencyType]="currencyType"
+                [availableCreditBreakup]="billDetails.billBreakUp.accountBreakUp.accountDetails"
+              >
+              </blg-vic-available-credit-breakup-dc>
+              <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" (submit)="hideModal()">
+                {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+              >
+            </gosi-modal-dc>
+          </div>
+        </ng-template>
+      </div>
+      <ng-template #wageTemplate>
+        <div class="tooltip-custom">
+          <ng-container>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.CONTRIBUTORY-WAGE' | translate }}
+              </div>
+              <div class="amount" id="creditAmount">
+                {{ billDetails.contributoryWage * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+            </div>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.DEDUCTION-RATE' | translate }}
+              </div>
+              <div class="amount" id="deductionRate">{{ billDetails.deductionRate }}%</div>
+            </div>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.CURRENT-ANNUITY-CONTRIBUTION' | translate }}
+              </div>
+              <div class="amount" id="creditAmount">
+                {{ billDetails.currentBill * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </ng-template>
+      <ng-template #toolTemplateInfo>
+        <div class="tooltip-custom">
+          <ng-container>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.ADJUSTMENT-CONTRIBUTORY-WAGE' | translate }}
+              </div>
+              <div class="amount" id="creditAmount">
+                {{ billDetails.adjustmentContributoryWage * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+            </div>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.DEDUCTION-RATE' | translate }}
+              </div>
+              <div class="amount" id="deductionRate">{{ billDetails.deductionRate }}%</div>
+            </div>
+            <div class="tooltip-align">
+              <div>
+                {{ 'BILLING.ADJUSTMENT-CONTRIBUTION' | translate }}
+              </div>
+              <div class="amount" id="creditAmount">
+                {{ billDetails.adjustmentContribution * exchangeRate | number: '1.2-2' }}
+                {{ currencyType | bilingualText }}
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </ng-template>
+      <ng-template #creditRefund>
+        <div class="custom-modal">
+          <gosi-modal-dc [modalHeader]="'BILLING.CREDIT-REFUND' | translate">
+            <div class="total" modalSubHeading>
+              {{ 'BILLING.TOTAL' | translate }}:
+              {{ billDetails.totalCreditRefund * exchangeRate | number: '1.2-2' }}
+              {{ currencyType | bilingualText }}
+            </div>
+            <div modalContent>
+              <div class="table-responsive">
+                <table class="table table-borderless">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>{{ 'BILLING.ADJUSTMENT-TYPE' | translate }}</th>
+                      <th>{{ 'BILLING.TRANSACTION-DATE' | translate }}</th>
+                      <th>{{ 'BILLING.AMOUNT' | translate }} ({{ currencyType | bilingualText }})</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let item of billDetails.creditRefundDetails">
+                      <ng-container>
+                        <tr class="border-bottom">
+                          <td>{{ 'BILLING.CREDIT-REFUND' | translate }}</td>
+                          <td>{{ item.transactionDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+                          <td>{{ item.amount | number: '1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <gosi-button-dc modalAction id="closeBtn" type="secondary" class="float-left" (submit)="hideModal()">
+              {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+            >
+          </gosi-modal-dc>
+        </div>
+      </ng-template>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isBillNumber">
+    <div class="mt-5 text-center full-width">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ errorMessage | bilingualText }}</p>
+    </div>
+  </ng-container>
+</div>

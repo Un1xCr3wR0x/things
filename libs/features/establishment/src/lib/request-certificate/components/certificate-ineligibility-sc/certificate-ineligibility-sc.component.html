@@ -1,0 +1,84 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<!-- heading section -->
+<div class="content pb-1 certificate-ineligibility">
+  <est-heading-dc [canNavigate]="false" (backEvent)="navigateBack()">
+    {{ heading | translate }}
+  </est-heading-dc>
+  <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+
+  <table class="table certificate-table">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }}</th>
+        <th scope="col">{{ 'ESTABLISHMENT.ESTABLISHMENT-NAME' | translate }}</th>
+        <th scope="col">{{ 'ESTABLISHMENT.REASONS' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        class="body-section"
+        [ngClass]="{ 'even-row': i % 2 !== 0 }"
+        *ngFor="
+          let reason of reasons
+            | paginate
+              : {
+                  id: paginationId,
+                  itemsPerPage: itemsPerPage,
+                  currentPage: currentPage,
+                  totalItems: totalReasons
+                };
+          let i = index
+        "
+      >
+        <td>{{ reason.registrationNo }}</td>
+        <td class="name">{{ reason.estName | bilingualText: true }}</td>
+        <td>
+          <ol>
+            <li *ngFor="let message of reason.message">{{ message | bilingualText }}</li>
+          </ol>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="certificate-list">
+    <div
+      class="certificate-item"
+      [ngClass]="{ 'even-row': i % 2 !== 0 }"
+      *ngFor="
+        let reason of reasons
+          | paginate
+            : {
+                id: paginationId,
+                itemsPerPage: itemsPerPage,
+                currentPage: currentPage,
+                totalItems: totalReasons
+              };
+        let i = index
+      "
+    >
+      <div class="certificate-heading">{{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }}</div>
+      <div class="certificate-value">{{ reason.registrationNo }}</div>
+      <div class="certificate-heading">{{ 'ESTABLISHMENT.ESTABLISHMENT-NAME' | translate }}</div>
+      <div class="certificate-value">{{ reason.estName | bilingualText: true }}</div>
+      <div class="certificate-heading">{{ 'ESTABLISHMENT.REASONS' | translate }}</div>
+      <div class="certificate-value">
+        <ol class="reason-list">
+          <li class="reason-item" *ngFor="let message of reason.message">{{ message | bilingualText }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="row mb-4 mt-4 pb-2 pt-2" *ngIf="reasons?.length > 0">
+    <div class="col">
+      <gosi-pagination-dc
+        *ngIf="totalReasons > itemsPerPage"
+        class="pagination"
+        [totalSize]="totalReasons"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+        [paginationId]="paginationId"
+      ></gosi-pagination-dc>
+    </div>
+  </div>
+</div>

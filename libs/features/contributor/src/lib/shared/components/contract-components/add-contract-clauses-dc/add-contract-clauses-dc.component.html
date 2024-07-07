@@ -1,0 +1,221 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div *ngIf="mandatoryClausesList[0]?.section?.english">
+  <accordion class="wage-accordion card-border-custom">
+    <accordion-group [isOpen]="1">
+      <span accordion-heading class="accordion-title">
+        {{ 'CONTRIBUTOR.SEC-CLAUSES' | translate }}
+      </span>
+      <span accordion-heading class="arrow-up ml-auto float-right">
+        <fa-icon icon="angle-up" size="lg"></fa-icon>
+      </span>
+      <span accordion-heading class="arrow-down">
+        <fa-icon icon="angle-down" size="lg"></fa-icon>
+      </span>
+      <div class="custom custom-wrapp-20">
+        <ol>
+          <ng-container *ngFor="let clauses of mandatoryClausesList; let i = index">
+            <li class="pb-2">
+              <h5 class="custom-heading arabic-font-family">{{ clauses.section | bilingualText }}</h5>
+              <ng-container *ngIf="clauses.section.english !== 'Wages And Financial Benefits'">
+                <ol>
+                  <ng-container *ngFor="let clause of clauses.clauses; let i = index">
+                    <li class="pb-2 clauses-label arabic-font-family">
+                      <span>{{ clause.description | bilingualText }}</span>
+                    </li>
+                  </ng-container>
+                </ol>
+              </ng-container>
+              <ng-container *ngIf="clauses.section.english === 'Wages And Financial Benefits'">
+                <ol>
+                  <cnt-clauses-wages-dc
+                    [activeEngagement]="activeEngagement"
+                    [transportationAllowance]="transportationAllowance"
+                  ></cnt-clauses-wages-dc>
+                </ol>
+              </ng-container>
+            </li>
+            <ng-container> </ng-container>
+          </ng-container>
+        </ol>
+      </div>
+    </accordion-group>
+  </accordion>
+</div>
+<!-- ****** optional section start ******* -->
+<div *ngIf="optionalClausesList[0]?.section?.english">
+  <accordion class="wage-accordion card-border-custom">
+    <accordion-group [isOpen]="1">
+      <span accordion-heading>{{ 'CONTRIBUTOR.OPTIONAL-CLAUSES' | translate }}</span>
+      <span class="arrow-up ml-auto float-right" accordion-heading>
+        <fa-icon icon="angle-up" size="lg"></fa-icon>
+      </span>
+      <span class="arrow-down" accordion-heading>
+        <fa-icon icon="angle-down" size="lg"></fa-icon>
+      </span>
+      <ng-container *ngFor="let clauses of optionalClausesList; let i = index">
+        <ng-container *ngFor="let clauseItem of clauses.clauses; let j = index">
+          <div class="row">
+            <div class="col-lg-12">
+              <gosi-input-checkbox-dc
+                id="optionalClause{{ i }}"
+                name="optionalClause{{ i }}"
+                [control]="parentForm.get('checkBoxFlag')"
+                [label]="clauseItem.description | bilingualText"
+                (select)="selectOptinalClauses($event, clauseItem)"
+              >
+              </gosi-input-checkbox-dc>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </accordion-group>
+  </accordion>
+</div>
+<!-- ****** optional section ends ******* -->
+<!-- ****** additional section start ******* -->
+<accordion class="wage-accordion card-border-custom">
+  <accordion-group [isOpen]="1">
+    <span accordion-heading>{{ 'CONTRIBUTOR.ADDITIONAL-CLAUSES' | translate }}</span>
+    <span class="arrow-up ml-auto float-right" accordion-heading>
+      <fa-icon icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-down" accordion-heading>
+      <fa-icon icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <div class="custom-wrapp-40 mt-4" *ngIf="additionalClausesList.length > 0">
+      <ng-container *ngFor="let clauses of additionalClausesList; let i = index">
+        <div>
+          <ng-container *ngFor="let clause of clauses.clauses; let j = index">
+            <div class="row mb-4">
+              <div class="col-sm-11 col-lg-9 clauses-label arabic-font-family">
+                <span [ngClass]="lang === 'en' ? 'first' : 'second'">
+                  <span *ngIf="lang === 'en'">{{ j + 1 }}. </span>
+                  {{ clause.description.english }}</span
+                >
+                <div [ngClass]="lang === 'en' ? 'second' : 'first'" class="custom-padding">
+                  <span *ngIf="lang === 'ar'">{{ j + 1 }}. </span>
+                  {{ clause.description.arabic }}
+                </div>
+              </div>
+              <div class="col-sm-1 col-lg-3">
+                <span class="action-area">
+                  <span class="action-icon">
+                    <a id="'edit' + j" class="delete-icon" (click)="editAdditionalClause(clause.description, j)">
+                      <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                    </a>
+                  </span>
+                  <span class="action-icon">
+                    <a id="{{ 'delete' + j }}" class="delete-icon" (click)="removeAdditionalClause(j)">
+                      <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                    </a>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+    <div class="row" *ngIf="isAdd">
+      <div class="col-lg-12">
+        <gosi-button-dc
+          class="float-right arabic-font-family"
+          type="outline-primary"
+          (submit)="addAdditionalClauses()"
+          size="md"
+        >
+          {{ 'FORM-FRAGMENTS.ADD' | translate }}
+          <fa-icon [icon]="['fas', 'plus']" class="pl-1"></fa-icon>
+        </gosi-button-dc>
+      </div>
+    </div>
+
+    <!-- Text Box  Content Area -->
+    <div class="row" *ngIf="!isAdd">
+      <div class="form-group fc-margin col-lg-12 textarea-container">
+        <span [ngClass]="lang === 'en' ? 'first' : 'second'"
+          ><gosi-input-text-area-dc
+            id="new_clauses"
+            gosiEnglishMask
+            [label]="'CONTRIBUTOR.ADDITIONAL-CLAUSES-ENGLISH' | translate"
+            [ignoreLabel]="true"
+            name="newClauses"
+            [control]="newClauseForm.get('clauses')"
+            [maxLength]="clauseMaxLength"
+          >
+          </gosi-input-text-area-dc
+        ></span>
+        <span [ngClass]="lang === 'en' ? 'second' : 'first'"
+          ><gosi-input-text-area-dc
+            id="new_clauses"
+            gosiArabicMask
+            [excludeOnlyEng]="true"
+            [label]="'CONTRIBUTOR.ADDITIONAL-CLAUSES-ARABIC' | translate"
+            [ignoreLabel]="true"
+            name="newClausesArabic"
+            [control]="newClauseForm.get('clausesArabic')"
+            [maxLength]="clauseMaxLength"
+          >
+          </gosi-input-text-area-dc
+        ></span>
+      </div>
+      <div class="col-lg-12">
+        <div class="text-center">
+          <gosi-button-dc
+            id="cancelButton"
+            type="outline-secondary"
+            size="md"
+            [mobFullWidth]="false"
+            class="arabic-font-family"
+            (submit)="cancelNewClauses()"
+          >
+            {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+          >
+          <span class="custom-padding-20"></span>
+          <gosi-button-dc
+            type="outline-primary"
+            id="updatewage"
+            size="md"
+            [mobFullWidth]="false"
+            class="arabic-font-family"
+            (submit)="saveNewClauses()"
+          >
+            {{ 'CONTRIBUTOR.SAVE' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </accordion-group>
+</accordion>
+
+<!-- Disclamer Content Checkbox -->
+<div class="row arabic-font">
+  <div class="col-lg-12 declareForm" [formGroup]="declareForm">
+    <gosi-input-checkbox-dc
+      id="engagementDeclaration1223"
+      name="declaration"
+      [control]="declareForm.get('checkBoxFlag')"
+      [label]="'CONTRIBUTOR.ACCEPT-CLAUSES-DECLARATION' | translate"
+    >
+    </gosi-input-checkbox-dc>
+  </div>
+</div>
+<!-- End Disclamer Content Checkbox -->
+
+<!-- Action area -->
+<div class="row">
+  <div class="col-lg-12">
+    <cnt-action-area-dc
+      primaryButtonLabel="CONTRIBUTOR.SAVE-AND-NEXT"
+      [showPreviousSection]="true"
+      [disablePrimary]="isApiTriggered"
+      (previous)="previousForm()"
+      (submit)="saveContractDetails()"
+      (cancel)="cancelForm()"
+    ></cnt-action-area-dc>
+  </div>
+</div>

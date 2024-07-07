@@ -1,0 +1,231 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ 'BENEFITS.MODIFY-HEIR-PAYMENT-AND-PAYEE-DETAILS' | translate }}
+    </div>
+  </div>
+  <!-- PROGRESS WIZARD -->
+  <div [ngClass]="{ hide: modifyWizards.length <= 1 }">
+    <gosi-progress-wizard-dc (clickWizard)="selectWizard($event)" [wizardItems]="modifyWizards" #modifyBenefitWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+
+  <div class="hide-tab">
+    <tabset class="pills">
+      <tab [active]="currentTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-12">
+                <gosi-card-dc
+                  type="secondary"
+                  heading="{{ 'BENEFITS.SELECT-HEIRS-TO-MODIFY-PAYMENT-DETAILS' | translate }}"
+                  lessPadding="true"
+                >
+                  <!-- heir Listing -->
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <table
+                        class="table table-borderless"
+                        [ngClass]="!isSmallScreen ? 'overflow-auto w-100' : 'table-responsive'"
+                      >
+                        <thead class="thead-light">
+                          <tr>
+                            <th></th>
+                            <th *ngFor="let eachHeading of tableHeading" class="headingStyle">
+                              {{ eachHeading | translate | uppercase }}
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          <ng-container *ngFor="let value of heirDetails; let i = index">
+                            <tr
+                              class="data-row"
+                              [ngClass]="{
+                                'border-green-ltr': value.showGreenBorder && lang === 'en',
+                                'border-green-rtl': value.showGreenBorder && lang === 'ar',
+                                'border-red-ltr': !value.hasMandatoryDetails && lang === 'en' && highlightInvalid,
+                                'border-red-rtl': !value.hasMandatoryDetails && lang === 'ar' && highlightInvalid
+                              }"
+                            >
+                              <td>
+                                <gosi-input-checkbox-dc
+                                  id="checkBox"
+                                  (select)="checkStatusEditable(i)"
+                                  name="checkBox"
+                                  [control]="checkListValue.controls[i].get('checkBoxFlag')"
+                                >
+                                </gosi-input-checkbox-dc>
+                              </td>
+                              <td>
+                                <div class="d-block">
+                                  {{ (value?.name | nameToString: true) || '-' }}
+                                </div>
+                                <div class="d-block nin-text">
+                                  <ng-container *ngFor="let item of value?.identity">
+                                    <span *ngIf="item.idType === 'NIN' || item.idType === 'IQAMA'"
+                                      >{{ item.idType || '-' }} :</span
+                                    >
+                                    <span *ngIf="item.idType === 'NIN'">{{ item?.newNin }}</span>
+                                    <span *ngIf="item.idType === 'IQAMA'">{{ item?.iqamaNo }}</span>
+                                  </ng-container>
+                                </div>
+                              </td>
+                              <td>{{ (value?.relationship | bilingualText) || '-' }}</td>
+                              <td>
+                                <ng-container *ngIf="value.birthDate; else nullValue">
+                                  {{ value.birthDate?.gregorian | date: 'dd/MM/yyyy' }} ({{ value.age | number }})
+                                  <div class="d-block">
+                                    {{ value.birthDate?.hijiri | date: 'dd/MM/yyyy' }} ({{ value.age | number }})
+                                  </div>
+                                </ng-container>
+                                <ng-template #nullValue>-</ng-template>
+                              </td>
+                              <td>{{ (value?.heirStatus | bilingualText) || '-' }}</td>
+                              <td>{{ (value?.lastStatusDate | dateType) || '-' }}</td>
+                              <td>{{ (value?.notificationDate | dateType) || '-' }}</td>
+                              <td>
+                                <gosi-status-badge-dc
+                                  [label]="value?.eligibilityStatus"
+                                  type="{{
+                                    value?.eligibilityStatus?.english === 'Waived'
+                                      ? 'info'
+                                      : value?.eligibilityStatus?.english === 'Active'
+                                      ? 'success'
+                                      : value?.eligibilityStatus?.english === 'Stopped'
+                                      ? 'danger'
+                                      : value?.eligibilityStatus?.english === 'Inactive'
+                                      ? 'danger'
+                                      : value?.eligibilityStatus?.english === 'On Hold' ||
+                                        value?.eligibilityStatus?.english === 'OnHold'
+                                      ? 'warning'
+                                      : value?.eligibilityStatus?.english === 'Paid Up'
+                                      ? 'warning'
+                                      : ''
+                                  }}"
+                                ></gosi-status-badge-dc>
+                              </td>
+                            </tr>
+                            <!-- class="bg-none" -->
+                            <tr *ngIf="value.editable" class="accordion-card-bg">
+                              <td [attr.colspan]="tableHeading.length + 1" class="dotted-line">
+                                <bnt-payment-method-details-dc
+                                  id="{{ 'paymentComponent' + i }}"
+                                  #paymentDetailsComponent
+                                  [attorneyList]="value?.authorizedPersonDetails"
+                                  [guardianList]="value?.guardianPersonDetails"
+                                  [bankAccountList]="value?.bankList"
+                                  [isValidatorEdit]="isEditMode"
+                                  [isAddressReadOnly]="checkAddessDetails(value?.contactDetail)"
+                                  [heirDetail]="value"
+                                  [isHeir]="true"
+                                  [isDead]="value?.heirStatus?.english === status.DEAD"
+                                  [lang]="lang"
+                                  [personId]="value?.personId"
+                                  [payeeList]="payeeList"
+                                  [paymentModeList]="paymentModeList$ | async"
+                                  [listYesNo]="listYesNo$ | async"
+                                  [cityList$]="cityList$"
+                                  [countryList$]="countryList$"
+                                  [momentObj]="momentObj"
+                                  [isIndividualApp]="isIndividualApp"
+                                  (getAuthorizedPersonEvent)="getAttorneyListById($event)"
+                                  (getBankDetailsEvent)="getBankList($event)"
+                                  (payeeDetailEvent)="setPayeeDetails($event)"
+                                  (editEvent)="saveBankDetails($event)"
+                                ></bnt-payment-method-details-dc>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                        <!-- </ng-container> -->
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- ------------------- -->
+                </gosi-card-dc>
+                <bnt-request-date-dc
+                  [parentForm]="requestDetailsForm"
+                  [systemRunDate]="systemRunDate"
+                  [maxDate]="maxDate"
+                  [showConfirmButton]="false"
+                ></bnt-request-date-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [businessKey]="benefitRequestId"
+              [isEditMode]="isEditMode"
+              [requestTransactionId]="modifyTransactionConstant"
+              [referenceNo]="isEditMode ? referenceNo : referenceNumber"
+              [documentList]="requiredDocs"
+              [isWorkflow]="false"
+              [parentForm]="documentForm"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransactions(cancelTemplate)"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousFormDetails()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+
+  <div class="row" *ngIf="currentTab === 0">
+    <div class="col-lg-12 mt-4">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="save" type="primary" (click)="saveAndNext()">{{
+          'BENEFITS.SAVE-AND-NEXT' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">{{
+          'BENEFITS.CANCEL' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

@@ -1,0 +1,111 @@
+<div class="heading-font" *ngIf="fromPage !== 'confrimPage' && fromPage !== 'refundConfrimPage'">
+  {{ 'BILLING.CREDIT-BALANCE-TRANSFER-DETAILS' | translate }}
+</div>
+<div class="heading-font" *ngIf="fromPage === 'confrimPage'">
+  {{ 'BILLING.CREDIT-BALANCE-TRANSFER-CONFIRMATION' | translate }}
+</div>
+
+<div class="heading-font" *ngIf="fromPage === 'refundConfrimPage'">
+  {{ 'BILLING.REFUND-CREDIT-BALANCE-CONFIRMATION' | translate }}
+</div>
+<div class="row margin-extra">
+  <div class="col-lg-6 col-md-6 font-clr p-0 responsive_margin">
+    <div class="lable-margin">
+      <b>{{ 'BILLING.TRASFER-FROM' | translate }}</b>
+    </div>
+    <div class="label-content" *ngIf="establishmentDetails?.name">
+      {{
+        establishmentDetails?.name.english === null
+          ? establishmentDetails?.name.arabic
+          : (establishmentDetails?.name | bilingualText)
+      }}
+    </div>
+    <div class="label-content" *ngIf="contributorDetails">
+      {{
+        contributorDetails?.person?.name?.english.name !== undefined
+          ? contributorDetails?.person?.name?.english.name
+          : arabicName
+      }}
+    </div>
+  </div>
+
+  <div class="col-lg-6 col-md-6 font-clr p-0">
+    <div *ngIf="fromPage !== 'confrimPage' && fromPage !== 'refundConfrimPage'">
+      <div class="lable-margin">
+        <b>{{ 'BILLING.SUBMISSION-DATE' | translate }}</b>
+      </div>
+      <div class="label-content">
+        {{ submissionDate }}
+      </div>
+    </div>
+
+    <div *ngIf="fromPage === 'confrimPage' || fromPage === 'refundConfrimPage'">
+      <div class="lable-margin remain-value">
+        <b>
+          {{ 'BILLING.REMAINING-BALANCE' | translate }}
+        </b>
+      </div>
+      <div class="label-content">
+        {{ remainingBalance | number: '1.2-2' }}
+        <span class="currency-lbl margin-border"> {{ 'BILLING.SAR' | translate }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container>
+  <div class="table-scroll table-responsive">
+    <table class="table table-borderless">
+      <thead class="thead-light">
+        <tr>
+          <th class="first-td-width">{{ 'BILLING.TRASFERRED-TO' | translate }}</th>
+          <th *ngIf="fromPage !== 'confrimPage' && fromPage !== 'refundConfrimPage'">
+            {{ 'BILLING.REGISTRATION-NUMBER' | translate }}
+          </th>
+          <th>{{ 'BILLING.TRANSFERRED-AMOUNT' | translate }} ({{ 'BILLING.SAR' | translate }})</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="fromPage !== 'refundConfrimPage'">
+        <ng-container *ngFor="let data of creditDetailsReq.recipientDetail">
+          <tr class="border-bottom">
+            <td>{{ data.estName.english === null ? data.estName.arabic : (data.estName | bilingualText) }}</td>
+            <td *ngIf="fromPage !== 'confrimPage'">{{ data.registrationNo }}</td>
+            <td>{{ data.amount | number: '1.2-2' }}</td>
+          </tr>
+        </ng-container>
+        <tr *ngIf="fromPage === 'confrimPage'">
+          <td>{{ 'BILLING.TOTAL' | translate }}</td>
+          <td *ngIf="fromPage !== 'confrimPage'"></td>
+          <td>
+            <b>{{ totalAmount | number: '1.2-2' }}</b>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="fromPage === 'refundConfrimPage'">
+        <ng-container>
+          <tr class="border-bottom">
+            <td>{{ isBankTransfer && !isBankRequestinProgress ? iban : ('BILLING.CHEQUE' | translate) }}</td>
+
+            <td>{{ refundbalance | number: '1.2-2' }}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <div class="btn-section">
+    <div *ngIf="fromPage !== 'confrimPage' && fromPage !== 'refundConfrimPage'">
+      <gosi-button-dc id="close" type="secondary" (submit)="backToHome()">
+        {{ 'BILLING.HOME' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="confirmation-btn" *ngIf="fromPage === 'confrimPage' || fromPage === 'refundConfrimPage'">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="cancel()">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+      <gosi-button-dc id="confirm" type="primary" (submit)="confirm()">
+        {{ 'BILLING.CONFIRM' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</ng-container>

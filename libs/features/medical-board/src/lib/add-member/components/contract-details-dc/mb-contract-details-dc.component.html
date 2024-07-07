@@ -1,0 +1,125 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc [showCard]="!noPadding" type="secondary">
+  <ng-container>
+    <div class="row">
+      <div class="col-lg-6">
+        <!-- "doctorType" list should only come for newly added member(one with no contract type) -->
+        <gosi-input-select-dc
+          *ngIf="!hasPerson && !editMode"
+          [label]="'MEDICAL-BOARD.CONTRACT-TYPE' | translate"
+          [list]="doctorType"
+          [control]="ContractForm.get('doctorType')"
+          (select)="selectContractIdType($event)"
+          (blur)="checkFormValidity()"
+        >
+        </gosi-input-select-dc>
+        <!-- editMode condition added for returned transactions -->
+        <!-- "docList" is required in transactions from my worklist.. -->
+        <gosi-input-select-dc
+          *ngIf="hasPerson || editMode"
+          [label]="'MEDICAL-BOARD.CONTRACT-TYPE' | translate"
+          [list]="ContractedDoctor || VisitingDoctor ? docList : Nurse ? nurseList : doctorType"
+          [control]="ContractForm.get('doctorType')"
+          (select)="selectContractIdType($event)"
+          (blur)="checkFormValidity()"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="ContractedDoctor">
+        <gosi-input-select-dc
+          [label]="'MEDICAL-BOARD.TYPE-OF-MEDICAL-BOARD' | translate"
+          [list]="medicalboardtype"
+          (select)="selectType()"
+          [control]="ContractForm.get('medicalboardtype')"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="ContractedDoctor || VisitingDoctor">
+        <gosi-input-select-dc
+          [label]="'MEDICAL-BOARD.SPECIALTY' | translate"
+          [list]="specialty"
+          (selectLov)="selectSubSpecialty($event)"
+          [control]="ContractForm.get('specialty')"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="ContractedDoctor || VisitingDoctor">
+        <gosi-input-multi-select-dropdown-dc
+          [allowSearch]="false"
+          [label]="'MEDICAL-BOARD.SUB-SPECIALTIES' | translate"
+          [list]="ShowSubSpecialtyList"
+          [selectedValues]="subSpecialtyDetails"
+          (selected)="subSpecialtyDetail($event)"
+          [control]="ContractForm.get('subspecialty')"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          [label]="'MEDICAL-BOARD.NAME-OF-THE-MEDICAL-PROVIDER' | translate"
+          [list]="hospital"
+          [control]="ContractForm.get('hospital')"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-multi-select-dropdown-dc
+          [allowSearch]="false"
+          [label]="'MEDICAL-BOARD.SERVCE-REGIONS' | translate"
+          [list]="region"
+          [selectedValues]="regionDetails"
+          (selected)="regionDetail($event)"
+          [control]="ContractForm.get('region')"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <gosi-input-radio-dc
+          id="govtOrprivt"
+          name="govtOrprivt"
+          [list]="govtOrprivtList"
+          [label]="'MEDICAL-BOARD.JOB-SECTOR' | translate"
+          [control]="ContractForm.get('jobSector')"
+          (select)="selectJobSector()"
+        ></gosi-input-radio-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" *ngIf="showFees">
+        <gosi-label-dc [value]="fees" [label]="'MEDICAL-BOARD.FEES-PER-SESSION' | translate"> </gosi-label-dc>
+      </div>
+      <div class="col-lg-3" *ngIf="VisitingDoctor">
+        <gosi-input-select-dc
+          [label]="'MEDICAL-BOARD.FEES-PER-VISIT' | translate"
+          [list]="feespervisit"
+          [control]="ContractForm.get('feespervisit')"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+  </ng-container>
+</gosi-card-dc>
+
+<div class="d-flex flex-wrap form-action" [ngClass]="{ 'no-margin': true }">
+  <div class="btn-section order-2 order-md-0">
+    <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="cancel.emit()"
+      >{{ 'MEDICAL-BOARD.CANCEL' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="btn-section order-1 order-md-1 pl-4 pr-4">
+    <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="previous.emit()"
+      >{{ 'MEDICAL-BOARD.PREVIOUS-SECTION' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="btn-section order-0 order-md-2" [ngClass]="{ 'ml-auto': true }">
+    <gosi-button-dc id="savenext" type="primary" (submit)="saveContract()"
+      >{{ 'MEDICAL-BOARD.SAVE-AND-NEXT' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>

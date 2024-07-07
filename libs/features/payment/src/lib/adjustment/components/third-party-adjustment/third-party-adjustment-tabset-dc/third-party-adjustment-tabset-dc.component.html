@@ -1,0 +1,111 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="tab-container">
+  <gosi-tabset-dc [groups]="adjustmentTabValues" (selectId)="selectTab($event)"></gosi-tabset-dc>
+</div>
+<!-----------------payment details --------------->
+<ng-container *ngIf="currentab === 0">
+  <pmt-third-party-payment-details-dc
+    *ngIf="paymentList"
+    [paymentList]="paymentList"
+  ></pmt-third-party-payment-details-dc>
+</ng-container>
+<!--------------adjustment modification  details ------------>
+<ng-container *ngIf="currentab === 1">
+  <div class="margin-style">
+    <div *ngIf="benefitList?.length > 0; else noAdjustments">
+      <ng-container *ngFor="let value of benefitList; let i = index">
+        <pmt-third-party-timeline-dc [isFirstItem]="i === 0" [isLastItem]="i === benefitList?.length - 1">
+          <div class="row" timeline-date>
+            <div class="col-md-12 flag-timeline">
+              <span class="heading-style">
+                {{ value.modificationDate.gregorian | date: 'dd/MM/yyyy' }}
+              </span>
+            </div>
+            <div class="col-md-12 flag-timeline">
+              <span class="heading-style">
+                {{ 'ADJUSTMENT.MODIFICATION-DETAILS' | translate }}
+              </span>
+            </div>
+            <div class="col-md-6 table-scroll table-responsive">
+              <table class="table">
+                <thead class="thead-light">
+                  <tr>
+                    <th rowspan="2" class="topMargin">{{ 'ADJUSTMENT.TRANSACTION-ID' | translate }}</th>
+                    <th class="alignment">
+                      {{ 'ADJUSTMENT.BEFORE-MODIFICATION' | translate }}
+                    </th>
+                    <th colspan="3" class="alignment">{{ 'ADJUSTMENT.AFTER-MODIFICATION' | translate }}</th>
+                  </tr>
+                  <tr>
+                    <th *ngIf="value?.beforeModification?.monthlyDeductionAmount" class="alignment">
+                      {{ 'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate }}({{ 'ADJUSTMENT.SAR' | translate }})
+                    </th>
+                    <th *ngIf="!value?.beforeModification?.monthlyDeductionAmount" class="alignment">
+                      {{ 'ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE' | translate }}(%)
+                    </th>
+                    <th *ngIf="value?.afterModification?.monthlyDeductionAmount" class="alignment">
+                      {{ 'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate }}({{ 'ADJUSTMENT.SAR' | translate }})
+                    </th>
+                    <th *ngIf="!value?.afterModification?.monthlyDeductionAmount" class="alignment">
+                      {{ 'ADJUSTMENT.MONTHLY-DEDUCTION-PERCENTAGE' | translate }}(%)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="tb-value view-link">
+                      <span (click)="onTransactionIdClicked.emit(value?.referenceNo)">{{ value?.referenceNo }}</span>
+                    </td>
+                    <td>
+                      <ng-container *ngIf="value?.beforeModification?.monthlyDeductionAmount; else beforePercenatge">
+                        {{ value?.beforeModification?.monthlyDeductionAmount | numToPositive | number: '1.2-2' }}
+                      </ng-container>
+                      <ng-template #beforePercenatge>
+                        {{ value?.beforeModification?.adjustmentPercentage }}</ng-template
+                      >
+                    </td>
+                    <td>
+                      <ng-container *ngIf="value?.afterModification?.monthlyDeductionAmount; else afterPercenatge">
+                        {{ value?.afterModification?.monthlyDeductionAmount | numToPositive | number: '1.2-2' }}
+                      </ng-container>
+                      <ng-template #afterPercenatge> {{ value?.afterModification?.adjustmentPercentage }}</ng-template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-12">{{ 'ADJUSTMENT.NOTES' | translate }}</div>
+            <div class="col-md-12">
+              {{ value?.notes | limitTo: limit }}
+              <div *ngIf="value?.notes?.length > limitChar">
+                <a (click)="readFullNote(value?.notes)" class="read-more">
+                  {{ showMoreTextField | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </pmt-third-party-timeline-dc>
+      </ng-container>
+    </div>
+    <ng-template #noAdjustments>
+      <div class="mt-5 text-center" *ngIf="benefitList?.length === 0">
+        <img src="assets/icons/No Payments.svg" alt="noPayments" />
+        <br />
+        <p class="text-muted">{{ 'ADJUSTMENT.NO-MODIFICATIONS' | translate }}</p>
+      </div>
+    </ng-template>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="currentab === 2">
+  <pmt-adjustment-documents-dc
+    [document]="document"
+    [transactionDocs]="transactionDocs"
+    (addDocs)="addDocumentButton()"
+  ></pmt-adjustment-documents-dc>
+</ng-container>

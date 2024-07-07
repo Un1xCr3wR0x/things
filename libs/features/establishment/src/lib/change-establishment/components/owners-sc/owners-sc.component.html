@@ -1,0 +1,137 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+  <div class="content">
+    <est-heading-dc [canNavigate]="false" (backEvent)="navigateBack()">
+      <div class="margin-left">{{ 'ESTABLISHMENT.MANAGE-OWNER' | translate }}</div>
+      <div id="action-item" class="menu row no-gutters align-items-center">
+        <div *gosiShow="ownerAccessRoles; regNo: selectedRegistrationNo">
+          <div class="col-sm-12 d-none button-view" *ngIf="!viewMode && !modifyOwnerRestrict">
+            <gosi-button-dc
+              class="gosi-button-wrapper"
+              id="modifyOwnerButton"
+              (submit)="initiateNavigation(editWarningTemplate)"
+              type="primary"
+            >
+              <fa-icon class="icon-wrapper-pencil-alt" [icon]="['fas', 'pencil-alt']"></fa-icon>
+              {{ 'ESTABLISHMENT.MODIFY-OWNER' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+        <div class="col-md-auto col-sm-12 no-gutters d-flex flex-nowrap">
+          <div class="pr-2 pl-0 search-icon">
+            <div class="search" *ngIf="owners?.length > 0">
+              <gosi-search-dc
+                gosiSpecialCharacters
+                [placeholder]="'ESTABLISHMENT.OWNER-NAME-ID' | translate"
+                (search)="searchForOwners($event)"
+              >
+              </gosi-search-dc>
+            </div>
+          </div>
+          <div class="pl-2 pr-0 filter-icon">
+            <div class="filter" *ngIf="owners?.length > 0">
+              <est-owner-filter-dc
+                [filters]="ownerFilters"
+                [minDate]="establishment?.startDate?.gregorian"
+                (reset)="clearAll()"
+                (apply)="filterOwners($event)"
+                [nationalityList$]="nationalityList$"
+              >
+              </est-owner-filter-dc>
+            </div>
+          </div>
+        </div>
+        <div *gosiShow="ownerAccessRoles; regNo: selectedRegistrationNo">
+          <div class="col-auto d-md-block d-none pl-3 button" *ngIf="!viewMode && !modifyOwnerRestrict">
+            <gosi-button-dc
+              class="gosi-button-wrapper"
+              id="modifyOwnerButton"
+              (submit)="initiateNavigation(editWarningTemplate)"
+              type="primary"
+            >
+              <fa-icon class="icon-wrapper-pencil-alt" [icon]="['fas', 'pencil-alt']"></fa-icon>
+              {{ 'ESTABLISHMENT.MODIFY-OWNER' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </est-heading-dc>
+    <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+    <div class="col-md-12 search-result pb-2" *ngIf="searchText">
+      <est-search-result-dc [count]="filteredOwners?.length != 0 ? filteredOwners?.length : 0" [value]="searchText">
+      </est-search-result-dc>
+    </div>
+    <div class="row" *ngIf="ownerFilters?.length > 0">
+      <div class="col-sm-12">
+        <gosi-applied-filters-dc [filters]="ownerFilters" (clearFilter)="filterOwners($event)"></gosi-applied-filters-dc>
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="filteredOwners?.length == 0">
+      <div class="search-result pb-2">
+        <est-no-result-dc [message]="'ESTABLISHMENT.NO-OWNER-FOUND' | translate"></est-no-result-dc>
+      </div>
+    </div>
+    <div class="row pt-4">
+      <ng-container
+        *ngFor="
+          let owner of filteredOwners
+            | paginate: { id: 'ownerList', itemsPerPage: itemsPerPage, currentPage: currentPage };
+          let i = index
+        "
+      >
+        <est-owner-card-dc
+          class="col-sm-12"
+          [owner]="owner"
+          [index]="(currentPage - 1) * itemsPerPage + i"
+        ></est-owner-card-dc>
+      </ng-container>
+    </div>
+    <div class="row pagination justify-content-center" *ngIf="owners?.length > itemsPerPage">
+      <gosi-pagination-dc
+        [totalSize]="filteredOwners.length"
+        [itemsPerPage]="itemsPerPage"
+        [pageDetails]="pageDetails"
+        (pageChange)="selectPage($event)"
+        paginationId="ownerList"
+      ></gosi-pagination-dc>
+    </div>
+  </div>
+  
+  <ng-template #draftModal>
+    <est-resume-modal-dc
+      [message]="draftTransaction?.message"
+      (cancel)="hideModal()"
+      (new)="cancelAndStart()"
+      (resume)="navigateToTransaction()"
+      id="ownerDraft"
+    ></est-resume-modal-dc>
+  </ng-template>
+  
+  <ng-template #editWarningTemplate>
+    <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.MODIFY-OWNER' | translate">
+      <div modalContent>
+        <gosi-alert-dc [details]="editWarningMsg" type="warning" [dismissible]="false"> </gosi-alert-dc>
+      </div>
+      <div class="d-flex justify-content-center" modalAction>
+        <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+          {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </gosi-modal-dc>
+  </ng-template>
+
+  <ng-template #draftRequiredTemplate>
+    <est-draft-initiate-popup-dc
+    [transactionRefNo]="transactionTraceId"
+    (keepDraftEvent)="navigateToDraftTransaction(transactionTraceId)"
+    (discardEvent)="clearDraft(transactionTraceId)"
+    (onCancel)="hideModal()"
+    >  
+    </est-draft-initiate-popup-dc>
+  </ng-template>
+  

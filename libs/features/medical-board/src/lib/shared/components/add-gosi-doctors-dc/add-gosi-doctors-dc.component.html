@@ -1,0 +1,199 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-modal-dc>
+  <div modalContent>
+    <div class="d-flex flex-wrap align-items-center justify-content-between table-headers pt-4 pb-4">
+      <div class="d-flex justify-content-start">
+        <div class="header-value">{{ 'MEDICAL-BOARD.ADD-GOSI-DOCTORS' | translate }}</div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <ng-container *ngIf="noOfDoctors !== 0">
+          <div id="count" class="d-flex align-items-center pb-3">
+            <span class="count-section">{{ noOfDoctors }}</span>
+            <span class="sub-label">{{ 'MEDICAL-BOARD.SELECTED' | translate }}</span>
+          </div>
+        </ng-container>
+        <gosi-search-dc
+          id="search-area"
+          [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+          class="pr-2 pl-2 search-header"
+          (search)="onSearchDoctors($event)"
+          (keyup)="onEnableSearch($event.target.value)"
+          [searchParam]="searchParams"
+          (reset)="onSearchReset()"
+        >
+        </gosi-search-dc>
+        <mb-add-member-filter-dc
+          [addGosiDoctor]="true"
+          [fieldOfficeLists]="fieldOfficeLists"
+          (filter)="onApplyFilter($event)"
+        ></mb-add-member-filter-dc>
+      </div>
+    </div>
+    <gosi-alert-dc
+    *ngIf="showUnavailability" 
+    [message]="'MEDICAL-BOARD.UNAVAILABILITY-OF-A-MEMBER' | translate"
+    [dismissible]="false"
+    type="danger"
+  ></gosi-alert-dc>
+    <div class="table-view">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th></th>
+            <th id="doctorname">
+              {{ 'MEDICAL-BOARD.NAME' | translate }}
+            </th>
+            <th id="fieldlocation">
+              {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+            </th>
+            <th id="mobilenumber">
+              {{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}
+            </th>
+            <th id="availabilties">
+              {{ 'MEDICAL-BOARD.AVAILABILITY' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="border-bottom"
+            *ngFor="
+              let doctor of gosiDoctors
+                | paginate
+                  : {
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: totalRecords
+                    };
+              let i = index
+            "
+          >
+            <td style="width: 1%">
+              <gosi-input-checkbox-dc
+                [control]="multiCheckForm?.controls[absoluteIndex(i)]?.get('checkFormFlag')"
+                (select)="selectDoctor($event, doctor, i)"
+                [disabled]="!doctor?.isAvailable"
+              ></gosi-input-checkbox-dc>
+            </td>
+            <td style="width: 10%">
+              <div class="first-row">
+                <ng-template #excludeTemplate>
+                  <ng-container *ngTemplateOutlet="excludeTemplateInfo; context: { doctorValue: doctor.doctorName }">
+                  </ng-container>
+                </ng-template>
+                <div
+                  class="row"
+                  [tooltip]="isTooltipNeeded(doctor?.doctorName) === 1 ? excludeTemplate : ''"
+                  placement="right"
+                >
+                  <div class="value" *ngIf="lang === 'en'">
+                    {{
+                      doctor?.doctorName?.english === null || doctor?.doctorName?.english?.length === 0
+                        ? doctor?.doctorName?.arabic
+                        : doctor?.doctorName?.english
+                    }}
+                  </div>
+                  <div class="value" *ngIf="lang === 'ar'">
+                    {{ doctor?.doctorName?.arabic }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <ng-container *ngIf="doctor?.nationalIdType === ninId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="doctor?.nationalIdType === iqamaId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.IQAMA-NUMBER' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="doctor?.nationalIdType === gccId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.GCCID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="doctor?.nationalIdType === borderNo">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.BORDER-NO' | translate }} :</span>
+                </ng-container>
+                <span
+                  ><a class="member-click" (click)="getDoctor(doctor.nationalId)">{{ doctor.nationalId }}</a></span
+                >
+              </div>
+            </td>
+            <ng-template #excludeTemplateInfo let-contributorName="doctorValue">
+              <div class="d-flex flex-column">
+                <div class="value" *ngIf="lang === 'en'">
+                  {{
+                    doctor?.doctorName?.english === null || doctor?.doctorName?.english?.length === 0
+                      ? doctor?.doctorName?.arabic
+                      : doctor?.doctorName?.english
+                  }}
+                </div>
+                <div class="value" *ngIf="lang === 'ar'">
+                  {{ doctor?.doctorName?.arabic }}
+                </div>
+              </div>
+            </ng-template>
+            <td style="width: 15%">
+              <ng-container *ngFor="let location of doctor?.location">
+                <span class="days mb-1"> {{ location | bilingualText }}</span></ng-container
+              >
+            </td>
+            <td style="width: 15%">
+              <ng-container *ngIf="doctor.mobileNumber">
+                <fa-icon
+                  icon="phone"
+                  size="1x"
+                  class="admin-phone pr-1"
+                  outsideClick="true"
+                  (click)="onIconClicked(i)"
+                  transform="rotate-{{ rotatedeg }} down-2"
+                ></fa-icon>
+
+                <ng-container *ngIf="doctor.isIconClicked">
+                  {{ doctor.mobileNumber }}
+                </ng-container>
+              </ng-container>
+            </td>
+            <td style="width: 15%">
+              <gosi-status-badge-dc
+                [label]="
+                  doctor?.isAvailable
+                    ? ('MEDICAL-BOARD.AVAILABLE' | translate)
+                    : ('MEDICAL-BOARD.NOT-AVAILABLE' | translate)
+                "
+                type="{{ doctor?.isAvailable ? 'success' : 'danger' }}"
+              >
+              </gosi-status-badge-dc>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="gosiDoctors?.length === 0" class="pt-4">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </div>
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="totalRecords > itemsPerPage"
+      [pageDetails]="pageDetails"
+      [totalSize]="totalRecords"
+      [itemsPerPage]="itemsPerPage"
+      (pageChange)="onPaginate($event)"
+    >
+    </gosi-pagination-dc>
+  </div>
+
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="onCancelTemplate()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="submit" [disabled]="isDisabled" (submit)="onAddGosiDoctor()" type="primary">
+        {{ 'MEDICAL-BOARD.ADD-DOCTORS' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>

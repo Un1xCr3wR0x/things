@@ -1,0 +1,319 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <div class="row">
+  <div class="col-md-12">
+    <bnt-request-date-dc *ngIf="isAppPrivate" [parentForm]="parentForm"> </bnt-request-date-dc>
+  </div>
+</div> -->
+
+<!--dependents card with delete and edit-->
+<gosi-card-dc type="secondary" lessPadding="true" heading="{{ 'BENEFITS.HEIR_DETAILS' | translate }}">
+  <bnt-heir-listing-dc
+    *ngIf="heirDetails?.length"
+    [events]="events$ | async"
+    [benefitType]="benefitType"
+    [isHeadingLight]="false"
+    [tableHeadingAndParams]="tableHeadingAndParams"
+    [reasonForBenefit]="heirDetailsData"
+    [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+    [payeeList]="payeeList"
+    [lang]="lang"
+    [sin]="sin"
+    [requestDate]="requestDate"
+    [addedEvent]="addedEvent"
+    [isPension]="isPension"
+    [validateApiResponse]="validateApiResponse"
+    [paymentMethodList]="paymentMethodList$ | async"
+    [parentForm]="parentForm"
+    [systemRunDate]="systemRunDate"
+    [systemParameter]="systemParameter"
+    [heirList]="heirList | async"
+    [listOfGuardians]="guardianList"
+    [listOfValues]="heirDetails"
+    [annuityRelationShip]="annuityRelationShip$ | async"
+    [maritalStatusList]="maritalStatus$ | async"
+    [heirStatus]="heirStatus$ | async"
+    [saveApiResp]="saveApiResp"
+    [nationalityList$]="nationalityList$"
+    [heirStatusArr]="heirStatusArr"
+    [isAppPrivate]="isAppPrivate"
+    [isValidator]="isValidator"
+    [guardianDetails]="guardianDetails"
+    [bankName]="bankName"
+    [ageInNewLaw]="ageInNewLaw"
+    [genderList]="genderList$ | async"
+    [bankDetails]="bankAccountList"
+    [isDraft]="isDraft"
+    [listYesNo$]="listYesNo$"
+    [isBankAccountRequired]="isBankAccountRequired"
+    [eligibleForPensionReform]="eligibleForPensionReform"
+    (getRelationshipListByGender)="getRelationshipListByGender($event)"
+    (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+    (getBankForid)="getBankForHeirs($event)"
+    (searchForGuardian)="searchForGuardian($event)"
+    (validateHeir)="validateHeir($event)"
+    (getBankName)="getBankName($event)"
+    (addValidatedHeir)="addHeir($event)"
+    (delete)="delete($event)"
+    (edit)="edit($event)"
+    (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+    (showIneligibilityDetails)="showIneligibilityDetails(ineligibilityTemplate, $event)"
+    (getAuthPeronContactDetails)="getAuthPeronContactDetails($event)"
+    (getEvents)="getEventsForModify($event)"
+    (getAuthPerson)="getAttorneyDetailsById($event)"
+    (getGuardian)="getAttorneyDetailsById($event, null, true)"
+  ></bnt-heir-listing-dc>
+  <!--    (validateUnborn)="validateUnborn($event)"-->
+
+  <div class="row" *ngIf="showSearch">
+    <div class="col-md-12 d-flex justify-content-center mt-4">
+      <gosi-button-dc [size]="'md'" [outlineOnly]="true" (click)="showOrHideSearch()">
+        {{ (heirDetails?.length ? 'BENEFITS.ADD-ANOTHER-HEIR' : 'BENEFITS.ADD-HEIR') | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+  <!-- <div class="row pb-5 d-flex justify-content-center" *ngIf="!showSearch && addDependent">
+    <gosi-button-dc [size]="'lg'" [outlineOnly]="true" (click)="showOrHideSearch()">
+      {{ 'BENEFITS.ADD-NEW-HEIR' | translate }}
+    </gosi-button-dc>
+  </div> -->
+  <div class="row" *ngIf="!showSearch">
+    <div class="col-sm-12">
+      <span class="heading pb-4">{{ 'BENEFITS.ADD-NEW-HEIR' | translate }}</span>
+    </div>
+    <div class="col-md-12 search-person">
+      <bnt-search-person-dc
+        *ngIf="!searchResult?.personId && !searchPersonData?.dob"
+        [systemRunDate]="systemRunDate"
+        [nationalityList$]="nationalityList$"
+        [disableVerify]="disableVerify"
+        (searchPerson)="search($event)"
+        (close)="resetSearch()"
+      >
+      </bnt-search-person-dc>
+      <ng-container *ngIf="!eligibleForPensionReform; else eligibleForPensionReformTemplate">
+        <bnt-heir-add-edit-dc
+          #dependentOrHeirAdd
+          *ngIf="searchResult?.personId"
+          [events]="events$ | async"
+          [update]="false"
+          [isPension]="isPension"
+          [addedEvent]="addedEvent"
+          [lang]="lang"
+          [requestDate]="requestDate"
+          [validateApiResponse]="validateApiResponse"
+          [benefitType]="benefitType"
+          [reasonForBenefit]="heirDetailsData"
+          [totalWage]="totalWage"
+          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+          [payeeList]="payeeList"
+          [heirList]="heirList | async"
+          [listOfDependents]="heirDetails"
+          [listOfGuardians]="guardianList"
+          [bankDetails]="bankAccountList"
+          [paymentMethodList]="paymentMethodList$ | async"
+          [guardianDetails]="guardianDetails"
+          [isHeir]="true"
+          [isValidator]="isValidator"
+          [parentForm]="parentForm"
+          [systemRunDate]="systemRunDate"
+          [systemParameter]="systemParameter"
+          [dependentDetails]="searchResult"
+          [personStatus]="searchResult"
+          [annuityRelationShipList]="annuityRelationShip$ | async"
+          [maritalStatusList]="maritalStatus$ | async"
+          [heirStatusList]="heirStatus$ | async"
+          [nationalityList$]="nationalityList$"
+          [heirStatusArr]="heirStatusArr"
+          [bankName]="bankName"
+          [ageInNewLaw]="ageInNewLaw"
+          [isDraft]="isDraft"
+          [listYesNo$]="listYesNo$"
+          [isBankAccountRequired]="isBankAccountRequired"
+          (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+          (validateDependent)="validateHeir($event)"
+          (addValidatedHeir)="addHeir($event)"
+          (reset)="resetSearch()"
+          (getBankName)="getBankName($event)"
+          (getBankForid)="getBankForHeirs($event)"
+          (searchGuardian)="searchForGuardian($event)"
+          (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+          (cancelEdit)="resetSearch()"
+          (getAuthPeronContactDetails)="getAuthPeronContactDetails($event)"
+          (getAuthPersonForId)="getAttorneyDetailsById($event)"
+          (getGuardianForId)="getAttorneyDetailsById($event, null, true)"
+        ></bnt-heir-add-edit-dc>
+      </ng-container>
+      <ng-template #eligibleForPensionReformTemplate>
+        <bnt-heir-add-edit-reform-dc
+          #dependentOrHeirAdd
+          *ngIf="searchResult?.personId"
+          [events]="events$ | async"
+          [update]="false"
+          [isPension]="isPension"
+          [addedEvent]="addedEvent"
+          [lang]="lang"
+          [requestDate]="requestDate"
+          [validateApiResponse]="validateApiResponse"
+          [benefitType]="benefitType"
+          [reasonForBenefit]="heirDetailsData"
+          [totalWage]="totalWage"
+          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+          [payeeList]="payeeList"
+          [heirList]="heirList | async"
+          [listOfDependents]="heirDetails"
+          [listOfGuardians]="guardianList"
+          [bankDetails]="bankAccountList"
+          [paymentMethodList]="paymentMethodList$ | async"
+          [guardianDetails]="guardianDetails"
+          [isHeir]="true"
+          [isValidator]="isValidator"
+          [parentForm]="parentForm"
+          [systemRunDate]="systemRunDate"
+          [systemParameter]="systemParameter"
+          [dependentDetails]="searchResult"
+          [personStatus]="searchResult"
+          [annuityRelationShipList]="annuityRelationShip$ | async"
+          [maritalStatusList]="maritalStatus$ | async"
+          [heirStatusList]="heirStatus$ | async"
+          [nationalityList$]="nationalityList$"
+          [heirStatusArr]="heirStatusArr"
+          [bankName]="bankName"
+          [ageInNewLaw]="ageInNewLaw"
+          [isDraft]="isDraft"
+          [listYesNo$]="listYesNo$"
+          [isBankAccountRequired]="isBankAccountRequired"
+          (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+          (validateDependent)="validateHeir($event)"
+          (addValidatedHeir)="addHeir($event)"
+          (reset)="resetSearch()"
+          (getBankName)="getBankName($event)"
+          (getBankForid)="getBankForHeirs($event)"
+          (searchGuardian)="searchForGuardian($event)"
+          (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+          (cancelEdit)="resetSearch()"
+          (getAuthPeronContactDetails)="getAuthPeronContactDetails($event)"
+          (getAuthPersonForId)="getAttorneyDetailsById($event)"
+          (getGuardianForId)="getAttorneyDetailsById($event, null, true)"
+        ></bnt-heir-add-edit-reform-dc>
+      </ng-template>
+      <bnt-heir-add-dc
+        *ngIf="!searchResult?.personId && searchPersonData?.dob"
+        [searchPersonData]="searchPersonData"
+        [dependentDetails]="searchPersonData"
+        [genderList]="genderList$ | async"
+        [calcHijiriAgeInMonths]="calcHijiriAgeInMonths"
+        [events]="events$ | async"
+        [update]="false"
+        [isDraft]="isDraft"
+        [isPension]="isPension"
+        [addedEvent]="addedEvent"
+        [lang]="lang"
+        [requestDate]="requestDate"
+        [validateApiResponse]="validateApiResponse"
+        [benefitType]="benefitType"
+        [reasonForBenefit]="heirDetailsData"
+        [totalWage]="totalWage"
+        [bankDetails]="bankAccountList"
+        [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+        [payeeList]="payeeList"
+        [heirList]="heirList | async"
+        [listOfDependents]="heirDetails"
+        [listOfGuardians]="guardianList"
+        [paymentMethodList]="paymentMethodList$ | async"
+        [guardianDetails]="guardianDetails"
+        [isHeir]="true"
+        [isValidator]="isValidator"
+        [parentForm]="parentForm"
+        [systemRunDate]="systemRunDate"
+        [systemParameter]="systemParameter"
+        [personStatus]="searchResult"
+        [annuityRelationShipList]="annuityRelationShip$ | async"
+        [maritalStatusList]="maritalStatus$ | async"
+        [heirStatusList]="heirStatus$ | async"
+        [nationalityList$]="nationalityList$"
+        [heirStatusArr]="heirStatusArr"
+        [bankName]="bankName"
+        [ageInNewLaw]="ageInNewLaw"
+        [listYesNo$]="listYesNo$"
+        (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+        (validateDependent)="validateHeir($event)"
+        (addValidatedHeir)="addHeir($event)"
+        (reset)="resetSearch()"
+        (getBankName)="getBankName($event)"
+        (getBankForid)="getBankForHeirs($event)"
+        (searchGuardian)="searchForGuardian($event)"
+        (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+        (cancelEdit)="resetSearch()"
+        (getAuthPeronContactDetails)="getAuthPeronContactDetails($event)"
+        (getRelationshipListByGender)="getRelationshipListByGender($event)"
+      ></bnt-heir-add-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<div class="row form-action">
+  <div class="col-auto pb-2 form-action-btn">
+    <gosi-button-dc
+      [ngClass]="!isSmallScreen ? 'float-left' : ''"
+      id="cancelButton"
+      type="secondary"
+      isFullWidth="isSmallScreen"
+      (submit)="cancelTransaction()"
+    >
+      {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+    >
+  </div>
+  <div class="col-auto pb-2 form-action-btn" [ngClass]="!isSmallScreen ? 'float-right' : ''">
+    <gosi-button-dc id="previous" [isFullWidth]="isSmallScreen" type="secondary" (submit)="previousForm()">
+      {{ 'BENEFITS.PRE-SECTION' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="ml-auto col-auto pb-2 form-action-btn">
+    <gosi-button-dc
+      [ngClass]="!isSmallScreen ? 'float-right' : ''"
+      id="saveAndNextHeirDetails"
+      type="primary"
+      isFullWidth="isSmallScreen"
+      [disabled]="disableSaveAndNext"
+      (submit)="applyForBenefit()"
+    >
+      {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>
+<ng-template #addEventPopupTemplate>
+  <bnt-add-event-popup-dc
+    (addEventDetails)="addEvent($event)"
+    (closeAddEvent)="closePopup()"
+    [eventAddedFor]="eventAddedFor"
+    [systemRunDate]="systemRunDate"
+    [systemParameter]="systemParameter"
+    [eventTypeList]="eventTypeList"
+    [isHeir]="true"
+  ></bnt-add-event-popup-dc>
+</ng-template>
+<ng-template #ineligibilityTemplate>
+  <bnt-ineligibility-details-dc
+    [lang]="lang"
+    [ineligibility]="benefitCalculation?.ineligibility"
+    [heirPersonId]="singleDepHeirDetails.personId"
+    [isPension]="isPension"
+    [details]="
+      singleDepHeirDetails?.eligibilityList
+        ? singleDepHeirDetails?.eligibilityList
+        : singleDepHeirDetails.validateApiResponse?.events
+    "
+    [name]="singleDepHeirDetails?.name ? singleDepHeirDetails?.name : singleDepHeirDetails.validateApiResponse?.name"
+    [heir]="singleDepHeirDetails"
+    [relationship]="
+      singleDepHeirDetails.relationship
+        ? singleDepHeirDetails?.relationship
+        : singleDepHeirDetails.validateApiResponse?.relationship
+    "
+    (close)="closePopup()"
+  ></bnt-ineligibility-details-dc>
+</ng-template>

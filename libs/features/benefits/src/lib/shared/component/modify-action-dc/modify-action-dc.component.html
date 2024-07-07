@@ -1,0 +1,197 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="p-4">
+  <div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="heirDetail?.holdStopDetails?.isMedical">
+      <gosi-alert-dc [message]="'BENEFITS.HOLD-MEDICAL-RE-ASSESMENT-MSG' | translate" type="warning" [noPadding]="true">
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12" *ngIf="heirDetail?.holdStopDetails">
+      <div class="row">
+        <!-- As per new VD, benefit hold date and reason not required -->
+        <!-- <ng-container *ngIf="heirDetail?.eligibilityStatus?.english === 'On Hold'">
+          <div class="col-md-6">
+            <gosi-label-dc
+              [label]="'BENEFITS.BENEFIT-HOLD-DATE' | translate"
+              [value]="heirDetail?.holdStopDetails?.eventDate | dateType"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="holdReason"
+              [label]="'BENEFITS.REASON-FOR-HOLD' | translate"
+              [control]="
+                heirDetail?.holdStopDetails?.reason?.english
+                  ? (heirDetail?.holdStopDetails?.reason | bilingualText)
+                  : '—'
+              "
+            >
+            </gosi-label-dc>
+          </div>
+        </ng-container> -->
+        <ng-container *ngIf="heirDetail?.eligibilityStatus?.english === 'Stopped'">
+          <div class="col-md-6">
+            <gosi-label-dc
+              [label]="'BENEFITS.BENEFIT-STOP-DATE' | translate"
+              [value]="heirDetail?.holdStopDetails?.eventDate | dateType"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="stopReason"
+              [label]="'BENEFITS.STOP-REASON' | translate"
+              [control]="
+                heirDetail?.holdStopDetails?.reason?.english
+                  ? (heirDetail?.holdStopDetails?.reason | bilingualText)
+                  : '—'
+              "
+            >
+            </gosi-label-dc>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="col-md-6" *ngIf="heirActionType === heirStatusEnums.STOP">
+      <gosi-input-date-dc
+        id="statusDate"
+        label="{{ 'BENEFITS.STATUS-DATE' | translate }}"
+        [maxDate]="maxDate"
+        [control]="reasonForm.get('statusDate').get('gregorian')"
+      >
+      </gosi-input-date-dc>
+    </div>
+    <!-- No status date required for hold and restart heir benfit -->
+    <!-- <div class="col-md-6">
+      <gosi-input-date-dc
+        id="statusDate"
+        label="{{ 'BENEFITS.STATUS-DATE' | translate }}"
+        [maxDate]="maxDate"
+        [disabled]="
+          heirActionType === heirStatusEnums.HOLD || heirActionType === heirStatusEnums.RESTART ? true : false
+        "
+        [control]="reasonForm.get('statusDate').get('gregorian')"
+      >
+      </gosi-input-date-dc>
+    </div> -->
+
+    <!-- <div
+      class="col-md-6"
+      *ngIf="heirActionType === heirStatusEnums.HOLD || heirActionType === heirStatusEnums.RESTART; else otherActions"
+    >
+      <gosi-input-select-dc
+        [label]="'BENEFITS.REASON' | translate"
+        id="reasonDropdown"
+        [control]="reasonForm.get('reasonSelect')"
+        [list]="reasonsList$ | async"
+        [hideOptionalLabel]="true"
+      >
+      </gosi-input-select-dc>
+    </div> -->
+    <!-- <ng-template #otherActions> -->
+    <div *ngIf="heirActionType !== heirStatusEnums.RESTART" class="col-md-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.REASON' | translate"
+        id="reasonDropdown"
+        [control]="reasonForm.get('reasonSelect')"
+        [list]="reasonsList"
+        [hideOptionalLabel]="true"
+      >
+      </gosi-input-select-dc>
+      <!-- [arrayList]="reasonList" -->
+    </div>
+    <div *ngIf="heirActionType === heirStatusEnums.RESTART" class="col-md-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.REASON-FOR-RESTART' | translate"
+        id="reasonDropdown"
+        [control]="reasonForm.get('reasonSelect')"
+        [list]="reasonsList"
+        [hideOptionalLabel]="true"
+      >
+      </gosi-input-select-dc>
+      <!-- [arrayList]="reasonList" -->
+    </div>
+    <!-- </ng-template> -->
+    <div class="col-md-12">
+      <gosi-input-text-area-dc
+        [label]="'BENEFITS.NOTES' | translate"
+        [maxLength]="notesMaxLength"
+        id="reasonNotes"
+        name="reasonNotes"
+        [control]="reasonForm.get('reasonNotes')"
+        [noMargin]="true"
+      >
+      </gosi-input-text-area-dc>
+    </div>
+    <!-- for ineligible heirs payment section not required (Defect: 453477) -->
+
+    <div class="col-md-12 pt-5" *ngIf="isHeir">
+      <bnt-current-payment-details-dc
+        *ngIf="heirActionType === heirStatusEnums.RESTART"
+        [benefitPaymentDetails]="benefitPaymentDetails"
+        [inEditMode]="false"
+        [removePadding]="false"
+        [showCard]="false"
+      ></bnt-current-payment-details-dc>
+
+      <bnt-payment-details-dc
+        *ngIf="reasonForm && payeeList && paymentMethodList && heirActionType === heirStatusEnums.RESTART"
+        (clearSuccessMessage)="clearSuccessMessage()"
+        (getBankName)="getBank($event)"
+        (getContactDetailsForAuthPerson)="getContactDetailsForAuthPerson($event)"
+        (loadBankInfoForId)="getBankDetails($event)"
+        (searchForGuardian)="searchForGuardian($event)"
+        (showAddContactWizard)="showAddContact($event)"
+        (getAuthPerson)="getAuthPerson($event)"
+        (getGuardian)="getGuardian($event)"
+        [paymentIndex]="paymentIndex"
+        [addHeir]="isHeir"
+        [authorizedPersonId]="heirDetail.authorizedPersonId"
+        [isRestartHeir]="heirActionType === heirStatusEnums.RESTART"
+        [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+        [bankAccountList]="bankDetails"
+        [bankName]="bankName"
+        [guardianDetails]="guardianDetails"
+        [guardianSource]="heirDetail.guardianSource"
+        [heirNationality]="heirDetail.nationality?.english"
+        [hideSaveButton]="true"
+        [isHeirAlive]="isAlive"
+        [isHeirDisabled]="isHeirDisabled"
+        [isValidator]="isValidator"
+        [lang]="lang"
+        [listOfGuardians]="listOfGuardians"
+        [listYesNo]="listYesNo$ | async"
+        [nationalityList$]="nationalityList$"
+        [newBankForm]="true"
+        [parentForm]="reasonForm"
+        [payeeList]="payeeList"
+        [paymentMethodList]="paymentMethodList"
+        [personId]="heirDetail.personId"
+        [personStatus]="personStatus"
+        [preselctdAttorney]="getPreselectedAuthPerson(heirDetail.attorneyDetails)"
+        [savedPayMethod]="heirDetail.paymentMode"
+        [savedPayeType]="heirDetail.payeeType"
+        [showCardForBank]="false"
+        [showCard]="false"
+        [showGuardian]="showGuardian"
+        [showInfo]="false"
+        [showPaymentMethod]="true"
+        [systemRunDate]="systemRunDate"
+        [isPaymentOptional]="
+          benefitPaymentDetails?.samaVerification?.english === 'Active' ||
+          benefitPaymentDetails?.samaVerification?.english === 'Verified'
+        "
+        [heading]="
+          benefitPaymentDetails?.samaVerification?.english === 'Active' ||
+          benefitPaymentDetails?.samaVerification?.english === 'Verified'
+            ? 'BENEFITS.NEW-PAYMENT-DETAILS-OPTIONAL'
+            : 'BENEFITS.NEW-PAYMENT-DETAILS'
+        "
+      >
+      </bnt-payment-details-dc>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,274 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <!-- header part -->
+  <div class="row">
+  <div class="col-sm-12 col-md-6 col-lg-6">
+  <est-heading-dc
+    [shouldPrompt]="false"
+    id="identificationHeading"
+    [canNavigate]="false"
+    (backEvent)="navigateRoutelink()"
+  >
+    {{ 'ESTABLISHMENT.EDIT-EST-IDENTIFICATION-DETAILS' | translate }}
+  </est-heading-dc>
+  </div>
+  <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isGOL && isValidator">
+    <est-claim-assign-release-dc
+    [payload]="payload"
+    [isUnclaimed]="isUnclaimed"
+    [taskId]="taskId"
+    (assign)="assignClicked()"
+    (release)="releaseClicked()"
+    >
+    </est-claim-assign-release-dc>
+
+  </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc
+        [establishment]="establishmentToChange"
+        [heading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS'"
+      >
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+  <!-- Establishment Edit Form -->
+  <gosi-card-dc
+    *ngIf="changeIdentifierDetailsForm && establishmentToChange && !isPpaGCC"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-IDENTIFICATION-DETAILS' | translate }}"
+  >
+    <div class="row">
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-text-dc
+          id="number"
+          [label]="'ESTABLISHMENT.LICENSE-NUMBER' | translate"
+          [control]="changeIdentifierDetailsForm.get('license').get('number')"
+          [maxLength]="licenceNumberMaxLength"
+          [placeholder]="'ESTABLISHMENT.LICENSE-NUMBER' | translate | titlecase"
+          (blur)="makeLicenseMandatory()"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-select-dc
+          id="issuingAuthorityCode"
+          [name]="'licenseIssuingAuthority'"
+          [label]="'ESTABLISHMENT.LICENSE-ISSUING-AUTHORITY' | translate"
+          [control]="changeIdentifierDetailsForm.get('license').get('issuingAuthorityCode')"
+          [list]="licenseIssueAuthorityList$ | async"
+          (blur)="makeLicenseMandatory()"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-date-dc
+          id="issueDate"
+          [label]="'ESTABLISHMENT.LICENSE-ISSUE-DATE' | translate | titlecase"
+          [control]="changeIdentifierDetailsForm.get('license').get('issueDate').get('gregorian')"
+          [maxDate]="maxIssueDate"
+          (changeEvent)="makeLicenseMandatory()"
+          (blur)="makeLicenseMandatory()"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-date-dc
+          id="expiryDate"
+          [label]="'ESTABLISHMENT.LICENSE-EXPIRY-DATE' | translate | titlecase"
+          [control]="changeIdentifierDetailsForm.get('license').get('expiryDate').get('gregorian')"
+          [minDate]="nextDay"
+          (changeEvent)="makeLicenseMandatory()"
+          (blur)="makeLicenseMandatory()"
+          [gosiDateOverlap]="changeIdentifierDetailsForm.get('license').get('issueDate').get('gregorian')"
+        >
+        </gosi-input-date-dc>
+      </div>
+
+      <div class="col-md-6 col-sm-12" *ngIf="isPpa || isValidator">
+        <gosi-input-text-dc
+          id="departmentNumber"
+          [label]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+          [control]="changeIdentifierDetailsForm.get('departmentNumber')"
+          [placeholder]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+          gosiSpecialCharacterMask
+          [onlyAlphaNumerics]="true"
+          [removeSpecialCharacters]="true"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-12">
+        <div class="row ml-2 mr-2">
+          <div class="col-12 sub-section"></div>
+        </div>
+      </div>
+      <div class="col-md-6 col-sm-12" *ngIf="showNationalNo">
+        <gosi-input-number-dc
+          id="unifiedNationalNumber"
+          [label]="'ESTABLISHMENT.UNIFIED-NATIONAL-NO' | translate"
+          [control]="changeIdentifierDetailsForm.get('unifiedNationalNumber')"
+          [placeholder]="'ESTABLISHMENT.UNIFIED-NATIONAL-NO' | translate"
+          [maxLength]="nationalNoLength"
+          [disabled]="changeIdentifierDetailsForm.get('crn').get('mciVerified').value === true"
+          (blur)="hasNationalNoChanged()"
+        >
+        </gosi-input-number-dc>
+      </div>
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-number-dc
+          id="recruitmentNo"
+          [maxLength]="recruitmentNoMaxLength"
+          [label]="'ESTABLISHMENT.RECRUITMENT-NO' | translate"
+          [control]="changeIdentifierDetailsForm.get('recruitmentNo')"
+          [placeholder]="'ESTABLISHMENT.RECRUITMENT-NO' | translate | titlecase"
+          (blur)="hasRecruitmentNumberChanged()"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="changeIdentifierDetailsForm">
+      <div class="col-12">
+        <div class="row ml-2 mr-2">
+          <div class="col-12 sub-section"></div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-12 col-sm-12">
+        <gosi-input-number-dc
+          id="crnNumber"
+          name="crnNumber"
+          [control]="changeIdentifierDetailsForm.get('crn').get('number')"
+          [label]="'ESTABLISHMENT.CRN-NUMBER' | translate"
+          [disabled]="changeIdentifierDetailsForm.get('crn').get('mciVerified').value === true"
+          [maxLength]="crnMax"
+          (blur)="checkCrnChanges()"
+        ></gosi-input-number-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="changeIdentifierDetailsForm">
+      <div class="col-lg-6 col-md-12 col-sm-12">
+        <gosi-input-date-dc
+          id="crnIssueDate"
+          name="crnIssueDate"
+          [control]="changeIdentifierDetailsForm.get('crn').get('issueDate').get('gregorian')"
+          label="ESTABLISHMENT.CRN-ISSUE-DATE"
+          [disabled]="true"
+        ></gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6 col-md-12 col-sm-12">
+        <gosi-input-date-dc
+          id="crnExpiryDate"
+          name="crnExpiryDate"
+          [control]="changeIdentifierDetailsForm.get('crn').get('expiryDate').get('gregorian')"
+          label="ESTABLISHMENT.CRN-EXPIRY-DATE"
+          [minDate]="currentDate"
+          [disabled]="true"
+        ></gosi-input-date-dc>
+      </div>
+    </div>
+    <ng-container
+      *ngIf="
+        (changeIdentifierDetailsForm.get('crn').get('mciVerified').value === false ||
+          establishmentToChange?.crn?.mciVerified === true) &&
+        changeIdentifierDetailsForm.get('unifiedNationalNumber').value
+      "
+    >
+      <ng-container *ngIf="(isCrn && hasUnn) == true">
+        <est-footer-buttons-dc
+          [noMarginTop]="true"
+          [showCancel]="false"
+          [showPrevious]="false"
+          [hasOnlyPrimary]="true"
+          primaryId="{{ 'Verify' }}"
+          primaryLabel="ESTABLISHMENT.VERIFY"
+          (submit)="verifyCRNNumber()"
+        >
+        </est-footer-buttons-dc>
+      </ng-container>
+    </ng-container>
+    <ng-container
+      *ngIf="
+        changeIdentifierDetailsForm.get('crn').get('mciVerified').value && !establishmentToChange?.crn?.mciVerified
+      "
+    >
+      <est-footer-buttons-dc
+        [noMarginTop]="true"
+        [showCancel]="true"
+        [showPrevious]="false"
+        [showPrimary]="false"
+        cancelLabel="ESTABLISHMENT.RESET"
+        cancelId="{{ 'Reset' }}"
+        (cancel)="resetCRNDetails()"
+      >
+      </est-footer-buttons-dc>
+    </ng-container>
+  </gosi-card-dc>
+
+  <gosi-card-dc
+    *ngIf="changeIdentifierDetailsForm && establishmentToChange && isPpaGCC"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-IDENTIFICATION-DETAILS' | translate }}"
+  >
+    <div class="row">
+      <div class="col-md-6 col-sm-12">
+        <gosi-input-text-dc
+          id="departmentNumber"
+          [label]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+          [control]="changeIdentifierDetailsForm.get('departmentNumber')"
+          [placeholder]="'ESTABLISHMENT.DEPARTMENT-ID' | translate"
+          gosiSpecialCharacterMask
+          [onlyAlphaNumerics]="true"
+          [removeSpecialCharacters]="true"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <ng-container *ngIf="!isGOL || !isMci">
+    <est-documents-dc
+      [uuid]="uuid"
+      [documents]="identifierDetailsDocuments"
+      [businessKey]="registrationNo"
+      [transactionId]="documentTransactionId"
+      (refreshDocument)="refreshDocumentContent($event, registrationNo, documentTransactionType, referenceNo, uuid)"
+      [referenceNo]="referenceNo"
+    >
+    </est-documents-dc>
+    <gosi-card-dc type="secondary" *ngIf="changeIdentifierDetailsForm" [paddingBottom]="true">
+      <gosi-input-text-area-dc
+        label="ESTABLISHMENT.COMMENTS"
+        id="comments"
+        name="comments"
+        [maxLength]="commentsMaxLength"
+        [control]="changeIdentifierDetailsForm.get('comments')"
+      >
+      </gosi-input-text-area-dc>
+    </gosi-card-dc>
+  </ng-container>
+  <est-footer-buttons-dc  *ngIf="showSaveButton"
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="updateIdentifierDetails()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

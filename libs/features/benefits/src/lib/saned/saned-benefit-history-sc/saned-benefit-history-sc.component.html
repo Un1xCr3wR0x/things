@@ -1,0 +1,146 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<ng-container>
+  <div class="content container-height">
+    <div class="row no-gutters mb-4">
+      <div class="col-auto pr-3 border-right align-self-center">
+        <a (click)="routeBack()">
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'ar'"
+            [icon]="['far', 'arrow-alt-circle-right']"
+            size="2x"
+          ></fa-icon>
+          <fa-icon
+            class="align-self-center backarrow-icon"
+            *ngIf="lang === 'en'"
+            [icon]="['far', 'arrow-alt-circle-left']"
+            size="2x"
+          ></fa-icon>
+        </a>
+      </div>
+      <div class="col-auto mr-auto header" *ngIf="isAnnuity">
+        {{ 'BENEFITS.ANNUITY-BENEFIT-HISTORY' | translate }}
+      </div>
+      <div class="col-auto mr-auto header" *ngIf="isUiHistory">
+        {{ 'BENEFITS.SANED-BENEFIT-HISTORY' | translate }}
+      </div>
+      <div class="col-auto mr-auto header" *ngIf="isOccHistory">
+        {{ 'BENEFITS.OCCUPATIONAL-BENEFITS-HISTORY' | translate }}
+      </div>
+    </div>
+    <div>
+      <div class="row mt-3" *ngIf="annuityBenefitHistory?.length > 0; else noResult">
+        <div class="col-lg-12">
+          <table class="table table-scroll table-borderless table-effect table-rsponsve">
+            <thead class="table-header">
+              <tr>
+                <th *ngIf="!isUiHistory">
+                  {{ 'BENEFITS.BENEFIT-TYPE' | translate }}
+                </th>
+                <th>
+                  {{ 'BENEFITS.TRANSACTION-ID' | translate }}
+                </th>
+                <th>
+                  {{ 'BENEFITS.REQUEST-DATES' | translate }}
+                  <a class="view-link" (click)="sortList()">
+                    <span class="sort-icon" [class.selected]="'requestDate' === currentSortColumn">
+                      <fa-icon [icon]="['fas', 'sort']" class="header-icon"></fa-icon>
+                    </span>
+                  </a>
+                </th>
+                <th>
+                  {{ 'BENEFITS.BENEFIT-START-DATE' | translate }}
+                </th>
+<!--                <th *ngIf="benefits?.lastPaidDate">-->
+<!--                <th>-->
+<!--                  {{ 'BENEFITS.BENEFIT-LAST-PAID-DATE' | translate }}                  -->
+<!--                </th>-->
+                <th>
+                  {{ 'BENEFITS.PAID-MONTHS' | translate }}
+                </th>
+                <th>
+                  {{ 'BENEFITS.STATUS' | translate | uppercase }}
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngIf="annuityBenefitHistory">
+              <tr
+                class="data-row"
+                *ngFor="
+                  let benefits of annuityBenefitHistory
+                    | paginate
+                      : { id: historyData, itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: unViewed };
+                  let i = index
+                "
+                (click)="onBenefitEntryCLick(benefits)"
+              >
+                <!-- *ngIf="benefits?.status?.english !== 'Deleted'" -- removed, since BE asked to show deleted status in history links (Defect: 528041)-->
+                <td *ngIf="!isUiHistory">
+                  {{ benefits?.benefitType | bilingualText }}
+                </td>
+                <td>{{ benefits?.referenceNo }}</td>
+                <td>
+                  {{ benefits?.requestDate | dateType }}
+                </td>
+                <td>
+                  {{ benefits?.startDate | dateType }}
+                </td>
+<!--                <td *ngIf="benefits?.lastPaidDate">-->
+<!--                  {{ benefits?.lastPaidDate | dateType }}-->
+<!--                </td>-->
+                <td *ngIf="benefits?.paidMonths">{{ benefits?.paidMonths }} {{ 'BENEFITS.MONTHS' | translate }}</td>
+                <td *ngIf="!benefits?.paidMonths" class="text-center">-</td>
+                <td class="benefits-status">
+                  <div
+                    [ngClass]="
+                      benefits?.status?.english === 'Active'
+                        ? 'active'
+                        : benefits?.status?.english === 'Suspended'
+                        ? 'suspended'
+                        : benefits?.status?.english === 'Stopped'
+                        ? 'stopped'
+                        : benefits?.status?.english === 'PaidUp' || benefits?.status?.english === 'Paid Up'
+                        ? 'paid'
+                        : benefits?.status?.english === 'Rejected'
+                        ? 'rejected'
+                        : benefits?.status?.english === 'Entered'
+                        ? 'active'
+                        : benefits?.status?.english === 'Deleted'
+                        ? 'deleted'
+                        : ''
+                    "
+                  >
+                    {{ benefits?.status | bilingualText }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noResult>
+      <div class="mt-5 text-center">
+        <img src="assets/images/search-error.svg" alt="search-error" />
+        <br />
+        <p class="text-muted">{{ 'BENEFITS.NO-DATA' | translate | titlecase }}</p>
+      </div>
+    </ng-template>
+    <gosi-pagination-dc
+      *ngIf="annuityBenefitHistory?.length > itemsPerPage"
+      [totalSize]="unViewed"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      id="historyData"
+    >
+    </gosi-pagination-dc>
+  </div>
+</ng-container>

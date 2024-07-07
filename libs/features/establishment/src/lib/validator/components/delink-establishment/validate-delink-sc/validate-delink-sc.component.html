@@ -1,0 +1,117 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content delink">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading" *ngIf="isNewGroup">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.DELINK-NEW-GROUP' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="mainHeading" *ngIf="isLinkToOtherEst">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.DELINK-OTHER-GROUP' | translate"> </frm-main-heading-dc>
+    </div>
+    <!-----------Content section------------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc [establishment]="establishment" [estHeading]="'ESTABLISHMENT.MAIN-EST-DETAILS'">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn"
+          (onEdit)="onEditDelinkGroup()"
+          [heading]="'ESTABLISHMENT.DELINK-DETAILS' | translate"
+        ></frm-content-heading-dc>
+
+        <h5 class="card-heading delink-heading">
+          {{ 'ESTABLISHMENT.BRANCH-DETAILS' | translate }}
+        </h5>
+
+        <est-establishment-list-dc
+          [itemsPerPage]="pageSize"
+          [pageDetails]="parentGroupPageDetails"
+          [currentPage]="parentGroupPageDetails?.currentPage"
+          [totalBranches]="parentGroupBranchCount"
+          (pageIndexEvent)="parentGroupSelectedPage($event)"
+          paginationId="pagination-parent"
+          [establishments]="parentGroupBranches"
+          [showDelinkStatus]="true"
+        ></est-establishment-list-dc>
+
+        <h5 class="card-heading delink-heading">
+          {{ 'ESTABLISHMENT.MODIFIED-BRANCH-DETAILS' | translate }}
+        </h5>
+        <est-establishment-list-dc
+          [itemsPerPage]="pageSize"
+          [pageDetails]="newGroupPageDetails"
+          [currentPage]="newGroupPageDetails?.currentPage"
+          [totalBranches]="newGroupBranchCount"
+          (pageIndexEvent)="newGroupSelectedPage($event)"
+          paginationId="pagination-new"
+          [establishments]="newGroupBranches"
+          [showNewStatus]="!isNewGroup"
+          [newGroupMainRegistrationNo]="newGroupMainRegistrationNo"
+        ></est-establishment-list-dc>
+      </div>
+      <div class="content-item" *ngIf="admin">
+        <est-super-admin-details-dc [admin]="admin"></est-super-admin-details-dc>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        (approveEvent)="approveTransaction(delinkEstForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(delinkEstForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(delinkEstForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="delinkEstForm"
+    [heading]="isNewGroup ? 'ESTABLISHMENT.REJECT.CHG-DELNK-NEW' : 'ESTABLISHMENT.REJECT.CHG-DELINK-OTHER'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(delinkEstForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="delinkEstForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(delinkEstForm)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="delinkEstForm"
+    [heading]="isNewGroup ? 'ESTABLISHMENT.RETURN.CHG-DELNK-NEW' : 'ESTABLISHMENT.RETURN.CHG-DELINK-OTHER'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(delinkEstForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>

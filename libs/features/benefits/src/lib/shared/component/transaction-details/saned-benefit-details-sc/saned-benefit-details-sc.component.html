@@ -1,0 +1,103 @@
+<div class="row">
+  <div class="col-md-12">
+    <bnt-ui-contributor-details-dc
+      *ngIf="benefitRequest && benefitDetailsSaned"
+      [benefitRequest]="benefitRequest"
+      [benefitDetails]="benefitDetailsSaned"
+      [selectedRequestDate]="selectedRequestDate"
+      [showIneligibilityPoup]="showIneligibilityPoup"
+      [personNameEnglish]="personNameEnglish"
+      [personNameArabic]="personNameArabic"
+      [validatorCanEdit]="validatorCanEdit || canEditSaned"
+      [role]="routerData?.assignedRole"
+      [validatorAppealCanEdit]="validatorAppealCanEdit"
+       (showEligibilityPopups)="showReasons()"
+      (navigateToEdit)="reDirectUsersToApplyScreens()"
+      (onNinClicked)="viewContributorDetails()"
+      (onDateEditCick)="showEditDateModal()"
+    ></bnt-ui-contributor-details-dc>
+  </div>
+  <div class="col-md-12">
+    <bnt-ui-validator-bank-details-dc
+      *ngIf="!(routerData?.assignedRole | hasThisRole: [rolesEnum.VCAPPEAL, rolesEnum.VCSANED])"
+      [bankDetails]="bankDetails"
+    ></bnt-ui-validator-bank-details-dc>
+  </div>
+  <div class="col-md-12">
+    <bnt-contribution-details-dc
+      *ngIf="benefitDetailsSaned && !(routerData?.assignedRole | hasThisRole: [rolesEnum.VCAPPEAL, rolesEnum.VCSANED])"
+      [showViewEligibleMonthsLink]="!isTransactionCompleted"
+      [benefitDetails]="benefitDetailsSaned"
+      [eligibleMonthsAmounts]="eligibleMonthsAmounts"
+      [benefitCalculationDetails]="benefitDetailsSaned"
+      [isReopenCase]="isReopenCase"
+      [eligibleForPensionReform]="eligibleForPensionReform"
+      (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+    ></bnt-contribution-details-dc>
+  </div>
+  <!--Saned Appeal-->
+  <div class="col-md-12 mt-4">
+    <bnt-validator-appeal-details-dc
+      *ngIf="
+        benefitRequest &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.VC, rolesEnum.VCAPPEAL, rolesEnum.VCSANED])
+      "
+      [selectedRequestDate]="selectedRequestDate"
+      [showIneligibilityPoup]="showIneligibilityPoup"
+      [appealDetails]="benefitRequest"
+      [role]="routerData?.assignedRole"
+      [benefitDetails]="benefitDetailsSaned"
+      [validatorAppealCanEdit]="validatorAppealCanEdit"
+      (showEligibilityPopups)="showReasons()"
+      (onDateEditCick)="showEditDateModal()"
+      [lang]="lang"
+    ></bnt-validator-appeal-details-dc>
+  </div>
+  <!-- Adjustment Details -->
+  <div
+    class="col-md-12 mt-3"
+    *ngIf="
+      benefitDetailsSaned?.adjustments &&
+      !(routerData?.assignedRole | hasThisRole: [rolesEnum.VCAPPEAL, rolesEnum.VCSANED])
+    "
+  >
+    <bnt-adjustments-dc
+      [adjustments]="benefitDetailsSaned?.adjustments"
+      [totalAdjustmentAmount]="benefitDetailsSaned?.adjustmentCalculationDetails?.totalAdjustmentAmount"
+      [lang]="lang"
+    >
+    </bnt-adjustments-dc>
+  </div>
+  <div
+    class="col-md-12 mt-3"
+    *ngIf="
+      benefitDetailsSaned?.adjustmentCalculationDetails &&
+      !(routerData?.assignedRole | hasThisRole: [rolesEnum.VCAPPEAL, rolesEnum.VCSANED])
+    "
+  >
+    <bnt-adjustment-detail-dc
+      *ngIf="benefitDetailsSaned?.adjustmentCalculationDetails?.adjustmentDetails"
+      [heading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+      [adjustmentCalculationDetails]="benefitDetailsSaned?.adjustmentCalculationDetails"
+      [lang]="lang"
+    >
+    </bnt-adjustment-detail-dc>
+  </div>
+  <div
+    class="col-md-12 mt-3"
+    *ngIf="
+      benefitDetailsSaned?.adjustmentCalculationDetails &&
+      !(routerData?.assignedRole | hasThisRole: [rolesEnum.VCAPPEAL, rolesEnum.VCSANED])
+    "
+  >
+    <bnt-saned-net-adjustment-dc
+      [adjustmentCalculationDetails]="benefitDetailsSaned?.adjustmentCalculationDetails"
+      [checkForm]="retirementForm"
+      [disableDirectPayment]="routerData?.assignedRole === 'FCApprover'"
+      [benefitRequest]="benefitRequest"
+      [benefitDetailsSaned]="benefitDetailsSaned"
+      (onPreviousAdjustmentsClicked)="viewMaintainAdjustment(benefitConstants.ENGAGEMENT_CHANGE)"
+    ></bnt-saned-net-adjustment-dc>
+  </div>
+</div>
+<!-- <bnt-modify-request-date-dc #modifyRequestModal></bnt-modify-request-date-dc> -->

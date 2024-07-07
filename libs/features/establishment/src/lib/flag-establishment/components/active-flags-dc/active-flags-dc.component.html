@@ -1,0 +1,131 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<accordion class="active-flags-container ml-2 mr-2 pl-4 pr-4">
+  <ng-container *ngFor="let flag of loadedFlagMap | keyvalue; let i = index">
+    <accordion-group
+      class="accordion-group-class mb-3 pb-2"
+      id="{{ i }}"
+      [isOpen]="flagNameMap.get(flag.key)?.isOpen"
+      (isOpenChange)="accordionOpenChange($event, flag.key, i)"
+    >
+      <div accordion-heading class="accordion-heading-text">
+        {{ flagNameMap.get(flag.key)?.name | bilingualText }}
+      </div>
+      <div class="header-wrapper ml-auto" accordion-heading>
+        <span class="arrow-up col-md-2">
+          <fa-icon icon="angle-up" size="2x"></fa-icon>
+        </span>
+        <span class="arrow-down ml-auto col-md-2" accordion-heading>
+          <fa-icon icon="angle-down" size="2x"></fa-icon>
+        </span>
+      </div>
+      <div class="ml-2 mr-3 pl-2 pb-4">
+        <div class="row accordion-heading-container">
+          <div class="col-md-6 content-heading mt-md-auto mb-md-auto mt-3">
+            {{ 'ESTABLISHMENT.FLAG-DETAILS' | translate }}
+          </div>
+          <div class="search-container col-md-6 mt-md-auto mb-md-auto mt-3 mb-3 d-flex pt-md-2 justify-content-end">
+            <gosi-search-dc
+              [placeholder]="'ESTABLISHMENT.TRANSACTION-ID' | translate"
+              [searchParam]="flagNameMap.get(flag.key)?.searchParam"
+              [parentForm]="activeFlagForm.get(flag.key)"
+              [allowOnlyNumbers]="true"
+              (search)="applySearchFilter(flag.key, $event, flagNameMap.get(flag.key)?.filters)"
+            ></gosi-search-dc>
+            <est-flag-filter-dc
+              class="pl-4 pr-0"
+              [reasonList]="flagNameMap.get(flag.key)?.filterReasons"
+              [creationTypeLovList]="flagNameMap.get(flag.key)?.creationTypeLovList"
+              filterId="{{ 'filter' + i }}"
+              [flagFilters]="flagNameMap.get(flag.key)?.filters"
+              (apply)="applySearchFilter(flag.key, flagNameMap.get(flag.key)?.searchParam, $event)"
+              (reset)="applySearchFilter(flag.key, flagNameMap.get(flag.key)?.searchParam, [])"
+              (click)="cancelFilter(i)"
+              #flagFilter
+            ></est-flag-filter-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="flagNameMap.get(flag.key)?.filters?.length > 0">
+          <div class="col-md-12 pb-4">
+            <gosi-applied-filters-dc
+              [filters]="flagNameMap.get(flag.key)?.filters"
+              (clearFilter)="applySearchFilter(flag.key, flagNameMap.get(flag.key)?.searchParam, $event)"
+            ></gosi-applied-filters-dc>
+          </div>
+        </div>
+        <div class="row no-gutters search-result" *ngIf="flagNameMap.get(flag.key)?.searchParam">
+          <div class="col-sm-auto mb-4">
+            <est-search-result-dc
+              [count]="flagMap.get(flag.key)?.length"
+              [value]="flagNameMap.get(flag.key)?.searchParam"
+            >
+            </est-search-result-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" *ngFor="let flagDetails of flag.value?.flagDetails; let i = index">
+            <div *ngIf="flagDetails">
+              <est-timeline-dc [isFirstItem]="i === 0" [isLastItem]="i === flag.value?.flagDetails?.length - 1">
+                <div class="row" timeline-date>
+                  <div class="col-md-12 flag-timeline">
+                    <span class="flag-date">{{ flagDetails?.startDate?.gregorian | date: 'dd/MM/yyyy' }}</span>
+                    <span class="pr-1 pl-2 arrow-icons">
+                      <fa-icon *ngIf="lang === 'en'" class="arrow-right" icon="arrow-right"></fa-icon>
+                      <fa-icon *ngIf="lang === 'ar'" class="arrow-left" icon="arrow-left"></fa-icon>
+                    </span>
+
+                    <span class="pl-1 flag-date" *ngIf="flagDetails?.endDate">{{
+                      flagDetails?.endDate?.gregorian | date: 'dd/MM/yyyy'
+                    }}</span>
+                    <span class="flag-endDate" *ngIf="!flagDetails?.endDate">
+                      {{ 'ESTABLISHMENT.ONWARDS' | translate }}</span
+                    >
+                  </div>
+                </div>
+                <div class="row" timeline-content>
+                  <gosi-card-dc class="col-lg-12" type="secondary" [lessPadding]="true">
+                    <gosi-alert-dc
+                      *ngIf="flagDetails.inWorkflow"
+                      [message]="flagDetails.workflowMessage | bilingualText"
+                      type="warning"
+                      [dismissible]="false"
+                      [noPadding]="true"
+                    ></gosi-alert-dc>
+                    <est-flag-details-dc
+                      [flagDetails]="flagDetails"
+                      [hasModifyEligibility]="hasModifyEligibility"
+                      (modifyReason)="navigateToModifyFlag($event)"
+                    >
+                    </est-flag-details-dc>
+                  </gosi-card-dc>
+                </div>
+              </est-timeline-dc>
+            </div>
+          </div>
+        </div>
+        <gosi-loadmore-dc
+          *ngIf="flagMap.get(flag.key).length > 0"
+          [currentPage]="loadedFlagMap.get(flag.key)?.currentPage"
+          [pageSize]="pageSize"
+          [totalCount]="flagMap.get(flag.key).length"
+          (loadMore)="loadMore(flag.key, $event)"
+        ></gosi-loadmore-dc>
+
+        <div
+          class="row"
+          *ngIf="
+            (flagNameMap.get(flag.key)?.searchParam || flagNameMap.get(flag.key)?.filters.length > 0) &&
+            flagMap.get(flag.key)?.length === 0
+          "
+        >
+          <div class="col-md-12">
+            <est-no-result-dc></est-no-result-dc>
+          </div>
+        </div>
+      </div>
+    </accordion-group>
+  </ng-container>
+</accordion>

@@ -1,0 +1,256 @@
+<div class="row">
+  <div class="col-sm-12 col-md-12">
+    <h4 class="sub-heading">
+      {{ 'CONTRIBUTOR.TERMINATE-VIC.TERMINATE-VIC-DETAILS' | translate }}
+    </h4>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="joiningDate"
+      label="CONTRIBUTOR.JOINING-DATE"
+      [value]="vicTerminate?.joiningDate?.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="terminateOn"
+      label="CONTRIBUTOR.TERMINATE-VIC.TERMINATE-DATE"
+      [value]="vicTerminate?.leavingDate?.gregorian | date: 'dd/MM/yyyy'"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="terminateReason"
+      label="CONTRIBUTOR.TERMINATE-VIC.TERMINATION-REASON"
+      [value]="vicTerminate?.leavingReason | bilingualText"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-currency-label-dc
+      id="refundableBalance"
+      [label]="'CONTRIBUTOR.TERMINATE-VIC.REFUNDABLE-CREDIT-BALANCE'"
+      [currencyTo]="vicContributionDetails?.refundableCreditBalance"
+      [countryCodeTo]="'CONTRIBUTOR.WAGE.SAR' | translate"
+    >
+    </gosi-currency-label-dc>
+  </div>
+  <!-- For eligible and ineligible, duration should be shown instead of just months -->
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <!-- <gosi-label-dc
+      id="vicContributionDetails"
+      label="CONTRIBUTOR.TERMINATE-VIC.VIC-CONTRIBUTION-DETAILS"
+      [value]="vicContributionDetails?.contributionMonths"
+    ></gosi-label-dc> -->
+    <label for="vicContributionDetails">{{ 'CONTRIBUTOR.TERMINATE-VIC.VIC-CONTRIBUTION-DURATION' | translate }}</label>
+    <div class="label-value">
+      <ng-container
+        *ngIf="
+          (vicContributionDetails.contributionMonths === 0 && vicContributionDetails.contributionDays === 0) ||
+          (!vicContributionDetails.contributionMonths && !vicContributionDetails.contributionDays)
+        "
+      >
+        <span *ngIf="!isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.MONTH' | translate }}</span>
+        <span *ngIf="isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}</span>
+      </ng-container>
+      <ng-container
+        *ngIf="vicContributionDetails.contributionMonths && vicContributionDetails.contributionMonths !== 0"
+      >
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.contributionMonths === 1 || vicContributionDetails.contributionMonths === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.contributionMonths }}
+        </ng-container>
+        {{
+          vicContributionDetails.contributionMonths === 1
+            ? ('CONTRIBUTOR.MONTH' | translate)
+            : vicContributionDetails.contributionMonths === 2
+            ? ('CONTRIBUTOR.MONTHS-2' | translate)
+            : vicContributionDetails.contributionMonths > 2 && vicContributionDetails.contributionMonths < 11
+            ? ('CONTRIBUTOR.MONTHS-3-10' | translate)
+            : ('CONTRIBUTOR.MONTHS-11' | translate)
+        }}
+      </ng-container>
+      <ng-container *ngIf="vicContributionDetails.contributionDays && vicContributionDetails.contributionDays !== 0">
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.contributionDays === 1 || vicContributionDetails.contributionDays === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.contributionDays }}
+        </ng-container>
+        {{
+          vicContributionDetails.contributionDays === 1
+            ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+            : vicContributionDetails.contributionDays === 2
+            ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+            : vicContributionDetails.contributionDays > 2 && vicContributionDetails.contributionDays < 11
+            ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+            : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+        }}
+      </ng-container>
+    </div>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <!-- <gosi-label-dc
+      id="overAllDetails"
+      label="CONTRIBUTOR.TERMINATE-VIC.OVERALL-DETAILS"
+      [value]="vicContributionDetails?.totalContributionMonths"
+    ></gosi-label-dc> -->
+    <label for="overallDetails">{{ 'CONTRIBUTOR.TERMINATE-VIC.OVERALL-DURATION' | translate }}</label>
+    <div class="label-value">
+      <ng-container
+        *ngIf="
+          (vicContributionDetails.totalContributionMonths === 0 &&
+            vicContributionDetails.totalContributionDays === 0) ||
+          (!vicContributionDetails.totalContributionMonths && !vicContributionDetails.totalContributionDays)
+        "
+      >
+        <span *ngIf="!isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.MONTH' | translate }}</span>
+        <span *ngIf="isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}</span>
+      </ng-container>
+      <ng-container
+        *ngIf="vicContributionDetails.totalContributionMonths && vicContributionDetails.totalContributionMonths !== 0"
+      >
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.totalContributionMonths === 1 ||
+                vicContributionDetails.totalContributionMonths === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.totalContributionMonths }}
+        </ng-container>
+        {{
+          vicContributionDetails.totalContributionMonths === 1
+            ? ('CONTRIBUTOR.MONTH' | translate)
+            : vicContributionDetails.totalContributionMonths === 2
+            ? ('CONTRIBUTOR.MONTHS-2' | translate)
+            : vicContributionDetails.totalContributionMonths > 2 && vicContributionDetails.totalContributionMonths < 11
+            ? ('CONTRIBUTOR.MONTHS-3-10' | translate)
+            : ('CONTRIBUTOR.MONTHS-11' | translate)
+        }}
+      </ng-container>
+      <ng-container
+        *ngIf="vicContributionDetails.totalContributionDays && vicContributionDetails.totalContributionDays !== 0"
+      >
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.totalContributionDays === 1 || vicContributionDetails.totalContributionDays === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.totalContributionDays }}
+        </ng-container>
+        {{
+          vicContributionDetails.totalContributionDays === 1
+            ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+            : vicContributionDetails.totalContributionDays === 2
+            ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+            : vicContributionDetails.totalContributionDays > 2 && vicContributionDetails.totalContributionDays < 11
+            ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+            : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+        }}
+      </ng-container>
+    </div>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <!-- <gosi-label-dc
+      id="unpaidMonths"
+      label="CONTRIBUTOR.TERMINATE-VIC.UNPAID-DURATION"
+      [value]="vicContributionDetails?.numberOfUnPaidMonths"
+    ></gosi-label-dc> -->
+    <label for="vicContributionDetails">{{ 'CONTRIBUTOR.TERMINATE-VIC.UNPAID-DURATION' | translate }}</label>
+    <div class="label-value">
+      <!-- for eligible, value of unpaid duration will always be 0 -->
+      <ng-container
+        *ngIf="
+          (vicContributionDetails?.numberOfUnPaidMonths === 0 && vicContributionDetails.numberOfUnPaidDays === 0) ||
+          (!vicContributionDetails?.numberOfUnPaidMonths && !vicContributionDetails.numberOfUnPaidDays)
+        "
+      >
+        <span *ngIf="!isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.MONTH' | translate }}</span>
+        <span *ngIf="isPREligible">{{ 0 }} {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}</span>
+      </ng-container>
+      <ng-container
+        *ngIf="vicContributionDetails.numberOfUnPaidMonths && vicContributionDetails.numberOfUnPaidMonths !== 0"
+      >
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.numberOfUnPaidMonths === 1 || vicContributionDetails.numberOfUnPaidMonths === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.numberOfUnPaidMonths }}
+        </ng-container>
+        {{
+          vicContributionDetails.numberOfUnPaidMonths === 1
+            ? ('CONTRIBUTOR.MONTH' | translate)
+            : vicContributionDetails.numberOfUnPaidMonths === 2
+            ? ('CONTRIBUTOR.MONTHS-2' | translate)
+            : vicContributionDetails.numberOfUnPaidMonths > 2 && vicContributionDetails.numberOfUnPaidMonths < 11
+            ? ('CONTRIBUTOR.MONTHS-3-10' | translate)
+            : ('CONTRIBUTOR.MONTHS-11' | translate)
+        }}
+      </ng-container>
+      <ng-container
+        *ngIf="vicContributionDetails.numberOfUnPaidDays && vicContributionDetails.numberOfUnPaidDays !== 0"
+      >
+        <ng-container
+          *ngIf="
+            !(
+              lang === 'ar' &&
+              (vicContributionDetails.numberOfUnPaidDays === 1 || vicContributionDetails.numberOfUnPaidDays === 2)
+            )
+          "
+        >
+          {{ vicContributionDetails.numberOfUnPaidDays }}
+        </ng-container>
+        {{
+          vicContributionDetails.numberOfUnPaidDays === 1
+            ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+            : vicContributionDetails.numberOfUnPaidDays === 2
+            ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+            : vicContributionDetails.numberOfUnPaidDays > 2 && vicContributionDetails.numberOfUnPaidDays < 11
+            ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+            : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+        }}
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12 col-md-12 pt-4">
+    <h4 class="sub-heading">
+      {{ 'FORM-FRAGMENTS.BANK-ACCOUNT-DETAILS' | translate }}
+    </h4>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="iban"
+      label="FORM-FRAGMENTS.IBANACCOUNT-NUMBER"
+      [value]="bankDetails?.ibanAccountNo"
+    ></gosi-label-dc>
+  </div>
+  <div class="col-sm-12 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="bankName"
+      label="FORM-FRAGMENTS.BANK-NAME"
+      [value]="bankDetails?.bankName | bilingualText"
+    ></gosi-label-dc>
+  </div>
+</div>

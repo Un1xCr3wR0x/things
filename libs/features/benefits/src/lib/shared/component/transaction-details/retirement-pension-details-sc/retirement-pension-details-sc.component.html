@@ -1,0 +1,487 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <bnt-annuity-contributor-details-dc
+      *ngIf="annuityBenefitDetails"
+      [lang]="lang"
+      [isIndividualApp]="isIndividualApp"
+      [isHeirBenefit]="isHeirBenefit"
+      [isJailedBenefit]="isJailedBenefit"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [oldBenefitDetails]="oldBenefitDetails"
+      [systemRunDate]="systemRunDate"
+      [imprisonmentDetails]="imprisonmentDetails"
+      [benefitCalculationDetails]="benefitCalculationDetails"
+      [bankDetails]="bankDetails"
+      [personDetails]="personDetails"
+      [sin]="socialInsuranceNo"
+      [personNameEnglish]="personNameEnglish"
+      [personNameArabic]="personNameArabic"
+      [benefitType]="benefitType"
+      [assignedRole]="routerData?.assignedRole"
+      [requestType]="requestType"
+      [benefitRequestId]="requestId"
+      [validatorCanEdit]="isOcc ? false : validatorCanEdit"
+      [dependentDetails]="dependentDetails"
+      [dependentHistory]="dependentHistory"
+      [notificationDate]="notificationDate"
+      [systemRunDate]="systemRunDate"
+      (viewBenefitDetails)="onViewBenefitDetails()"
+      (getDepHistory)="getDependentHistory($event)"
+      (navigateToEdit)="reDirectUsersToApplyScreens()"
+      (navigateToProfile)="navigateToInjuryDetails()"
+      (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+      (navigateToTranscationHistory)="navigateToTranscationHistory($event)"
+    >
+    </bnt-annuity-contributor-details-dc>
+  </div>
+
+  <div
+    class="col-md-12"
+    *ngIf="showBankDetailsSection() && !(routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])"
+  >
+    <bnt-ui-validator-bank-details-dc *ngIf="bankDetails" [bankDetails]="bankDetails">
+    </bnt-ui-validator-bank-details-dc>
+  </div>
+  <div class="col-md-12" *ngIf="requestType === benefitTypes.addModifyBenefit">
+    <bnt-annual-notification-validator-dc
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [personDetails]="personDetails"
+      [lang]="lang"
+    ></bnt-annual-notification-validator-dc>
+  </div>
+  <!-- API Integration Pending -->
+  <div
+    class="col-md-12"
+    *ngIf="
+      requestType === benefitTypes.addModifyHeir &&
+      (annuityBenefitDetails?.annualNotificationDetails?.notificationDate ||
+        annuityBenefitDetails?.annualNotificationDetails?.nextNotificationDate ||
+        annuityBenefitDetails?.annualNotificationDetails?.notes)
+    "
+  >
+    <bnt-heir-annual-notification-details-dc *ngIf="(routerData.channel !=='taminaty' && routerData?.payload?.titleEnglish !== 'Add/Modify Heirs')"
+      [annualNotificationDetails]="annuityBenefitDetails?.annualNotificationDetails"
+    >
+    </bnt-heir-annual-notification-details-dc>
+  </div>
+  <div
+    class="col-md-12"
+    *ngIf="
+      requestType !== benefitTypes.holdbenefit &&
+      requestType !== benefitTypes.stopbenefit &&
+      requestType !== benefitTypes.restartbenefit &&
+      requestType !== benefitTypes.startBenefitWaive &&
+      requestType !== benefitTypes.stopBenefitWaive &&
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      )
+    "
+  >
+    <bnt-woman-contributor-details-dc
+      *ngIf="benefitCalculationDetails"
+      [isHeirBenefit]="isHeirBenefit"
+      [benefitCalculationDetails]="benefitCalculationDetails"
+      [oldBenefitDetails]="oldBenefitDetails"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [isAddModifyBenefit]="isAddModifyBenefit"
+      [benefitType]="benefitType"
+      [requestType]="requestType"
+      [lang]="lang"
+      [isValidator]="true"
+      (getAsyncHeirHistory)="getAsyncHeirHistoryCall()"
+      (navigateToInjury)="navigateToInjury($event)"
+      (navigateToBenefitsHistory)="navigateToBenefitsHistory()"
+    >
+    </bnt-woman-contributor-details-dc>
+  </div>
+
+  <ng-container *ngIf="showHistoryForInprogressTransaction()">
+    <!-- Dependent History Section -->
+    <div
+      class="col-md-12 mb-4"
+      *ngIf="
+        ((dependentHistoryDetails?.length > 0 && !isHeirBenefit) || requestType === benefitTypes.addModifyBenefit) &&
+        !(
+          (isNonOcc || isNonOccDisabilityAssessment) &&
+          (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+        )
+      "
+    >
+      <div class="row py-3">
+        <ng-container *ngIf="dependentHistoryDetails?.length > 0 && requestType !== benefitTypes.addModifyBenefit">
+          <div *ngIf="!showHelperHistoryLabel && showDependentHistoryLabel" class="dependent-text pb-4">
+            {{ 'BENEFITS.DEPENDENT-HISTORY' | translate }}
+          </div>
+          <div *ngIf="showHelperHistoryLabel && !showDependentHistoryLabel" class="dependent-text pb-4">
+            {{ 'BENEFITS.HELPER-ALLOWANCE-HISTORY' | translate }}
+          </div>
+          <div *ngIf="showHelperHistoryLabel && showDependentHistoryLabel" class="dependent-text pb-4">
+            {{ 'BENEFITS.DEPENDENT-HELPER-ALLOWANCE-HISTORY' | translate }}
+          </div>
+        </ng-container>
+
+        <div class="col-auto current-new-history-type ml-auto mr-0" *ngIf="previousDependentHistory">
+          <div class="current-new-history-toggler">
+            <div
+              class="column-left current-new-history-text"
+              [ngClass]="{
+                'current-new-history-type-selected': heirHistoryType == 'current',
+                'current-new-history-type-unselected': heirHistoryType == 'new'
+              }"
+              (click)="currentOrNewHistory('current')"
+            >
+              {{ 'BENEFITS.CURRENT' | translate }}
+            </div>
+            <div
+              class="column-right current-new-history-text"
+              [ngClass]="{
+                'current-new-history-type-selected': heirHistoryType == 'new',
+                'current-new-history-type-unselected': heirHistoryType == 'current'
+              }"
+              (click)="currentOrNewHistory('new')"
+            >
+              {{ 'BENEFITS.NEW' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="previousDependentHistory && !showNewHistory" class="dependent-text pb-4">
+        {{ 'BENEFITS.CURRENT-DEPENDENT-HISTORY' | translate }}
+      </div>
+      <div
+        class="dependent-text pb-4"
+        *ngIf="dependentHistoryDetails && showNewHistory && requestType === benefitTypes.addModifyBenefit"
+      >
+        {{ 'BENEFITS.NEW-DEPENDENT-HISTORY' | translate }}
+      </div>
+
+      <bnt-dependents-history-dc
+        *ngIf="previousDependentHistory && !showNewHistory"
+        [isModifyBackdated]="isModifyBackdated"
+        [isIndividualApp]="isIndividualApp"
+        [dependentHistory]="previousDependentHistory"
+        [heirHistory]="heirHistory"
+        [lang]="lang"
+        [benefitPeriodHistory]="benefitPeriodHistory"
+        [systemParameter]="systemParameter"
+        [requestType]="requestType"
+        [benefitType]="benefitType"
+        [reCalculationDetails]="benefitCalculationDetails?.reCalculationDetails"
+        [dependentComponents]="annuityBenefitDetails?.dependentComponents"
+        (showBenefitsWagePopup)="showBenefitWageDetails(benefitsWagePopupTemplate, $event)"
+      >
+      </bnt-dependents-history-dc>
+      <bnt-dependents-history-dc
+        *ngIf="dependentHistoryDetails && showNewHistory"
+        [isModifyBackdated]="isModifyBackdated"
+        [dependentHistory]="dependentHistoryDetails"
+        [heirHistory]="heirHistory"
+        [isIndividualApp]="isIndividualApp"
+        [lang]="lang"
+        [benefitPeriodHistory]="benefitPeriodHistory"
+        [systemParameter]="systemParameter"
+        [requestType]="requestType"
+        [benefitType]="benefitType"
+        [reCalculationDetails]="benefitCalculationDetails?.reCalculationDetails"
+        [dependentComponents]="annuityBenefitDetails?.dependentComponents"
+        (showBenefitsWagePopup)="showBenefitWageDetails(benefitsWagePopupTemplate, $event)"
+      >
+      </bnt-dependents-history-dc>
+    </div>
+
+    <!-- Heir History Section -->
+    <div class="col-md-12 mb-4" *ngIf="isHeirBenefit && (heirHistory || heirOldHistory)">
+      <div class="row py-3" *ngIf="heirOldHistory">
+        <div class="benefit-share-text col-sm-6 col-md-6 col-lg-6">
+          {{ 'BENEFITS.BENEFIT-SHARE-DETAILS' | translate }}
+        </div>
+        <div class="col-auto current-new-history-type ml-auto mr-0">
+          <div class="current-new-history-toggler">
+            <div
+              class="column-left current-new-history-text"
+              [ngClass]="{
+                'current-new-history-type-selected': heirHistoryType == 'current',
+                'current-new-history-type-unselected': heirHistoryType == 'new'
+              }"
+              (click)="currentOrNewHistory('current')"
+            >
+              {{ 'BENEFITS.CURRENT' | translate }}
+            </div>
+            <div
+              class="column-right current-new-history-text"
+              [ngClass]="{
+                'current-new-history-type-selected': heirHistoryType == 'new',
+                'current-new-history-type-unselected': heirHistoryType == 'current'
+              }"
+              (click)="currentOrNewHistory('new')"
+            >
+              {{ 'BENEFITS.NEW' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <bnt-dependents-history-dc
+        *ngIf="heirOldHistory && !showNewHistory"
+        [heirHistory]="heirOldHistory"
+        [lang]="lang"
+        [isIndividualApp]="isIndividualApp"
+        [benefitPeriodHistory]="benefitPeriodHistory"
+        [systemParameter]="systemParameter"
+        [requestType]="requestType"
+        [benefitType]="benefitType"
+        [reCalculationDetails]="benefitCalculationDetails?.reCalculationDetails"
+        [dependentComponents]="annuityBenefitDetails?.dependentComponents"
+        (showBenefitsWagePopup)="showBenefitWageDetails(benefitsWagePopupTemplate, $event)"
+      >
+      </bnt-dependents-history-dc>
+
+      <bnt-dependents-history-dc
+        *ngIf="heirHistory && showNewHistory"
+        [heirHistory]="heirHistory"
+        [lang]="lang"
+        [isIndividualApp]="isIndividualApp"
+        [benefitPeriodHistory]="benefitPeriodHistory"
+        [systemParameter]="systemParameter"
+        [requestType]="requestType"
+        [benefitType]="benefitType"
+        [reCalculationDetails]="benefitCalculationDetails?.reCalculationDetails"
+        [dependentComponents]="annuityBenefitDetails?.dependentComponents"
+        (showBenefitsWagePopup)="showBenefitWageDetails(benefitsWagePopupTemplate, $event)"
+      >
+      </bnt-dependents-history-dc>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="showHistoryForCompletedTransaction()">
+    <bnt-dependents-history-dc
+      *ngIf="heirBenefitHistory"
+      [isModifyBackdated]="isModifyBackdated"
+      [dependentHistory]="heirBenefitHistory"
+      [lang]="lang"
+      [isIndividualApp]="isIndividualApp"
+      [benefitPeriodHistory]="benefitPeriodHistory"
+      [systemParameter]="systemParameter"
+      [requestType]="requestType"
+      [benefitType]="benefitType"
+      [reCalculationDetails]="benefitCalculationDetails?.reCalculationDetails"
+      [dependentComponents]="annuityBenefitDetails?.dependentComponents"
+      (showBenefitsWagePopup)="showBenefitWageDetails(benefitsWagePopupTemplate, $event)"
+    ></bnt-dependents-history-dc>
+  </ng-container>
+  <div class="col-md-12" *ngIf="!isHeir && !isHoldBenefit">
+    <bnt-attorney-details-dc
+      *ngIf="annuityBenefitDetails?.agentId"
+      [isHeir]="isHeir"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [bankDetails]="bankDetails"
+    >
+    </bnt-attorney-details-dc>
+  </div>
+  <div
+    class="col-md-12"
+    *ngIf="
+      !isHeir &&
+      personDetails?.personType === benefitValuesConstants.authorizedPerson &&
+      annuityBenefitDetails?.paymentMethod?.english === benefitValuesConstants.cheque
+    "
+  >
+    <bnt-person-contact-details-dc *ngIf="personDetails.contactDetail" [contactDetail]="personDetails.contactDetail">
+    </bnt-person-contact-details-dc>
+  </div>
+
+  <!-- Adjsutment Details Section -->
+  <!-- <div class="col-md-12" *ngIf="!isHeirBenefit">
+          <div class="details-heading py-4" *ngIf="benefitCalculationDetails?.adjustmentCalculationDetails">
+            {{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}
+          </div> -->
+  <div
+    *ngIf="
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      ) && !isIndividualApp
+    "
+  >
+    <bnt-adjustment-detail-dc
+      *ngIf="!isHeirBenefit"
+      [heading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+      [adjustmentCalculationDetails]="benefitCalculationDetails?.adjustmentCalculationDetails"
+      [lang]="lang"
+    >
+    </bnt-adjustment-detail-dc>
+  </div>
+  <!-- </div> -->
+  <!-- Heir Adjsutment Details  -->
+  <div
+    class="col-md-12 col-lg-12 col-md-12 col-sm-12"
+    *ngIf="
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      ) && !isIndividualApp
+    "
+  >
+    <bnt-heir-adjustment-details-dc
+      *ngIf="
+        isHeir &&
+        dependentDetails &&
+        benefitCalculationDetails?.heirBenefitDetails &&
+        benefitCalculationDetails?.heirBenefitDetails?.length &&
+        !isAddModifyBenefit &&
+        !isHoldBenefit &&
+        !isStopBenefit &&
+        !isStartBenefitWaive &&
+        !isStopBenefitWaive
+      "
+      [lang]="lang"
+      [isRestartBenefit]="isRestartBenefit"
+      [requestType]="requestType"
+      [benefitType]="benefitType"
+      [adjustmentDetails]="heirAdjustments"
+      [heirOrDependentDetails]="dependentDetails"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [heirBenefitDetails]="benefitCalculationDetails?.heirBenefitDetails"
+      [benefitCalculation]="benefitCalculationDetails"
+      [parentForm]="retirementForm"
+      [approveScreen]="true"
+      [isValidator]="
+        routerData.assignedRole === rolesEnum.VALIDATOR_1 ||
+        routerData.assignedRole === rolesEnum.VALIDATOR_2 ||
+        enableDirectPayment
+      "
+      [isTransactionScreen]="isTransactionScreen"
+      [topHeading]="'BENEFITS.ADJUSTMENT-DETAILS'"
+      [isIndividualApp]="isIndividualApp"
+      (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+      (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+      (getTpa)="getPersonAdjustmentDetails($event)"
+      (navigateToPaymentHistory)="navigateToPaymentHistory($event)"
+    >
+    </bnt-heir-adjustment-details-dc>
+  </div>
+
+  <!-- Third party adjustment details-->
+  <div
+    class="col-md-12 pt-4"
+    *ngIf="
+      !isIndividualApp &&
+      !isHeirBenefit &&
+      !isAddModifyHeir &&
+      !isHoldBenefit &&
+      !isStopBenefit &&
+      !isStartBenefitWaive &&
+      !isStopBenefitWaive &&
+      !isDoctor &&
+      !(
+        (isNonOcc || isNonOccDisabilityAssessment) &&
+        (routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH])
+      )
+    "
+  >
+    <bnt-net-payment-details-dc
+      [adjustmentDetails]="personAdjustments"
+      [requestType]="requestType"
+      [samaVerified]="bankDetails?.verificationStatus === samaVerificationStatus.VERIFIED"
+      [adjustmentCalculationDetails]="benefitCalculationDetails?.adjustmentCalculationDetails"
+      [isValidator]="routerData.assignedRole === rolesEnum.VALIDATOR_2 || validatorCanEdit || enableDirectPayment || validatorTaminaty"
+      [isValidator2]="routerData.assignedRole === rolesEnum.VALIDATOR_2"
+      [disableDirectPayment]="routerData.assignedRole === 'FC Approver' || routerData.assignedRole === 'FCApprover'"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [holdMessage]="'BENEFITS.ADJUSTMENT-THIRD-PARTY-HOLD'"
+      [parentForm]="retirementForm"
+      [showActionButtons]="!isIndividualApp"
+      (navigateToAdjustmentDetails)="navigateToAdjustmentDetailsHeir($event)"
+      (navigateToPrevAdjustment)="navigateToAdjustmentDetailsHeir($event)"
+      [isPension]="true"
+    >
+    </bnt-net-payment-details-dc>
+  </div>
+  <!-- block to enter disability values for doctor -->
+  <div class="col-sm-12 col-md-12 col-lg-12">
+    <bnt-add-disability-details-dc
+      [disabilityDetails]="disabilityDetails"
+      [parentForm]="retirementForm"
+      *ngIf="isDoctor"
+    ></bnt-add-disability-details-dc>
+  </div>
+  <!-- API integration pending -->
+  <div
+    class="col-sm-12 col-md-12 col-lg-12"
+    *ngIf="
+      isHeirBenefit && (requestType === benefitTypes.startBenefitWaive || requestType === benefitTypes.stopBenefitWaive)
+    "
+  >
+    <bnt-validator-heir-benefits-details-dc
+      [lang]="lang"
+      [annuityBenefitDetails]="annuityBenefitDetails"
+      [heirOrDependentDetails]="dependentDetails"
+      [heirBenefitDetails]="benefitCalculationDetails?.heirBenefitDetails"
+      [dependentHistory]="dependentHistory"
+      (getHeirHistory)="getDependentHistory($event)"
+    ></bnt-validator-heir-benefits-details-dc>
+  </div>
+
+  <!--Delay in late request-->
+  <div
+    class="col-sm-12 col-md-12 col-lg-12"
+    *ngIf="
+      !isDoctor &&
+      !isStopBenefitWaive &&
+      !isStartBenefitWaive &&
+      !isHoldBenefit &&
+      !isAddModifyBenefit &&
+      !isAddModifyHeir &&
+      !isStopBenefit &&
+      !isRestartBenefit
+    "
+  >
+    <bnt-delay-in-request-dc
+      *ngIf="annuityBenefitDetails && annuityBenefitDetails.lateRequestDetails"
+      [lateRequestDetails]="annuityBenefitDetails.lateRequestDetails"
+      [parentForm]="retirementForm"
+      [isNonOcc]="isNonOcc"
+      [systemParameter]="systemParameter"
+      [listYesNo$]="listYesNo$"
+      [isEdit]="routerData?.assignedRole | hasThisRole: [rolesEnum.SM, rolesEnum.BOSH]"
+    ></bnt-delay-in-request-dc>
+  </div>
+  <!--vic details-->
+  <div
+    *ngIf="creditBalanceDetails && benefitCalculationDetails?.beneficiaryBenType === 1025"
+    class="col-sm-12 col-md-12 col-lg-12"
+  >
+    <bnt-vic-details-dc [creditBalanceDetails]="creditBalanceDetails" (gotoVicViewPage)="gotoVicViewPage()">
+    </bnt-vic-details-dc>
+  </div>
+  <!-- TODO: change labels to json -->
+
+  <ng-container *ngIf="annuityBenefitDetails?.otherHoldReasons?.length > 0">
+    <div class="col-12">
+      <gosi-alert-dc
+        [message]="'This benefit will not be restarted as there are other hold reasons available for this benefit'"
+        [type]="'warning'"
+      >
+        <div actOnAlert class="pt-3" *ngFor="let reason of annuityBenefitDetails?.otherHoldReasons">
+          New reason for Hold : {{ reason | bilingualText }}
+        </div>
+      </gosi-alert-dc>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #benefitsWagePopupTemplate>
+  <bnt-benefits-wage-details-dc
+    [lang]="lang"
+    [benefitWageDetail]="benefitWageDetail"
+    [paramId]="paramId"
+    [acitveBenefit]="acitveBenefit"
+    (close)="closePopup()"
+    (navigateToProfile)="navigateToProfile($event)"
+  >
+  </bnt-benefits-wage-details-dc>
+</ng-template>

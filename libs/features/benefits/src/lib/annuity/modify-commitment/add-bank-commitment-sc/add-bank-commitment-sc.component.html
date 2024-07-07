@@ -1,0 +1,109 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto header">
+      {{ 'BENEFITS.ADD-BANK-COMMITMENT' | translate }}
+    </div>
+  </div>
+  <div class="overflow-auto w-100">
+    <bnt-payment-bank-details-dc
+      [benefitPayDetails]="benefitPayDetails"
+      [modifyCommitmentDetails]="modifyCommitmentDetails"
+      [isIndividualApp]="isIndividualApp"
+      [verificationStatus]="verificationStatus"
+      [isEditMode]="isEditMode"
+      [lang]="lang"
+    ></bnt-payment-bank-details-dc>
+  </div>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <gosi-card-dc *ngIf="!isIndividualApp" type="secondary">
+    <bnt-document-dc
+      *ngIf="documentForm"
+      #documentComponent
+      [isCommitment]="true"
+      [businessKey]="benefitRequestId"
+      [requestTransactionId]="addTransactionConstant"
+      [referenceNo]="isEditMode ? referenceNo : referenceNumber"
+      [documentList]="requiredDocs"
+      [isWorkflow]="false"
+      [parentForm]="documentForm"
+      (confirmCancelAction)="confirm()"
+      (decline)="decline()"
+      (cancelDoc)="cancelTransactions()"
+      (uploadFailed)="showErrorMessages($event)"
+      (uploadSuccess)="confirmAddedDetails($event)"
+      (documentFormDetails)="showFormValidation()"
+      (refresh)="refreshDocument($event)"
+    ></bnt-document-dc>
+  </gosi-card-dc>
+  <div class="row form-action" *ngIf="isIndividualApp">
+    <div class="col-lg-12">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="saveAndNextBtn" type="primary" (submit)="confirmAddCommitment()">
+          {{ 'BENEFITS.ADD-BANK-COMMITMENT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelBtn" type="secondary" (submit)="cancelTransactions()">
+          {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-modal-dc>
+    <div class="row" modalContent>
+      <div class="col-lg-12 text-right pb-2 pt-2">
+        <fa-icon icon="times" class="download" (click)="confirm()"> </fa-icon>
+      </div>
+      <div class="col-lg-12">
+        <gosi-alert-dc type="success" [bilingualMessage]="benefitResponse?.message" [dismissible]="false">
+        </gosi-alert-dc>
+        <ng-container class="col-lg-4">
+          <div class="custom-row m-3">
+            <div class="col-md-8">
+              <div class="file-info">
+                <div class="file-icon">
+                  <fa-icon class="file-icon-fa file-pdf" [icon]="['far', 'file-pdf']"></fa-icon>
+                </div>
+                <div class="file-name">
+                  <span class="info-name">{{ 'BENEFITS.CERTIFICATE-OF-COMMITMENT' | translate }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mt-2">
+              <fa-icon icon="download" class="download" size="2x" (click)="openImage()"></fa-icon>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

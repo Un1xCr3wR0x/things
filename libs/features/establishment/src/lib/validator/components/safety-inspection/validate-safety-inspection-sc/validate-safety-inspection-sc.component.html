@@ -1,0 +1,286 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.OH-SAFETY-INSPECTION' | translate"> </frm-main-heading-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea" *ngIf="OHRateDetails">
+      <div class="content-item">
+        <frm-content-heading-dc [icon]="estIcon" [canEdit]="canEdit" [heading]="estHeading | translate">
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-label-dc
+              [value]="establishment.registrationNo"
+              [isLink]="true"
+              (select)="goToEstProfile()"
+              label="ESTABLISHMENT.REGISTRATION-NO"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc [control]="establishment.name?.arabic" label="ESTABLISHMENT.ESTABLISHMENT-NAME-AR">
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc [control]="establishment.name?.english" label="ESTABLISHMENT.ESTABLISHMENT-NAME-EN">
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              *ngIf="lang === 'en'"
+              control="{{ OHRateDetails?.currentOhRate + '%' }}"
+              label="ESTABLISHMENT.CURRENT-OH-RATE"
+            >
+            </gosi-label-dc>
+            <gosi-label-dc
+              *ngIf="lang === 'ar'"
+              control="{{ '%' + OHRateDetails?.currentOhRate }}"
+              label="ESTABLISHMENT.CURRENT-OH-RATE"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="OHRateDetails?.ohRateHistory?.length > 0">
+          <div class="col-md-12">
+            <est-contribution-rate-history-dc [OHRateDetails]="OHRateDetails"> </est-contribution-rate-history-dc>
+          </div>
+        </div>
+        <div
+          class="row"
+          *ngIf="isSafetyTransaction && OHRateDetails?.scSelfEvaluationTransactionId && estData?.selfEvaluationReason"
+        >
+          <div class="col-md-12">
+            <gosi-label-dc
+              id="current-oh-rate"
+              [value]="estData?.selfEvaluationReason"
+              label="ESTABLISHMENT.EVALUATION-REASON"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+      <div class="content-item" *ngIf="inspectionId">
+        <frm-content-heading-dc
+          [isSvg]="true"
+          icon="inspection"
+          [canEdit]="canEdit"
+          [heading]="'ESTABLISHMENT.OH-SAFETY-INSPECTION-DETAILS' | translate"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc [control]="recommendation" label="ESTABLISHMENT.SAFETY-ENGINEER"> </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc [control]="inspectionDetails?.inspectionRefNo" label="ESTABLISHMENT.INSPECTION-REQUEST-NO">
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+      <!-- violations by admin section -->
+      <div class="content-item" *ngIf="isSafetyTransaction && OHRateDetails?.scSelfEvaluationTransactionId">
+        <frm-content-heading-dc
+          icon="clipboard-list"
+          [canEdit]="false"
+          [heading]="'ESTABLISHMENT.ADMIN-IDENTIFIED-VIOLATIONS-SC' | translate"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="d-inline-block violation-type">
+              <div class="pick-violation-type">
+                <div
+                  *ngIf="estData?.latestSubmissions?.referenceNumber"
+                  class="column-left violation-text"
+                  [ngClass]="{
+                    'violation-type-selected': violationSelectionForm?.value === 'Latest',
+                    'violation-type-unselected ': violationSelectionForm?.value === 'Previous',
+                    'only-tab': estData?.allSubmissions?.length <= 0
+                  }"
+                  (click)="setViolationType('Latest')"
+                >
+                  {{ 'ESTABLISHMENT.LATEST-SUBMISSION' | translate }}
+                </div>
+                <div
+                  *ngIf="estData?.allSubmissions?.length > 0"
+                  class="column-right violation-text"
+                  [ngClass]="{
+                    'violation-type-selected': violationSelectionForm?.value === 'Previous',
+                    'violation-type-unselected ': violationSelectionForm?.value === 'Latest'
+                  }"
+                  (click)="setViolationType('Previous')"
+                >
+                  {{ 'ESTABLISHMENT.PREVIOUS-SUBMISSIONS' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 dc components section for latest and previous value -->
+        <div class="row" *ngIf="violationSelectionForm?.value === 'Latest'">
+          <div class="col-md-12" *ngIf="estData?.latestSubmissions?.referenceNumber">
+            <!-- previous section -->
+            <gosi-label-dc
+              id="previousReferenceNumber"
+              [value]="estData?.latestSubmissions?.referenceNumber"
+              label="ESTABLISHMENT.TRANSACTION-ID"
+              [isLink]="true"
+              (select)="navigateToTransactionTracking(estData?.latestSubmissions?.referenceNumber)"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-12">
+            <est-safety-check-violations-list-dc
+              [violationData]="estData?.latestSubmissions"
+            ></est-safety-check-violations-list-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="violationSelectionForm?.value === 'Previous'">
+          <div class="col-md-6">
+            <!-- dates dropdown -->
+            <gosi-input-select-dc
+              id="previousSubmittedDatesList"
+              (selectLov)="selectPreviousSubmissionDate($event)"
+              [name]="'previousSubmittedDatesList'"
+              [label]="'ESTABLISHMENT.SUBMISSION-DATE' | translate"
+              [control]="previousSubmissionDateForm"
+              [list]="previousSubmissionDatesList"
+              [hideOptionalLabel]="true"
+              [hideClear]="true"
+            ></gosi-input-select-dc>
+          </div>
+          <div class="col-md-6" *ngIf="previousSubmittedData?.referenceNumber">
+            <!-- previous section -->
+            <gosi-label-dc
+              id="previousReferenceNumber"
+              [value]="previousSubmittedData?.referenceNumber"
+              label="ESTABLISHMENT.TRANSACTION-ID"
+              [isLink]="true"
+              (select)="navigateToTransactionTracking(previousSubmittedData?.referenceNumber)"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-12">
+            <est-safety-check-violations-list-dc
+              [violationData]="previousSubmittedData"
+            ></est-safety-check-violations-list-dc>
+          </div>
+        </div>
+        <div
+          class="row mb-5"
+          *ngIf="violationSelectionForm?.value === 'Previous' || violationSelectionForm?.value === 'Latest'"
+        >
+          <div class="col-md-12">
+            <a
+              class="link-clr"
+              (click)="
+                viewFullCheckList(
+                  violationSelectionForm?.value === 'Previous'
+                    ? previousSubmittedData?.referenceNumber
+                    : estData?.latestSubmissions?.referenceNumber,
+                  violationSelectionForm?.value === 'Previous' ? false : true
+                )
+              "
+              >{{ 'ESTABLISHMENT.VIEW-FULL-CHECKLIST' | translate }}
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          [icon]="'coins'"
+          [canEdit]="canEdit"
+          [heading]="'ESTABLISHMENT.NEW-CONTRIBUTION-RATE' | translate"
+        >
+        </frm-content-heading-dc>
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-input-radio-dc
+              *ngIf="isOperationManagerTransaction"
+              name="contribution"
+              id="contribution"
+              [ignoreLabel]="true"
+              [list]="contributionList"
+              [control]="safetyInspectionValidationForm?.get('contributionRate')"
+            ></gosi-input-radio-dc>
+            <div class="contribution-rate pb-4" *ngIf="!isOperationManagerTransaction">
+              <ng-container *ngIf="lang === 'en'">
+                {{ newOHRateDetails?.currentOhRate + '%' }}
+              </ng-container>
+              <ng-container *ngIf="lang === 'ar'">
+                {{ '%' + newOHRateDetails?.currentOhRate }}
+              </ng-container>
+            </div>
+          </div>
+          <div class="col-md-12 d-flex" *ngIf="!isOperationManagerTransaction">
+            <gosi-label-dc
+              [date]="true"
+              [control]="newOHRateDetails?.effectiveStartdate?.gregorian"
+              label="ESTABLISHMENT.EFFECTIVE-START-DATE"
+            >
+            </gosi-label-dc>
+            <fa-icon
+              *ngIf="newOHRateDetails?.currentOhRate < OHRateDetails?.currentOhRate"
+              class="info"
+              [icon]="['fas', 'info-circle']"
+              tooltip="{{ 'ESTABLISHMENT.DECREASE-OH-INFO' | translate }}"
+            ></fa-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canApprove]="!billBatchInProgress"
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        (approveEvent)="approveTransaction(safetyInspectionValidationForm, approveTemplate)"
+        (returnEvent)="returnTransaction(safetyInspectionValidationForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="safetyInspectionValidationForm"
+    heading="ESTABLISHMENT.RETURN.SAFETY-INSPECTION"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(safetyInspectionValidationForm)"
+    warningMessage="CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="safetyInspectionValidationForm"
+    [isCommentsMandatory]="isApproveCommentsMandatory"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="updateOHRate()"
+  >
+  </frm-approve-template-dc>
+</ng-template>

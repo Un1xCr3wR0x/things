@@ -1,0 +1,340 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<est-heading-dc [isTransparent]="true" [canNavigate]="false" (backEvent)="navigateBack()">
+  {{ 'ESTABLISHMENT.EST-PROFILE' | translate }}
+  <div *ngIf="noDropDowns === false" id="action-item">
+    <gosi-dropdown-dc [list]="branchDropDown$ | async" (selectedItem)="navigateToProfile($event)">
+      <div class="drop-down-wrapper">
+        {{ 'ESTABLISHMENT.VIEW-BRANCHES' | translate }} <fa-icon class="dropdown-icon" icon="angle-down"></fa-icon>
+      </div>
+    </gosi-dropdown-dc>
+  </div>
+</est-heading-dc>
+<div class="content empty-content" *ngIf="establishmentProfile && establishment">
+  <div
+    class="row est-profile-sc"
+    [ngClass]="{
+      'no-gutters': (windowSizeService.windowSize$ | async) <= 767 && (windowSizeService.windowSize$ | async) > 0
+    }"
+  >
+    <!-- Basic details -->
+    <div class="col-lg-4 col-md-12" *ngIf="establishmentProfile">
+      <gosi-card-dc class="card-dc" [lessPadding]="true" [mobileMarginBottom]="false" [mobileBorderBottom]="true">
+        <est-basic-details-dc
+          [showOwnerSection]="showOwnerSection"
+          [showManageOwners]="showManageOwners"
+          [isViewOnly]="viewMode"
+          (viewCertificate)="navigateToViewCertificate()"
+          (navigateToHealth)="navigateToHealthInsurance()"
+          (viewCommitmentIndicator)="navigateToCommitmentIndicator()"
+          [commitmentIndicatorTotalRatio]="commitmentIndicatorTotalRatio"
+          [showFlags]="showFlags"
+          [compliant]="isCompliant"
+          [actionDropdown]="actionDropdown"
+          [isPpa]="isPpa"
+          [establishment]="establishment"
+          [establishmentProfile]="establishmentProfile"
+          [admins]="establishmentAdmins"
+          [owners]="establishmentOwners"
+          [relationshipManager]="relationshipManager"
+          [relationOfficerIamDetails]="managerDetails"
+          [showNoOfBranches]="isMain && !isGcc"
+          [canEditLegalEntity]="canEditLegalEntity"
+          [canCloseEstablsihment]="canCloseEstablsihment"
+          (editLegalEntity)="navigateToLegalEntityChange(editWarningTemplate, draftModal)"
+          (actionType)="navigateToFunctionality($event)"
+          (addFlags)="navigateToFlags()"
+          [showAdminButton]="showAdminButton"
+          [showAddSuperAdmin]="showAddSuperAdmin"
+          [adminActionLabel]="'ESTABLISHMENT.MANAGE-ADMIN'"
+          [noOfFlags]="noOfActiveFlags"
+          [flagMap]="flagMap"
+          [closureTransactionId]="closureTransactionId"
+          [showLateFeeIndicator]="showLateFeeIndicator && !viewMode"
+          (allFlags)="navigateToViewflagDetails()"
+          (viewModal)="showModal(complianceTemplate, 'lg')"
+          (modifyLateFee)="navigateToModifyLateFee(editWarningTemplate)"
+          [showCertificates]="showCertificates"
+          [showMofPaymentDetails]="showMofPaymentDetails"
+          (viewMofPayment)="navigateToViewMofPayment()"
+          [isWorkflow]="false"
+          (displayModal)="navigateToAdminPage()"
+          (addScreenLink)="navigateToAddManager()"
+          (modifyScreenLink)="navigateToModifyManager()"
+          [accessRoles]="filteredEligibleRole"
+          [accessRolesForMCIEst]="eligibleRoleForMCIEdit"
+          [accessRoleCreateNewPolicy]="showOnlyRoleAdmins"
+          [accessRolesMof]="filteredEligibleRoleMof"
+          [accessIdentifier]="regNo"
+          [isEligibleUser]="isEligibleUser"
+          [isEligibleUserMof]="isEligibleUserMof"
+          [violationUnpaidCount]="violationUnpaidCount"
+          [showViolations]="showViolations"
+          [hasCertificateViewAccess]="hasCertificateViewAccess"
+          (violationClick)="navigateToViolations()"
+          [restrictDetailEdit]="restrictDetailEdit"
+          [isAppPrivate]="isAppPrivate"
+          (safetyHistory)="navigateToViewSafetyHistory()"
+          [isRegisteredInHealthInsurance]="isRegisteredInHealthInsurance"
+          (navigateToHealthInsuranceDetails)="navigateToHealthInsuranceDetails()">
+        </est-basic-details-dc>
+      </gosi-card-dc>
+
+      <gosi-card-dc
+        *ngIf="hasAdminIdInUrl"
+        class="card-dc"
+        [lessPadding]="true"
+        [mobileMarginBottom]="false"
+        [mobileBorderBottom]="true"
+      >
+        <est-establishment-profile-links
+          [accessRoles]="filteredEligibleRole"
+          [registrationNo]="regNo"
+          [isAppPublic]="isAppPublic"
+          [isPpaEstablishment]="isPpa"
+        ></est-establishment-profile-links>
+      </gosi-card-dc>
+    </div>
+
+    <!-- View Establishment -->
+    <div class="col-lg-8 col-md-12 view-establishment-wrapper">
+      <gosi-card-dc
+        class="view-card card-dc"
+        [noGutters]="true"
+        [noPadding]="true"
+        [mobileMarginBottom]="false"
+        [mobilePaddingBottom]="false"
+        [mobilePaddingTop]="false"
+        [noMarginBottom]="true"
+      >
+        <est-profile-tabset-dc
+          [hasRouterOutlet]="getTabStatus()"
+          (navigate)="navigateToTabView($event)"
+          [profileTabs]="profileTabs"
+        ></est-profile-tabset-dc>
+
+        <ng-container *ngIf="getTabStatus()">
+          <div class="card-padding">
+            <gosi-alert-dc
+              *ngIf="isProactivePending"
+              message="{{ completeRegMessage | translate }}"
+              [bilingualMessage]="completeRegInWorkflow"
+              type="warning"
+              [noPadding]="true"
+              [dismissible]="false"
+            >
+              <div class="row mt-3 no-gutters" *ngIf="!proactiveInWorkflow && canCompleteEstDetails" actOnAlert>
+                <div class="col-md-auto col-sm-12">
+                  <gosi-button-dc type="primary" size="md" (click)="navigateToCompleteProactive()">{{
+                    'ESTABLISHMENT.COMPLETE-ESTABLISHMENT-DETAILS' | translate
+                  }}</gosi-button-dc>
+                </div>
+              </div>
+            </gosi-alert-dc>
+            <gosi-alert-dc
+              *ngIf="noActiveOwnerFlag && establishment.status?.english == registered"
+              [alert]="thereIsnoOwner"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="true"
+            >
+            </gosi-alert-dc>
+            <gosi-alert-dc
+              *ngIf="
+                noActiveAdminFlag &&
+                establishment.status?.english !== closedStatus &&
+                establishment.status?.english !== closeInProgress &&
+                establishment.status?.english !== reopened
+              "
+              [alert]="thereIsNoAdmin"
+              type="warning"
+              [dismissible]="false"
+              [noPadding]="true"
+            ></gosi-alert-dc>
+            <gosi-alert-dc
+              *ngIf="
+                !establishment.activityType?.english &&
+                !isPpa &&
+                !isProactivePending &&
+                !editBasicDetailsMsg &&
+                establishment.status?.english !== closedStatus &&
+                establishment.status?.english !== closeInProgress
+              "
+              message="{{ activityTypeMessage | translate }}"
+              type="warning"
+              [noPadding]="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+
+            <ng-container *ngFor="let feedback of terminateService.transactionFeedback">
+              <gosi-alert-dc
+                [bilingualMessage]="feedback.successMessage"
+                type="success"
+                [noPadding]="true"
+                [dismissable]="false"
+              ></gosi-alert-dc>
+            </ng-container>
+            <gosi-alert-sc [noSpacing]="true"></gosi-alert-sc>
+            <est-terminate-status-dc
+              [terminateStatus]="terminateStatus"
+              [transactionId]="closureTransactionId"
+              *ngIf="
+                (establishment.status.english === registered ||
+                  establishment.status.english === closeInProgress ||
+                  establishment.status.english === reopenedClosingInProgress) &&
+                establishment.outOfMarket == true &&
+                (closureTransactionId || establishment.status.english === reopenedClosingInProgress) &&
+                terminateStatus &&
+                (terminateStatus?.hasActiveContributors ||
+                  terminateStatus?.pendingTransactions !== 0 ||
+                  terminateStatus?.activeFlags !== 0 ||
+                  terminateStatus?.debit ||
+                  terminateStatus?.hasActiveBranches)
+              "
+            ></est-terminate-status-dc>
+            <est-establishment-details-dc
+              [isMainRegistered]="isMainRegistered"
+              [comments]="transactionDetails$ | async"
+              [isViewOnly]="viewMode"
+              [establishment]="establishment"
+              [establishmentProfile]="establishmentProfile"
+              [editBasicDetailsMsg]="editBasicDetailsMsg"
+              [editIdentifierDetailsMsg]="editIdentifierDetailsMsg"
+              [editBankDetailsMsg]="editBankDetailsMsg"
+              [editContactDetailsMsg]="editContactDetailsMsg"
+              [editAddressDetailsMsg]="editAddressDetailsMsg"
+              [isPpa]="isPpa"
+              [canEditBasicDetails]="canEditBasicDetails"
+              [canEditIdentifier]="canEditIdentifier"
+              [canEditBankDetails]="canEditBankDetails"
+              [canEditContactDetails]="canEditContactDetails"
+              [canEditAddressDetails]="canEditAddressDetails"
+              [hasDifferentLE]="hasDifferentLE"
+              (navigateToChange)="navigateToChange($event)"
+              [identifierReferenceNo]="identifierReferenceNo"
+              [basicReferenceNo]="basicReferenceNo"
+              [bankReferenceNo]="bankReferenceNo"
+              [addressReferenceNo]="addressReferenceNo"
+              [contactReferenceNo]="contactReferenceNo"
+              [accessRoles]="filteredEligibleRole"
+              [accessRolesForMCIEst]="eligibleRoleForMCIEdit"
+              [accessIdentifier]="regNo"
+              [restrictDetailEdit]="restrictDetailEdit"
+              [isAppPrivate]="isAppPrivate"
+              [isMciEstablishment]="isMciEstablishment"
+              (refreshBasicDetails)="refreshBasicDetails()"
+              [canRefresh]="canRefreshMC"
+              [reopenedClosingInProgress]="isReopenClosingInProgress"
+              [isProactive]="isProactive"
+              [canEditEstInfo]="canEditEstInfo"
+            >
+            </est-establishment-details-dc>
+          </div>
+        </ng-container>
+      </gosi-card-dc>
+    </div>
+  </div>
+</div>
+
+<ng-template #lateFeeTemplate>
+  <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.MODIFY-LATE-FEE' | translate">
+    <div modalContent>
+      <gosi-alert-dc
+        [message]="editLateFeeWarning | translate: { referenceNumber: referenceNumber }"
+        [type]="warnigAlertType"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #profileAccessErrorTemplate>
+  <gosi-modal-dc *ngIf="profileAccessErrorKey" [modalHeader]="'ESTABLISHMENT.EST-PROFILE' | translate">
+    <div modalContent>
+      <gosi-alert-dc [message]="profileAccessErrorKey | translate" type="warning" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="isFromRoute ? navigateBack() : hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #terminateRestrictTemplate>
+  <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.CLOSE-ESTABLISHMENT' | translate">
+    <div modalContent>
+      <gosi-alert-dc [alert]="terminateRestrictMsg"> </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #draftModal>
+  <est-resume-modal-dc
+    [message]="draftTransaction?.message"
+    (cancel)="hideModal()"
+    (new)="cancelAndStart()"
+    (resume)="navigateToTransaction()"
+  ></est-resume-modal-dc>
+</ng-template>
+<ng-template #addFlagRestrictTemplate>
+  <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.ADD-FLAG' | translate">
+    <div modalContent>
+      <gosi-alert-dc [message]="'ESTABLISHMENT.RESTRICT-ADD-FLAG' | translate" type="warning"></gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #complianceTemplate>
+  <est-compliance-modal-dc
+    (onRequest)="navigateToRequestReinspection()"
+    [inspectionDetails]="safetyInspectionDetails"
+    [establishment]="establishment"
+    (closeModal)="hideModal()"
+    [ohDetails]="OhRateDetails"
+  >
+  </est-compliance-modal-dc>
+</ng-template>
+<ng-template #editWarningTemplate>
+  <gosi-modal-dc [modalHeader]="editWarningHeading | translate">
+    <div modalContent>
+      <gosi-alert-dc [details]="editWarningMsg" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="hideModal()">
+        {{ 'ESTABLISHMENT.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #draftRequiredTemplate>
+  <est-draft-initiate-popup-dc
+    [transactionRefNo]="DraftTransactionNo"
+    (keepDraftEvent)="navigateToDraftTransaction(DraftTransactionNo)"
+    (discardEvent)="clearDraft(DraftTransactionNo)"
+    (onCancel)="hideModal()"
+  >
+  </est-draft-initiate-popup-dc>
+</ng-template>

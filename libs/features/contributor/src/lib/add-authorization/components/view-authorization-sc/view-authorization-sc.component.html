@@ -1,0 +1,265 @@
+<div class="content">
+  <gosi-card-dc [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.VIEW-AUTHORIZATION' | translate">
+    <cnt-contributor-info-dc
+      *ngIf="authorizedPerson"
+      [personDetails]="authorizedPerson"
+      [personNameLabel]="
+        isAttorney ? 'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY-NAME' : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODIAN-NAME'
+      "
+    >
+    </cnt-contributor-info-dc>
+
+    <gosi-card-dc type="secondary">
+      <gosi-card-dc
+        *ngIf="authorizationDetails"
+        type="secondary"
+        [heading]="'CONTRIBUTOR.ADD-AUTHORIZATION.DETAILS' | translate"
+      >
+        <div class="row">
+          <div class="col-sm-12 col-md-6 col-lg-4" *ngIf="authPurpose">
+            <gosi-label-dc
+              id="authPurpose"
+              [control]="authPurpose | bilingualText"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.PURPOSE'"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <gosi-label-dc
+              id="countryOfIssue"
+              [control]="authorizationDetails.countryOfIssue | bilingualText"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.COUNTRY-OF-ISSUE' | translate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <gosi-label-dc
+              id="authSource"
+              [control]="authSource | bilingualText"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-SOURCE' | translate"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <gosi-label-dc
+              *ngIf="isAttorney"
+              id="authIssueDate"
+              [control]="authorizationDetails.issueDate.gregorian | date: 'dd/MM/yyyy'"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ISSUE-DATE' | translate"
+            ></gosi-label-dc>
+            <gosi-label-dc
+              *ngIf="!isAttorney"
+              id="authIssueDate"
+              [control]="authorizationDetails.custodyDate.gregorian | date: 'dd/MM/yyyy'"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.ISSUE-DATE' | translate"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-4" *ngIf="isAttorney">
+            <gosi-label-dc
+              id="authEndDate"
+              [control]="
+                authorizationDetails?.endDate?.gregorian
+                  ? (authorizationDetails.endDate.gregorian | date: 'dd/MM/yyyy')
+                  : null
+              "
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.EXPIRY-DATE' | translate"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="isMOJ">
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <gosi-label-dc
+              id="authNumber"
+              [control]="isAttorney ? authorizationDetails.attorneyNumber : authorizationDetails.custodyNumber"
+              [label]="
+                (isAttorney
+                  ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZATION-NUMBER'
+                  : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY-NUMBER'
+                ) | translate
+              "
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="isMOJ">
+          <div class="col-md-8" id="authText" *ngIf="isAttorney">
+            <gosi-input-text-area-dc
+              [control]="authText"
+              [hideOptionalLabel]="true"
+              [label]="'CONTRIBUTOR.ADD-AUTHORIZATION.ATTORNEY.TEXT' | translate"
+              [readOnly]="true"
+            >
+            </gosi-input-text-area-dc>
+          </div>
+          <div class="form-group col-md-auto" *ngIf="!isAttorney">
+            <label>
+              {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.TEXT' | translate }}
+            </label>
+            <div class="row custody-text-frame">
+              <iframe #custodyTextIframe width="800" height="500" src="about:blank"></iframe>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </gosi-card-dc>
+
+    <gosi-card-dc
+      type="secondary"
+      heading="{{
+        (isAttorney
+          ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-DETAILS'
+          : 'CONTRIBUTOR.ADD-AUTHORIZATION.MINOR-DETAILS'
+        ) | translate
+      }}"
+    >
+      <div class="desktop-view-table authorizer-list-table">
+        <gosi-table-dc>
+          <ng-container modalContent>
+            <table aria-describedby="title" class="table">
+              <thead>
+                <tr>
+                  <th id="name">
+                    {{
+                      (isAttorney
+                        ? 'CONTRIBUTOR.ADD-AUTHORIZATION.AUTHORIZER-NAME'
+                        : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.NAME'
+                      ) | translate
+                    }}
+                  </th>
+                  <th id="nId">
+                    {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.ID' | translate }}
+                  </th>
+                  <th id="nationality">
+                    {{ 'CONTRIBUTOR.NATIONALITY' | translate }}
+                  </th>
+                  <th id="dob">
+                    {{ 'CONTRIBUTOR.DATE-OF-BIRTH' | translate }}
+                  </th>
+                  <th id="gender">
+                    {{ 'CONTRIBUTOR.GENDER' | translate }}
+                  </th>
+                  <th id="minorType" *ngIf="!isAttorney">
+                    {{ 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.TYPE' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of authorizerList; let i = index">
+                  <td>
+                    {{ item.fullName }}
+                  </td>
+                  <td>
+                    {{ item.id }}
+                  </td>
+                  <td>
+                    {{ item.nationality | bilingualText }}
+                  </td>
+                  <td>
+                    <div>{{ gregorianBirthDate(item.dateOfBirth) | bilingualText }}</div>
+                    <div>{{ hijriBirthDate(item.dateOfBirth, item.ageInHijiri) | bilingualText }}</div>
+                  </td>
+                  <td>
+                    {{ item.sex | bilingualText }}
+                  </td>
+                  <td *ngIf="!isAttorney">
+                    {{
+                      (item.minorType === 0
+                        ? 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.AGE-MINOR'
+                        : 'CONTRIBUTOR.ADD-AUTHORIZATION.CUSTODY.MINOR.MENTALLY-MINOR'
+                      ) | translate
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+        </gosi-table-dc>
+      </div>
+    </gosi-card-dc>
+
+    <gosi-card-dc type="secondary" *ngIf="documents.length > 0" [lessPadding]="true" [noMarginBottom]="!isMOJ">
+      <!--Documents Details-->
+      <gosi-document-list-view-dc [documents]="documents" [icon]="false"> </gosi-document-list-view-dc>
+    </gosi-card-dc>
+
+    <gosi-card-dc
+      *ngIf="authorizedPersonContactDetails"
+      type="secondary"
+      heading="{{ 'FORM-FRAGMENTS.CONTACT-DETAILS' | translate }}"
+    >
+      <div class="row">
+        <div *ngIf="authorizedPersonContactDetails.telephoneNo?.primary" class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="telephoneNumber"
+            [control]="authorizedPersonContactDetails.telephoneNo?.primary"
+            label="FORM-FRAGMENTS.TELEPHONE-NUMBER"
+          ></gosi-label-dc>
+        </div>
+        <div *ngIf="authorizedPersonContactDetails.telephoneNo?.primary" class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="extension"
+            [control]="authorizedPersonContactDetails.telephoneNo?.extensionPrimary"
+            label="FORM-FRAGMENTS.EXTENSION"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="mobileNumber"
+            [control]="authorizedPersonContactDetails.mobileNo?.primary"
+            label="FORM-FRAGMENTS.MOBILE-NUMBER"
+          >
+            <span id="prefixValue">{{
+              authorizedPersonContactDetails.mobileNo?.isdCodePrimary ? getISDCodePrefix : ''
+            }}</span>
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4">
+          <gosi-label-dc
+            id="emailAddress"
+            [control]="authorizedPersonContactDetails.emailId?.primary"
+            label="FORM-FRAGMENTS.EMAIL-ID"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+
+    <!-- Address Details -->
+    <gosi-card-dc type="secondary" *ngIf="authorizedPersonContactDetails?.addresses">
+      <frm-address-dc
+        [addressDetails]="authorizedPersonContactDetails.addresses"
+        [isViewOnly]="true"
+        [hasNationalAddress]="hasNationalAddress"
+        [hasPOAddress]="hasPOAddress"
+        [hasOverseasAddress]="hasOverseasAddress"
+        [currentMailingAddress]="authorizedPersonContactDetails.currentMailingAddress"
+      >
+      </frm-address-dc>
+    </gosi-card-dc>
+
+    <gosi-card-dc
+      type="secondary"
+      *ngIf="bankAccount"
+      heading="{{ 'FORM-FRAGMENTS.BANK-ACCOUNT-DETAILS' | translate }}"
+    >
+      <gosi-alert-dc
+        [alert]="ibanPendingVerificationAlert"
+        *ngIf="bankAccount.approvalStatus === 'Sama Verification Pending'"
+      ></gosi-alert-dc>
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="iban"
+            [control]="bankAccount.ibanBankAccountNo"
+            label="FORM-FRAGMENTS.IBANACCOUNT-NUMBER"
+          ></gosi-label-dc>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg-6">
+          <gosi-label-dc
+            id="bankName"
+            [control]="bankAccount.bankName | bilingualText"
+            [label]="'FORM-FRAGMENTS.BANK-NAME' | translate"
+          ></gosi-label-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </gosi-card-dc>
+</div>

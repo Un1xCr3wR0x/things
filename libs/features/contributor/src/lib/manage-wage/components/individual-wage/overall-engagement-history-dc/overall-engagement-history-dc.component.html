@@ -1,0 +1,119 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-12">
+    <!-- Heading-->
+
+    <ng-container *ngIf="!individualApp && !isIndividualProfile">
+      <div class="d-flex align-items-baseline">
+        <cnt-wage-content-heading-dc
+          *ngIf="engagementList"
+          displayIcon="briefcase"
+          headingLabel="CONTRIBUTOR.WAGE.OVERALL-ENGAGEMENT-DETAILS"
+          [canEdit]="false"
+        >
+        </cnt-wage-content-heading-dc>
+
+        <div class="duration seperator ml-2 custom-content-heading" *ngIf="overallMonths || overallDays">
+          <span
+            >(
+            <ng-container *ngIf="overallMonths && overallMonths !== 0">
+              <ng-container *ngIf="!(lang === 'ar' && (overallMonths === 1 || overallMonths === 2))">
+                {{ overallMonths }}</ng-container
+              >
+              {{
+                overallMonths === 1
+                  ? ('CONTRIBUTOR.WAGE.MONTH' | translate | titlecase)
+                  : overallMonths === 2
+                  ? ('CONTRIBUTOR.WAGE.MONTHS' | translate | titlecase)
+                  : overallMonths > 2 && overallMonths < 11
+                  ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate | titlecase)
+                  : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate | titlecase)
+              }}
+            </ng-container>
+            <ng-container *ngIf="overallMonths && overallDays"> ,</ng-container>
+            <ng-container *ngIf="overallDays && overallDays !== 0">
+              <ng-container *ngIf="!(lang === 'ar' && (overallDays === 1 || overallDays === 2))">
+                {{ overallDays }}
+              </ng-container>
+              {{
+                overallDays === 1
+                  ? ('CONTRIBUTOR.WAGE.DAY' | translate | titlecase)
+                  : overallDays === 2
+                  ? ('CONTRIBUTOR.WAGE.DAYS' | translate | titlecase)
+                  : overallDays > 2 && overallDays < 11
+                  ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate | titlecase)
+                  : ('CONTRIBUTOR.WAGE.DAYS-11' | translate | titlecase)
+              }}
+            </ng-container>
+
+            )</span
+          >
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Accordian view-->
+
+    <ng-container *ngIf="engagementList && engagementList.length > 0">
+      <ng-container
+        *ngFor="
+          let engagement of isUnifiedProfile
+            ? (engagementList
+              | paginate
+                : {
+                    id: paginationId,
+                    itemsPerPage: itemsPerPage,
+                    currentPage: currentPage,
+                    totalItems: engagementList.length
+                  })
+            : engagementList;
+          let i = index;
+          first as isFirst
+        "
+      >
+        <cnt-normal-engagement-view-dc
+          *ngIf="
+            (contributorData && engagement.engagementType !== typeVic) ||
+            (individualApp && engagement.engagementType !== typeVic)
+          "
+          [index]="(currentPage - 1) * itemsPerPage + i"
+          [isFirst]="isFirst"
+          [isNin]="isNin"
+          [engagement]="engagement"
+          [isIndividualProfile]="isIndividualProfile"
+          [engagementLength]="engagementList.length"
+          [contributorData]="contributorData"
+          [isABSHERregistered]="isABSHERregistered"
+          [currentUserRoles]="currentUserRoles"
+          [isUnifiedProfile]="isUnifiedProfile"
+          (edit)="handleEngagementAction($event)"
+          (individualActions)="handleIndividualEngagementAction($event)"
+          (fetchContracts)="handleViewContracts($event)"
+          (cancelContract)="handleCancelContract($event)"
+          [showAbsherTemplate]="showAbsherTemplate"
+          [individualApp]="individualApp"
+          [isPREligible]="isPREligible"
+        ></cnt-normal-engagement-view-dc>
+
+        <cnt-vic-engagement-view-dc
+          *ngIf="engagement.engagementType === typeVic"
+          [engagement]="engagement"
+          [isFirst]="isFirst"
+          [isNin]="isNin"
+          [index]="(currentPage - 1) * itemsPerPage + i"
+          [currentUserRoles]="currentUserRoles"
+          (edit)="handleEngagementAction($event)"
+          [individualApp]="individualApp"
+          (navigateToBillDash)="navigateToBillDashboard()"
+          [unPaid]="unPaid"
+          [isPREligible]="isPREligible"
+        ></cnt-vic-engagement-view-dc>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

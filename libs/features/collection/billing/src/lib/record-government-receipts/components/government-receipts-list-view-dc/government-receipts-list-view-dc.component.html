@@ -1,0 +1,61 @@
+<div class="row w-100">
+  <div class="col-lg-12">
+    <ng-container>
+      <div class="table-effect">
+        <div class="table-responsive">
+          <table class="table table-borderless">
+            <thead class="table-header">
+              <tr>
+                <th>{{ 'BILLING.ESTABLISHMENT-NAME' | translate }}</th>
+                <th>{{ 'BILLING.TRANSFER-DATE' | translate }}</th>
+                <th>{{ 'BILLING.AMOUNT-SAR' | translate }}</th>
+                <th>{{ 'BILLING.PAYMENT-REFERENCE-NUMBER' | translate }}</th>
+                <th>{{ 'BILLING.UPLOAD-DATE' | translate }}</th>
+                <th>{{ 'BILLING.PAYMENT-ORDER-NUMBER' | translate }}</th>
+                <th>{{ 'BILLING.RECEIVE-PAYMENT-STATUS' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody
+              *ngFor="
+                let receipt of receipts.uploadReceipts
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: pageSize,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: receipts.totalNoOfRecords
+                      };
+                let i = index
+              "
+            >
+              <tr class="border-bottom">
+                <td>{{ receipt.establishmentName }}</td>
+                <td>{{ receipt.transactionDate | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ receipt.amount | number: '1.2-2' }}</td>
+                <td>{{ receipt.referenceNo }}</td>
+                <td>{{ receipt.createDate | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ receipt.paymentOrderNumber }}</td>
+                <td>
+                  <gosi-status-badge-dc [label]="receipt.status" [type]="getType(receipt.status)">
+                  </gosi-status-badge-dc>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-container>
+        <div>
+          <gosi-pagination-dc
+            *ngIf="receipts.totalNoOfRecords > pageSize"
+            [totalSize]="receipts.totalNoOfRecords"
+            [itemsPerPage]="pageSize"
+            [pageDetails]="pageDetails"
+            (pageChange)="selectPage($event)"
+            paginationId="paginationId"
+          ></gosi-pagination-dc>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

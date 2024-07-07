@@ -1,0 +1,102 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="header">
+    {{ 'BILLING.TRANSFER-CREDIT-BALANCE' | translate }}
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <ng-container *ngIf="!isSuccess">
+    <blg-establishment-header-info-dc [establishmentDetails]="establishmentDetails"></blg-establishment-header-info-dc>
+    <gosi-progress-wizard-dc
+      (clickWizard)="selectWizards($event)"
+      [wizardItems]="creditManagementWizardItems"
+      #creditManagementWizard
+    >
+    </gosi-progress-wizard-dc>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="hide-tab">
+          <tabset class="pills">
+            <tab [active]="currentTab === 0">
+              <div class="row">
+                <div class="col-lg-12">
+                  <blg-available-balance-details-dc
+                    (registerNo)="searchBranches($event)"
+                    [fieldArray]="branchValues"
+                    [creditBalanceDetails]="creditBalanceDetails"
+                    [branchLists]="branchDetails"
+                    [establishmentDetails]="establishmentDetails"
+                    (save)="saveCreditDetails()"
+                    (cancel)="cancelAvailableCreditPage()"
+                    (selectedBranchList)="selectedBranchList($event)"
+                    [parentForm]="creditManagmentMainForm"
+                    [creditDetailsReq]="creditDetailsReq"
+                    (confirmDetail)="confirmToDocumentPage()"
+                    (errorFlag)="setErrorMessage($event)"
+                    [isSave]="isSave"
+                    (cancelPopup)="cancelPopups()"
+                    (searchValue)="searchValues($event)"
+                    [inWorkflow]="inWorkflow"
+                    (popupValue)="popupCancel()"
+                    (wrongSearchValue)="wrongSearchValue()"
+                    [isAppPrivate]="isAppPrivate"
+                  >
+                  </blg-available-balance-details-dc>
+                </div>
+              </div>
+            </tab>
+            <tab [active]="currentTab === 1 && isAppPrivate">
+              <blg-credit-details-file-upload-dc
+                [documentList]="documentList"
+                [isScan]="isAppPrivate"
+                (previous)="previousFormDetails()"
+                (cancelBtn)="cancelCreditUpload()"
+                [uuid]="uuid"
+                [transactionId]="documentTransactionId"
+                [businessKey]="regNumber"
+                (doc)="refreshDocuments($event)"
+                (submit)="submitDocumentPage()"
+                [parentForm]="creditManagmentMainForm"
+                [referenceNo]="referenceNumber"
+              ></blg-credit-details-file-upload-dc>
+            </tab>
+            <tab [active]="currentTab === 2 || (!isAppPrivate && currentTab === 1)">
+              <blg-credit-terms-condition-dc
+                [parentForm]="creditManagmentMainForm"
+                (previous)="previousFormDetails()"
+                (cancel)="cancelCreditUpload()"
+                (finalsubmit)="submittPage(termsConditionTemplate, 'md')"
+              ></blg-credit-terms-condition-dc>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isSuccess && !isAppPrivate">
+    <blg-credit-balance-summary-dc
+      [creditDetailsReq]="creditDetailsReq"
+      [establishmentDetails]="establishmentDetails"
+      [fromPage]="'summaryPage'"
+    ></blg-credit-balance-summary-dc>
+  </ng-container>
+  <ng-template #termsConditionTemplate>
+    <blg-confirm-modal-dc>
+      <div card-body class="mt-3">
+        {{ 'BILLING.PLEASE-ACCEPT-TERMS-CONDITION' | translate }}
+      </div>
+      <div card-footer class="row pb-3 align-self-center">
+        <div class="btn-section">
+          <gosi-button-dc id="cancelBtn" type="secondary" (submit)="modalRef.hide()" size="sm">
+            {{ 'BILLING.OK' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </blg-confirm-modal-dc>
+  </ng-template>
+</div>

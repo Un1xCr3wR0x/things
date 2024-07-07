@@ -1,0 +1,270 @@
+<div class="d-flex justify-content-center align-items-center ipad-top" [ngClass]="mobileView ? 'pt-1' : 'pt-5'">
+  <div class="col-lg-9">
+    <div class="header-part mb-4">
+      <div class="row">
+        <div class="profile-name custom-margin-right">
+          <div class="profile-icon">
+            <img *ngIf="personDetails?.gender?.english === 'Female'" src="assets/images/female.svg" alt="Person" />
+            <img
+              *ngIf="personDetails?.gender?.english === 'Male' && personDetails?.gulfNationality"
+              src="assets/images/gulf-male.svg"
+              alt="Person"
+            />
+            <img
+              *ngIf="personDetails?.gender?.english === 'Male' && !personDetails?.gulfNationality"
+              src="assets/images/non-gulf-male.svg"
+              alt="Person"
+            />
+          </div>
+          <div class="detail-values">
+            <div *ngIf="arabicNameValue" class="name arabic pt-2">{{ arabicNameValue }}</div>
+            <div *ngIf="englishNameValue" class="name pt-2">{{ englishNameValue }}</div>
+            <div class="last-value">
+              <span class="sin-value">
+                {{ 'CUSTOMER-INFORMATION.SOCIAL-INSURANCE-NO' | translate }} :
+                <span class="value">{{ sin }}</span>
+              </span>
+              <!-- <span class="status">
+                  {{ 'CUSTOMER-INFORMATION.STATUS' | translate }} :
+                  <span class="value">
+                    <ng-container *ngIf="contributor.statusType === active">
+                      {{ 'CUSTOMER-INFORMATION.ACTIVE' | translate }}
+
+                      <fa-icon class="circle-icon check-circle" icon="check-circle"></fa-icon>
+                    </ng-container>
+                    <ng-container *ngIf="contributor.statusType === inactive">
+                      {{ 'CUSTOMER-INFORMATION.INACTIVE' | translate }}
+                      <fa-icon class="circle-icon inactive" icon="times-circle"></fa-icon>
+                    </ng-container>
+                  </span>
+                </span> -->
+            </div>
+            <!-- show the user roles start -->
+            <div class="d-flex row badge">
+              <div class="col-12 d-flex flex-wrap justify-content-center pt-2">
+                <ng-container *ngFor="let userType of userTypesArray">
+                  <div *ngIf="isActive(userType)" class="role d-flex flex-wrap">
+                    <span class="role-value">
+                      {{ getUserTypeName(userType) | translate }}
+                    </span>
+                    <fa-icon class="check-circle" icon="check-circle"></fa-icon>
+                    <!-- <fa-icon *ngIf="!isActive(userType)" class="check-circle" icon="times-circle"></fa-icon> -->
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+            <!-- show the user roles end -->
+          </div>
+        </div>
+        <div class="col-lg-5 col-12 column profile-values" [ngClass]="!englishNameValue && mobileView ? 'mt-3' : ''">
+          <div class="desktop-view">
+            <div class="row">
+              <div class="col-6 mob-view card-space card-margin-id">
+                <div class="card-value">
+                  <div class="content-wrapper">
+                    <div class="icon">
+                      <img src="assets/images/Nationality.svg" alt="Person" class="pt-2 pb-2" />
+                    </div>
+                    <div class="data">
+                      {{ personDetails?.nationality | bilingualText }}
+                    </div>
+                    <div class="label">
+                      {{ 'CUSTOMER-INFORMATION.NATIONALITY' | translate | uppercase }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 mob-view card-space card-margin-dob">
+                <div class="card-value">
+                  <div class="content-wrapper">
+                    <div class="icon">
+                      <fa-icon [icon]="['fas', 'calendar-alt']"></fa-icon>
+                    </div>
+                    <div class="data">
+                      {{ personDetails?.dateOfBirth?.gregorian | gosiDate }}
+                    </div>
+                    <div class="label">
+                      {{ 'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate | uppercase }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 card-space card-margin-id">
+                <div class="card-value">
+                  <ng-container *ngFor="let item of personDetails?.personIdentities">
+                    <ng-container *ngIf="item && item !== null">
+                      <ng-container *ngIf="item?.idType === typeNin">
+                        <div class="content-wrapper">
+                          <div class="icon">
+                            <fa-icon [icon]="['fas', 'address-card']"></fa-icon>
+                          </div>
+                          <div class="data">
+                            {{ item.newNin }}
+                          </div>
+                          <div class="label">
+                            {{ 'CUSTOMER-INFORMATION.NIN' | translate | uppercase }}
+                          </div>
+                        </div>
+                      </ng-container>
+                      <!-- <ng-container *ngIf="item?.idType === typeGcc">
+                              <div class="icon">
+                                <div [ngClass]="'gcc-id'"></div>
+                              </div>
+                              <div class="data">
+                                {{ item.id }}
+                              </div>
+                              <div class="label">
+                                {{ 'CUSTOMER-INFORMATION.GCC-ID' | translate | uppercase }}
+                              </div>
+                            </ng-container> -->
+                      <ng-container *ngIf="item.idType === typeIqama">
+                        <div class="content-wrapper">
+                          <div class="icon">
+                            <fa-icon [icon]="['fas', 'address-card']"></fa-icon>
+                          </div>
+                          <div class="data">
+                            {{ item.iqamaNo }}
+                          </div>
+                          <div class="label">
+                            {{ 'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate | uppercase }}
+                          </div>
+                        </div>
+                      </ng-container>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
+              <div class="col-6 card-space card-margin-dob">
+                <div class="card-value">
+                  <div class="content-wrapper">
+                    <div class="icon">
+                      <fa-icon [icon]="['fas', 'calendar-alt']"></fa-icon>
+                    </div>
+                    <div class="data" style="text-align: center !important">
+                      {{ personDetails?.ageInHijiri }}
+                    </div>
+                    <div class="label">
+                      {{ 'CUSTOMER-INFORMATION.AGE-IN-HIJRI' | translate | uppercase }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mobile-view profile-card">
+            <div class="row" [ngClass]="isMargin ? 'margin-bottom' : ''">
+              <div class="col-6 adj-item">
+                <div class="mobile-wrapper d-flex flex-wrap">
+                  <span
+                    class="padding-arab padding-pixel4 margin-arab"
+                    [ngClass]="englishNameValue ? '' : 'margin-nation'"
+                  >
+                    <div class="icon">
+                      <img src="assets/images/Nationality.svg" alt="Person" class="pt-2 pb-2" />
+                    </div>
+                  </span>
+                  <span>
+                    <div class="data">
+                      {{ personDetails?.nationality | bilingualText }}
+                    </div>
+                    <div class="label label-value">
+                      {{ 'CUSTOMER-INFORMATION.NATIONALITY' | translate | uppercase }}
+                    </div>
+                  </span>
+                </div>
+              </div>
+              <div class="col-6 adj-item nin-value">
+                <ng-container *ngFor="let item of personDetails?.personIdentities">
+                  <ng-container *ngIf="item && item !== null">
+                    <ng-container *ngIf="item?.idType === typeNin">
+                      <div class="mobile-wrapper d-flex flex-wrap">
+                        <span
+                          class="padding-arab padding-arab padding-pixel4 margin-arab"
+                          [ngClass]="englishNameValue ? '' : 'margin-id'"
+                        >
+                          <div class="icon">
+                            <fa-icon [icon]="['fas', 'address-card']"></fa-icon>
+                          </div>
+                        </span>
+                        <span>
+                          <div class="data">
+                            {{ item.newNin }}
+                          </div>
+                          <div class="label label-value">
+                            {{ 'CUSTOMER-INFORMATION.NATIONAL-ID' | translate | uppercase }}
+                          </div>
+                        </span>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="item.idType === typeIqama">
+                      <div class="mobile-wrapper d-flex flex-wrap">
+                        <span
+                          class="padding-arab padding-arab padding-pixel4 margin-arab"
+                          [ngClass]="englishNameValue ? '' : 'margin-id'"
+                        >
+                          <div class="icon">
+                            <fa-icon [icon]="['fas', 'address-card']"></fa-icon>
+                          </div>
+                        </span>
+                        <span>
+                          <div class="data">
+                            {{ item.iqamaNo }}
+                          </div>
+                          <div class="label">
+                            {{ 'CUSTOMER-INFORMATION.IQAMA-NUMBER' | translate | uppercase }}
+                          </div>
+                        </span>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 adj-item arabic-value">
+                <div class="mobile-wrapper d-flex flex-wrap">
+                  <span
+                    class="padding-arab padding-pixel4 margin-arab"
+                    [ngClass]="englishNameValue ? '' : 'margin-age'"
+                  >
+                    <div class="icon">
+                      <fa-icon [icon]="['fas', 'calendar-alt']"></fa-icon>
+                    </div>
+                  </span>
+                  <span>
+                    <div class="data" style="text-align: center !important">
+                      {{ personDetails?.ageInHijiri }}
+                    </div>
+                    <div class="label">
+                      {{ 'CUSTOMER-INFORMATION.AGE-IN-HIJRI' | translate | uppercase }}
+                    </div>
+                  </span>
+                </div>
+              </div>
+              <div class="col-6 adj-item right-value">
+                <div class="mobile-wrapper d-flex flex-wrap">
+                  <span
+                    class="padding-arab padding-pixel4 margin-arab"
+                    [ngClass]="englishNameValue ? '' : 'margin-birth'"
+                  >
+                    <div class="icon">
+                      <fa-icon [icon]="['fas', 'calendar-alt']"></fa-icon>
+                    </div>
+                  </span>
+                  <span>
+                    <div class="data">
+                      {{ personDetails?.dateOfBirth?.gregorian | gosiDate }}
+                    </div>
+                    <div class="label">
+                      {{ 'CUSTOMER-INFORMATION.DATE-OF-BIRTH' | translate | uppercase }}
+                    </div>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

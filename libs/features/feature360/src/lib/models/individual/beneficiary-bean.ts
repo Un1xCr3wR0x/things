@@ -1,0 +1,29 @@
+export class BeneficiaryBean {
+  createdby: number = undefined;
+  creationtimestamp: number = undefined;
+  lastmodifiedby: string = undefined;
+  lastmodifiedtimestamp: number = undefined;
+  moduleid: number = undefined;
+  mode: string = undefined;
+  beneficiaryid: number = undefined;
+  benefitrequestid: number = undefined;
+  beneficiarytype: number = undefined;
+  personid: number = undefined;
+  fieldoffice: number = undefined;
+  paymentmode: number = undefined;
+  nextnotificationdate: Date = new Date();
+  nextnotificationdateentfmt: number = undefined;
+  nextnotificationdatestr: Date = new Date();
+  agentrequirementflag: number = undefined;
+  overseasstatus: number = undefined;
+  firstname: string = undefined;
+  secondname: string = undefined;
+  thirdname: string = undefined;
+  surname: string = undefined;
+  nameenglish: string = undefined;
+  adjustmentreason: string = undefined;
+  balanceamount: number = undefined;
+  beneficiarystatus: string = undefined;
+  otherbenindicator: string = undefined;
+  contributorid: string = undefined;
+}

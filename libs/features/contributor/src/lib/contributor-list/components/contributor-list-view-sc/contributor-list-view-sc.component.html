@@ -1,0 +1,169 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content px-0 pb-0">
+  <cnt-establishment-search-dc
+    *ngIf="!registrationNo"
+    (establishmentSearch)="establishmentSearch($event)"
+  ></cnt-establishment-search-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <div *ngIf="registrationNo" class="manage-tab">
+
+    <tabset class="wrapper-tabset">
+      <tab [active]="currentTab === 0" (selectTab)="toggleTabs(0)" id="activeContributor">
+        <ng-template tabHeading>
+          <span class="tab-text"
+            >{{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.ACTIVE-CONTRIBUTOR' | translate }}({{ active }})</span
+          >
+        </ng-template>
+        <ng-container *ngIf="false; else actionsBar"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            tableView;
+            context: { contList: contributorList, numberOfContributors: numberOfContributors, id: 'active' }
+          "
+        ></ng-container>
+      </tab>
+      <tab [active]="currentTab === 1" (selectTab)="toggleTabs(1)" id="inActiveContributor">
+        <ng-template tabHeading>
+          <span class="tab-text"
+            >{{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.INACTIVE-CONTRIBUTOR' | translate }}({{ inactive }})</span
+          >
+        </ng-template>
+        <ng-container *ngIf="false; else actionsBar"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            tableView;
+            context: { contList: contributorList, numberOfContributors: numberOfContributors, id: 'inactive' }
+          "
+        ></ng-container>
+      </tab>
+      <tab [active]="currentTab === 2" (selectTab)="toggleTabs(2)" id="allContributor">
+        <ng-template tabHeading>
+          <span class="tab-text"
+            >{{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.ALL-CONTRIBUTOR' | translate }}({{ allContributor }})</span
+          >
+        </ng-template>
+        <ng-container *ngIf="false; else actionsBar"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            tableView;
+            context: {
+              contList: contributorList,
+              isAllCont: true,
+              numberOfContributors: numberOfContributors,
+              id: 'all'
+            }
+          "
+        ></ng-container>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<!-- Templates -->
+<ng-template
+  let-contributorList="contList"
+  let-isAllContributor="isAllCont"
+  let-totalSize="numberOfContributors"
+  let-tabId="id"
+  #tableView
+>
+  <!-- Table -->
+  <cnt-contributor-table-dc
+    *ngIf="totalSize > 0; else emptyList"
+    (navigateToContProfile)="navigateToContProfile($event)"
+    [contributorList]="contributorList"
+    [isAllContributor]="isAllContributor"
+    [currentPage]="pageDetails.currentPage"
+    [totalSize]="totalSize"
+    [id]="paginationId + '-' + tabId"
+  ></cnt-contributor-table-dc>
+  <!-- Pagination starts -->
+  <gosi-pagination-dc
+    *ngIf="totalSize > 10"
+    [totalSize]="totalSize"
+    [pageDetails]="pageDetails"
+    [paginationId]="paginationId + '-' + tabId"
+    (pageChange)="paginateContributors($event)"
+  ></gosi-pagination-dc>
+</ng-template>
+
+<ng-template #emptyList>
+  <div class="text-center pt-4">
+    <img src="assets/images/case.svg" alt="no active engagement" />
+    <div class="empty-info">{{ 'CONTRIBUTOR.NO-ENGAGEMENTS-AVAILABLE' | translate }}</div>
+  </div>
+</ng-template>
+<ng-template #pdfTemplate>
+  <ng-container>
+    <div>
+      {{ 'CONTRIBUTOR.PDF-DOWNLOAD-MESSAGE' | translate }}
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #excelTemplate>
+  <ng-container>
+    <div>
+      {{ 'CONTRIBUTOR.EXCEL-DOWNLOAD-MESSAGE' | translate }}
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #printTemplate>
+  <ng-container>
+    <div>
+      {{ 'CONTRIBUTOR.PRINT-MESSAGE' | translate }}
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #actionsBar>
+  <div class="d-flex flex-row-reverse mt-4">
+    <gosi-sort-dc
+        [list]="contributorSortList"
+        [initialDirection]="sortOrder"
+        (direction)="sortDirection($event)"
+        (sortItemSelected)="sortedItem($event)"
+        [initialValue]="initialSortValue"
+      ></gosi-sort-dc>
+    <cnt-contributor-filter-dc class="ml-3 mr-3"
+      [occupationList]="occupationList$ | async"
+      [nationalityList]="nationalityList$ | async"
+      [resetFilterForm]="resetFilterForm"
+      [contributorFilterForm]="contributorFilterForm"
+      [leavingDateFormControl]="leavingDateFormControl"
+      [joiningDateFormControl]="joiningDateFormControl"
+      [wageSlider]="wageSlider"
+      (apply)="filterApplied($event)"
+      (filterData)="filterContributorList($event)"
+      (resetFilter)="clearFilterForm()"
+      (changeReset)="changeReset()"
+    >
+
+    </cnt-contributor-filter-dc>
+    <gosi-search-dc
+      id="contributorIdentifier"
+      [placeholder]="'CONTRIBUTOR.CONTRIBUTOR-LIST.ID-NAME' | translate"
+      [clearSearch]="resetSearch"
+      (search)="searchContributorByIdentifier($event)"
+    ></gosi-search-dc>
+    <ng-template>
+      <a class="file-download" (click)="onPrintContributorList()">
+        <fa-icon class="file-pdf" size="lg" [icon]="['fas', 'print']" [tooltip]="printTemplate"></fa-icon>
+      </a>
+    </ng-template>
+    <ng-container>
+      <a class="file-download" (click)="onExcelContributorList()">
+        <fa-icon class="file-pdf" size="lg" [icon]="['far', 'file-excel']" [tooltip]="excelTemplate"></fa-icon>
+      </a>
+      <a class="file-download" (click)="onDownloadContributorList()">
+        <fa-icon class="file-pdf" size="lg" [icon]="['far', 'file-pdf']" [tooltip]="pdfTemplate"></fa-icon>
+      </a>
+    </ng-container>
+  </div>
+</ng-template>

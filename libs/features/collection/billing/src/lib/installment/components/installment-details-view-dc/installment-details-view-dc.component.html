@@ -1,0 +1,213 @@
+<gosi-card-dc type="secondary">
+  <div class="row extra-margin">
+    <div class="col-lg-9">
+      <div class="heading">{{ 'BILLING.INSTALLMENT-DETAILS' | translate }}</div>
+    </div>
+    <div class="col-lg-3" *ngIf="!isAppPublic">
+      <gosi-button-dc
+        type="secondary"
+        [outlineOnly]="true"
+        [isTransparent]="true"
+        [isFullWidth]="true"
+        size="'sm'"
+        id="modifyInstallment"
+        (submit)="showModal(availableCreditBreakup)"
+        [disabled]="isModify"
+      >
+        {{ 'BILLING.MODIFY-INSTALLMENT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-3 font-clr margin-btn">
+      <div class="row lable-margin">
+        <div class="col-lg-12">
+          <span id="totalInstallmentAmount">
+            {{ 'BILLING.TOTAL-INSTALLMENT-AMOUNT' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" placement="top" [tooltip]="toolTemplateInfo"></fa-icon>
+          </span>
+        </div>
+      </div>
+      <div class="row label-colour">
+        <div class="col-lg-12">
+          {{ totalInstallmentAmount | number: '1.2-2' }}<span class="currency"> {{ 'BILLING.SAR' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <gosi-currency-label-dc
+        id="monthlyInstallmentAmount"
+        [label]="'BILLING.MONTHLY-INSTALLMENT-AMOUNT'"
+        [currencyTo]="currentInstallmentAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-currency-label-dc
+        id="lastInstallmentAmount"
+        [label]="'BILLING.LAST-INSTALLMENT-AMOUNT'"
+        [currencyTo]="lastPaidAmount"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      >
+      </gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-2">
+      <gosi-label-dc
+        id="numberOfInstallment"
+        [label]="'BILLING.NUMBER-OF-INSTALLMENT'"
+        [control]="currentInstallmentNumber"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-3">
+      <gosi-label-dc id="installmentstartDate" [control]="startDate" label="BILLING.INSTALLMENT-START-DATE">
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-3">
+      <gosi-label-dc id="installmentendDate" [control]="endDate" label="BILLING.INSTALLMENT-END-DATE"> </gosi-label-dc>
+    </div>
+    <div class="col-lg-3"></div>
+    <div class="col-lg-3"></div>
+  </div>
+</gosi-card-dc>
+<!------------------------------------------------INSTALLMENT SCHDULE TABLE---------------------------------------------------------------------------->
+<div class="row table-padding">
+  <div class="col-lg-12">
+    <div class="row">
+      <div class="col-lg-12 table-heading">
+        {{ 'BILLING.INSTALLMENT-SCHEDULE' | translate }}
+      </div>
+    </div>
+    <div class="table-responsive">
+      <div class="custom-scrollbar">
+        <table class="table">
+          <thead class="thead-light">
+            <tr>
+              <th class="installment-number">{{ 'BILLING.INSTALLMENT-NUMBER' | translate }}</th>
+              <th>{{ 'BILLING.INSTALLMENT-MONTH' | translate }}</th>
+              <th>{{ 'BILLING.INSTALLMENT-AMOUNT' | translate }}({{ 'BILLING.SAR' | translate }})</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="
+                let item of installmentTableDetails
+                  | paginate
+                    : {
+                        id: 'paginationId',
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: noOfRecords
+                      };
+                let i = index
+              "
+            >
+              <td class="installment-number">{{ item.sequence }}</td>
+              <td>{{ item.month | bilingualText }}, {{ item.year }}</td>
+              <td>{{ item.amount | number: '1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-container>
+          <gosi-pagination-dc
+            *ngIf="noOfRecords > itemsPerPage"
+            [totalSize]="noOfRecords"
+            [itemsPerPage]="itemsPerPage"
+            [pageDetails]="pageDetails"
+            (pageChange)="selectPage($event)"
+            paginationId="paginationId"
+          >
+          </gosi-pagination-dc>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+<!------------------------------------------------INSTALLMENT SCHDULE TABLE ENDS---------------------------------------------------------------------------->
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="btn-section float-right btn-margins">
+      <gosi-button-dc id="installmentsave" type="primary" (submit)="saveandNext()" [disabled]="isDisabled">
+        {{ isAppPublic ? ('BILLING.SUBMIT' | translate) : ('BILLING.SAVE-AND-NEXT' | translate) }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right btn-margins">
+      <gosi-button-dc id="installmentback" type="secondary" (submit)="previousSection()">
+        {{ 'BILLING.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-left btn-margins">
+      <gosi-button-dc id="installmentcancel" type="secondary" (submit)="popUpModal(cancelButtonTemplate)">
+        {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelButtonTemplate>
+  <gosi-confirm-modal-dc message="BILLING.INFO-CANCEL" (onConfirm)="cancelButtonModal()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #availableCreditBreakup>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'BILLING.MODIFY-INSTALLMENT' | translate">
+      <ng-container modalContent>
+        <div class="row">
+          <div class="col-lg-6">
+            <gosi-input-currency-dc
+              id="installmentCredit"
+              [control]="modifyInstallmentForm.get('installmentAmount')"
+              [placeholder]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+              [label]="'BILLING.INSTALLMENT-AMOUNT' | translate"
+              [noMargin]="true"
+              (blur)="calculateInstallmentNumber()"
+            >
+            </gosi-input-currency-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-number-dc
+              [label]="'BILLING.INSTALLMENT-NUMBER'"
+              id="installmentNumber"
+              [placeholder]="'BILLING.INSTALLMENT-NUMBER' | translate"
+              [control]="modifyInstallmentForm.get('installmentNumber')"
+              (blur)="calculateInstallmentAmount()"
+            >
+            </gosi-input-number-dc>
+          </div>
+        </div>
+      </ng-container>
+      <div class="row" modalAction>
+        <div class="col-lg-12 form-action">
+          <div class="btn-section float-right btn-margins">
+            <gosi-button-dc id="modifyInstallment" type="primary" (submit)="applyModifiyChanges()" [disabled]="isValid">
+              {{ 'BILLING.APPLY' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="btn-section float-left btn-margins">
+            <gosi-button-dc id="cancelInstallment" type="secondary" (submit)="hideModal()">
+              {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+<ng-template #toolTemplateInfo>
+  <div class="d-flex flex-column sm">
+    <div>
+      {{ 'BILLING.TOTAL-DUE-AMOUNT' | translate }}:{{ dueAmount | number: '1.2-2' }}{{ 'BILLING.SAR' | translate }}
+    </div>
+    <div>
+      {{ 'BILLING.DOWN-PAYMENT-AMOUNT' | translate }}:{{ downPayment | number: '1.2-2' }}{{ 'BILLING.SAR' | translate }}
+    </div>
+    <div>
+      {{ 'BILLING.TOTAL-INSTALLMENT-AMOUNT' | translate }}:{{ totalInstallmentAmount | number: '1.2-2'
+      }}{{ 'BILLING.SAR' | translate }}
+    </div>
+  </div>
+</ng-template>

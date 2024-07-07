@@ -1,0 +1,117 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- Person details section -->
+<div class="row">
+  <div class="col-md-12" [formGroup]="saudiPersonDetailsForm">
+    <gosi-card-dc type="secondary" heading="{{ 'CONTRIBUTOR.PERSONAL-DETAILS' | translate }}">
+      <div class="row">
+        <div class="col-md-6" formGroupName="education">
+          <gosi-input-select-dc
+            id="education"
+            [label]="'CONTRIBUTOR.EDUCATION' | translate"
+            [control]="saudiPersonDetailsForm.get('education')"
+            [list]="educationList | async"
+          ></gosi-input-select-dc>
+        </div>
+        <div class="col-md-6" formGroupName="specialization">
+          <gosi-input-select-dc
+            id="specialization"
+            [label]="'CONTRIBUTOR.SPECIALIZATION' | translate"
+            [control]="saudiPersonDetailsForm.get('specialization')"
+            [list]="specializationList | async"
+          ></gosi-input-select-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-input-radio-dc
+            id="student"
+            name="student"
+            [label]="'CONTRIBUTOR.STUDENT'"
+            [control]="saudiPersonDetailsForm.get('student')"
+            [list]="booleanList | async"
+          >
+          </gosi-input-radio-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-input-radio-dc
+            id="exPrisoner"
+            name="exPrisoner"
+            [label]="'CONTRIBUTOR.EX-PRISONER'"
+            [control]="saudiPersonDetailsForm.get('prisoner')"
+            [list]="booleanList | async"
+          >
+          </gosi-input-radio-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<!-- Contact details section -->
+<div class="row" *ngIf="isPersonAddressNotPresent || isEditMode || isEstablishmentAddress">
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary">
+      <frm-contact-dc
+        #contactDetails
+        idValue="cont"
+        [contactDetails]="personDetails.contactDetail"
+        [defaultOnly]="isMobileDefault"
+        [parentForm]="parentForm"
+        [emailMandatory]="true"
+        [isNonSaudi]="isNonSaudi"
+      ></frm-contact-dc>
+    </gosi-card-dc>
+  </div>
+</div>
+<!-- Address details section -->
+  <!-- Establishment address if person is not available-->
+<!-- <div class="row" *ngIf="isPersonAddressNotPresent || isEditMode || isEstablishmentAddress">
+  <div class="col-md-12">
+    <gosi-card-dc type="secondary">
+      <frm-address-dc
+        idValue="cont"
+        [parentForm]="contactDetailParentForm"
+        [cityList]="cityList | async"
+        [hasNationalAddress]="true"
+        [hasPOAddress]="true"
+        [parentForm]="parentForm"
+        [isSaudiAddrMandatory]="true"
+        [countryList]="countryList | async"
+        [addressDetails]="personDetails.contactDetail?.addresses ? personDetails.contactDetail.addresses : null"
+        [currentMailingAddress]="personDetails.contactDetail ? personDetails.contactDetail.currentMailingAddress : null"
+        #addressDetails
+      ></frm-address-dc>
+    </gosi-card-dc>
+  </div>
+</div> -->
+
+<!-- Footer section -->
+<div class="row">
+  <div class="col-md-12 form-action">
+    <div class="float-right btn-section" *ngIf="isUnclaimed">
+      <gosi-button-dc
+        [disabled]="isApiTriggered"
+        (submit)="saveSaudiContributorDetails()"
+        id="personSaveAndNext"
+        type="primary"
+      >
+        {{ 'CONTRIBUTOR.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancel" (submit)="confirmCancel()" type="secondary">
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal-->
+<ng-template #confirmid>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.CONFIRM-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

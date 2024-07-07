@@ -1,0 +1,314 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row basic-details" *ngIf="establishmentProfile">
+  <div class="col-md-12 mb-3 est-heading">
+    <est-name-details-dc
+      [showDropdown]="isViewOnly === false && actionDropdown.length > 0"
+      [name]="establishmentProfile.name"
+      [isMain]="establishmentProfile.establishmentType.english === main"
+      [status]="establishmentProfile.status"
+      [registrationNo]="establishmentProfile.registrationNo"
+      [dropdownList]="actionDropdown"
+      (selectedItem)="emitAction($event)"
+    ></est-name-details-dc>
+    <!-- name and no of branches -->
+  </div>
+  <gosi-alert-dc
+    *ngIf="
+      (establishment.status.english === registered || establishment.status.english === closeInProgress) &&
+      establishment.outOfMarket == true &&
+      closureTransactionId
+    "
+    class="col-md-12 mt-3"
+    [message]="'ESTABLISHMENT.ERROR.OUT-OF-MARKET' | translate: { transactionId: closureTransactionId }"
+    type="warning"
+    [dismissible]="false"
+    [noPadding]="true"
+  ></gosi-alert-dc>
+  <!--------safety regulation------>
+  <div class="col-md-12 margin-card oh-safety" *ngIf="!compliant">
+    <div class="label-card">
+      <img class="primary-icon safety-icon" alt="inspection" src="assets/icons/not-compliant.svg" />
+      <span class="safety-trigger" triggers="mouseenter:mouseleave" placement="bottom" (click)="viewModalDetails()">
+        {{ 'ESTABLISHMENT.OH-SAFETY-REGULATION' | translate }}</span
+      >
+    </div>
+  </div>
+  <div class="col-md-12">
+    <est-relationship-manager-dc
+      [establishment]="establishment"
+      [relationshipManager]="relationshipManager"
+      [relationOfficerIamDetails]="relationOfficerIamDetails"
+      [heading]="'ESTABLISHMENT.RELATIONSHIP-MANAGER'"
+      (addScreenLink)="navigateToAdd()"
+      (modifyScreenLink)="navigateToModify()"
+    >
+    </est-relationship-manager-dc>
+    <div *ngIf="!relationOfficerIamDetails">
+      <div class="no-admin justify-content-center">
+        <div class="value">{{ 'ESTABLISHMENT.NO-RELATIONSHIP-MANAGER' | translate }}</div>
+      </div>
+    </div>
+  </div>
+  <!-- legal entity -->
+  <div class="col-md-12 margin-card">
+    <est-card-label-dc
+      label="{{ 'ESTABLISHMENT.LEGAL-ENTITY' | translate | uppercase }}"
+      value="{{ establishmentProfile.legalEntity | bilingualText }}"
+      labelIcon="university"
+      [showAction]="canEditLegalEntity && !isViewOnly"
+      labelId="changeLegalEntityBtn"
+      (labelAction)="legalEntityAction()"
+      accessRoles="{{ restrictDetailEdit ? accessRolesForMCIEst : accessRoles }}"
+      [accessIdentifier]="accessIdentifier"
+      [showIconSection]="establishment?.onePartner"
+    >
+    </est-card-label-dc>
+  </div>
+  <div class="w-100">
+    <div class="col-md-12 margin-card" *ngIf="showFlags">
+      <div class="label-card">
+        <div class="col-md-10 px-0 inactive-card" *ngIf="!noOfFlags">
+          <span
+            class="flag-trigger"
+            [ngClass]="!noOfFlags ? 'inactive-label' : ''"
+            *ngIf="!noOfFlags"
+            (click)="viewAllFlags()"
+          >
+            <fa-icon class="primary-icon" [ngClass]="!noOfFlags ? 'inactive' : ''" icon="flag"> </fa-icon>
+            {{ 'ESTABLISHMENT.NO-ACTIVE-FLAGS' | translate | uppercase }}
+          </span>
+        </div>
+        <div class="col-md-10 px-0" *ngIf="noOfFlags > 0">
+          <span
+            class="active-card flag-trigger"
+            [popover]="flags"
+            triggers="mouseenter:mouseleave"
+            placement="bottom"
+            (click)="viewAllFlags()"
+          >
+            <fa-icon class="primary-icon" [ngClass]="!noOfFlags ? 'inactive' : ''" icon="flag"> </fa-icon>
+            {{ 'ESTABLISHMENT.NUMBER-ACTIVE-FLAGS' | translate: { count: noOfFlags } | uppercase }}
+          </span>
+        </div>
+        <div *gosiShow="addFlagAccessRoles; regNo: establishmentProfile?.registrationNo" class="col-md-2 add-flag px-0">
+          <fa-icon (click)="addFlagDetails()" class="secondary-icon" icon="plus" [tooltip]="addFlag" placement="bottom">
+          </fa-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!---active flags tooltip-->
+  <ng-template #flags>
+    <div class="row no-gutters flex-nowrap flag-tooltip" *ngFor="let flag of flagMap | keyvalue; let i = index">
+      <div class="col-auto flag-type">{{ flag.value[0].flagType | bilingualText }}</div>
+      <div class="col-auto flag-reason">{{ flag.value.length }}</div>
+    </div>
+  </ng-template>
+  <!---add flag tooltip-->
+  <ng-template #addFlag>
+    <ng-container>
+      <div class="d-flex flex-column">
+        <div>{{ 'ESTABLISHMENT.ADD-FLAG' | translate }}</div>
+      </div>
+    </ng-container>
+  </ng-template>
+
+  <!-- MOF payemnt detals FO -->
+  <div class="col-md-12 margin-card" *ngIf="showMofPaymentDetails && isEligibleUserMof && isAppPrivate">
+    <est-card-label-dc
+      [onlyLabel]="false"
+      label="{{ 'ESTABLISHMENT.PAYMENT-TYPE' | translate | uppercase }}"
+      value="{{ paymentTypeValue | translate }}"
+      [labelIcon]="'file-invoice-dollar'"
+      labelIcon="add"
+      (labelAction)="mofAction()"
+      [accessRoles]="accessRolesMof"
+      [accessIdentifier]="accessIdentifier"
+    >
+    </est-card-label-dc>
+  </div>
+
+  <!-- MOF payemnt detals GOL -->
+  <div class="col-md-12 margin-card" *ngIf="showMofPaymentDetails && isEligibleUserMof && !isAppPrivate">
+    <est-card-label-dc
+      [onlyLabel]="false"
+      label="{{ 'ESTABLISHMENT.PAYMENT-TYPE' | translate | uppercase }}"
+      value="{{ paymentTypeValue | translate }}"
+      [labelIcon]="'file-invoice-dollar'"
+      labelIcon="add"
+      (labelAction)="mofAction()"
+      [accessRoles]="accessRolesMof"
+      [accessIdentifier]="accessIdentifier"
+      [showAction]="false"
+    >
+    </est-card-label-dc>
+  </div>
+
+  <!-- Late Fee Indicator -->
+  <div class="col-md-12 margin-card" *ngIf="showLateFeeIndicator">
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{ lateFeeLabel | translate | uppercase }}"
+      [customLabelIcon]="lateFeeIcon"
+      labelIcon="add"
+      (labelAction)="lateFeeAction()"
+      [accessRoles]="accessRoles"
+      [accessIdentifier]="accessIdentifier"
+      [isActiveLabel]="isLateFeeActive"
+    ></est-card-label-dc>
+  </div>
+  <!-- Certificate  -->
+  <div class="col-md-12 margin-card" *ngIf="showCertificates && hasCertificateViewAccess">
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{ viewCertificatLabel | translate | uppercase }}"
+      [labelIcon]="certificateIcon"
+      [showAction]="false"
+      [isLink]="true"
+      (labelAction)="viewCertificate.emit()"
+      [accessRoles]="accessRoles"
+      [accessIdentifier]="accessIdentifier"
+    >
+    </est-card-label-dc>
+  </div>
+  <!-- Add new health insurance Policy  -->
+  <div class="col-md-12 margin-card" *ngIf="!isAppPrivate && accessRoleCreateNewPolicy && !isRegisteredInHealthInsurance"  >
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{ addNewPolicy | translate }}"
+      [labelIcon]="certificateIcon"
+      [showAction]="false"
+      [isLink]="true"
+      (labelAction)="navigateToHealth.emit()"
+      [accessRoles]="accessRoles"
+      [accessIdentifier]="accessIdentifier"
+      [isBetaVersion]="true">
+    </est-card-label-dc>
+  </div>
+
+  <!-- Add contributors to insurance policy  -->
+  <div class="col-md-12 margin-card" *ngIf="!isAppPrivate && accessRoleCreateNewPolicy && isRegisteredInHealthInsurance"  >
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{ 'ESTABLISHMENT.VIEW-HEALTH-INSURANCE-DETAILS' | translate }}"
+      [labelIcon]="certificateIcon"
+      [showAction]="false"
+      [isLink]="true"
+      (labelAction)="navigateToHealthInsuranceDetails.emit()"
+      [accessRoles]="accessRoles"
+      [accessIdentifier]="accessIdentifier"
+      [isBetaVersion]="true">
+    </est-card-label-dc>
+  </div>
+  <!-- OH -->
+  <!-- todo change the condition,Icon and Access -->
+  <div class="col-md-12 margin-card d-none" *ngIf="true">
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{ 'ESTABLISHMENT.OH-AND-SAFETY-HISTORY' | translate | uppercase }}"
+      [labelIcon]="certificateIcon"
+      [showAction]="false"
+      [isLink]="true"
+      (labelAction)="safetyHistory.emit()"
+      [accessRoles]="accessRoles"
+      [accessIdentifier]="accessIdentifier"
+    >
+    </est-card-label-dc>
+  </div>
+  <!-- violation  -->
+    <!-- Indicators  -->
+    <!-- hiding commitment indicators -->
+    <!-- <div class="col-md-12 margin-card">
+      <est-card-label-dc
+        value="{{commitmentIndicatorTotalRatio}}"
+        label="{{ indicatorsLabel | translate | uppercase }}"
+        [labelIcon]="indicatorsIcon"
+        [showAction]="false"
+        [isLink]="true"
+        (labelAction)="viewCommitmentIndicator.emit()"
+        [accessRoles]="accessRoles"
+        [accessIdentifier]="accessIdentifier"
+      >
+      </est-card-label-dc>
+    </div> -->
+  <div class="col-md-12 margin-card" *ngIf="showViolations">
+    <est-card-label-dc
+      [onlyLabel]="true"
+      label="{{
+        (violationUnpaidCount === 0
+          ? 'ESTABLISHMENT.NO-UNPAID-VIOLATIONS'
+          : violationUnpaidCount >= 11
+          ? 'ESTABLISHMENT.UNPAID-VIOLATION-11-PLUS'
+          : violationUnpaidCount >= 3 && violationUnpaidCount <= 10
+          ? 'ESTABLISHMENT.UNPAID-VIOLATION-10'
+          : violationUnpaidCount === 2
+          ? 'ESTABLISHMENT.UNPAID-VIOLATION-2'
+          : violationUnpaidCount === 1
+          ? 'ESTABLISHMENT.UNPAID-VIOLATION'
+          : ''
+        )
+          | translate: { count: violationUnpaidCount }
+          | uppercase
+      }}"
+      [customLabelIcon]="'violations'"
+      [showAction]="false"
+      [isLink]="true"
+      (labelAction)="violationClick.emit()"
+      [isActiveLabel]="true"
+    >
+    </est-card-label-dc>
+  </div>
+  <!--Authorized person-->
+  <div
+    class="col-md-12 mb-3"
+    *ngIf="establishment?.status?.english === reopened || establishment?.status?.english === reopenedClosingInProgress"
+  >
+    <est-authorized-person-dc
+      [heading]="'ESTABLISHMENT.AUTHORIZED-PERSON'"
+      [establishment]="establishment"
+    ></est-authorized-person-dc>
+  </div>
+  <!-- admin list -->
+  <div class="col-md-12 admin-wrapper">
+    <est-employee-list-dc
+      [employees]="admins"
+      [heading]="'ESTABLISHMENT.ADMINS'"
+      [actionLabel]="adminActionLabel"
+      [showButton]="!isViewOnly && (showAdminButton || showAddSuperAdmin)"
+      [actionIcon]="showAddSuperAdmin ? 'plus' : undefined"
+      [showRole]="true"
+      (displayModal)="displayDetails()"
+      [isWorkflow]="false"
+      [disableButton]="disableAdminsButton"
+      [buttonTooltip]="adminsButtonTooltip"
+    >
+    </est-employee-list-dc>
+    <div *ngIf="!admins?.length">
+      <div class="no-admin justify-content-center">
+        <div class="value">{{ 'ESTABLISHMENT.NO-ADMIN' | translate }}</div>
+      </div>
+    </div>
+  </div>
+  <!-- owner list -->
+  <div class="col-md-12 mb-3" *ngIf="showOwnerSection" [ngClass]="{ 'mb-3': owners && owners.length <= 2 }">
+    <est-employee-list-dc
+      [employees]="owners"
+      [heading]="'ESTABLISHMENT.OWNERS'"
+      [actionLabel]="'ESTABLISHMENT.MANAGE-OWNER'"
+      [viewAllLink]="ownerLink"
+      [addScreenLink]="ownerLink"
+      [showButton]="!isViewOnly && showManageOwners"
+      [showId]="true"
+    ></est-employee-list-dc>
+    <div *ngIf="!owners?.length">
+      <div class="no-owner justify-content-center">
+        <div class="value">{{ 'ESTABLISHMENT.NO-OWNER' | translate }}</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,115 @@
+<div>
+  <gosi-breadcrumb-dc #brdcmb> </gosi-breadcrumb-dc>
+</div>
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <div>
+        <frm-main-heading-dc [heading]="'BENEFITS.MAKE-DIRECT-PAYMENT' | translate"></frm-main-heading-dc>
+      </div>
+    </ng-container>
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="documentList"
+      [showComments]="false"
+      [comments]="transactionRefData"
+      (onEdit)="navigateToEdit()"
+    >
+      <gosi-alert-dc> </gosi-alert-dc>
+      <div id="contentArea">
+        <div class="row">
+          <div class="col-md-12">
+           <bnt-transcation-payment-details-sc
+           [heirDetails]="heirDetails"
+           [validatorCanEdit]="validatorCanEdit"
+           [identity]="identity"
+           (navigateToEditHeir)="navigateToEdit()"
+           (viewContributorDetailsPage)="viewContributorDetails()"
+           (viewAdjustmentDetailsPage)="viewAdjustmentDetails($event)"
+           ></bnt-transcation-payment-details-sc>
+          </div>
+        </div>
+      </div>
+      <div id="actionArea">
+        <div class="row form-action">
+          <div class="col-lg-12">
+            <div class="col-lg-12 form-action">
+              <div class="btn-section float-right">
+                <gosi-button-dc id="approve" [disabled]="false" type="primary" (submit)="showModal(approveTemplate)">
+                  {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+
+              <ng-container>
+                <div class="btn-section float-right" *ngIf="canReject">
+                  <gosi-button-dc type="danger" id="reject" (submit)="showModal(rejectTemplate)">
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                </div>
+
+                <div class="btn-section float-right" *ngIf="canReturn">
+                  <gosi-button-dc type="secondary" id="return" (submit)="showModal(returnTemplate)">
+                    {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </ng-container>
+              <div class="btn-section float-left">
+                <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelBenefitTemplate)">
+                  {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+
+<ng-template #cancelBenefitTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE' | translate }}"
+    [isCommentsMandatory]="false"
+    [parentForm]="directPaymentForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveBenefit()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!-- --Reject template-- -->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList$"
+    heading="{{ 'BENEFITS.REJECT' | translate }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION-POPUP' | translate: { transactionNo: referenceNo }"
+    [parentForm]="directPaymentForm"
+    (rejectEvent)="confirmRejectBenefit()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!--
+  --Return template-- - -->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList$"
+    [heading]="'BENEFITS.RETURN' | translate"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="directPaymentForm"
+    (returnEvent)="returnBenefit()"
+  >
+  </frm-return-template-dc>
+</ng-template>

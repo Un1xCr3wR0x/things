@@ -1,0 +1,132 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row info" *ngIf="!mofFlag">
+  <div class="col-md-12">
+    <div class="col-lg-12 main-heading">
+      {{ 'BILLING.RECEIPT-ALLOCATION-FOR-BRANCHES' | translate }}
+    </div>
+    <ng-container *ngIf="insideAllocationFlag">
+      <div class="col-lg-12 sub-heading">
+        {{ 'BILLING.ESTABLISHMENT-WITHIN-THE-GROUP' | translate }}
+      </div>
+
+      <div class="col-lg-12 allocation-table">
+        <div class="table-scroll table-responsive">
+          <table class="table">
+            <thead class="thead-light">
+              <tr>
+                <th>{{ 'BILLING.REGISTRATION-NO' | translate }}</th>
+                <th>{{ 'BILLING.ESTABLISHMENT-NAME' | translate }}</th>
+                <th>{{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}</th>
+                <th>{{ 'BILLING.STATUS' | translate }}</th>
+                <th>
+                  {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+                  <span class="currency-label"
+                    >({{ gccCurrency ? (gccCurrency | bilingualText) : ('BILLING.SAR' | translate) }})
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let branchDetails of branchSummary">
+                <ng-container *ngFor="let branchAmountDetails of receiptPaymentSummaryDetails.branchAmount">
+                  <ng-container *ngIf="branchDetails.registrationNo === branchAmountDetails.registrationNo">
+                    <tr class="border-bottom">
+                      <td>{{ branchDetails.registrationNo }}</td>
+                      <td>
+                        {{
+                          branchDetails.name.english === null
+                            ? branchDetails.name.arabic
+                            : (branchDetails.name | bilingualText)
+                        }}
+                      </td>
+                      <td>{{ branchDetails.fieldOffice | bilingualText | titlecase }}</td>
+                      <td>{{ branchDetails.status | bilingualText | titlecase }}</td>
+                      <td>
+                        {{ branchAmountDetails.allocatedAmount.amount | number: '1.2-3' }}
+                      </td>
+                    </tr>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+              <tr class="font-weight-bold totalAmount" id="totalAmountValue">
+                <td colspan="3"></td>
+                <td>{{ 'BILLING.TOTAL' | translate }}</td>
+                <td>{{ insideTotal | number: '1.2-3' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!gccFlag && establishmentInfo.length !== 0">
+      <div class="col-lg-12 sub-heading outsidegroup">
+        {{ 'BILLING.RECEIPT-ALLOCATION-FOR-OUTSIDE-EST' | translate }}
+      </div>
+      <div class="col-lg-12 allocation-table">
+        <table class="table">
+          <thead class="thead-light">
+            <tr>
+              <th id="registrationNo">{{ 'BILLING.REGISTRATION-NO' | translate }}</th>
+              <th id="establishmentName">{{ 'BILLING.ESTABLISHMENT-NAME' | translate }}</th>
+              <th id="fieldOffice">{{ 'BILLING.FIELD-OFFICE-LOCATION' | translate }}</th>
+              <th id="status">{{ 'BILLING.STATUS' | translate }}</th>
+              <th id="allocationAmount">
+                {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+                <span class="currency-label">({{ gccCurrency | bilingualText }}) </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let establishmentDetails of establishmentInfo">
+              <ng-container *ngFor="let amountDetails of receiptPaymentSummaryDetails.branchAmount">
+                <ng-container *ngIf="establishmentDetails.registrationNo === amountDetails.registrationNo">
+                  <tr class="border-bottom">
+                    <td>{{ establishmentDetails.registrationNo }}</td>
+                    <td>
+                      {{
+                        establishmentDetails.name.english === null
+                          ? establishmentDetails.name.arabic
+                          : (establishmentDetails.name | bilingualText)
+                      }}
+                    </td>
+                    <td>{{ establishmentDetails.fieldOfficeName | bilingualText | titlecase }}</td>
+                    <td>{{ establishmentDetails.status | bilingualText | titlecase }}</td>
+                    <td>
+                      {{ amountDetails.allocatedAmount.amount | number: '1.2-3' }}
+                    </td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+            <tr class="font-weight-bold totalAmount" id="totalOutsideValue">
+              <td colspan="3"></td>
+              <td>{{ 'BILLING.TOTAL' | translate }}</td>
+              <td>{{ outsideTotal | number: '1.2-3' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="gccFlag !== true">
+      <div class="col-lg-12 totalAllocationAmount">
+        <div class="float-right allocatedAmountValue">
+          <div class="row total-value">
+            <div class="amtValue">
+              {{ 'BILLING.TOTAL-ALLOCATION-AMOUNT' | translate }}
+            </div>
+            <div class="totalValue" id="totalAllocatedAmount" *ngIf="receiptPaymentSummaryDetails">
+              {{ receiptPaymentSummaryDetails.amountReceived.amount | number: '1.2-3' }}
+            </div>
+            <div class="amtValue">
+              {{ 'BILLING.SAR' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

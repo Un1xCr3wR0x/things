@@ -1,0 +1,114 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div *ngIf="messageToDisplay">
+  <gosi-alert-dc type="success" [bilingualMessage]="messageToDisplay" [dismissible]="true"> </gosi-alert-dc>
+</div>
+
+<div *ngIf="engagementDetails">
+  <div class="px-3 card-info">
+    <div class="feedback-heading">
+      {{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE-COVERAGE-DETAILS' | translate }}
+    </div>
+    <div class="info-content table-responsive gosi-scrollbar">
+      <table id="successCoverageTable" class="table table-borderless table-lg">
+        <thead class="table-head">
+          <tr>
+            <th class="pl-4 coveragePeriod">
+              {{ 'CONTRIBUTOR.ENGAGEMENT-START-DATE' | translate }}
+            </th>
+            <th *ngIf="engagementDetails?.engagementPeriod[0]?.monthlyContributoryWage">
+              {{ 'CONTRIBUTOR.CONTRIBUTORY-WAGE' | translate }}
+            </th>
+            <th class="text-center">
+              {{ 'CONTRIBUTOR.ANNUITY' | translate }}
+            </th>
+            <th class="text-center"> <!--#forDisable -->
+              {{ 'CONTRIBUTOR.PENSION-REFORM-ANNUITY' | translate }}
+            </th>
+            <th class="text-center">
+              {{ 'CONTRIBUTOR.OCCUPATIONAL-HAZARDS' | translate }}
+            </th>
+            <th class="text-center">
+              {{ 'CONTRIBUTOR.UNEMPLOYMENT-INS' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody *ngIf="engagementDetails.engagementPeriod">
+          <tr
+            id="coverage{{ i }}"
+            class="table-row"
+            *ngFor="let item of engagementDetails.engagementPeriod; let i = index"
+          >
+            <td class="pl-4">
+              <span *ngIf="engagementDetails.joiningDate !== null && engagementDetails.joiningDate.gregorian !== null"
+                >{{ engagementDetails.joiningDate.gregorian | date: 'dd/MM/yyyy' }}
+              </span>
+              <span *ngIf="item.endDate">
+                <span *ngIf="item.endDate.gregorian"> - {{ item.endDate.gregorian | date: 'dd/MM/yyyy' }} </span>
+              </span>
+              <span *ngIf="!item.endDate"> - {{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+            </td>
+            <td *ngIf="engagementDetails?.engagementPeriod[0]?.monthlyContributoryWage">
+              {{ item.monthlyContributoryWage }}
+            </td>
+            <td class="text-center">
+              <fa-icon
+                class="cov-icon"
+                [ngClass]="{
+                  'icon-active': checkCoverage(item.coverageTypes, coverageAnnuity)
+                }"
+                icon="check"
+              >
+              </fa-icon>
+            </td>
+            <td class="text-center"> <!-- #forDisable -->
+              <fa-icon
+                class="cov-icon"
+                [ngClass]="{
+                  'icon-active': checkCoverage(item.coverageTypes, pensionReformAnnuity)
+                }"
+                icon="check"
+              >
+              </fa-icon>
+            </td>
+            <td class="text-center">
+              <fa-icon
+                class="cov-icon"
+                [ngClass]="{
+                  'icon-active': checkCoverage(item.coverageTypes, coverageOH)
+                }"
+                icon="check"
+              ></fa-icon>
+            </td>
+            <td class="text-center">
+              <fa-icon
+                class="cov-icon"
+                [ngClass]="{
+                  'icon-active': checkCoverage(item.coverageTypes, coverageUI)
+                }"
+                icon="check"
+              ></fa-icon>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="row form-action" *ngIf="!hideAddContributor">
+  <div class="col-lg-12">
+    <div class="btn-section float-left">
+      <gosi-button-dc id="home" type="secondary" (submit)="goToHome()">
+        {{ 'CONTRIBUTOR.HOME' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="registerAnotherVic" (submit)="cntresetToFirstForm()" type="primary">
+        {{ 'CONTRIBUTOR.ADD-VIC.REGISTER-ANOTHER-VIC' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>

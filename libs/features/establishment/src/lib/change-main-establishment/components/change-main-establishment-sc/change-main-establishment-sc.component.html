@@ -1,0 +1,139 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <est-heading-dc
+      [shouldPrompt]="true"
+      [canNavigate]="false"
+      (backEvent)="cancelTransaction()"
+      [backLink]="routeToView"
+    >
+      {{ 'ESTABLISHMENT.CHANGE-MAIN-EST' | translate }}
+    </est-heading-dc>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-alert-dc *ngIf="showInfo && currentTab === 0" [alert]="infoDetails" [dismissible]="false" type="info">
+  </gosi-alert-dc>
+  <!-- edit view  -->
+  <div class="header" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+    </div>
+  </div>
+  <gosi-progress-wizard-dc
+    *ngIf="changeMainEstTabWizards"
+    (clickWizard)="selectedWizard($event)"
+    [wizardItems]="changeMainEstTabWizards"
+  >
+  </gosi-progress-wizard-dc>
+  <tabset class="wrapper-tabset">
+    <!-- select main establishment tab -->
+    <tab [active]="currentTab === 0">
+      <div class="row">
+        <div class="col-md-12">
+          <gosi-card-dc type="secondary">
+            <div class="row">
+              <div class="col">
+                <h5 class="select-main">{{ 'ESTABLISHMENT.NEW-MAIN-EST-DETAILS' | translate }}</h5>
+              </div>
+              <div class="col-md-4 ml-auto">
+                <gosi-search-dc
+                  [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+                  (search)="selectedPage(1, $event)"
+                  [isLoading]="isLoading"
+                >
+                </gosi-search-dc>
+              </div>
+            </div>
+            <est-branch-list-dc
+              class="pagination"
+              [itemsPerPage]="pageSize"
+              [establishments]="branchEstablishments"
+              [pageDetails]="pageDetails"
+              [currentPage]="currentPage"
+              [totalBranches]="totalBranchCount"
+              (selectedEstablishment)="onSelectEstablishment($event)"
+              (pageIndexEvent)="selectedPage($event, searchParam)"
+              paginationId="pagination"
+              [isLoading]="isLoading"
+              [isResultEmpty]="isResultEmpty"
+              [searchParam]="searchParam"
+            >
+            </est-branch-list-dc>
+          </gosi-card-dc>
+        </div>
+      </div>
+
+      <div *ngIf="appToken == private">
+        <est-footer-buttons-dc
+          primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+          [showPrevious]="false"
+          (submit)="saveMainEstablishmentDetails(false)"
+          (cancel)="showModal(cancelTemplate)"
+        >
+        </est-footer-buttons-dc>
+      </div>
+      <div *ngIf="appToken == public">
+        <est-footer-buttons-dc
+          primaryLabel="ESTABLISHMENT.SUBMIT"
+          [showPrevious]="false"
+          [primaryBtnDisabled]="disableSubmitBtn"
+          (submit)="saveMainEstablishmentDetails(false)"
+          (cancel)="showModal(cancelTemplate)"
+        >
+        </est-footer-buttons-dc>
+      </div>
+    </tab>
+    <!-- documents tab -->
+    <tab [active]="currentTab === 1" *ngIf="appToken == private">
+      <est-documents-dc
+        *ngIf="changeMainEstablishmentForm.get('referenceNo')?.value && documents"
+        [documents]="documents"
+        [businessKey]="registrationNo"
+        [referenceNo]="changeMainEstablishmentForm.get('referenceNo')?.value"
+        (refreshDocument)="
+          refreshDocumentContent(
+            $event,
+            registrationNo,
+            undefined,
+            changeMainEstablishmentForm.get('referenceNo')?.value
+          )
+        "
+      >
+      </est-documents-dc>
+      <!-- Comments -->
+      <gosi-card-dc type="secondary" *ngIf="changeMainEstablishmentForm" [paddingBottom]="true">
+        <gosi-input-text-area-dc
+          [label]="'ESTABLISHMENT.COMMENTS' | translate"
+          id="comments"
+          name="comments"
+          [maxLength]="commentsMaxLength"
+          [control]="changeMainEstablishmentForm.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </gosi-card-dc>
+      <est-footer-buttons-dc
+        primaryLabel="ESTABLISHMENT.SUBMIT"
+        [showPrevious]="true"
+        (submit)="saveMainEstablishmentDetails(true)"
+        (cancel)="showModal(cancelTemplate)"
+        (previous)="selectedWizard(0)"
+      >
+      </est-footer-buttons-dc>
+    </tab>
+  </tabset>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

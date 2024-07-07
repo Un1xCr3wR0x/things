@@ -1,0 +1,271 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div
+  class="row"
+  *ngIf="processType === 'edit' || modifyIndicator || processType === 'add' || processType === 'modify' || isEdit"
+>
+  <div class="col-lg-12">
+    <gosi-card-dc
+      type="secondary"
+      heading="{{ 'OCCUPATIONAL-HAZARD.COMPLICATION.SEC-COMPLICATION-DETAILS' | translate }}"
+    >
+      <div class="row" [formGroup]="reportComplicationForm">
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" formGroupName="complicationDate">
+              <gosi-input-date-dc
+                id="complicationDate"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-DATE"
+                [control]="reportComplicationForm.get('complicationDate').get('gregorian')"
+                (changeEvent)="dateChange()"
+                [maxDate]="currentDate"
+                [minDate]="closingDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="workDisabilityDate">
+              <gosi-input-date-dc
+                id="workDisabilityDate"
+                label="OCCUPATIONAL-HAZARD.WORK-DISABILTY-DATE"
+                [control]="reportComplicationForm.get('workDisabilityDate').get('gregorian')"
+                [maxDate]="deathDate"
+                [minDate]="processType === 'modify' || processType === 're-open' ? null : contributorComplicationDate"
+                (changeEvent)="workDisabilityDateChange()"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <!-- this block shows the death indicator to mark that the injury leads the person to dead or not-->
+
+        <div class="col-lg-12">
+          <div class="dead-confirmation-block mb-4">
+            <div class="d-flex bd-highlight">
+              <div class="p-4 w-100 bd-highlight complicationDescription">
+                <span>{{ 'OCCUPATIONAL-HAZARD.COMPLICATION.COMPLICATION-LEADS-TO-DEATH' | translate }}</span>
+              </div>
+              <div class="p-2 flex-shrink-1 bd-highlight">
+                <gosi-input-toggle-dc
+                  id="complicationToDeathIndicator"
+                  name="complicationToDeathIndicator"
+                  ignoreLabel="true"
+                  [control]="reportComplicationForm.get('complicationToDeathIndicator')"
+                  (changeEvent)="validationCheck()"
+                >
+                </gosi-input-toggle-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <!-- this block shows the user to select death date if person is dead -->
+
+          <div class="row">
+            <div class="col-lg-6" *ngIf="isPersonDead">
+              <gosi-input-date-dc
+                id="deathDate"
+                label="OCCUPATIONAL-HAZARD.DEATH-DATE"
+                [control]="reportComplicationForm.get('deathDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="workDisabilityDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6" formGroupName="employeeInformedDate" *ngIf="(!isIndividualApp && (processType !== 're-open' && processType !== 'modify'))">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+                [control]="reportComplicationForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorComplicationDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="employeeInformedDate" *ngIf="(isIndividualApp && (processType !== 're-open' && processType !== 'modify')) ">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE-IND"
+                [control]="reportComplicationForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorComplicationDate"
+                [disabled]="disabled || isIndividualApp "
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="employeeInformedDate" *ngIf="!isContributor && (processType === 're-open' || processType ==='modify')">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE"
+                [control]="reportComplicationForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorComplicationDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="employeeInformedDate" *ngIf="isContributor && (processType === 're-open' || processType ==='modify')">
+              <gosi-input-date-dc
+                id="employeeInformedOn"
+                label="OCCUPATIONAL-HAZARD.CONTRIBUTOR-INFORMED-DATE-IND"
+                [control]="reportComplicationForm.get('employeeInformedDate').get('gregorian')"
+                [maxDate]="currentDate"
+                [minDate]="contributorComplicationDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="treatmentCompleted">
+              <gosi-input-radio-dc
+                id="treatmentCompleted"
+                name="treatmentCompleted"
+                [control]="reportComplicationForm.get('treatmentCompleted')"
+                [list]="booleanList"
+                label="OCCUPATIONAL-HAZARD.TREATMENT-COMPLETED"
+              >
+              </gosi-input-radio-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6" formGroupName="employerInformedDate" *ngIf="isAppPrivate && (processType !== 're-open' && processType !== 'modify')">
+              <gosi-input-date-dc
+                id="employerInformedOn"
+                label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+                [control]="reportComplicationForm.get('employerInformedDate').get('gregorian')"
+                [minDate]="employerInformedDateMinDate"
+                [maxDate]="currentDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+            <div class="col-lg-6" formGroupName="employerInformedDate" *ngIf="!isContributor && (processType === 're-open' || processType ==='modify')">
+              <gosi-input-date-dc
+                id="employerInformedOn"
+                label="OCCUPATIONAL-HAZARD.EMPLOYER-INFORMED-ON"
+                [control]="reportComplicationForm.get('employerInformedDate').get('gregorian')"
+                [minDate]="employerInformedDateMinDate"
+                [maxDate]="currentDate"
+                [disabled]="disabled"
+              >
+              </gosi-input-date-dc>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col-lg-6" *ngIf="(showResonforDelay && !showResonforDelayCurrentDate && !isIndividualApp && (processType !== 're-open' && processType !== 'modify'))">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+            <div class="col-lg-6" *ngIf="(showResonforDelay && !showResonforDelayCurrentDate && !isContributor && (processType === 're-open' || processType === 'modify'))">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+            <div class="col-lg-6" *ngIf="(showResonforDelay && !showResonforDelayCurrentDate && isIndividualApp && (processType !== 're-open' && processType !== 'modify')) ">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR-IND"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+            <div class="col-lg-6" *ngIf="(showResonforDelay && !showResonforDelayCurrentDate && isContributor && (processType === 're-open' || processType ==='modify'))">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-CONTRIBUTOR-IND"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6" *ngIf="showResonforDelayCurrentDate && !showResonforDelay">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                [maxLength]="maxLength"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-EMPLOYER"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6" *ngIf="showResonforDelay && showResonforDelayCurrentDate">
+              <gosi-input-text-area-dc
+                id="reasonForDelay"
+                name="reasonForDelay"
+                [maxLength]="maxLength"
+                label="OCCUPATIONAL-HAZARD.COMPLICATION.REASON-FOR-DELAY-COMPLICATION-BOTH"
+                [control]="reportComplicationForm.get('reasonForDelay')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="processType === 're-open'">
+            <div class="col-lg-6" formGroupName="emergencyContactNo">
+              <gosi-input-mobile-dc
+                [name]="'mobileNo'"
+                [isdControl]="reportComplicationForm.get('mobileNo').get('isdCodePrimary')"
+                [control]="reportComplicationForm.get('mobileNo').get('primary')"
+                label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+                id="emergencyContactNumber"
+              ></gosi-input-mobile-dc>
+            </div>
+            <div formGroupName="payeeType" *ngIf="processType === 're-open'">
+              <div class="col-lg-12">
+                <gosi-input-radio-dc
+                  id="payeeType"
+                  name="payeeType"
+                  [control]="reportComplicationForm.get('payeeType')"
+                  [list]="payeeList"
+                  [disabled]="true"
+                  [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate"
+                >
+                </gosi-input-radio-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-12 form-action">
+    <div class="complication-details">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="complicationSubmit" (submit)="submitComplicationDetails()" type="primary">
+          {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" type="secondary">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>

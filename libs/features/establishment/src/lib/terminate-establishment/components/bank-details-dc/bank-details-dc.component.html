@@ -1,0 +1,73 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-card-dc
+  type="secondary"
+  headingSize="md"
+  heading="{{ 'ESTABLISHMENT.SEC-PAYMENT-DETAILS' | translate }}"
+  id="payment-details"
+  *ngIf="isPrivate"
+>
+  <div class="row">
+    <div class="col-sm-12">
+      <gosi-input-radio-dc
+        id="paymentType"
+        name="paymentType"
+        (change)="onPaymentMethodChange()"
+        [control]="bankDetailsForm?.get('paymentMethod')"
+        [list]="payentTypeList$ | async"
+        label="{{ 'ESTABLISHMENT.PAYMENT-METHOD' | translate }}"
+      >
+      </gosi-input-radio-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc
+  type="secondary"
+  *ngIf="bankDetailsForm.get('paymentMethod').get('english').value === bankPaymentMetod"
+  headingSize="md"
+  heading="{{ 'ESTABLISHMENT.BANK-DETAILS' | translate }}"
+  [canEdit]="false"
+  id="bank-details"
+>
+  <div class="row">
+    <ng-container *ngTemplateOutlet="bankInput"></ng-container>
+    <div class="col-md-12 pt-1 balance-info d-flex">
+      <div class="info ml-0 mr-2">
+        <fa-icon class="back-icon" [icon]="['fas', 'info-circle']"></fa-icon>
+      </div>
+      <span>{{ 'ESTABLISHMENT.BANK-DETAILS-NA-INFO' | translate }}</span>
+    </div>
+  </div>
+</gosi-card-dc>
+<ng-template #bankInput>
+  <div class="col-md-6">
+    <gosi-input-text-dc
+      id="iban"
+      (blur)="getBank()"
+      [placeholder]="'ESTABLISHMENT.IBAN-NUMBER' | translate"
+      [label]="'ESTABLISHMENT.IBAN-NUMBER' | translate"
+      [control]="bankDetailsForm?.get('ibanAccountNo')"
+      [maxLength]="minMaxLengthAccountNo"
+      [onlyAlphaNumerics]="true"
+      gosiSpecialCharacterMask
+      [removeSpecialCharacters]="true"
+    >
+    </gosi-input-text-dc>
+  </div>
+  <div class="col-md-6">
+    <gosi-input-select-dc
+      *ngIf="bankDetailsForm?.get('bankName')?.get('english')?.value || !isIbanMapped || (isGccEst && showBankName)"
+      id="bankName"
+      [name]="'bankName'"
+      [label]="'ESTABLISHMENT.BANK-NAME' | translate"
+      [control]="bankDetailsForm.get('bankName')"
+      [list]="bankNameList"
+      [disabled]="
+        isGccEst
+          ? !(bankDetailsForm.get('ibanAccountNo').value && bankDetailsForm.get('ibanAccountNo').valid)
+          : isIbanMapped
+      "
+    ></gosi-input-select-dc>
+  </div>
+</ng-template>

@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <h4 class="main-heading">
+        {{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}
+      </h4>
+    </div>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="activeTab < totalTabs">
+    <div class="col">
+      <cnt-contributor-banner-dc [contributor]="contributor"> </cnt-contributor-banner-dc>
+    </div>
+  </div>
+
+  <gosi-progress-wizard-dc
+    *ngIf="activeTab < totalTabs"
+    [wizardItems]="formWizardItems"
+    (clickWizard)="selectFormWizard($event)"
+    #progressWizardItems
+  >
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #addContributorTabs>
+      <tab [active]="activeTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <cnt-proactive-person-details-dc
+              *ngIf="contributor"
+              #personDetails
+              [educationList]="educationList$ | async"
+              [specializationList]="specializationList$ | async"
+              [cityList]="cityList$ | async"
+              [countryList]="nationalityList$ | async"
+              [contributor]="contributor"
+              (submit)="updateProactiveContributor($event)"
+              (cancel)="showTemplate(cancelEngagementTemplate)"
+            ></cnt-proactive-person-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-md-12">
+            <cnt-proactive-engagement-details-dc
+              *ngIf="engagement"
+              #engagementWageDetails
+              [workTypeList]="workTypeList$ | async"
+              [occupationList]="occupationList$ | async"
+              [engagementDetails]="engagement"
+              (previousTab)="navigateToPreviousTab()"
+              (showError)="showAlertError($event)"
+              (submit)="onSaveEngagement($event)"
+              (cancel)="showTemplate(cancelEngagementTemplate)"
+            ></cnt-proactive-engagement-details-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 2">
+        <div class="row">
+          <div class="col-md-12">
+            <cnt-feedback-dc
+              *ngIf="messageToDisplay"
+              [messageToDisplay]="messageToDisplay"
+              [engagementDetails]="engagement"
+              [hideAddContributor]="true"
+            >
+            </cnt-feedback-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

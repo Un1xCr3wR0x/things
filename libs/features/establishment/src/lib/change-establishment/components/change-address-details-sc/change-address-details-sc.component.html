@@ -1,0 +1,122 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <!-- header part -->
+  <div class="row">
+  <div class="col-sm-12 col-md-6 col-lg-6">  
+  <est-heading-dc
+    [backLink]="routeToView"
+    shouldPrompt="true"
+    [canNavigate]="false"
+    (backEvent)="cancelAddressDetailsTransactions()"
+  >
+    {{ 'ESTABLISHMENT.EDIT-ADDRESS-DETAILS' | translate }}
+  </est-heading-dc>
+  </div>
+  <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isGOL && isValidator">
+    <est-claim-assign-release-dc
+    [payload]="payload"
+    [isUnclaimed]="isUnclaimed"
+    [taskId]="taskId"
+    (assign)="assignClicked()"
+    (release)="releaseClicked()"
+    >
+    </est-claim-assign-release-dc>
+  </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc [establishment]="establishmentProfile" heading="ESTABLISHMENT.EST-BASIC-DETAILS">
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+
+  <frm-address-dc
+    *ngIf="establishmentToChange"
+    [hasAddressDetailsLabel]="true"
+    idValue="establishmentToChange"
+    [cityList]="cityList$ | async"
+    [countryList]="gccCountryList$ | async"
+    [isSaudiAddrMandatory]="!isGcc"
+    [hasNationalAddress]="!isGcc"
+    [hasPOAddress]="!isGcc"
+    [hasOverseasAddress]="isGcc"
+    [mandatoryOverseasAddress]="false"
+    [isOptional]="isGcc"
+    [currentMailingAddress]="
+      establishmentToChange.contactDetails && establishmentToChange.contactDetails.currentMailingAddress
+        ? establishmentToChange.contactDetails.currentMailingAddress
+        : null
+    "
+    #addressDetails
+    [addressDetails]="
+      establishmentToChange.contactDetails && establishmentToChange.contactDetails.addresses
+        ? establishmentToChange.contactDetails.addresses
+        : []
+    "
+    [establishmentWaselAddress]="establishmentWaselAddress"
+    [parentForm]="editAddressDetailsForm"
+    (deleteAddress)="deletedAddress()"
+    (addAddress)="addedAddress()"
+    [isWaselAddress]="isWaselAddress"
+  ></frm-address-dc>
+
+  <est-documents-dc
+    [uuid]="uuid"
+    [documents]="addressDetailsDocuments"
+    [businessKey]="registrationNo"
+    [transactionId]="documentTransactionId"
+    [referenceNo]="referenceNo"
+    (refreshDocument)="bindDocContent($event)"
+    *ngIf="!isDirectChange"
+  ></est-documents-dc>
+  <gosi-card-dc type="secondary" *ngIf="editAddressDetailsForm && !isDirectChange" [paddingBottom]="true">
+    <gosi-input-text-area-dc
+      label="ESTABLISHMENT.COMMENTS"
+      id="comments"
+      name="comments"
+      [maxLength]="commentsMaxLength"
+      [control]="editAddressDetailsForm?.get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </gosi-card-dc>
+  <ng-container *ngIf="showSaveButton">
+  <est-footer-buttons-dc
+    *ngIf="!isWaselAddress"
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    [primaryBtnDisabled]="disableSubmitBtn"
+    (submit)="updateAddressDetails()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+  <est-footer-buttons-dc
+    *ngIf="isWaselAddress"
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    [primaryBtnDisabled]="disableSubmitBtn"
+    (submit)="updateWaselAddressDetails()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+  </ng-container>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    iconName="warning"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

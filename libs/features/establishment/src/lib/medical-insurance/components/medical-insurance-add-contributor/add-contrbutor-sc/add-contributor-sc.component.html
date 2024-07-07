@@ -1,0 +1,295 @@
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <est-heading-dc [canNavigate]="true" (backEvent)="navigateToBack()">
+        <div class="margin-left">{{ 'ESTABLISHMENT.MEDICAL-INSURANCE-EXTENSION' | translate }}</div>
+        <div id="action-item" class="menu row no-gutters align-items-center">
+          <div class="col-auto d-md-block d-none pl-3 button">
+            <gosi-button-dc
+              class="gosi-button-wrapper"
+              id="add-contributor"
+              type="primary"
+              (submit)="popUp(EligibleContributorTamplate, tableTemplate, confirmTemplate)"
+            >
+              {{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </est-heading-dc>
+    </div>
+  </div>
+  <gosi-alert-sc> </gosi-alert-sc>
+  <ng-container>
+    <ng-container>
+      <div class="table table-responsive-md">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>
+                {{ 'CONTRIBUTOR.CONTRIBUTOR-NAME' | translate }} & <br />
+                {{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.ID' | translate }}
+              </th>
+              <th>
+                {{ 'ESTABLISHMENT.ESTABLISHMENT-NAME' | translate }} & <br />
+                {{ 'ESTABLISHMENT.EST-ID' | translate }}
+              </th>
+              <th>{{ 'ESTABLISHMENT.POLICY-DATE' | translate }}</th>
+              <th>
+                {{ 'ESTABLISHMENT.POLICY-STATUS' | translate }}
+              </th>
+              <th>
+                {{ 'CONTRIBUTOR.MEDICAL-INSURANCE.ENDURANCE-RATION' | translate }}
+              </th>
+              <th>
+                {{ 'ESTABLISHMENT.REQUEST-STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="contributorSubList?.medicalInsuranceSubscribers.length > 0; else emptyList">
+              <tr *ngFor="let contributor of contributorSubList?.medicalInsuranceSubscribers">
+                <td>
+                  {{ contributor?.name | nameToString: true }} <br />
+                  {{ contributor?.nin.newNin }}
+                </td>
+                <td>
+                  {{ contributorSubList?.establishmentName | bilingualText }}
+                  <br />
+                  {{ contributor?.registrationNumber }}
+                </td>
+                <td>
+                  {{ 'ESTABLISHMENT.POLICY-START-DATE' | translate }}:{{ contributor?.policyStartDate | date: 'dd/MM/yyy' }} <br />
+                  {{ 'ESTABLISHMENT.POLICY-END-DATE' | translate }}:{{ contributor?.policyEndDate | date: 'dd/MM/yyy' }}
+                </td>
+                <td>
+                    {{ mapPolicyStatus(contributor?.policyStatus) | translate }}
+                </td>
+                <td>{{contributor?.estPaymentPercent}}%</td>
+                <td>
+                  <gosi-status-badge-dc
+                    [key]="mapRequestStatus(contributor.requestStatus)"
+                    [type]="mapRequestStatusType(contributor.requestStatus)">
+                  </gosi-status-badge-dc>
+                  <ng-container *ngIf="contributor?.requestStatus == 1">
+                    <div class="float-right mx-4">
+                    <gosi-dropdown-dc class="position-absolute" [list]="actionList" (selectedItem)="selectedItem($event, contributor)">
+                      <fa-icon class="dropdown-icon" icon="ellipsis-v"></fa-icon>
+                    </gosi-dropdown-dc>
+                    </div>
+                  </ng-container>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyList>
+      <div class="text-center pt-4" id="text-1">
+        <div class="empty-info">{{ 'ESTABLISHMENT.NO-CONTRIBUTOR-AVAILABLE' | translate }}</div>
+        <gosi-button-dc
+          id="addContributor"
+          type="primary"
+          outlineOnly="true"
+          [size]="'lg'"
+          (submit)="popUp(EligibleContributorTamplate, tableTemplate, confirmTemplate)"
+        >
+          {{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}</gosi-button-dc
+        >
+      </div>
+    </ng-template>
+  </ng-container>
+  <ng-template #EligibleContributorTamplate>
+    <div>
+      <div class="py-4">
+        <div class="d-flex justify-content align-items-center flex-column">
+          <img src="assets/icons/svg/warning_popup.svg" class="triangle-icon" alt="exclamation-triangle" />
+          <div class="label py-4 text-center">
+            {{ 'ESTABLISHMENT.ELIGIBLE-CONTRIBUTOR' | translate }}
+          </div>
+          <gosi-button-dc (submit)="Cancel()" size="sm" type="secondary">
+            {{ 'DASHBOARD.OK' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #tableTemplate>
+    <!-- The Modal -->
+    <div class="modal-dialog">
+      <!-- Modal Header -->
+      <div id="title">
+        <h4 class="modal-title">{{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}</h4>
+      </div>
+      <div class="count-section">
+        <p>({{ counter }})</p>
+      </div>
+      <div class="modal-content modal-lg" style="border: none">
+        <div class="modal-body modal-md">
+          <div class="table-responsive">
+            <table class="table table-striped custom-table">
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">{{ 'CONTRIBUTOR.CONTRIBUTOR-NAME' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.CONTRIBUTOR-LIST.ID' | translate }}</th>
+                  <th scope="col">{{ 'ESTABLISHMENT.ESTABLISHMENT-NAME' | translate }}</th>
+                  <th scope="col">{{ 'ESTABLISHMENT.EST-ID' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody *ngIf="eligibleContributorList">
+                <tr
+                  *ngFor="
+                    let eligibleContributor of eligibleContributorList.contributors
+                      | paginate
+                        : {
+                            id: 'paginationId',
+                            itemsPerPage: itemsPerPage,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: eligibleContributorList.numberOfContributors
+                          };
+                    let i = index
+                  "
+                >
+                  <ng-container *ngIf="isEligibleContributorListDataLoaded">
+                    <td><input type="checkbox" (change)="onSelectContributor(eligibleContributor, $event)" /></td>
+                    <td>{{ eligibleContributor?.name | nameToString: true }}</td>
+                    <th>{{ eligibleContributor?.identity[0].newNin }}</th>
+                    <td>
+                        {{ eligibleContributor?.establishmentName | bilingualText }}
+                    </td>
+                    <td>{{ eligibleContributor?.establishmentRegistrationNumber }}</td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row pagination justify-content-center" id="medical-pagination">
+            <gosi-pagination-dc
+              [totalSize]="eligibleContributorList?.numberOfContributors"
+              [pageDetails]="pageDetails"
+              (pageChange)="paginateContributors($event)"
+              [paginationId]="paginationId"
+            ></gosi-pagination-dc>
+          </div>
+          <div class="row">
+            <gosi-button-dc (click)="Cancel()" size="lg" type="secondary" id="btn-cancel2">
+              {{ 'ESTABLISHMENT.CANCEL' | translate }}
+            </gosi-button-dc>
+            <gosi-button-dc
+              size="lg"
+              type="primary"
+              id="btn-confirm2"
+              (submit)="submit(confirmTemplate)"
+              (click)="onMoveToEligibleContributorList()"
+              [disabled]="isButtonDisabled()"
+            >
+              {{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #confirmTemplate>
+    <div>
+      <h2 class="modal-title-One">{{ 'ESTABLISHMENT.MEDICAL-INSURANCE-EXTENSION' | translate }}</h2>
+    </div>
+    <div>
+      <h3 class="modal-title-Tow">{{ 'ESTABLISHMENT.CONFIRMATION-ADDING-CONTRIBUTOR' | translate }}</h3>
+    </div>
+    <div>
+      <gosi-alert-dc [message]="message" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">{{ 'ESTABLISHMENT.CONTRIBUTOR-FULL-NAME' | translate }}</th>
+            <th scope="col">{{ 'ESTABLISHMENT.ELIGIBILITY-STATUS' | translate }}</th>
+            <th scope="col">{{ 'CONTRIBUTOR.MEDICAL-INSURANCE.ENDURANCE-RATION' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="ischiContributorOutputListDataLoded">
+            <tr *ngFor="let chiContributor of chiContributorOutputList; index as i">
+              <td>
+                {{ i + 1 }}
+              </td>
+              <td>
+                {{ chiContributor.contributorName | bilingualText }}
+              </td>
+              <td *ngIf="chiContributor.registrationStatus" style="color: green">
+                {{ 'ESTABLISHMENT.CONTRIBUTOR-ELIGIBLE' | translate }}
+              </td>
+              <td *ngIf="!chiContributor.registrationStatus" style="color: red">
+                {{ 'ESTABLISHMENT.CONTRIBUTOR-INELIGIBLE' | translate }}
+              </td>
+              <td *ngIf="chiContributor?.registrationStatus">
+                <gosi-input-select-dc
+                  [lookup]="enduranceRationList"
+                  [noMargin]="true"
+                  [ignoreLabel]="true"
+                  [hidePlaceholder]="true"
+                  [control]="addContributorForm.at(i).get('enduranceRation')">
+                </gosi-input-select-dc>
+              </td>
+              <td *ngIf="!chiContributor?.registrationStatus">
+                -
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <div class="row">
+      <gosi-button-dc (submit)="confirmCancel()" size="lg" type="secondary" id="btn-cancel">
+        {{ 'ESTABLISHMENT.CANCEL' | translate }}
+      </gosi-button-dc>
+      <gosi-button-dc size="lg" type="primary" (click)="confirm()" id="btn-confirm" [disabled]="isDisable">
+        {{ 'ESTABLISHMENT.CONFIRM' | translate }}
+      </gosi-button-dc>
+    </div>
+  </ng-template>
+  <ng-template #cancelRequestTemplate>
+    <gosi-confirm-modal-dc
+      message="CONTRIBUTOR.MEDICAL-INSURANCE.CONFIRM-CANCEL-REQUEST"
+      subMessage="CONTRIBUTOR.MEDICAL-INSURANCE.CONFIRM-CANCEL-REQUEST-SUBTEXT"
+      (onCancel)="decline()"
+      (onConfirm)="confirmCancelRequest()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #modifyEnduranceRation>
+    <gosi-modal-dc
+      [modalHeader]="'CONTRIBUTOR.MEDICAL-INSURANCE.MODIFY-ENDURANCE-RATION'"
+      [needCloseButton]="true"
+      (closeModal)="decline()">
+        <div class="col-md-12 mb-modal" modalContent>
+          <div class="mt-2">
+            <gosi-input-select-dc
+              [label]="'CONTRIBUTOR.MEDICAL-INSURANCE.MODIFY-ENDURANCE-RATION' | translate"
+              [lookup]="enduranceRationList"
+              [control]="enduranceRationForm.get('enduranceRation')"
+              >
+            </gosi-input-select-dc>
+          </div>
+      </div>
+      <div class="d-flex justify-content-between" modalAction>
+        <div class="float-left">
+          <gosi-button-dc type="secondary" (submit)="decline()">
+            {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc>
+        </div>
+        <div class="float-right">
+          <gosi-button-dc type="primary" (submit)="SubmitModifyEndurance()">
+            {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc>
+        </div>
+      </div>
+      </gosi-modal-dc>
+  </ng-template>
+</div>

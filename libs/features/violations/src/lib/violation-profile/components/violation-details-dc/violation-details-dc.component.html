@@ -1,0 +1,239 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="card-container">
+  <gosi-card-dc
+    type="secondary"
+    [heading]="'VIOLATIONS.VIOLATIONS-DETAILS' | translate"
+    headingSize="md"
+    [noPadding]="true"
+    icon="file-contract"
+  >
+    <ng-container *ngIf="transactionDetails">
+      <div class="row">
+        <div class="col-sm-12" [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.VIOLATION-TYPE' | translate"
+            [value]="transactionDetails.violationType | bilingualText"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-12" [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'">
+          <gosi-label-dc [label]="'VIOLATIONS.VIOLATION-NUMBER' | translate" [value]="transactionDetails.violationId">
+          </gosi-label-dc>
+        </div>
+        <ng-container *ngIf="!isSimisFlag">
+          <div class="col-sm-12 col-md-3 col-lg-3" *gosiShow="accessRoles">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.VIOLATION-TXN-ID' | translate"
+              [isLink]="true"
+              [value]="transactionDetails.referenceNo"
+              (select)="goToTransactionPage(transactionDetails.referenceNo)"
+            >
+            </gosi-label-dc>
+          </div>
+        </ng-container>
+        <div class="col-sm-12" [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.DATE-REPORTED' | translate"
+            [value]="transactionDetails.dateReported | dateType | formatDate"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <!-- letter date is shown -->
+        <div class="col-sm-12"  [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.LETTER-DATE' | translate"
+            [value]="transactionDetails.violationLetterDate | dateType | formatDate"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-4" *ngIf="isSimisFlag">
+          <gosi-label-dc
+            [isArabic]="true"
+            [label]="'VIOLATIONS.DESCRIPTION' | translate"
+            [value]="transactionDetails.violationDescription"
+          >
+          </gosi-label-dc>
+        </div>
+        <ng-container
+          *ngIf="
+            !isSimisFlag &&
+            !(
+              this.transactionDetails?.violationType?.english.toUpperCase() === violatingProvision &&
+              transactionDetails.penaltyAmount != 0
+            )
+          "
+        >
+          <div class="col-sm-12 col-md-3 col-lg-3" *gosiShow="accessRoles">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.VIOLATION-CLASS' | translate"
+              [value]="transactionDetails.violationClass | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+        </ng-container>
+        <div
+          class="col-sm-12"
+          [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'"
+          *ngIf="
+            !(
+              transactionDetails.penaltyAmount === 0 &&
+              this.transactionDetails?.violationType?.english.toUpperCase() === violatingProvision
+            )
+          "
+        >
+          <gosi-currency-label-dc
+            id="amountReceived"
+            [label]="'VIOLATIONS.PENALTY-AMT' | translate"
+            [currencyTo]="transactionDetails.penaltyAmount"
+            [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"
+          >
+          </gosi-currency-label-dc>
+        </div>
+        <ng-container *ngIf="!isSimisFlag">
+          <div class="col-sm-12 col-md-3 col-lg-3" *gosiShow="accessRoles">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.ASSIGNED-COMMITEE' | translate"
+              [value]="transactionDetails.assignedCommittee | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+        </ng-container>
+        <div class="col-sm-12" [ngClass]="isAppPrivate && !isSimisFlag ? 'col-md-3 col-lg-3' : 'col-md-4 col-lg-4'">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.STATUS' | translate"
+            [value]="getStatus(transactionDetails?.violationStatus?.english) | bilingualText"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <ng-container
+        class="row"
+        *ngIf="transactionDetails.modifiedDecisions && transactionDetails.modifiedDecisions.length > 0"
+      >
+        <div *gosiShow="accessRoles">
+          <div class="row m-2 modifications">
+            {{ 'VIOLATIONS.MODIFICATIONS' | translate }}
+          </div>
+
+          <div class="mobile-view">
+            <div>
+              <div
+                class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+                *ngFor="let modifiedValue of transactionDetails.modifiedDecisions; let i = index; let odd = odd"
+                [ngClass]="odd ? 'odd' : 'even'"
+              >
+                <div class="card-body align-items-center">
+                  <div class="first-row d-flex flex-row justify-content-between my-2">
+                    <div class="first-cell">
+                      <p class="title-two">
+                        {{ 'VIOLATIONS.DATE-OF-MODIFICATIONS' | translate }} :<span class="title-sub"
+                          >{{ modifiedValue?.dateOfModification?.gregorian | gosiDate }}
+                        </span>
+                      </p>
+
+                      <p class="title-two">
+                        {{ 'VIOLATIONS.MODIFIED-BY' | translate }} :
+                        <span class="title-sub">{{ modifiedValue.modifiedBy }} </span>
+                      </p>
+                      <p class="title-sub-two">({{ modifiedValue.role | bilingualText }})</p>
+                      <p class="title-two">
+                        {{ 'VIOLATIONS.TRANSACTION-ID' | translate }} :
+                        <span class="title-sub">{{ modifiedValue.modificationTransactionId }}</span>
+                      </p>
+                      <p class="title-two">
+                        {{ 'VIOLATIONS.REASON-FOR-MODIFICATION' | translate }} :
+                        <span class="title-sub">{{ modifiedValue.reasonForModification | bilingualText }}</span>
+                      </p>
+                      <div class="title-sub" *ngIf="modifiedValue.comments">( {{ modifiedValue.comments }} )</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="desktop-view">
+            <div class="row d-flex align-items-center">
+              <div class="col-md-12 m-2">
+                <div class="table-scroll table-responsive table-modifications">
+                  <table class="table table-borderless">
+                    <thead class="thead-light">
+                      <tr>
+                        <th id="dateOfModifications">
+                          {{ 'VIOLATIONS.DATE-OF-MODIFICATIONS' | translate }}
+                        </th>
+                        <th id="modifiedBy">
+                          {{ 'VIOLATIONS.MODIFIED-BY' | translate }}
+                        </th>
+                        <th id="modificationTransaction">
+                          {{ 'VIOLATIONS.TRANSACTION-ID' | translate }}
+                        </th>
+                        <th id="reasonForModification">
+                          {{ 'VIOLATIONS.REASON-FOR-MODIFICATION' | translate }}
+                        </th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      class="history-contdent"
+                      *ngFor="let modifiedValue of transactionDetails.modifiedDecisions; let i = index"
+                    >
+                      <ng-container>
+                        <tr class="history-contdent">
+                          <td>
+                            <div class="row ml-2 mr-2">
+                              {{ modifiedValue.dateOfModification?.gregorian | gosiDate }}
+                            </div>
+                          </td>
+                          <td>
+                            {{ modifiedValue.modifiedBy }}
+                            <div>({{ modifiedValue.role | bilingualText }})</div>
+                          </td>
+                          <td>
+                            <a
+                              class="link-clr"
+                              (click)="
+                                goToTransactionProfile(
+                                  modifiedValue.isCancelled,
+                                  modifiedValue.modificationTransactionId
+                                )
+                              "
+                            >
+                              {{ modifiedValue.modificationTransactionId }}
+                            </a>
+                          </td>
+                          <td>
+                            {{ modifiedValue.reasonForModification | bilingualText }}
+                            <div *ngIf="modifiedValue.comments">( {{ modifiedValue.comments }} )</div>
+                          </td>
+                          <td>
+                            <gosi-status-badge-dc
+                              *ngIf="modifiedValue.isCancelled"
+                              [label]="getCancelledStatus() | bilingualText"
+                              [type]="'danger'"
+                            >
+                            </gosi-status-badge-dc>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </gosi-card-dc>
+</div>
+<ng-template #noValue>
+  <div class="null-value label-value">
+    {{ 'VIOLATIONS.NOT-AVAILABLE' | translate }}
+  </div>
+</ng-template>

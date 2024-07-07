@@ -1,0 +1,119 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="content">
+  <div class="main-heading">
+    {{ 'ADJUSTMENT.ADD-DOCUMENTS' | translate }}
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <gosi-alert-sc class="adjustment-alert"></gosi-alert-sc>
+    </div>
+  </div>
+  <gosi-card-dc type="secondary" *ngIf="adjustment">
+    <div class="row">
+      <div class="col-md-3">
+        <gosi-label-dc
+          id="adjustmentId"
+          label="{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate }}"
+          [value]="adjustment?.adjustmentId"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-md-3">
+        <gosi-label-dc
+          id="adjStatus"
+          label="{{ 'ADJUSTMENT.ADJUSTMENT-STATUS' | translate }}"
+          [value]="adjustment?.adjustmentStatus | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-md-3" *ngIf="transactionName === adjustmentConstant.MAINTAIN_ADJUSTMENT">
+        <gosi-label-dc
+          id="adjustmentAmount"
+          label="{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT' | translate }}"
+          value="{{ adjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}{{ ' ' }}{{
+            'ADJUSTMENT.SAR' | translate
+          }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-md-3"
+        *ngIf="
+          (transactionName !== adjustmentConstant.MAINTAIN_ADJUSTMENT && !adjustment?.continuousDeduction) ||
+          (transactionName === adjustmentConstant.MAINTAIN_ADJUSTMENT &&
+            adjustment?.adjustmentType?.english === 'Debit')
+        "
+      >
+        <gosi-currency-label-dc
+          id="balanceAmt"
+          label="{{ 'ADJUSTMENT.BALANCE-AMOUNT' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="adjustment?.adjustmentBalance"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-md-3" *ngIf="transactionName !== adjustmentConstant.MAINTAIN_ADJUSTMENT">
+        <gosi-currency-label-dc
+          id="deductionAmt"
+          label="{{ 'ADJUSTMENT.MONTHLY-DEDUCTION-AMOUNT' | translate }}"
+          [countryCodeFrom]="'ADJUSTMENT.SAR' | translate"
+          [currencyTo]="adjustment?.monthlyDeductionAmount"
+        >
+        </gosi-currency-label-dc>
+      </div>
+      <div class="col-md-3">
+        <gosi-label-dc
+          id="adjReason"
+          label="{{ 'ADJUSTMENT.ADJUSTMENT-REASONS' | translate }}"
+          [value]="adjustment?.adjustmentReason | bilingualText"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <gosi-card-dc type="secondary" *ngIf="actionDropDown">
+    <div class="row">
+      <ng-container *ngIf="documentList?.length > 0">
+        <pmt-file-upload-dc
+          [uuid]="uuid"
+          class="w-100"
+          [isContract]="true"
+          [parentForm]="form"
+          [isCommentRequired]="false"
+          [businessKey]="adjustmentId"
+          [transactionId]="transactionId"
+          [documentList]="documentList"
+          [referanceNumber]="referenceNumber"
+          (refresh)="refreshTpaDocuments($event, transactionName, transactionType, false)"
+        ></pmt-file-upload-dc>
+      </ng-container>
+      <div class="col-md-12 d-flex add-btn-container">
+        <gosi-dropdown-dc
+          class="mx-auto position-relative"
+          [list]="actionDropDown"
+          (selectedItem)="addDocument($event)"
+        >
+          <gosi-button-dc class="gosi-button-wrapper" size="sm" type="primary" id="groupActions">
+            {{ 'ADJUSTMENT.ADD-DOCUMENT' | translate }} <fa-icon class="options-icon pl-2" icon="ellipsis-v"></fa-icon>
+          </gosi-button-dc>
+        </gosi-dropdown-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+  <div class="col-lg-12">
+    <pmt-action-area-dc
+      [idValue]="'saveAndCancel'"
+      [primaryButtonLabel]="'ADJUSTMENT.SUBMIT'"
+      [showPreviousSection]="false"
+      (submit)="saveDocs()"
+      (onCancelAction)="showModal(cancelTemplateModal)"
+    ></pmt-action-area-dc>
+  </div>
+</div>
+<ng-template #cancelTemplateModal>
+  <gosi-confirm-modal-dc [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="cancelPage()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

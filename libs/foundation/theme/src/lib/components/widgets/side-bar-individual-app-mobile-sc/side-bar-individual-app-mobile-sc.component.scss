@@ -1,0 +1,401 @@
+@import '~@gosi-ui/foundation-theme/src/scss/index';
+
+@mixin recolor($color: #000, $opacity: 1) {
+  $r: red($color) / 255;
+  $g: green($color) / 255;
+  $b: blue($color) / 255;
+  $a: $opacity;
+  $lightness: lightness($color);
+  $svg-filter-id: 'recolor';
+  filter: url('data:image/svg+xml;utf8,\ <svg xmlns="http://www.w3.org/2000/svg">\ <filter id="#{$svg-filter-id}" color-interpolation-filters="sRGB">\ <feColorMatrix type="matrix" values="\ 0 0 0 0 #{$r}\ 0 0 0 0 #{$g}\ 0 0 0 0 #{$b}\ 0 0 0 #{$a} 0\ "/>\ </filter>\ </svg>\ ##{$svg-filter-id}');
+}
+
+.image-icon {
+  height: 22px;
+  width: 25px;
+}
+
+@mixin nav-link-active-state {
+  @include sidebar-hide-menu {
+    background-color: gray('100');
+  }
+
+  .main-icon {
+    color: color('green') !important;
+    .icon {
+      fill: color('green') !important;
+    }
+    .image-icon {
+      @include recolor(color('green'));
+      height: 22px;
+      width: 25px;
+    }
+  }
+  .menu-title {
+    @include sidebar-show-menu {
+      color: theme-color('success') !important;
+      font-weight: 500;
+    }
+    @include sidebar-hide-menu {
+      color: gray('800') !important;
+    }
+  }
+  .submenu-icon {
+    color: theme-color('success') !important;
+  }
+}
+
+.gosi-sidebar.sidebar {
+  width: 100% !important;
+  top: $appbar-height;
+  transition: all 0.4s ease-in-out;
+  height: 100%;
+  z-index: $sidebar-z-index;
+  background-color: $white;
+  @include box-shadow;
+
+  @include sidebar-hide-menu {
+    margin-left: 0rem !important;
+    width: $sidebar-width;
+  }
+
+  @include sidebar-show-menu {
+    width: $sidebar-open-width !important;
+  }
+  @include app-menu-open {
+    @include ipad-mobile {
+      top: $appbar-height + $appbar-options-height;
+    }
+  }
+
+  .sidebar-content {
+    height: 100%;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(#{$sidebar-height} - #{$appbar-height} - #{$footer-height});
+  }
+  .navigation {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    letter-spacing: 0rem;
+    list-style: none;
+
+    .nav-item {
+      padding: 0;
+      position: relative;
+
+      .nav-link {
+        line-height: toRem(16);
+        transition: all 0.1s ease-in-out;
+        border-bottom: toRem(1) solid gray('100') !important;
+        display: flex;
+        align-items: center;
+        padding: toRem(20) $sidebar-link-padding-left toRem(18) $sidebar-link-padding-left;
+        @include sidebar-show-menu {
+          line-height: toRem(21);
+          flex-direction: row;
+          border-left: 0.3rem solid transparent;
+        }
+        @include gosi-rtl {
+          @include sidebar-show-menu {
+            border-right: 0.3rem solid transparent;
+            border-left: none;
+          }
+        }
+
+        @include sidebar-hide-menu {
+          flex-direction: column;
+          padding: toRem(15) 0rem !important;
+        }
+
+        .main-icon {
+          min-width: 1.8rem;
+          color: gray('800') !important;
+          &::ng-deep {
+            svg {
+              height: toRem(22) !important;
+              width: toRem(25) !important;
+            }
+          }
+
+          @include sidebar-show-menu {
+            padding: 0rem toRem(10) 0rem 1rem;
+          }
+          @include gosi-rtl {
+            @include sidebar-show-menu {
+              padding: 0rem 1rem 0rem toRem(10);
+            }
+          }
+        }
+
+        .menu-title {
+          @include sidebar-show-menu {
+            @include input-value;
+          }
+          @include sidebar-hide-menu {
+            text-align: center;
+            @include small-text;
+            padding: 0rem toRem(8);
+          }
+        }
+        .submenu-icon {
+          color: gray('700');
+          @include sidebar-show-menu {
+            margin-left: auto;
+          }
+          @include gosi-rtl {
+            @include sidebar-show-menu {
+              margin-right: auto;
+              margin-left: unset;
+            }
+          }
+        }
+
+        &.active {
+          @include nav-link-active-state();
+        }
+        &:hover {
+          background-color: gray('100');
+        }
+        &.menu-hover {
+          background-color: gray('100');
+        }
+      }
+
+      &.activeState {
+        .nav-link {
+          @include nav-link-active-state();
+        }
+      }
+
+      //sub menu
+      .menu-content {
+        display: none;
+        padding: 0rem;
+        margin: 0rem;
+        list-style: none;
+        background-color: gray('100');
+
+        .submenu-item {
+          position: relative;
+          line-height: toRem(21);
+          .menu-item {
+            @include label-header(toRem(16), toRem(22));
+            text-decoration: none;
+
+            .menu-title {
+              border-left: 0.3rem solid transparent;
+              border-bottom: toRem(1) solid gray('400') !important;
+              padding: toRem(20) 0rem toRem(20) toRem(30);
+              @include gosi-rtl {
+                text-align: right;
+                border-right: 0.3rem solid transparent;
+                border-left: none;
+                padding: toRem(20) toRem(30) toRem(20) 0rem;
+              }
+              &:hover {
+                color: gray('900') !important;
+              }
+            }
+            &.active {
+              @include tab-heading;
+              .menu-title {
+                border-color: color('green');
+                @include gosi-rtl {
+                  border-color: color('green');
+                }
+              }
+            }
+          }
+        }
+      }
+
+      &.open {
+        .menu-content {
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+// Side Menu POPOVER State
+::ng-deep body > .sidemenu-popover {
+  z-index: 1112 !important;
+  max-height: toRem(350);
+  min-width: toRem(240) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border: none !important;
+  @include sidemenu-box-shadow;
+  .popover-arrow {
+    display: none;
+  }
+  .popover-body {
+    padding: 0rem;
+    ul.menu-content {
+      left: 0rem;
+      list-style: none;
+      width: toRem(240);
+      margin-bottom: 0rem;
+      padding-left: 0rem;
+      padding-right: 0rem;
+      li.submenu-item {
+        a.menu-item {
+          @include table-header;
+          padding: 1rem 1rem 1rem toRem(18);
+          background-color: $white;
+          display: block;
+          outline: 0;
+          border-bottom: toRem(1) solid gray('200');
+          text-decoration: none;
+          &:hover {
+            background-color: gray('100');
+          }
+          &.active {
+            background-color: gray('100');
+          }
+        }
+      }
+    }
+  }
+}
+// Side Menu POPOVER State
+
+::ng-deep body > .bs-popover-left {
+  left: toRem(-90) !important;
+  margin-right: 0rem !important;
+  @include sidemenu-box-shadow-rtl;
+}
+
+::ng-deep body > .bs-popover-right {
+  margin-left: 0rem !important;
+}
+.kebab-menu {
+  padding-top: 15px;
+}
+.kebab-icon::after {
+  content: '\2807';
+  font-size: 2rem;
+  color: #999999;
+}
+
+.kabab-navigation {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  letter-spacing: 0rem;
+  list-style: none;
+}
+.kabab-nav-item {
+  padding: 0;
+  position: relative;
+}
+.dropdown {
+  margin-top: -22rem !important;
+  top: -9rem;
+}
+.kabab-nav-link {
+  color: gray('800');
+  flex-direction: column;
+  padding: 1.0714285714rem 0rem !important;
+  line-height: 1.1428571429rem;
+  transition: all 0.1s ease-in-out;
+  border-bottom: 0.0714285714rem solid #f6f6f6 !important;
+  display: flex;
+  align-items: center;
+  max-width: 110px;
+  word-break: inherit;
+  &.active {
+    color: color('green') !important;
+    .kabab-image-icon {
+      $r: red(green) / 255;
+      $g: green(green) / 255;
+      $b: blue(green) / 255;
+      $a: 1;
+      $lightness: lightness(green);
+      $svg-filter-id: 'recolor';
+      filter: url('data:image/svg+xml;utf8,\ <svg xmlns="http://www.w3.org/2000/svg">\ <filter id="#{$svg-filter-id}" color-interpolation-filters="sRGB">\ <feColorMatrix type="matrix" values="\ 0 0 0 0 #{$r}\ 0 0 0 0 #{$g}\ 0 0 0 0 #{$b}\ 0 0 0 #{$a} 0\ "/>\ </filter>\ </svg>\ ##{$svg-filter-id}') !important;
+    }
+  }
+  &:hover {
+    background-color: gray('100');
+  }
+  &.menu-hover {
+    background-color: gray('100');
+  }
+}
+
+.kabab-main-icon {
+  min-width: 1.8rem;
+  &::ng-deep {
+    svg {
+      height: toRem(22) !important;
+      width: toRem(25) !important;
+    }
+  }
+}
+.kabab-menu-title {
+  text-align: center;
+  color: #999999 !important;
+  font-size: 0.8571428571rem !important;
+  line-height: 1rem !important;
+  padding: 0rem 0.5714285714rem;
+}
+.kabab-main-icon-active {
+  color: color('green') !important;
+  .icon {
+    fill: color('green') !important;
+  }
+  .image-icon {
+    @include recolor(color('green'));
+  }
+}
+
+.menu-margin {
+  //margin-left: -4rem !important;
+}
+.menu-margin-arab {
+  margin-left: -0rem !important;
+  margin-right: -4rem !important;
+}
+
+@media only screen and (max-width: 767px) {
+  :host-context([dir='ltr']) {
+    .test {
+      margin-left: 0rem !important;
+    }
+  }
+  :host-context([dir='rtl']) {
+    .test {
+      margin-left: 0.5rem !important;
+
+      // margin-top: -16.8rem;
+    }
+  }
+}
+.test {
+  margin-left: -5rem;
+
+  transition: all 0.4s ease-in-out;
+  height: 100%;
+  z-index: 800;
+  background-color: #fff !important;
+  box-shadow: 0rem 0.285rem 1.142rem #455b6317 !important;
+  // margin-top: -16.8rem;
+}
+// @include mobile-screen{
+
+// .gosi-sidebar.sidebar{
+//   position: -webkit-sticky;
+//   position: sticky;
+//   bottom: 0 !important;
+// }
+
+// }

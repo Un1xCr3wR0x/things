@@ -1,0 +1,80 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="d-flex flex-wrap justify-content-between align-items-center">
+  <div class="heading-selection">
+    <div id="heading">
+      <span class="h4">{{ 'TEAM-MANAGEMENT.TRANSACTIONS' | translate }}</span>
+      <span class="count text-muted mx-2"
+        >({{ totalTransactions }} {{ 'TEAM-MANAGEMENT.TRANSACTIONS' | translate }})</span
+      >
+    </div>
+    <ng-container *ngIf="selectedTransactions">
+      <div id="selection" class="d-flex align-items-center pb-3" *ngIf="selectedTransactions">
+        <span class="value">{{ selectedTransactions }}</span>
+        <span class="text">{{ 'TEAM-MANAGEMENT.SELECTED' | translate }}</span>
+        <span class="clear" (click)="clearSelectedTransactions()">{{ 'TEAM-MANAGEMENT.CLEAR' | translate }}</span>
+      </div>
+    </ng-container>
+  </div>
+  <div class="nav-section d-flex flex-wrap">
+    <gosi-search-dc
+      #search
+      id="search-area"
+      (keyup)="onSearchEnable($event.target.value, $event)"
+      gosiSpecialCharacters
+      (search)="searchTransaction($event)"
+      [placeholder]="'TEAM-MANAGEMENT.SEARCH_BY_NAME_OR_ID' | translate"
+      [searchParam]="searchParam"
+      class="mr-2"
+    >
+    </gosi-search-dc>
+
+    <tm-team-transactions-filter-dc
+      *ngIf="activeTab !== 'ONHOLD_TRANSACTIONS'"
+      #filter
+      id="filter-area"
+      class="mr-2 mb-2"
+      (olaSlaFilterOutput)="onSlaOlaFilter($event)"
+      (statusFilter)="onFilter($event)"
+    ></tm-team-transactions-filter-dc>
+
+    <div class="sort-actions d-flex flex-wrap">
+      <div class="sort-dropdown">
+        <gosi-sort-dc
+          *ngIf="sortItem"
+          id="sort-by"
+          [list]="sortList"
+          (direction)="sortOrderList($event)"
+          (sortItemSelected)="sortListDetails($event)"
+          [initialValue]="sortItem.value"
+          [initialDirection]="sortItem.direction"
+        >
+        </gosi-sort-dc>
+      </div>
+
+      <div class="btn-group" dropdown>
+        <button id="button-actions" type="button" class="btn-actions" dropdownToggle aria-controls="dropdown-actions">
+          <span class="actions-label">{{ 'TEAM-MANAGEMENT.ACTIONS' | translate }}</span>
+          <fa-icon class="options-icon" icon="ellipsis-v"></fa-icon>
+        </button>
+        <ul
+          id="dropdown-actions"
+          *dropdownMenu
+          class="dropdown-menu dropdown-menu-lg"
+          role="menu"
+          aria-labelledby="button-actions"
+        >
+          <li role="menuitem" *ngFor="let action of actionMessage">
+            <a class="dropdown-item" (click)="openModal(action.key)">
+              <fa-icon class="dropdown-icon" [icon]="action.icon"></fa-icon>
+              <span>{{ action.name | translate }}</span></a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

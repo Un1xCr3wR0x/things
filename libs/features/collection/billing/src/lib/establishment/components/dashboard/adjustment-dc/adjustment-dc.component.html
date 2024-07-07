@@ -1,0 +1,69 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-lg-9 adjustment-margin section-heading">
+    {{ 'BILLING.DEBIT-ADJUSTMENTS' | translate }}
+  </div>
+</div>
+<div class="table-responsive">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th>{{ 'BILLING.ADJUSTMENT-TYPE' | translate }}</th>
+        <th>{{ 'BILLING.NUMBER-OF-CONTRIBUTORS' | translate }}</th>
+        <th *ngIf="!isMofFlag">{{ 'BILLING.AMOUNT' | translate }} ({{ currencyType | bilingualText }})</th>
+        <th *ngIf="!isMofFlag">{{ 'BILLING.PENALTY' | translate }} ({{ currencyType | bilingualText }})</th>
+        <th>{{ 'BILLING.TOTAL' | translate }} ({{ currencyType | bilingualText }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let item of adjustmentBreakup">
+        <ng-container *ngIf="item.amount != 0 || item.total != 0">
+          <tr class="border-bottom">
+            <td>{{ item.adjustmentType | bilingualText }}</td>
+            <td>
+              <span *ngIf="item.adjustmentType === 'Violation Adjustment'">
+                {{ violationCount }}
+              </span>
+              <span *ngIf="item.adjustmentType != 'Violation Adjustment'">
+                {{
+                  item.adjustmentType.english === 'Credit Transfer' || item.adjustmentType.english === 'Credit Refund'
+                  || item.adjustmentType.english === 'Miscellaneous Adjustment'
+                  || item.adjustmentType.english === 'OH Cancelled Payment'
+                  || item.adjustmentType.english === 'Annuity Cancelled Payment'
+                  || item.adjustmentType.english === 'Ui Cancelled Payment'
+                  || item.adjustmentType.english === 'Cancelled Payment General Recovery Amount'
+                    ? ('BILLING.NA' | translate)
+                    : item.noOfContributor
+                }}
+              </span>
+            </td>
+            <td *ngIf="!isMofFlag">{{ item.amount * exchangeRate | number: '1.2-2' }}</td>
+            <td *ngIf="!isMofFlag">
+              {{
+                item.adjustmentType.english === 'Credit Transfer' || item.adjustmentType.english === 'Credit Refund'
+                || item.adjustmentType.english === 'OH Cancelled Payment'
+                || item.adjustmentType.english === 'Annuity Cancelled Payment'
+                || item.adjustmentType.english === 'Ui Cancelled Payment'
+                || item.adjustmentType.english === 'Cancelled Payment General Recovery Amount'
+                  ? ('BILLING.NA' | translate)
+                  : (item.penalty * exchangeRate | number: '1.2-2')
+              }}
+            </td>
+            <td>{{ item.total * exchangeRate | number: '1.2-2' }}</td>
+          </tr>
+        </ng-container>
+      </ng-container>
+      <tr class="font-weight-bold" id="totalAmountValue">
+        <td *ngIf="!isMofFlag" colspan="3"></td>
+        <td *ngIf="isMofFlag" colspan="1"></td>
+        <td class="totalAmount">{{ 'BILLING.TOTAL' | translate }}</td>
+        <td>{{ totalValue * exchangeRate | number: '1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,144 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc
+  type="secondary"
+  [heading]="(isScan ? 'MEDICAL-BOARD.SCAN-DOCUMENT' : 'MEDICAL-BOARD.UPLOAD-DOCUMENT') | translate"
+>
+  <div class="row">
+    <gosi-alert-dc
+      [dismissible]="false"
+      class="col-md-12 mb-3"
+      [noPadding]="true"
+      [message]="(isScan ? 'CORE.ERROR.DOCUMENT-SCAN' : 'CORE.ERROR.DOCUMENT-UPLOAD') | translate"
+      type="info"
+    ></gosi-alert-dc>
+    <div class="col-sm-12 col-md-12">
+      <ng-container *ngIf="documentList">
+        <ng-container *ngIf="!isRequestMedicalReports">
+          <ng-container *ngFor="let item of documentList; let i = index">
+            <gosi-input-file-sc
+              [index]="i"
+              [document]="item"
+              [isScan]="isScan"
+              [transactionId]="transactionId"
+              [referenceNo]="referenceNo"
+              (refresh)="refreshDocument($event)"
+              [businessKey]="registrationNumber"
+            ></gosi-input-file-sc>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="isRequestMedicalReports">
+          <ng-container *ngFor="let item of documentList; let i = index">
+            <gosi-card-dc type="primary">
+              <div class="row">
+                <div class="col-md-1.5">
+                  <h6>{{ 'MEDICAL-BOARD.MEDICAL-REPORTS' | translate }}</h6>
+                </div>
+                <div class="col-md-3">
+                  <gosi-card-dc class="assign-value" type="secondary">
+                    <div class="pt-1 flex-item"></div>
+                    <span>
+                      <h6>{{ item?.specialty | bilingualText }}</h6>
+                    </span>
+                  </gosi-card-dc>
+                </div>
+              </div>
+              <div class="row">
+                {{ 'MEDICAL-BOARD.DOCUMENT-DETAILS' | translate }}
+              </div>
+              <div>
+                <span>{{ item?.reportDetails ? item?.reportDetails : '-' }}</span>
+              </div>
+              <gosi-input-file-sc
+                [index]="i"
+                [document]="item"
+                [isScan]="isScan"
+                [transactionId]="transactionId"
+                [referenceNo]="referenceNo"
+                (refresh)="refreshDocument($event)"
+                [businessKey]="registrationNumber"
+              ></gosi-input-file-sc>
+            </gosi-card-dc>
+          </ng-container>
+          <ng-container *ngFor="let investDoc of investigationDoc; let i = index">
+            <gosi-card-dc type="primary">
+              <strong>{{ investDoc?.name | bilingualText }}</strong>
+              <div class="row" style="min-height: 12px"></div>
+              <div>
+                <span> {{ 'MEDICAL-BOARD.DOCUMENT-DETAILS' | translate }}</span>
+              </div>
+              <div>
+                <span>{{ investDoc?.description }}</span>
+              </div>
+              <div class="row" style="min-height: 12px"></div>
+              <gosi-input-file-sc
+                [index]="i"
+                [document]="investDoc"
+                [isScan]="isScan"
+                [transactionId]="transactionId"
+                [referenceNo]="referenceNo"
+                (refresh)="refreshDocument($event)"
+                [businessKey]="registrationNumber"
+              ></gosi-input-file-sc>
+            </gosi-card-dc>
+          </ng-container>
+        </ng-container>
+        <div class="row justify-content-center mb-4" *ngIf="isAddOtherDocuments">
+          <gosi-button-dc
+            id="addDocument"
+            (click)="addDocument()"
+            type="secondary"
+            size="md"
+            [outlineOnly]="true"
+            [disabled]="otherDocumentList.length === 3"
+          >
+            <fa-icon class="plus-icon" [icon]="['fas', 'plus']"></fa-icon>
+            {{ 'OCCUPATIONAL-HAZARD.ANOTHER-DOCUMENT' | translate }}
+          </gosi-button-dc>
+        </div>
+        <ng-container>
+          <div *ngFor="let otherDoc of otherDocumentList; let oj = index">
+            <gosi-input-file-sc
+              [isScan]="false"
+              tooltip="{{ otherDoc.name.english }}"
+              [index]="oj"
+              [businessKey]="registrationNumber"
+              [transactionId]="transactionId"
+              [referenceNo]="referenceNo"
+              [document]="otherDoc"
+              (refresh)="refreshDocument($event)"
+            ></gosi-input-file-sc>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+  <!-- comments section -->
+  <gosi-input-text-area-dc
+    [label]="(isClarification ? 'MEDICAL-BOARD.CLARIFICATION' : 'MEDICAL-BOARD.COMMENTS') | translate"
+    id="comment"
+    name="comment"
+    [control]="comments.get('comments')"
+    [maxLength]="commentsMaxlength"
+  ></gosi-input-text-area-dc>
+</gosi-card-dc>
+<div class="d-flex flex-wrap form-action" [ngClass]="{ 'no-margin': true }">
+  <div class="btn-section order-2 order-md-0">
+    <gosi-button-dc type="secondary" name="cancelbtn" (submit)="onDocUploadCancel.emit()"
+      >{{ 'MEDICAL-BOARD.CANCEL' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div *ngIf="showPreviousButton" class="btn-section order-1 order-md-1 pl-4 pr-4">
+    <gosi-button-dc type="secondary" name="previousbtn" (submit)="previous.emit()"
+      >{{ 'MEDICAL-BOARD.PREVIOUS-SECTION' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div class="btn-section order-0 order-md-2" [ngClass]="{ 'ml-auto': true }">
+    <gosi-button-dc id="submitbtn" type="primary" (submit)="saveDocuments()"
+      >{{ 'MEDICAL-BOARD.SUBMIT' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>

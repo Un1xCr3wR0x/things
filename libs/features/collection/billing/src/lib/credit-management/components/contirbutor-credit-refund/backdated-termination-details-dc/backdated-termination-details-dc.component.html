@@ -1,0 +1,256 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="wrapper">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-lg-12 heading">
+          {{ 'BILLING.BACKDATED-TERMINATION-TRANSACTIONS-DETAILS' | translate }}
+        </div>
+      </div>
+      <div class="row banner">
+        <div class="col-lg-4" *ngIf="lang === 'en' && establishmentDetails?.name?.english !== null">
+          <gosi-label-dc
+            id="establishmentName"
+            [control]="establishmentDetails?.name?.english"
+            [label]="'BILLING.ESTABLISHMENT-NAME'"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-4" *ngIf="lang === 'ar' || establishmentDetails?.name?.english === null">
+          <gosi-label-dc
+            id="contributorName"
+            [control]="establishmentDetails?.name?.arabic"
+            [label]="'BILLING.ESTABLISHMENT-NAME'"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-3">
+          <gosi-label-dc
+            id="status"
+            [control]="establishmentDetails?.registrationNo"
+            label="BILLING.REGISTRATION-NUMBER"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-3">
+          <gosi-label-dc
+            id="status"
+            value="{{ lang === 'en' ? establishmentDetails?.status?.english : establishmentDetails?.status?.arabic }}"
+            label="BILLING.ESTABLISHMENT-STATUS"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-lg-2">
+          <gosi-label-dc
+            id="status"
+            value="{{ establishmentCreditDetails?.totalCreditBalance | number: '1.2-2' }}"
+            label="BILLING.CREDIT-BALANCE"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div
+        class="row"
+        *ngIf="
+          establishmentDetails?.status?.english === 'Registered' &&
+          backdatedTerminationTransactionsDetails?.eligibleForRefund
+        "
+      >
+        <div class="col-lg-7 content-flex">
+          <div class="text-info">
+            <fa-icon class="text-info mr-2" [icon]="['fas', 'info-circle']" placement="top"></fa-icon>
+          </div>
+          <span>{{ 'BILLING.CONTRIBUTOR-SHARE-CREDIT-REFUND-INFO-MESSAGE' | translate }}</span>
+        </div>
+        <div class="col-lg-3 top-padding" id="generateButton">
+          <gosi-button-dc
+            type="secondary"
+            [outlineOnly]="true"
+            [isTransparent]="true"
+            [isFullWidth]="true"
+            size="'sm'"
+            id="generateButton"
+            (submit)="generateStatement()"
+            >{{ 'BILLING.GENERATE-STATEMENT' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="col-lg-2" id="refundButton">
+          <gosi-button-dc
+            type="secondary"
+            [outlineOnly]="true"
+            size="'sm'"
+            [isTransparent]="true"
+            [isFullWidth]="true"
+            id="refundButton"
+            [disabled]="disableRefund"
+            (submit)="navigateToRefundAmount()"
+            >{{ 'BILLING.REFUND-AMOUNT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+      <!---------------------------------------------------------Table------------------------------------------------------------------>
+      <div class="table-responsive mt-4">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th
+                class="check-box"
+                *ngIf="
+                  establishmentDetails?.status?.english === 'Registered' &&
+                  backdatedTerminationTransactionsDetails?.eligibleForRefund
+                "
+              >
+                <gosi-input-checkbox-dc
+                  id="checkBox"
+                  (select)="selectAll()"
+                  name="checkBox"
+                  [noMargin]="true"
+                  [noPadding]="true"
+                  [control]="selectAllCheckbox.get('checkBoxFlag')"
+                >
+                </gosi-input-checkbox-dc>
+              </th>
+              <th>
+                <span>{{ 'BILLING.BACKDATED-TERMINATION-PERIOD' | translate }}</span>
+              </th>
+              <th>
+                {{ 'BILLING.TRANSACTION-DATE' | translate }}
+              </th>
+              <th>
+                {{ 'BILLING.CONTRIBUTOR-SHARE' | translate }}
+                <span class="currency"> ({{ currentCurrencyLable | translate }})</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+              *ngFor="let item of backdatedTerminationTransactionsDetails?.terminatedContributions; let i = index"
+            >
+              <tr
+                class="border-bottom"
+                [ngClass]="
+                  item?.alreadyRefunded || checkListValue.controls[i].get('checkBoxFlag').disabled ? 'row-disabled' : ''
+                "
+              >
+                <td
+                  class="check-box"
+                  *ngIf="
+                    establishmentDetails?.status?.english === 'Registered' &&
+                    backdatedTerminationTransactionsDetails?.eligibleForRefund
+                  "
+                >
+                  <gosi-input-checkbox-dc
+                    id="check{{ i }}"
+                    (select)="selectPeriods(i)"
+                    name="check{{ i }}"
+                    [noMargin]="true"
+                    [noPadding]="true"
+                    [disabled]="item.alreadyRefunded"
+                    [control]="checkListValue.controls[i].get('checkBoxFlag')"
+                  >
+                  </gosi-input-checkbox-dc>
+                </td>
+                <td>
+                  {{ item?.startDate?.gregorian | date: 'dd/MM/yyyy' }}
+                  <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                  <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                  {{ item?.endDate?.gregorian | date: 'dd/MM/yyyy' }}
+                </td>
+                <td>{{ item?.transactionDate?.gregorian | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  {{ item?.contributorShare | number: '1.2-2' }}
+                  <span
+                    class="already-refunded"
+                    *ngIf="
+                      checkListValue.controls[i].get('checkBoxFlag').disabled &&
+                      backdatedTerminationTransactionsDetails?.terminatedContributions[i]?.alreadyRefunded === true
+                    "
+                  >
+                    <fa-icon [icon]="['fas', 'info-circle']" class="icon"></fa-icon>
+                    {{ 'BILLING.ALREADY-REFUNDED' | translate }}
+                  </span>
+                  <span
+                    class="already-refunded"
+                    *ngIf="
+                      checkListValue.controls[i].get('checkBoxFlag').disabled &&
+                      backdatedTerminationTransactionsDetails?.terminatedContributions[i]?.alreadyRefunded === false
+                    "
+                  >
+                    <fa-icon [icon]="['fas', 'info-circle']" class="icon"></fa-icon>
+                    {{ 'BILLING.ERROR-THIRTY-DAYS' | translate }}
+                  </span>
+                </td>
+              </tr>
+            </ng-container>
+            <tr>
+              <td class="check-box" *ngIf="establishmentDetails?.status?.english !== 'Registered'"></td>
+              <td></td>
+              <td class="total-amount" *ngIf="establishmentDetails?.status?.english !== 'Registered'">
+                {{ 'BILLING.TOTAL-REFUNDABLE-AMOUNT' | translate }}
+              </td>
+              <td *ngIf="establishmentDetails?.status?.english === 'Registered'"></td>
+              <td class="total-amount" *ngIf="establishmentDetails?.status?.english === 'Registered'">
+                {{ 'BILLING.TOTAL-AMOUNT' | translate }}
+              </td>
+              <td class="total-amount-value">
+                {{ totalRefundAmount | number: '1.2-2'
+                }}<span class="currency-lbl"> {{ 'BILLING.SAR' | translate }} </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!---------------------------------------------------------Table Ends------------------------------------------------------------------>
+      <div class="row" *ngIf="establishmentDetails?.status?.english === 'Registered'">
+        <div class="col-lg-12 mt-4">
+          <gosi-alert-dc
+            message="BILLING.ESTABLISHMENT-REGISTERED-INFO-MESSAGE"
+            type="info"
+            [dismissible]="false"
+            [noPadding]="true"
+          >
+          </gosi-alert-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!---------------------------------------------------------Modal Template------------------------------------------------------------------>
+<ng-template #confirmationTemplate>
+  <div class="custom-modal">
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="confirmation-popup">
+          <div class="row">
+            <div class="confirm-heading col-lg-12">
+              {{ 'BILLING.GENERATE-STATEMENT' | translate }}
+            </div>
+          </div>
+          <div class="confirm-content">{{ 'BILLING.CONTRIBUTOR-GENERATE-LETTER' | translate }}</div>
+        </div>
+      </div>
+
+      <div modalAction>
+        <div class="row">
+          <div class="form-action col-md-12">
+            <div class="btn-section float-right">
+              <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="generateStatement()">
+                {{ 'BILLING.CONFIRM' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section float-left">
+              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

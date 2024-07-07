@@ -1,0 +1,197 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div>
+  <div class="row ml-3 mb-4">
+    <div class="col-md-5 d-flex">
+      <h5 class="ml-4 text-white">
+        {{ lang === 'en' && customerProfile?.nameenglish ? customerProfile?.nameenglish : customerProfile?.namearabic }}
+      </h5>
+    </div>
+  </div>
+
+  <div class="row ml-2 mr-2">
+    <!-- lift -->
+    <div class="col-md-4 mb-3 p-0">
+      <div class="content mr-3">
+        <div class="row">
+          <div class="col-md-2">
+            <fa-icon [icon]="['far', 'user-circle']" class="header-icon fa-3x"></fa-icon>
+          </div>
+
+          <div class="col-md-10">
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <span class="border border-dark p-1">{{ customerProfile?.usertype || '---' }}</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="">
+                  {{
+                    lang === 'en' && customerProfile?.nameenglish
+                      ? customerProfile?.nameenglish
+                      : customerProfile?.namearabic
+                  }}
+                </h5>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">{{ 'FEATURE360.IDENTITY-NUMBER' | translate }}</div>
+              <div class="col-md-4">{{ customerProfile?.id }}</div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">{{ 'FEATURE360.INDIVIDUALES.REGISTRATION-NUMBER' | translate }}</div>
+              <div class="col-md-4">{{ customerProfile?.socialinsuracenumber || '---' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-5">
+          <div class="col-md-12 row pt-5 pb-3 border-top">
+            <div class="col-md-12">
+              <div class="h6">{{ 'FEATURE360.INDIVIDUALES.QUICK-ACCESS' | translate }}</div>
+            </div>
+          </div>
+
+          <div class="col-md-12 row align-middle text-center justify-content-md-center">
+            <div class="col-md-8 bg-light mb-3 rounded-btn align-middle text-center p-0">
+              <button
+                type="button"
+                (click)="showPopupVerivication(customerProfile?.id, ninVerificationTemplate)"
+                class="btn btn-link bg-light p-3"
+              >
+                {{ 'FEATURE360.IDENTITY-VERIVICATION' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-12 row align-middle text-center justify-content-md-center" *ngIf="isHiddenComplaint">
+            <div class="col-md-8 bg-light mb-3 rounded-btn align-middle text-center">
+              <button
+                type="button"
+                (click)="showPopupSendComplaint(enterComplaintTemplate)"
+                class="btn btn-link bg-light p-3"
+              >
+                {{ 'FEATURE360.INDIVIDUALES.ENTER-COMPLAINT' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <fea-message-modal
+            *gosiShow="isShowSmsBtn"
+            class="col-md-12 row align-middle text-center justify-content-md-center"
+            [details]="details"
+            [token]="token"
+          ></fea-message-modal>
+        </div>
+      </div>
+    </div>
+
+    <!-- right -->
+    <div class="col-md-8 mb-3 p-0">
+      <div class="content ml-1">
+        <div class="row">
+          <fea-choose-details-type
+            class="col-md-12"
+            #chooseDetailsTypeComp
+            [detailsTypeList]="detailsTypeList"
+            [currentDetailsTap]="currentDetailsTap"
+          ></fea-choose-details-type>
+
+          <div class="col-md-12">
+            <div *ngIf="currentDetailsTap !== null && currentDetailsTap == 'Contributor'">
+              <fea-individual-contributor-dc
+                #individualContributorDcComp
+                [contributorInfo]="contributorInfo"
+              ></fea-individual-contributor-dc>
+            </div>
+            <div *ngIf="currentDetailsTap !== null && currentDetailsTap == 'Beneficiary'">
+              <fea-individual-beneficiary-dc
+                #individualBeneficiaryDcComp
+                [beneficiaryInfo]="beneficiaryInfo"
+              ></fea-individual-beneficiary-dc>
+            </div>
+
+            <div *ngIf="currentDetailsTap !== null && currentDetailsTap == 'ُEstablishments'">
+              <fea-individual-establishments-dc
+                #individualEstablishmentsDcComp
+                [lang]="lang"
+                [establishmentInfoByNinumber]="establishmentInfoByNinumber"
+              ></fea-individual-establishments-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mr-5 ml-5 p-3 bg-white rounded">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
+          <h6>{{ 'FEATURE360.ESTABLISHMENTS.PENDING-TRANSACTIONS' | translate }}</h6>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="mergedList.length > 0">
+        <div class="col-md-12">
+          <table class="table table-bordered">
+            <thead class="bg-light">
+              <tr>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-NUMBER' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-DATE' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-TYPE' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-ADDRESS' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.ORDER-STATUS' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.SYSTEM' | translate }}</th>
+                <th scope="col">{{ 'FEATURE360.ESTABLISHMENTS.RESPONSIBLE' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let merged of mergedList">
+                <th scope="row">{{ merged?.id || '-----' }}</th>
+                <td>{{ merged?.request_date | date: 'dd/MM/yyyy' || '-----' }}</td>
+                <td>{{ merged?.request_type || '-----' }}</td>
+                <td>{{ merged?.request_title || '-----' }}</td>
+                <td>{{ merged?.request_status || '-----' }}</td>
+                <td>{{ merged?.system || '-----' }}</td>
+                <td>{{ merged?.assigned_emp_name || '-----' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="mergedList.length === 0">
+        <div class="col-md-12">
+          {{ 'FEATURE360.NO-INFO-AVAILABLE' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #ninVerificationTemplate>
+  <fea-verify-ninumber-dc
+    #verifyNinumberDcComp
+    [isVerified]="isVerified"
+    [ninumber]="curNinumber"
+    [isSend]="isSend"
+    (send)="sendVerification($event)"
+    (verify)="verifyOTP($event, uuid)"
+    (close)="close()"
+  >
+  </fea-verify-ninumber-dc>
+</ng-template>
+
+<ng-template #enterComplaintTemplate>
+  <fea-enter-complaint-dc
+    #enterComplaintDcComp
+    [isSend]="isSendComplaint"
+    (send)="sendComplaint($event)"
+    (close)="close()"
+  >
+  </fea-enter-complaint-dc>
+</ng-template>

@@ -1,0 +1,88 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="table-scroll table-responsive table-claim" *ngIf="invoiceDetails">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th id="claimId">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.CLAIM-ID' | translate }}
+        </th>
+        <th id="injuryId">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.INJURY-ID' | translate }}
+        </th>
+        <th id="claimed" name="claimedamount">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMED' | translate }}
+        </th>
+        <th id="discount" name="discountamount">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DISCOUNT' | translate }}
+        </th>
+        <th id="deduction" name="deductionamount">
+          {{ 'OCCUPATIONAL-HAZARD.AUDITOR.DEDUCTION' | translate }}
+        </th>
+        <th id="vat" name="vatamount">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.VAT' | translate }}
+        </th>
+        <th id="paid" name="paidamount">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.PAID' | translate }}
+        </th>
+        <th id="icon"></th>
+      </tr>
+    </thead>
+    <tbody class="content">
+      <ng-container *ngFor="let claimsSummary of invoiceDetails.cases; let i = index">
+        <tr class="border-bottom">
+          <td>{{ claimsSummary.claimNo }}</td>
+          <td>
+            <a
+              class="select-link"
+              (click)="
+                selectItem(
+                  claimsSummary.ohId,
+                  claimsSummary.ohType,
+                  claimsSummary.injuryNo,
+                  claimsSummary.sin,
+                  claimsSummary.regNo
+                )
+              "
+              >{{ claimsSummary.ohId }}</a
+            >
+          </td>
+          <td>{{ claimsSummary.totalAmount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</td>
+          <td>{{ claimsSummary.discount | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</td>
+          <td>
+            {{ claimsSummary.policyDeduction + claimsSummary.medicalDeduction | number }}
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+          </td>
+          <td>{{ claimsSummary.vat | number }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}</td>
+          <td>
+            {{
+              getPaid(
+                claimsSummary.totalAmount,
+                claimsSummary.discount,
+                claimsSummary.vat,
+                claimsSummary.policyDeduction,
+                claimsSummary.medicalDeduction
+              ) | number
+            }}
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+          </td>
+          <td class="icon-arrow" (click)="toggleFunction(i, icon[i])">
+            <fa-icon icon="{{ icon[i] }}" size="1x" *ngIf="showBox[i]"></fa-icon>
+            <fa-icon icon="chevron-down" size="1x" *ngIf="!showBox[i]"></fa-icon>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="7" class="show-details" *ngIf="showBox[i]">
+            <div [hidden]="!showBox[i]">
+              <oh-claims-table-details-dc [claimsSummary]="claimsSummary"></oh-claims-table-details-dc>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

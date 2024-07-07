@@ -1,0 +1,169 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-alert-sc></gosi-alert-sc>
+<div class="content">
+  <div *ngIf="eng">
+  <cnt-establishment-preview-dc
+    (engApprove)="confirmEngagementApprove()"
+    (engReject)="confirmEngagementReject($event)"
+    (reject)="handleActions(1)"
+    (approve)="handleActions(0)"
+    [isIndividualApp]="isIndividualApp"
+    [eng]="eng"
+    [pendingEngagement]="pendingEngagement"
+    [acceptOrRejectFlag]="acceptOrRejectFlag"
+    [rejectReasonList]="rejectReasonList$ | async" >
+  </cnt-establishment-preview-dc>
+  </div>
+  <div *ngIf="!eng">
+    <div class="row mb-4">
+      <div class="heading-prop col-md-4">
+        {{ 'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-PREVIEW' | translate }}
+      </div>
+      <div class="col-md-3"></div>
+      <div class="col-md-5 pt-2" *ngIf="pendingContract && !acceptOrRejectFlag">
+        <div class="d-flex justify-content-end align-items-center">
+          <fa-icon [icon]="['far', 'clock']" size="md" class="text-warning"></fa-icon>
+          <span class="mx-1"></span>
+          <span class="custom-contract-due-font">{{
+            'CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-AUTO-DUE' | translate | uppercase
+          }}</span>
+          <span class="mx-2"></span>
+          <div class="cancel-value d-inline-block">
+            <span
+              *ngIf="selectedLang === 'en' || (selectedLang === 'ar' && pendingContract?.daysLeft != 2)"
+              class="custom-font-size-lg"
+              >{{ pendingContract?.daysLeft | number: '2.0-0' }}</span
+            ><span class="custom-font-size">
+              {{ daysLabel | translate | uppercase }}
+              <span *ngIf="pendingContract?.autoCancellationDate?.gregorian">
+                ( {{ pendingContract?.autoCancellationDate?.gregorian | date: 'dd/MM/yyyy' }} )</span
+              >
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-5 fa-class d-flex justify-content-end" *ngIf="acceptOrRejectFlag">
+        <!-- <gosi-button-dc type="outline-secondary" [size]="'md'" id="printContract" (click)="printPreview()">
+          <fa-icon [icon]="['fas', 'print']"></fa-icon>
+          <span class="mr-2"></span>
+          {{ 'CONTRIBUTOR.PREVIEW-DETAILS.PRINT-CONTRACT-DETAILS' | translate }}
+        </gosi-button-dc> -->
+      </div>
+    </div>
+    <!--Standalone app preview screen -->
+    <cnt-preview-dc
+      [establishment]="establishment"
+      [personDetails]="contributor"
+      [activeEngagement]="activeEngagement"
+      [contractAtDraft]="contract"
+      [contractClausesList]="contract?.contractClauses"
+      [transportationAllowance]="transportationAllowance"
+      [bankInfo]="bankInfo"
+      [isPreviewEdit]="false"
+    >
+    </cnt-preview-dc>
+
+    <div class="row form-action" *ngIf="!acceptOrRejectFlag">
+      <div class="col-lg-12">
+        <div class="btn-section float-right padding-left">
+          <gosi-button-dc id="accept" type="primary" (submit)="showModal(acceptPreview)">
+            {{ 'CONTRIBUTOR.CONTRACT-APP.ACCEPT' | translate }}
+          </gosi-button-dc>
+        </div>
+        <div class="btn-section float-right padding-left">
+          <gosi-button-dc id="reject" type="danger" (submit)="showModal(rejectPreview)">
+            {{ 'CONTRIBUTOR.CONTRACT-APP.REJECT' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+
+    <ng-template #acceptPreview>
+      <div class="custom-modal">
+        <gosi-modal-dc>
+          <div modalContent>
+            <div class="confirmation-popup">
+              <div class="do-you-wish">{{ 'CONTRIBUTOR.CONTRACT-APP.ACCEPT-CONTENT' | translate }}</div>
+            </div>
+          </div>
+
+          <div modalAction>
+            <div class="row">
+              <div class="col-md-12 form-action">
+                <div class="float-right btn-section">
+                  <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="confirmAcceptPreview()">
+                    {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc
+                  >
+                </div>
+                <div class="float-left btn-section">
+                  <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                    {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </gosi-modal-dc>
+      </div>
+    </ng-template>
+
+    <ng-template #rejectPreview>
+      <div class="custom-modal">
+        <gosi-modal-dc [modalHeader]="'CONTRIBUTOR.CONTRACT-APP.REJECT-HEADER' | translate">
+          <div modalContent>
+            <div class="confirmation-popup">
+              <div class="row">
+                <div class="col-lg-12">
+                  <gosi-input-select-dc
+                    id="rejectReason"
+                    label="CONTRIBUTOR.CONTRACT-APP.REJECT-REASON"
+                    [control]="rejectDetailsForm.get('reasonForReject')"
+                    [list]="rejectReasonList$ | async"
+                    [placeholder]="'CONTRIBUTOR.CONTRACT-APP.SELECT-REASON' | translate"
+                  >
+                  <!-- (select)="otherValueSelect()" -->
+                  </gosi-input-select-dc>
+                </div>
+                <div class="col-lg-12" *ngIf="otherReasonFlag">
+                  <gosi-input-text-area-dc
+                    id="comment"
+                    label="CONTRIBUTOR.COMMENTS"
+                    [control]="rejectDetailsForm.get('rejectedMessage')"
+                    [placeholder]="'CONTRIBUTOR.COMMENTS' | translate"
+                    [ignoreLabel]="true"
+                  >
+                  </gosi-input-text-area-dc>
+                </div>
+                <div class="col-lg-12 mb-5 d-none d-md-block"></div>
+              </div>
+            </div>
+          </div>
+
+          <div modalAction>
+            <div class="row">
+              <div class="col-md-12 form-action">
+                <div class="float-right btn-section">
+                  <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="confirmRejectPreview()">
+                    {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc
+                  >
+                </div>
+                <div class="float-left btn-section">
+                  <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                    {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </gosi-modal-dc>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

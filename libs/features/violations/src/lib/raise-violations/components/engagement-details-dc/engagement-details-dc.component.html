@@ -1,0 +1,193 @@
+<div class="row engagement-accordian">
+  <!-- for engagement accordian -->
+  <div class="col-md-12 mt-2">
+    <div class="row">
+      <div class="col-md-12" *ngIf="engagementDetails?.leavingReason?.english">
+        <gosi-label-dc
+          id="leavingReason {{ engIndex }}"
+          [control]="engagementDetails?.leavingReason | bilingualText"
+          label="VIOLATIONS.LEAVING-REASON"
+        ></gosi-label-dc>
+      </div>
+      <!-- radio btn for IW -->
+      <div class="col-md-12" *ngIf="isIncorrectWage">
+        <gosi-input-radio-dc
+          id="{{ id + 'iw' + engIndex }}"
+          [noMargin]="true"
+          [control]="engagementForm.get('isWageCorrected')"
+          [list]="violationYesOrNoList"
+          [label]="'VIOLATIONS.IS-WAGE-CORRECTED' | translate"
+        >
+        </gosi-input-radio-dc>
+      </div>
+      <!-- radio btn for ANE -->
+      <div class="col-md-12" *ngIf="isAddNewEng">
+        <gosi-input-radio-dc
+          id="{{ id + 'ane' + engIndex }}"
+          [noMargin]="true"
+          [control]="engagementForm.get('isEngAddedBackdated')"
+          [list]="violationYesOrNoList"
+          [label]="'VIOLATIONS.IS-ENG-ADDED-BACKDATED' | translate"
+        >
+        </gosi-input-radio-dc>
+      </div>
+      <!-- radio btn for IRT -->
+      <div class="col-md-12" *ngIf="isIncorrectReason">
+        <gosi-input-radio-dc
+          id="{{ id + 'irt' + engIndex }}"
+          [noMargin]="true"
+          [control]="engagementForm.get('isReasonIncorrected')"
+          [list]="violationYesOrNoList"
+          [label]="'VIOLATIONS.IS-REASON-EFFECTED-BENEFIT' | translate"
+        >
+        </gosi-input-radio-dc>
+      </div>
+      <!-- container for CE -->
+      <ng-container *ngIf="isCancelEng">
+        <div class="col-md-12">
+          <gosi-input-radio-dc
+            id="{{ id + 'ce' + engIndex }}"
+            [noMargin]="true"
+            [control]="engagementForm.get('isEngagementCancelled')"
+            [list]="violationYesOrNoList"
+            [label]="'VIOLATIONS.IS-THE-FULL-ENGAGEMENT-CANCELLED' | translate"
+            (select)="checkEngagementFullyCancelled($event)"
+            [disabled]="true"
+          >
+          </gosi-input-radio-dc>
+        </div>
+        <!-- radio btn for PVLR -->
+        <div class="col-md-12" *ngIf="isViolatingProvisions">
+          <gosi-input-radio-dc
+            id="{{ id + 'pvlr' + engIndex }}"
+            [noMargin]="true"
+            [control]="engagementForm.get('isProvisionsViolating')"
+            [list]="violationYesOrNoList"
+            [label]="'VIOLATIONS.IS-VIOLATION-OF-PROVISION' | translate"
+          >
+          </gosi-input-radio-dc>
+        </div>
+        <gosi-alert-dc
+          *ngIf="showDateInfoMsg"
+          class="w-100"
+          [bilingualMessage]="'VIOLATIONS.IN-BTW-ENG-PERIOD-INFO-MSG' | translate"
+          type="info"
+          [dismissible]="false"
+          [noPadding]="false"
+        >
+        </gosi-alert-dc>
+        <!-- calender type selection box -->
+        <div class="col-md-12" *ngIf="!isAutopopulateEngagement">
+          <div class="calendar-type-text">{{ 'VIOLATIONS.CALENDAR-TYPE' | translate }}</div>
+          <div class="d-inline-block calendar-type">
+            <div class="pick-calendar-type">
+              <div
+                class="column-left calender-text"
+                [ngClass]="{
+                  'calender-type-selected': engagementForm?.get('calendarType').value === 'Gregorian',
+                  'calender-type-unselected ': engagementForm?.get('calendarType').value === 'Hijiri'
+                }"
+                (click)="setCalenderType('Gregorian')"
+              >
+                {{ 'VIOLATIONS.GREGORIAN' | translate }}
+              </div>
+              <div
+                class="column-right calender-text"
+                [ngClass]="{
+                  'calender-type-selected': engagementForm.get('calendarType').value == 'Hijiri',
+                  'calender-type-unselected ': engagementForm.get('calendarType').value == 'Gregorian'
+                }"
+                (click)="setCalenderType('Hijiri')"
+              >
+                {{ 'VIOLATIONS.HIJIRI' | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- start date -->
+        <div class="col-md-6">
+          <gosi-input-date-dc
+            #startDateGregComponent
+            *ngIf="
+              (engagementForm.get('calendarType').value === 'Gregorian' && !isAutopopulateEngagement) ||
+              (isAutopopulateEngagement && !isStartDateHijiri)
+            "
+            name="startDate"
+            id="{{ id + 'cancelledperiodStartDateGregorian' + engIndex }}"
+            label="VIOLATIONS.CANCELLED-PERIOD-START-DATE"
+            [control]="engagementForm.get('periodStartDate').get('gregorian')"
+            [minDate]="minStartDate"
+            [maxDate]="maxStartDate"
+            [disabled]="isAutopopulateEngagement"
+          ></gosi-input-date-dc>
+          <gosi-input-hijiri-dc
+            #startDateHijiriComponent
+            *ngIf="
+              (engagementForm.get('calendarType').value === 'Hijiri' && !isAutopopulateEngagement) ||
+              (isAutopopulateEngagement && isStartDateHijiri)
+            "
+            id="{{ id + 'cancelledperiodStartDateHijiri' + engIndex }}"
+            label="VIOLATIONS.CANCELLED-PERIOD-START-DATE"
+            [control]="engagementForm.get('periodStartDate').get('hijiri')"
+            [disabled]="isAutopopulateEngagement"
+            [minDate]="minHijiriStartDate"
+            [maxDate]="maxGregStartDate"
+            (blur)="onStartDateChange()"
+          >
+          </gosi-input-hijiri-dc>
+        </div>
+        <!-- enddate section -->
+        <div class="col-md-6">
+          <gosi-input-date-dc
+            #endDateGregComponent
+            *ngIf="
+              (engagementForm.get('calendarType').value === 'Gregorian' && !isAutopopulateEngagement) ||
+              (isAutopopulateEngagement && !isEndDateHijiri)
+            "
+            name="endDate"
+            id="{{ id + 'cancelledPeriodEndDateGregorian' + engIndex }}"
+            label="VIOLATIONS.CANCELLED-PERIOD-END-DATE"
+            [control]="engagementForm.get('periodEndDate').get('gregorian')"
+            [minDate]="minEndDate"
+            [maxDate]="maxEndDate"
+            [disabled]="isAutopopulateEngagement"
+          ></gosi-input-date-dc>
+          <gosi-input-hijiri-dc
+            #endDateHijiriComponent
+            *ngIf="
+              (engagementForm.get('calendarType').value === 'Hijiri' && !isAutopopulateEngagement) ||
+              (isAutopopulateEngagement && isEndDateHijiri)
+            "
+            id="{{ id + 'cancelledPeriodEndDateHijiri' + engIndex }}"
+            label="VIOLATIONS.CANCELLED-PERIOD-END-DATE"
+            [control]="engagementForm.get('periodEndDate').get('hijiri')"
+            [disabled]="isAutopopulateEngagement"
+            [minDate]="minHijiriEndDate"
+            [maxDate]="maxGregEndDate"
+            (blur)="onDatesSubmit()"
+          >
+          </gosi-input-hijiri-dc>
+        </div>
+        <!-- <gosi-alert-dc
+          *ngIf="showDateInfoMsg"
+          [bilingualMessage]="'VIOLATIONS.IN-BTW-ENG-PERIOD-INFO-MSG' | translate"
+          type="info"
+          [dismissible]="false"
+          [noPadding]="false"
+        >
+        </gosi-alert-dc> -->
+        <!-- amount -->
+        <div class="col-md-6">
+          <gosi-input-text-dc
+            gosiNumberMask
+            id="{{ id + 'contributionAmount' + engIndex }}"
+            [label]="'VIOLATIONS.CONTRIBUTION-AMOUNT' | translate"
+            [maxLength]="10"
+            [control]="engagementForm.get('contributionAmount')"
+          ></gosi-input-text-dc>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

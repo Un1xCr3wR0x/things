@@ -1,0 +1,107 @@
+<!-- personal details -->
+
+<div class="row no-gutters" [ngClass]="{ 'sub-content-item': contributor.person.contactDetail }" *ngIf="contributor">
+  <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="contributor.person.name && contributor.person.name.english">
+    <gosi-label-dc
+      id="contributorNameEnglish"
+      [control]="contributor.person.name.english.name"
+      label="CONTRIBUTOR.CONTRIBUTOR-NAME-EN"
+    ></gosi-label-dc>
+  </div>
+
+  <div id="contributorArabicName" class="col-sm-4 col-md-4 col-lg-4 form-group">
+    <label class="label-color">{{ 'CONTRIBUTOR.CONTRIBUTOR-NAME-AR' | translate }} </label>
+    <div *ngIf="!checkNull(contributor.person.name.arabic)">
+      {{ contributor.person.name.arabic.firstName }}
+      {{ contributor.person.name.arabic.secondName }}
+      {{ contributor.person.name.arabic.thirdName }}
+      {{ contributor.person.name.arabic.familyName }}
+    </div>
+  </div>
+
+  <div class="col-sm-4 col-md-4 col-lg-4">
+    <gosi-label-dc id="nationality" [control]="contributor.person.nationality" label="CONTRIBUTOR.NATIONALITY">
+    </gosi-label-dc>
+  </div>
+
+  <ng-container *ngIf="!checkNull(contributor.person.identity)">
+    <ng-container *ngFor="let item of contributor.person.identity">
+      <div class="col-sm-4 col-md-4 col-lg-4" *ngIf="item.newNin">
+        <gosi-label-dc id="nin" [control]="item.newNin" label="CONTRIBUTOR.NATIONAL-ID"> </gosi-label-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="!age; else gender">
+    <div class="col-sm-4 col-md-4 col-lg-4">
+      <gosi-label-dc
+        id="status"
+        label="CONTRIBUTOR.STATUS"
+        [value]="
+          contributor.statusType === statusType
+            ? ('CONTRIBUTOR.ACTIVE' | translate)
+            : ('CONTRIBUTOR.INACTIVE' | translate)
+        "
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+
+  <!-- Gender is required to be shown in change engagement validator screen,
+        instead of status -->
+  <ng-template #gender>
+    <div class="col-sm-4 col-md-4 col-lg-4">
+      <gosi-label-dc id="gender" [value]="contributor.person.sex | bilingualText" label="CONTRIBUTOR.GENDER">
+      </gosi-label-dc>
+    </div>
+  </ng-template>
+
+  <div class="col-sm-4 col-md-4 col-lg-4">
+    <gosi-label-dc
+      id="birthDate"
+      [date]="age ? false : true"
+      [control]="age ? ('CONTRIBUTOR.AGE-IN-YEARS' | translate: { age: age }) : contributor.person.birthDate.gregorian"
+      label="CONTRIBUTOR.DATE-OF-BIRTH"
+      ><span *ngIf="age" id="prefixValue">{{
+        contributor.person.birthDate.gregorian | date: 'dd/MM/yyyy'
+      }}</span></gosi-label-dc
+    >
+  </div>
+</div>
+
+<!-- contact details -->
+
+<div class="row" *ngIf="contributor">
+  <ng-container *ngIf="contributor.person.contactDetail">
+    <div class="col-sm-12 col-md-12">
+      <h4 class="sub-heading">
+        {{ 'CONTRIBUTOR.WAGE.CONTACT-DETAILS' | translate }}
+      </h4>
+    </div>
+
+    <div class="col-sm-4 col-md-4">
+      <gosi-label-dc
+        id="contributorMobileNo"
+        [control]="contributor.person.contactDetail.mobileNo.primary"
+        label="CONTRIBUTOR.WAGE.MOBILE-NUMBER"
+        ><span id="prefixValue">{{ getISDCodePrefix() }}</span></gosi-label-dc
+      >
+    </div>
+
+    <div class="col-sm-4 col-md-4">
+      <gosi-label-dc
+        id="contributorPhoneNo"
+        [value]="contributor.person.contactDetail.telephoneNo.primary"
+        label="CONTRIBUTOR.PHONE-NUMBER"
+        labelsuffix="CONTRIBUTOR.OPTIONAL"
+      ></gosi-label-dc>
+    </div>
+
+    <div class="col-sm-4 col-md-4">
+      <gosi-label-dc
+        id="contributorEmailId"
+        [value]="contributor.person.contactDetail.emailId?.primary"
+        label="CONTRIBUTOR.WAGE.EMAIL-ID"
+      ></gosi-label-dc>
+    </div>
+  </ng-container>
+</div>

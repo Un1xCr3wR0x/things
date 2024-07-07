@@ -1,0 +1,509 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <gosi-card-dc
+    type="secondary"
+    [noPadding]="isEdit ? false : true"
+    *ngIf="selectedReason && selectedReason !== 'Write Off Credit'"
+  >
+    <div class="section-heading">{{ 'BILLING.ADJUSTMENT-GROUP-DET' | translate }}</div>
+    <div *ngIf="isContributorLevel">
+      <blg-contributor-details-dc [contributorDetails]="contributorDetails"></blg-contributor-details-dc>
+    </div>
+    <div *ngIf="selectedReason !== 'Write Off Credit'">
+      <div class="row extra-margin">
+        <ng-container>
+          <div class="table-scroll table-responsive">
+            <table class="table">
+              <thead class="thead-light">
+                <tr class="three-columns">
+                  <th class="col-md-7">{{ 'BILLING.PRODUCT' | translate }}</th>
+                  <!--                  <th *ngIf="selectedReason === 'Others'">{{ 'BILLING.IDENTIFIER' | translate }}</th>-->
+                  <th class="col-md-7">
+                    {{ 'BILLING.AMOUNT-TO-ADJUST' | translate }} ({{ 'BILLING.SAR' | translate }})
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container>
+                  <tr>
+                    <td>
+                      <div>
+                        <b>{{ 'BILLING.CONTRIBUTIONS' | translate }}</b>
+                      </div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'"></td>-->
+                    <td></td>
+                  </tr>
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.ANNUITY' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="'amtann'"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('annuity').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('annuity').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.PPA-ANNUITY' | translate }}</div>
+                    </td>
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="'amtppaann'"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('ppaAnnuity').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Others' && !isEdit">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('ppaAnnuity').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.ANNUITY-PENSION-REFORM' | translate }}</div>
+                    </td>
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="'amtprann'"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('prAnnuity').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Others' && !isEdit">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('prAnnuity').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.UI' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td class="amount-value">
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtui"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('UI').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('UI').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.OCCUPATIONAL-HAZARD' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td class="amount-value">
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtoh"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('OH').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc || isMofpayment"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('OH').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="adjustment-group-bold">
+                    <td>
+                      <b>{{ 'BILLING.LATE-FEES' | translate }}</b>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'"></td>-->
+                    <td></td>
+                  </tr>
+                  <tr class="adjustment-group padding" *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.ANNUITY-LATE-FE' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtannpen"
+                          [control]="
+                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('annuityPenalty').get('amount')
+                          "
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('annuityPenalty').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="adjustment-group padding" *ngIf="isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.PPA-ANNUITY-LATE-FEE' | translate }}</div>
+                    </td>
+                                       <td *ngIf="selectedReason === 'Others'">
+                                         <div class="table-input-text">-</div>
+                                        </td>
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtppaannpen"
+                          [control]="
+                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('ppaAnnuityPenalty').get('amount')
+                          "
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Others' && !isEdit">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('ppaAnnuityPenalty').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="adjustment-group padding">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.PR-ANNUITY-LATE-FEE' | translate }}</div>
+                    </td>
+                                         <!-- <td *ngIf="selectedReason === 'Others'">
+                                         <div class="table-input-text">-</div>
+                                       </td> -->
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtprannpen"
+                          [control]="
+                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('prAnnuityPenalty').get('amount')
+                          "
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Others' && !isEdit">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('prAnnuityPenalty').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="adjustment-group padding" *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.UI-INSURANCE' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="amtuipen"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('UIPenalty').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('UIPenalty').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="adjustment-group padding" *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.OH-PENALITY' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <div class="table-input-text">-</div>-->
+                    <!--                    </td>-->
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="OHPenalty"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('OHPenalty').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [separatorLimit]="separatorLimit"
+                          [disabled]="isGcc || isMofpayment"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('OHPenalty').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div>
+                        <b>{{ 'BILLING.CLAIMS' | translate }}</b>
+                      </div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'"></td>-->
+                    <td></td>
+                  </tr>
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.REJECTED-OH' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <span *ngIf="isEdit">-->
+                    <!--                        - -->
+                    <!--                      </span>-->
+                    <!--                      <span *ngIf="!isEdit">-->
+                    <!--                        <span-->
+                    <!--                          *ngIf="-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('rejectedOH').get('identifier')-->
+                    <!--                              .value !== null-->
+                    <!--                          "-->
+                    <!--                          >{{-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('rejectedOH').get('identifier').value-->
+                    <!--                          }}</span-->
+                    <!--                        >-->
+                    <!--                        <span-->
+                    <!--                          *ngIf="-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('rejectedOH').get('identifier')-->
+                    <!--                              .value === null-->
+                    <!--                          "-->
+                    <!--                          >-</span-->
+                    <!--                        >-->
+                    <!--                      </span>-->
+                    <!--                    </td>-->
+                    <td class="amount-value">
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="rejOHAmount"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('rejectedOH').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc || isMofpayment"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('rejectedOH').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!isPPAEst">
+                    <td>
+                      <div class="sub-heading-padding">{{ 'BILLING.VIOLATIONS' | translate }}</div>
+                    </td>
+                    <!--                    <td *ngIf="selectedReason === 'Others'">-->
+                    <!--                      <span *ngIf="isEdit">-->
+                    <!--                      - -->
+                    <!--                      </span>-->
+                    <!--                      <span *ngIf="!isEdit">-->
+                    <!--                        <span-->
+                    <!--                          *ngIf="-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('violation').get('identifier')-->
+                    <!--                              .value !== null-->
+                    <!--                          "-->
+                    <!--                          >{{-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('violation').get('identifier').value-->
+                    <!--                          }}</span-->
+                    <!--                        >-->
+                    <!--                        <span-->
+                    <!--                          *ngIf="-->
+                    <!--                            adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('violation').get('identifier')-->
+                    <!--                              .value === null-->
+                    <!--                          "-->
+                    <!--                          >-</span-->
+                    <!--                        >-->
+                    <!--                      </span>-->
+                    <!--                    </td>-->
+                    <td class="amount-value">
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <gosi-input-currency-dc
+                          id="violationAmount"
+                          [ignoreLabel]="'true'"
+                          [control]="adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('violation').get('amount')"
+                          [placeholder]="'BILLING.AMOUNT-TO-ADJUST' | translate"
+                          [ignoreLabel]="'true'"
+                          [disabled]="isGcc"
+                          [separatorLimit]="separatorLimit"
+                          (blur)="calculateTotal()"
+                          size="sm"
+                          noMargin="true"
+                        >
+                        </gosi-input-currency-dc>
+                      </span>
+                      <span *ngIf="selectedReason === 'Write Off Debit' || (selectedReason === 'Others' && !isEdit)">
+                        {{
+                          adjustmentGroupDeatilsForm.get('AdjustmentLevel').get('violation').get('amount').value
+                            | number: '1.2-2'
+                        }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <!--                    <td *ngIf="selectedReason === 'Others'"></td>-->
+                    <td class="total-amt">
+                      <b id="totalAmount">{{ 'BILLING.TOTAL-AMOUNT' | translate }}</b>
+                    </td>
+                    <td>
+                      <span *ngIf="selectedReason === 'Others' && !isEdit">
+                        <b> {{ totalAdjustmentAmount | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}</b>
+                      </span>
+                      <span *ngIf="selectedReason === 'Others' && isEdit">
+                        <b>{{ total | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}</b></span
+                      >
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <!------------------------end of cliams table---------------------->
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <!-- Buttons -->
+  <div class="row" *ngIf="isEdit">
+    <div class="col-lg-12">
+      <!-- Save and next Button -->
+      <div class="float-right btn-section">
+        <gosi-button-dc
+          id="saveAndNexts"
+          type="primary"
+          (submit)="saveAndNextDetails()"
+          [disabled]="selectedReason === undefined || isEstablishmentClosed"
+        >
+          {{ 'BILLING.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <!-- Cancle button  -->
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButtons" type="secondary" (submit)="popUp(cancelTemplateModal)">
+          {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <!-- Cancling Modal -->
+      <ng-template #cancelTemplateModal>
+        <gosi-confirm-modal-dc
+          message="BILLING.INFO-CANCEL"
+          (onConfirm)="confirmCancelBtn()"
+          (onCancel)="declinePopup()"
+        >
+        </gosi-confirm-modal-dc>
+      </ng-template>
+    </div>
+  </div>
+</ng-container>

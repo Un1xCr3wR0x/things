@@ -1,0 +1,135 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<!-- Modals -->
+<div class="custom-modal" id="modalDiv">
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="col-lg-12 text-right pb-2 pt-2">
+          <fa-icon icon="times" class="times-value" (click)="hideModal()"> </fa-icon>
+        </div>
+        <div class="main-heading generate-report">{{ 'OCCUPATIONAL-HAZARD.GENERATE-REPORT' | translate }}</div>
+  
+        <div class="heading report-type">{{ 'OCCUPATIONAL-HAZARD.REPORTS.REPORT-TYPE' | translate }}</div>
+  
+        <div class="main-heading injuries-passed">
+          {{ 'OCCUPATIONAL-HAZARD.REPORTS.INJURIES-PASSED-CERTAIN-PERIOD-SINCE-REPORTED' | translate }}
+        </div>
+  
+        <div class="col-lg-12" *ngIf="showErrorMessage">
+          <gosi-alert-dc [message]="'CORE.ERROR.MANDATORY-FIELDS'" [dismissible]="true" type="danger"></gosi-alert-dc>
+        </div>
+        <gosi-alert-sc *ngIf="showMandatoryMessage"></gosi-alert-sc>
+        <gosi-alert-dc
+          *ngIf="isPassedClicked && !showErrorMessage && !showMandatoryMessage"
+          [message]="'BILLING.REPORT-GENERATION_MSG' | translate"
+          type="warning"
+          class="successMessage"
+          noPadding="true"
+          [dismissible]="false"
+        >
+        </gosi-alert-dc>
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="select-option">
+              <div class="row m-3 pb-2 batch-date">
+                {{ 'OCCUPATIONAL-HAZARD.REPORTS.BATCH-DATE-RANGE' | translate }}
+              </div>
+              <table class="table m-3">
+                <thead class="thead-light"></thead>
+                <tbody>
+                  <tr>
+                    <td (click)="selectRange()" [ngClass]="isThirtyDays ? 'selected' : 'notSelected'">
+                      {{ 'OCCUPATIONAL-HAZARD.LAST-THIRTY-DAYS' | translate }}
+                    </td>
+                    <td
+                      class="select-date-range"
+                      (click)="selectDateRange()"
+                      [ngClass]="!isThirtyDays ? 'selected' : 'notSelected'"
+                    >
+                      {{ 'OCCUPATIONAL-HAZARD.SELECT-DATE-RANGE' | translate }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-lg-6" style="margin-top: 20px">
+            <gosi-input-daterange-dc
+              #dateRangePicker
+              id="dateRange"
+              [label]="'OCCUPATIONAL-HAZARD.DATE-RANGE' | translate"
+              [control]="claimsDateForm"
+              [maxDate]="maxDate"
+              [hideOptionalLabel]="true"
+              [disabled]="disabled"
+            >
+            </gosi-input-daterange-dc>
+          </div>
+        </div>        
+          <div class="row pl-3 pb-3">
+            <div class="col injury-status">
+              <label> {{ 'OCCUPATIONAL-HAZARD.REPORTS.INJURY-STATUS' | translate }}</label>
+            </div>
+          </div>          
+          <div class="row pl-3">
+            <ng-container *ngFor="let status of status; let i = index">
+              <div class="col-lg-3 pl-3">
+                <gosi-input-checkbox-dc
+                  id="declarationMessage"
+                  label="  {{ 'OCCUPATIONAL-HAZARD.' + status.label | translate }}"
+                  [ignoreLabel]="true"
+                  [control]="injuryStatusForm.get('status').get(status.control)"
+                  (select)="checkDays($event, i)"
+                >
+                </gosi-input-checkbox-dc>
+              </div>
+            </ng-container>
+          </div>
+        <div class="row pt-4 ml-1">
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="reportLanguage"
+              name="reportLanguage"
+              [control]="injuriesPassedForm.get('reportLanguage')"
+              [list]="languageList"
+              [label]="'OCCUPATIONAL-HAZARD.REPORTS.REPORT-LANGUAGE' | translate"
+            >
+            </gosi-input-radio-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-radio-dc
+              id="fileType"
+              name="fileType"
+              [control]="injuriesPassedForm.get('fileType')"
+              [list]="pdfExcelList"
+              [disabled]="pdfExcelList.items[0] ? true : false"
+              [label]="'OCCUPATIONAL-HAZARD.REPORTS.FILE-TYPE' | translate"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>  
+        <div modalAction>
+          <div class="row">
+            <div class="col-md-12 form-action">
+              <div class="float-right btn-section">
+                <gosi-button-dc id="confirm" type="primary" [size]="'md'" [disabled]="isPassedClicked && !showErrorMessage && !showMandatoryMessage" (submit)="generateClosedPassed()">
+                  {{ 'OCCUPATIONAL-HAZARD.GENERATE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="float-left btn-section">
+                <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+  
+  

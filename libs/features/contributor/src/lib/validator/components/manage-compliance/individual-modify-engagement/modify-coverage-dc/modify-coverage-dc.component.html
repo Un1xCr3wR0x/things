@@ -1,0 +1,227 @@
+<div class="row">
+  <div class="col-lg-12">
+    <div class="my-3 edit-section split-section">
+      <div class="col-auto breakup-header">
+        {{ 'CONTRIBUTOR.COVERAGE-DETAILS' | translate }}
+      </div>
+      <div class="col-auto">
+        <div class="coverageSection">
+          <div class="con-label">
+            <span>
+              {{ 'CONTRIBUTOR.CURRENT-COVERAGE' | translate }}
+            </span>
+          </div>
+          <div class="d-flex justify-content-start mobile-coverage-section">
+            <ng-container *ngFor="let cov of selectedPeriod?.coverages">
+              <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === 'Annuity'">
+                <ng-template #annuityMessage>
+                  <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+                </ng-template>
+                <img
+                  src="assets/icons/annuity.svg"
+                  [placement]="lang === 'en' ? 'right' : 'left'"
+                  [tooltip]="annuityMessage"
+                  alt="annuity"
+                />
+              </div>
+              <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === 'Occupational Hazard'">
+                <ng-template #ohMessage>
+                  <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+                </ng-template>
+                <img
+                  src="assets/icons/OH.svg"
+                  [placement]="lang === 'en' ? 'right' : 'left'"
+                  [tooltip]="ohMessage"
+                  alt="Occupational Hazard"
+                />
+              </div>
+              <div class="icon-wrapper d-flex" *ngIf="cov.coverageType.english === 'Unemployment Insurance'">
+                <ng-template #uiMessage>
+                  <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }"></ng-container>
+                </ng-template>
+                <img
+                  src="assets/icons/UI.svg"
+                  [placement]="lang === 'en' ? 'right' : 'left'"
+                  [tooltip]="uiMessage"
+                  alt="Unemployment insurance"
+                />
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <!-- sprint stories code  new change-->
+
+      <div class="modifyCoverages coverage-padding">
+        <gosi-input-checkbox-dc
+          id="modifyCharge"
+          [noSpacing]="true"
+          [label]="'CONTRIBUTOR.MODIFY-COVERAGE' | translate"
+          [control]="modifyCoverageForm.get('modifyCoverages')"
+          [showToolTipOnDisabled]="isDisable"
+          [disabled]="isDisable"
+          (select)="coverageChange()"
+        ></gosi-input-checkbox-dc>
+      </div>
+      <ng-container *ngIf="modifyCoveragePeriod.modified || isModified">
+        <div class="heading coverage-padding">
+          <div class="row">
+            <div class="col-11 breakup-header">
+              {{ 'CONTRIBUTOR.NEW-COVERAGE' | translate }}
+            </div>
+            <div class="col-auto">
+              <fa-icon [icon]="['fas', 'pencil-alt']" class="icon" (click)="editIconClick()"></fa-icon>
+            </div>
+          </div>
+        </div>
+        <div class="row coverage-padding">
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="workType"
+              label="CONTRIBUTOR.NEW-COVERAGE"
+              [value]="modifyCoveragePeriod.coverages | bilingualText"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-label-dc
+              id="workType"
+              label="CONTRIBUTOR.REASON-FOR-CHANGE"
+              [value]="modifyCoveragePeriod.reasonForCoverageModification | bilingualText"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="isCoverageChanged && edit">
+        <div class="row coverage-padding">
+          <div class="col-lg-6">
+            <gosi-input-select-dc
+              id="newCoverage"
+              [label]="'CONTRIBUTOR.NEW-COVERAGE' | translate"
+              [list]="newCoverages"
+              [control]="modifyCoverageForm.get('modifyCoverage').get('coverages')"
+              [hideOptionalLabel]="true"
+            ></gosi-input-select-dc>
+          </div>
+          <div class="col-lg-6">
+            <gosi-input-select-dc
+              id="reasonForChange"
+              [label]="'CONTRIBUTOR.REASON-FOR-CHANGE' | translate"
+              [list]="reasonForChange"
+              [control]="modifyCoverageForm.get('modifyCoverage').get('reasonForChange')"
+              [hideOptionalLabel]="true"
+            ></gosi-input-select-dc>
+          </div>
+        </div>
+
+        <div class="row my-3 button-center">
+          <div class="col-auto">
+            <gosi-button-dc type="outline-secondary" id="cancel" size="md" (submit)="cancelPeriodEdit()">{{
+              'CONTRIBUTOR.CANCEL' | translate
+            }}</gosi-button-dc>
+          </div>
+          <div class="col-auto">
+            <gosi-button-dc type="outline-primary" id="save" size="md" (submit)="saveWageChanges()">{{
+              'CONTRIBUTOR.SAVE-CHANGES' | translate
+            }}</gosi-button-dc>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #tolTemplate let-coverage="coverage">
+        <div class="tooltip-custom custom-direction">
+          <div class="tooltip-header">
+            {{ 'CONTRIBUTOR.WAGE.CONTRIBUTION-BREAKUP' | translate }}:
+            {{ coverage.coverageType | bilingualText }}
+          </div>
+          <!-- <div class="tooltip-body">
+            <div>
+              <div class="share-header">
+                {{
+                  isTotalShare
+                    ? ('CONTRIBUTOR.TOTAL-CONTRIBUTOR-SHARE' | translate)
+                    : ('CONTRIBUTOR.CONTRIBUTOR-SHARE' | translate)
+                }}
+              </div>
+              <div class="sar-value">
+                {{ coverage.contributorShare | number: '.2-2' }}
+                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+              </div>
+              <div class="percent" *ngIf="!selectedPeriod?.endDate?.gregorian">
+                {{ coverage.contributorPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+              </div>
+            </div>
+            <div>
+              <div class="share-header">
+                {{
+                  isTotalShare
+                    ? ('CONTRIBUTOR.TOTAL-EMPLOYER-SHARE' | translate)
+                    : ('CONTRIBUTOR.EMPLOYER-SHARE' | translate)
+                }}
+              </div>
+              <div class="sar-value">
+                {{ coverage.establishmentShare | number: '.2-2' }}
+                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+              </div>
+              <div class="percent" *ngIf="!selectedPeriod?.endDate?.gregorian">
+                {{ coverage.establishmentPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+              </div>
+            </div>
+          </div> -->
+
+          <div class="tooltip-body">
+            <div [ngStyle]="{ 'text-align': lang == 'en' ? 'left' : 'right' }">
+              <div *ngIf="coverage?.coverageType.english == 'Annuity'">
+                {{ 'CONTRIBUTOR.ANNUITY-DESCRIPTION' | translate }}
+              </div>
+              <div *ngIf="coverage?.coverageType.english == 'Occupational Hazard'">
+                {{ 'CONTRIBUTOR.OH-DESCRIPTION' | translate }}
+              </div>
+              <div *ngIf="coverage?.coverageType.english == 'Unemployment Insurance'">
+                {{ 'CONTRIBUTOR.UI-DESCRIPTION' | translate }}
+              </div>
+            </div>
+            
+            <div class="d-flex text-center">
+              <div class="p-2">
+                <div class="share-header">
+                  {{
+                    isTotalShare
+                      ? ('CONTRIBUTOR.TOTAL-CONTRIBUTOR-SHARE' | translate)
+                      : ('CONTRIBUTOR.CONTRIBUTOR-SHARE' | translate)
+                  }}
+                </div>
+                <div class="sar-value">
+                  {{ coverage.contributorShare | number: '.2-2' }}
+                  {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                </div>
+                <div class="percent" *ngIf="!selectedPeriod?.endDate?.gregorian">
+                  {{ coverage.contributorPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+                </div>
+              </div>
+              <div class="p-2">
+                <div class="share-header">
+                  {{
+                    isTotalShare
+                      ? ('CONTRIBUTOR.TOTAL-EMPLOYER-SHARE' | translate)
+                      : ('CONTRIBUTOR.EMPLOYER-SHARE' | translate)
+                  }}
+                </div>
+                <div class="sar-value">
+                  {{ coverage.establishmentShare | number: '.2-2' }}
+                  {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                </div>
+                <div class="percent" *ngIf="!selectedPeriod?.endDate?.gregorian">
+                  {{ coverage.establishmentPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+                </div>
+              </div>
+
+            </div>
+            
+           
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

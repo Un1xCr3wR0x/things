@@ -1,0 +1,151 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="mof-content">
+  <div class="row heading-section">
+    <div class="col-auto mr-auto heading">
+      {{ 'BILLING.ALLOCATION-OF-CREDITS' | translate }} ({{ noOfRecords }} {{ 'BILLING.CONTRIBUTOR' | translate }})
+    </div>
+    <div class="menu d-flex">
+      <div class="search">
+        <gosi-search-dc
+          [placeholder]="'BILLING.SEARCH' | translate"
+          (search)="onSearchAmount($event)"
+          (keyup)="onSearchAmount($event.target.value)"
+        >
+        </gosi-search-dc>
+      </div>
+      <div class="filter">
+        <blg-contributor-allocation-credit-filter-dc
+          (allocationFiltervalues)="applyFilterValues($event)"
+          [individualAllocation]="individualAllocation"
+        ></blg-contributor-allocation-credit-filter-dc>
+      </div>
+    </div>
+  </div>
+  <ng-container>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="table-scroll table-responsive">
+          <table class="table table-borderless table-effect">
+            <thead class="table-header">
+              <tr>
+                <th id="deatils">
+                  {{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}
+                </th>
+                <th id="debitAmount">
+                  {{ 'BILLING.DEBIT-AMOUNT' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+                <th id="allocatedAmount">
+                  {{ 'BILLING.ALLOCATED-AMOUNT' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+                <th id="balance">
+                  {{ 'BILLING.BALANCE-AFTER-ALLOCATION' | translate }}
+                  <span class="currency-lbl">({{ currentCurrencyLable | translate }})</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngIf="individualAllocation">
+              <ng-container
+                *ngFor="
+                  let datas of itemlist
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemsPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: individualAllocation?.noOfRecords
+                        };
+                  let i = index
+                "
+              >
+                <tr class="border-bottom">
+                  <a class="view-details" (click)="showContributorDetModel(datas.person.sin, accountSumaryView, 'lg')">
+                    <td>
+                      <span *ngIf="datas.person.name.english.name !== null && lang === 'en'">
+                        {{ datas.person.name.english.name }}
+                      </span>
+                      <span *ngIf="(datas.person.name.english.name == undefined && lang === 'en') || lang === 'ar'"
+                        >{{ datas.person.name.arabic.firstName }}
+                        {{ datas.person.name.arabic.secondName ? datas.person.name.arabic.secondName : '' }}
+                        {{ datas.person.name.arabic.thirdName ? datas.person.name.arabic.thirdName : '' }}
+                        {{ datas.person.name.arabic.familyName }}
+                      </span>
+                      <div *ngIf="datas.person.identity !== null">
+                        <div *ngIf="datas.person.identity.idType === 'NIN'">
+                          <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                          <span>
+                            {{ datas.person.identity.newNin }}) ({{ datas.person.nationality | bilingualText }})</span
+                          >
+                        </div>
+                        <div *ngIf="datas.person.identity.idType === 'PASSPORT'">
+                          <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                          <span>
+                            {{ datas.person.identity.passportNo }}) ({{ datas.person.nationality | bilingualText }})
+                          </span>
+                        </div>
+                        <div *ngIf="datas.person.identity.idType === 'IQAMA'">
+                          <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                          <span>
+                            {{ datas.person.identity.iqamaNo }}) ({{ datas.person.nationality | bilingualText }})</span
+                          >
+                        </div>
+                        <div *ngIf="datas.person.identity.idType === 'BORDERNO'">
+                          <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                          <span>
+                            {{ datas.person.identity.id }}) ({{ datas.person.nationality | bilingualText }})
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </a>
+
+                  <td>{{ datas.amount.debitAmount * exchangeRate | number: '1.2-2' }}</td>
+                  <td>{{ datas.amount.allocatedAmount * exchangeRate | number: '1.2-2' }}</td>
+                  <td>
+                    {{ datas.amount.balanceAmount * exchangeRate | number: '1.2-2' }}
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <ng-container>
+      <div *ngIf="individualAllocation?.noOfRecords > 10">
+        <gosi-pagination-dc
+          *ngIf="individualAllocation?.noOfRecords > itemsPerPage"
+          [totalSize]="individualAllocation?.noOfRecords"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetails"
+          (pageChange)="selectPage($event)"
+          paginationId="paginationId"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-container>
+    <div></div>
+  </ng-container>
+</div>
+
+<!-- Modals -->
+<ng-template #accountSumaryView>
+  <div class="model-margin">
+    <blg-allocation-credit-details-dc
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+      [fromPage]="'contributorAllocation'"
+      [allocationDetails]="allocationDetails"
+      [contributorAllocationSummary]="contributorAllocationSummary"
+      (cancel)="confirmCancel()"
+      [isContributor]="true"
+    ></blg-allocation-credit-details-dc>
+  </div>
+</ng-template>

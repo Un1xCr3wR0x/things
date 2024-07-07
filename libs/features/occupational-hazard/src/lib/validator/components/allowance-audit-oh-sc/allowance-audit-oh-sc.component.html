@@ -1,0 +1,167 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row main-heading">
+    <ng-container>
+      <div class="col-md-8 d-flex allowance-header">
+        {{ 'OCCUPATIONAL-HAZARD.AUDITOR.MEDICAL-COST-CONTROLLER-ALLOWANCE-HEADER' | translate }}
+      </div>
+      <div class="col-md-3 d-flex mark-completed" *ngIf="showButton">
+        <gosi-button-dc id="audit" type="primary" size="sm" (submit)="showModal(commentTemplate, 'modal-lg')">{{
+          'OCCUPATIONAL-HAZARD.AUDITOR.MARK-COMPLETED' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="btn-section float-right pl-2 pr-2" *ngIf="!showButton">
+        <gosi-button-dc id="batch" type="primary" size="sm" (submit)="showModal(errorMessageTemplate, 'modal-lg')">{{
+          'OCCUPATIONAL-HAZARD.AUDITOR.MARK-COMPLETED' | translate
+        }}</gosi-button-dc>
+      </div>
+    </ng-container>
+  </div>
+  <!-- Audit details section -->
+  <oh-allowance-audit-overview-dc [auditDetails]="auditHeaderDetails"></oh-allowance-audit-overview-dc>
+  <!-- Case List View-->
+  <oh-case-list-audit-dc
+    [auditDetails]="auditDetails"
+    [contributor]="contributor"
+    (allowance)="fetchAllowance($event)"
+    (fetchAllAllowances)="fetchAllAllowance($event)"
+    [allAllowanceDetails]="allAllowanceDetails"
+    (navigate)="navigateTo($event)"
+    [auditSummary]="auditSummary"
+    [auditSummaryOh]="auditSummaryOh"
+    [caseId]="caseId"
+    [rejectReasonList$]="rejectReasonList$"
+    [allowanceDetails]="auditSummaryOh"
+    (requestEvent)="showModal(requestTemplate, 'modal-lg', $event)"
+    [previousAllowance]="previousAllowance"
+    [previousAllowanceDetails]="previousAllowanceDetails"
+    [previousAuditSummary]="previousAuditSummary"
+    (rejectEvent)="rejectEvent($event)"
+    [ohCategoryList]="ohCategoryList$ | async"
+    [allowanceType]="allowanceType$ | async"
+    (filterValues)="applyFilter($event)"
+    (applyAllowance)="applyAllowanceFilter($event)"
+    (sortEvent)="sortAllowances($event)"
+    [sortList]="sortList"
+    (loadMore)="loadMore($event)"
+    [comment]="commentList"
+    [documents]="documents"
+    [clarifications]="receiveClarification"
+    [closedAllowances]="closedAllowances"
+    [requestedAllowances]="requestedAllowances"
+  ></oh-case-list-audit-dc>
+</div>
+<ng-template #commentTemplate>
+  <div class="mt-5 ml-3 mr-3">
+    <p class="main-heading">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.ALLOWANCE-HEADER' | translate | titlecase }}</p>
+    <div class="row">
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="auditComments"
+          name="comments"
+          [label]="'CORE.COMMENTS' | translate"
+          [maxLength]="commentsMaxlength"
+          [control]="comment"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="float-left col-md-6">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="clear()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="col-md-6 text-right">
+        <gosi-button-dc type="primary" id="submit" (submit)="markAsCompleted()">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+<ng-template #requestTemplate>
+  <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate">
+    <div class="row" modalContent>
+      <div class="col-lg-12">
+        <div class="col-lg-12" *ngIf="docAlert">
+          <gosi-alert-dc
+            message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+            type="warning"
+            [dismissible]="true"
+          ></gosi-alert-dc>
+        </div>
+        <div class="col-lg-12" *ngIf="commentAlert">
+          <gosi-alert-dc message="CORE.ERROR.MANDATORY-FIELDS" type="danger" [dismissible]="true"></gosi-alert-dc>
+        </div>
+      </div>
+      <div class="col-lg-12 mt-3 mb-3 ml-3">
+        <ng-container *ngFor="let item of selectedAllowance; let i = index">
+          <span class="sid">
+            {{ 'THEME.SID' | translate }} {{ item.transactionTraceId }} | {{ item.allowanceType | bilingualText }}
+          </span>
+        </ng-container>
+      </div>
+      <div class="col-md-12">
+        <gosi-input-multi-select-dropdown-dc
+          id="requestDocuments"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          [control]="reportAllowanceModal.get('document')"
+          [list]="documentListLov"
+          (selected)="receiveDocumentList($event)"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          label="OCCUPATIONAL-HAZARD.COMMENTS"
+          [name]="'rejectComments'"
+          [maxLength]="maxLengthComments"
+          [control]="reportAllowanceModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right">
+        <gosi-button-dc id="confirmSubmitBtn" type="success" class="action-button" (submit)="requestAllowanceTpa()">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancelApproveBtn" type="secondary" (submit)="resetModalAllowance()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #errorMessageTemplate>
+  <div class="row justify-content-center mt-3 mb-3">
+    <gosi-modal-dc>
+      <div modalContent>
+        <gosi-alert-dc
+          message="OCCUPATIONAL-HAZARD.PROHIBIT-ALLOWANCE"
+          type="danger"
+          [dismissible]="false"
+          [noPadding]="false"
+        >
+        </gosi-alert-dc>
+      </div>
+      <div class="d-flex justify-content-center m-4" modalAction>
+        <gosi-button-dc type="secondary" id="close" (submit)="clear()">
+          {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

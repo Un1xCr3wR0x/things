@@ -1,0 +1,133 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc [heading]="'MEDICAL-BOARD.PARTICIPANTS' | translate" type="secondary">
+  <table
+    class="table table-borderless"
+    *ngIf="configurationDetails && configurationDetails.participantList.length !== 0; else noValueTemplate"
+  >
+    <thead class="thead-light">
+      <tr>
+        <th>
+          {{ 'MEDICAL-BOARD.SERIAL-NO' | translate }}
+        </th>
+        <th>
+          {{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate }}
+        </th>
+        <th>
+          {{ 'MEDICAL-BOARD.PARTICIPANT-NAME' | translate }}
+        </th>
+        <th>
+          {{ 'MEDICAL-BOARD.IDENTIFICATION-NUMBER' | translate }}
+        </th>
+        <th>
+          {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+        </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let participant of configurationDetails.participantList; let i = index">
+        <tr>
+          <td>
+            {{ i + 1 }}
+          </td>
+          <td>
+            {{ participant.assessmentType | bilingualText }}
+          </td>
+          <td>
+            {{ participant.name | bilingualText }}
+          </td>
+          <td>
+            <ng-container>
+              <a class="member-click" (click)="navigationToProfile(participant.identity)">{{ participant.identity }}</a>
+            </ng-container>
+          </td>
+          <td>
+            {{ participant.location | bilingualText }}
+          </td>
+          <td>
+            <div class="btn-group" dropdown *ngIf="isInCharge || (!isTimeDisabled && !isInCharge)">
+              <button
+                id="button-actions"
+                type="button"
+                class="btn-actions"
+                outsideClick="true"
+                dropdownToggle
+                aria-controls="dropdown-actions"
+              >
+                <fa-icon class="options-icon" icon="ellipsis-v"></fa-icon>
+              </button>
+              <ul
+                id="dropdown-actions"
+                *dropdownMenu
+                class="dropdown-menu"
+                role="menu"
+                aria-labelledby="button-actions"
+              >
+                <li role="menuitem">
+                  <a class="dropdown-item" (click)="onReplaceMember(i)">
+                    <span>{{ 'MEDICAL-BOARD.REPLACE' | translate | titlecase }}</span></a
+                  >
+                </li>
+                <li role="menuitem">
+                  <a class="dropdown-item" (click)="onRemoveMember(i)">
+                    <span>{{ 'MEDICAL-BOARD.REMOVE' | translate | titlecase }}</span></a
+                  >
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-center align-self-end pt-4">
+    <gosi-button-dc
+      [outlineOnly]="true"
+      [disabled]="isTimeDisabled && !isInCharge"
+      [popover]="!(!isInCharge && isTimeDisabled) ? addParticipantsModal : null"
+      type="secondary"
+      size="md"
+      outsideClick="true"
+    >
+      {{ 'MEDICAL-BOARD.ADD-ANOTHER-PARTICIPANT' | translate }}
+    </gosi-button-dc>
+  </div>
+</gosi-card-dc>
+<ng-template #noValueTemplate>
+  <div class="header">
+    <div class="head">{{ 'MEDICAL-BOARD.SERIAL-NO' | translate }}</div>
+    <div class="head">{{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate }}</div>
+    <div class="head">{{ 'MEDICAL-BOARD.PARTICIPANT-NAME' | translate }}</div>
+    <div class="head">{{ 'MEDICAL-BOARD.NIN' | translate }}</div>
+    <div class="head">{{ 'MEDICAL-BOARD.SPECIALITY' | translate }}</div>
+    <div class="head header-toggle"></div>
+  </div>
+  <div class="d-flex justify-content-center no-value p-4">
+    {{ 'MEDICAL-BOARD.NO-PARTICIPANTS' | translate }}
+  </div>
+</ng-template>
+<ng-template #addParticipantsModal>
+  <button
+    type="button"
+    id="regular"
+    outsideClick="true"
+    class="d-flex btn text-left mb-2 action-pop-btn"
+    (click)="onAddParticipants()"
+  >
+    {{ 'MEDICAL-BOARD.BULK-ADDTION' | translate }}
+  </button>
+  <button
+    *ngIf="!isAmb"
+    type="button"
+    id="ad-hoc"
+    outsideClick="true"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="addByNinModalPopup()"
+  >
+    {{ 'MEDICAL-BOARD.ADD-BY-NIN' | translate }}
+  </button>
+</ng-template>

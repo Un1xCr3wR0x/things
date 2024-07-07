@@ -1,0 +1,168 @@
+<gosi-card-dc type="secondary">
+  <div class="row mb-4">
+    <div class="col-lg-12 custom-heading">{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}</div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <table class="table table-borderless table-effect table-responsive">
+        <thead class="table-header">
+          <tr>
+            <th class="custom-wrap custom-align-top">{{ 'ADJUSTMENT.ADJUSTMENT-ID' | translate | uppercase }}</th>
+            <th class="custom-wrap custom-w-20 custom-align-top">
+              {{ 'ADJUSTMENT.BENEFIT-TYPE' | translate | uppercase }}
+            </th>
+            <th>{{ 'ADJUSTMENT.ADJUSTMENT-TYPE' | translate | uppercase }}</th>
+            <th>{{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT-LBL' | translate | uppercase }}</th>
+            <th>{{ 'ADJUSTMENT.DEBIT-PERCENTAGE' | translate | uppercase }}</th>
+            <th>{{ 'ADJUSTMENT.ADJUSTMENT-STATUS' | translate | uppercase }}</th>
+            <th class="custom-status-width"></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let adjustmentDetail of activeAdjustments?.adjustments">
+          <tr class="custom-row">
+            <td>
+              <span
+                *ngIf="
+                  adjustmentDetail?.actionType?.english === 'Add' ||
+                    adjustmentDetail?.actionType?.english === 'Recovery';
+                  else adjustmenttIdValue
+                "
+                >-</span
+              >
+              <ng-template #adjustmenttIdValue>{{ adjustmentDetail?.adjustmentId }}</ng-template>
+            </td>
+            <td>
+              <a
+                *ngIf="!type; else benefitTypeValue"
+                class="view-link"
+                (click)="navigateToBenefitDetails(adjustmentDetail)"
+              >
+                {{ adjustmentDetail?.benefitType | bilingualText }}
+              </a>
+              <ng-template #benefitTypeValue>{{ adjustmentDetail?.benefitType | bilingualText }}</ng-template>
+            </td>
+            <td>{{ adjustmentDetail?.adjustmentType | bilingualText }}</td>
+            <td>{{ adjustmentDetail?.adjustmentAmount | numToPositive | number: '1.0-2' }}</td>
+            <td>
+              <span
+                *ngIf="
+                  adjustmentDetail?.adjustmentType?.english === 'Credit' ||
+                    adjustmentDetail?.adjustmentPercentage === null;
+                  else percentage
+                "
+                >-
+              </span>
+              <ng-template #percentage>
+                {{ adjustmentDetail?.adjustmentPercentage }}
+              </ng-template>
+            </td>
+            <td>
+              {{ adjustmentDetail?.adjustmentStatus | bilingualText }}
+            </td>
+            <td class="custom-align-middle">
+              <div *ngIf="adjustmentDetail?.actionType; else modifyCancelBtn">
+                <div
+                  id="actionType"
+                  class="custom-box py-1 px-2 rounded {{ getActionName(adjustmentDetail?.actionType?.english).color }}"
+                >
+                  {{ getActionName(adjustmentDetail?.actionType?.english).name | translate }}
+                </div>
+              </div>
+              <ng-template #modifyCancelBtn>
+                <div
+                  id="actionType"
+                  class="custom-box info py-1 px-2 rounded custom-pointer"
+                  *ngIf="!adjustmentDetail?.isModifyCancelAdjustment"
+                  (click)="modifyCancelFlag(true, adjustmentDetail)"
+                >
+                  {{ 'ADJUSTMENT.MODIFY-CANCEL' | translate }}
+                </div>
+              </ng-template>
+            </td>
+            <td class="custom-align-middle">
+              <div
+                *ngIf="
+                  adjustmentDetail?.actionType &&
+                  !adjustmentDetail.isModifyCancelAdjustment &&
+                  !adjustmentDetail.isEditAdjustment
+                "
+              >
+                <fa-icon
+                  class="custom-icon custom-pointer"
+                  [icon]="['fas', adjustmentDetail?.actionType?.english === 'Recovery' ? 'eye' : 'pencil-alt']"
+                  (click)="onIconClicked(adjustmentDetail, true)"
+                ></fa-icon>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="adjustmentDetail?.isModifyCancelAdjustment">
+            <td colspan="8">
+              <pmt-adjustment-modify-cancel-dc
+                *ngIf="adjustmentDetail && adjustmentReasonList"
+                [adjustmentDetail]="adjustmentDetail"
+                [isValidator]="isValidator"
+                [adjustmentReasonList$]="adjustmentReasonList"
+                (onModifyAdjustmentClicked)="onModifyAdjustment($event, adjustmentDetail)"
+                (onCancelAdjustmentClicked)="onAddAdjustment($event)"
+                (onCancelModifyFormCancelled)="onModifyCancelFormCancel($event, adjustmentDetail, cancelModifyTemplate)"
+              ></pmt-adjustment-modify-cancel-dc>
+            </td>
+          </tr>
+          <tr *ngIf="adjustmentDetail?.isViewAdjustment || adjustmentDetail?.isEditAdjustment">
+            <td colspan="8">
+              <pmt-adjustment-add-form-dc
+                *ngIf="beneficiaries && adjustmentDetail && adjustmentReasonList"
+                [adjustmentDetail]="adjustmentDetail"
+                [beneficiaries]="beneficiaries"
+                [isReadOnly]="adjustmentDetail?.isViewAdjustment ? true : false"
+                [adjustmentReasonList$]="adjustmentReasonList"
+                (onCloseClicked)="onIconClicked(adjustmentDetail, false)"
+                (onAddClicked)="onEditAdjustment($event, adjustmentDetail)"
+                (onCancelClicked)="onCancelEditAdjustment($event, cancelEditTemplate, adjustmentDetail)"
+              ></pmt-adjustment-add-form-dc>
+            </td>
+          </tr>
+          <div class="pb-3"></div>
+          <ng-template #cancelModifyTemplate>
+            <gosi-confirm-modal-dc
+              [message]="'ADJUSTMENT.INFO-CANCEL'"
+              (onConfirm)="cancelModifyModal(adjustmentDetail)"
+              (onCancel)="modalRef.hide()"
+            >
+            </gosi-confirm-modal-dc>
+          </ng-template>
+          <ng-template #cancelEditTemplate>
+            <gosi-confirm-modal-dc
+              [message]="'ADJUSTMENT.INFO-CANCEL'"
+              (onConfirm)="cancelEditModal(adjustmentDetail)"
+              (onCancel)="modalRef.hide()"
+            >
+            </gosi-confirm-modal-dc>
+          </ng-template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center alert alert-light" *ngIf="activeAdjustments?.adjustments?.length === 0">
+    No Adjustments added
+  </div>
+  <div class="d-flex justify-content-center mt-3" *ngIf="!isAddAdjustment && !isValidator">
+    <gosi-button-dc id="add-adjustment" [size]="'md'" [outlineOnly]="true" (submit)="addAdjustment(true)">
+      {{ 'ADJUSTMENT.ADD-ADJUSTMENT' | translate }}
+    </gosi-button-dc>
+  </div>
+  <div *ngIf="isAddAdjustment" classs="mt-2">
+    <pmt-adjustment-add-form-dc
+      *ngIf="beneficiaries && adjustmentReasonWholeList"
+      [beneficiaries]="beneficiaries"
+      [adjustmentReasonList$]="adjustmentReasonWholeList"
+      (onAddClicked)="onAddAdjustment($event)"
+      (onCancelClicked)="onCancelAddAdjustment($event, cancelTemplate)"
+    ></pmt-adjustment-add-form-dc>
+  </div>
+</gosi-card-dc>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'ADJUSTMENT.INFO-CANCEL'" (onConfirm)="cancelModal()" (onCancel)="modalRef.hide()">
+  </gosi-confirm-modal-dc>
+</ng-template>

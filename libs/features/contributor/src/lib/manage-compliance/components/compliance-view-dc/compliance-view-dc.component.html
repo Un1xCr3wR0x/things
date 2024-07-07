@@ -1,0 +1,151 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <form [formGroup]="cancelEngForm">
+    <div class="row mx-3 heading-row">
+      <div class="heading-prop"> 
+        <span *ngIf="violationDetails?.violationSubType?.english != null">
+          {{ violationDetails?.violationSubType | bilingualText }}
+        </span>
+        <span *ngIf="violationDetails?.violationSubType?.english == null">
+           {{ violationDetails?.violationType | bilingualText }}
+        </span>
+      </div>
+      <span class="mx-2"></span>
+      <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+        <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+      </div>
+      <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+      <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+        {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+        <span class="ml-3" style="margin-top: -0.4rem">
+          <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+        </span>
+      </div>
+      <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+        <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+      </div>
+    </div>
+    <gosi-alert-sc class="alertspace"></gosi-alert-sc>
+    <gosi-alert-dc [alert]="penaltyInfo"></gosi-alert-dc>
+
+    <cnt-contributor-banner-dc *ngIf="contributor" [contributor]="contributor"></cnt-contributor-banner-dc>
+    <div class="row" *ngIf="transactionRefData">
+      <div class="col-12">
+        <gosi-comments-dc *ngIf="transactionRefData.length > 0" [comments]="transactionRefData"> </gosi-comments-dc>
+      </div>
+    </div>
+    <div class="card mt-4">
+      <div class="card-body">
+        <div class="row m-0">
+          <div class="card-heading custom-heading-padding">
+            <div *ngIf="violationDetails?.violationType?.english === 'Cancel Engagement'; else modifyEng">
+              {{ 'CONTRIBUTOR.COMPLIANCE.CANCEL-ENGAGEMENT' | translate }}
+            </div>
+            <ng-template #modifyEng>{{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }}</ng-template>
+          </div>
+        </div>
+        <cnt-establishment-details-dc
+          *ngIf="establishmentDetails && registrationNumber"
+          [establishmentDetails]="establishmentDetails"
+          [violationDetails]="violationDetails"
+          [registrationNumber]="registrationNumber"
+          [isModifyCoverage]="isModifyCoverage"
+          [applicableFrom]="violationDetails?.wage?.requestedWage?.startDate"
+        ></cnt-establishment-details-dc>
+        <cnt-e-inspection-wage-table-violation-dc
+          *ngIf="isModifyCoverage"
+          [violationDetails]="violationDetails"
+        ></cnt-e-inspection-wage-table-violation-dc>
+        <cnt-engagement-view-dc
+          *ngIf="engagement && violationDetails && !isModifyCoverage"
+          [engagement]="engagement"
+          [violationDetails]="violationDetails"
+        >
+        </cnt-engagement-view-dc>
+      </div>
+    </div>
+    <div class="card mt-4" *ngIf="!isUnclaimed">
+      <div class="card-body">
+        <div class="row m-0">
+          <div class="custom-ar-label">
+            <gosi-input-radio-dc
+              id="cancelEngagementRadio"
+              name="cancelEngagement"
+              [label]="'CONTRIBUTOR.COMPLIANCE.INSPECTION-RADIO-LBL'"
+              [control]="cancelEngForm.get('choice')"
+              [list]="cancelEngList"
+              (select)="listenForCancelEng($event)"
+              [disabled]="isBillBatch"
+            >
+            </gosi-input-radio-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="isDocumentUpload">
+      <!-- document upload section -->
+      <cnt-contract-file-upload-dc
+        [parentForm]="parentForm"
+        [engagementId]="violationDetails?.engagementId"
+        [documentList]="documents"
+        [contractId]="payload?.requestId"
+        [referenceNumber]="referanceNumber"
+        [transactionNumber]="cancelEngBusinessKey"
+        [infoMessage]="isKashefChannel ? 'CORE.ERROR.UPLOAD-MANDATORY-DOCUMENTS' : 'CONTRIBUTOR.COMPLIANCE.ATLEAST-ONE_DOC'"
+        [uuid]="uuid"
+        (refresh)="refreshDocument($event)"
+      ></cnt-contract-file-upload-dc>
+
+      <div class="card mt-4" *ngIf="isCommentRequired">
+        <div class="card-body">
+          <div class="row m-0">
+            <div class="col-sm-12 col-md-12 p-0">
+              <gosi-input-text-area-dc
+                [label]="'CONTRIBUTOR.COMMENTS' | translate"
+                id="comments"
+                name="comments"
+                [maxLength]="commentMaxLength"
+                [control]="cancelEngForm.get('comments')"
+              ></gosi-input-text-area-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row m-0" *ngIf="!isUnclaimed">
+      <gosi-input-checkbox-dc
+        id="cancelEngAcknowledge"
+        name="engAcknowledge"
+        [control]="cancelEngForm.get('acknowledge')"
+        [label]="
+          'CONTRIBUTOR.COMPLIANCE.INSPECTION-CHECKBOX-LBL'
+            | translate
+              : {
+                  est_Name:
+                    currentLang === 'en'
+                      ? establishmentDetails?.name.english || establishmentDetails?.name.arabic
+                      : establishmentDetails?.name.arabic
+                }
+        "
+      >
+      </gosi-input-checkbox-dc>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <cnt-action-area-dc
+          primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+          (submit)="confirmEngagement()"
+          (cancel)="cancelTransaction()"
+          [disablePrimary]="isBillBatch"
+          [isUnclaimed]="isUnclaimed"
+        >
+        </cnt-action-area-dc>
+      </div>
+    </div>
+  </form>
+</div>

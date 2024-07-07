@@ -1,0 +1,434 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="row no-gutters mb-4">
+    <!-- <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div> -->
+    <div
+      class="col-auto mr-auto header"
+      *ngIf="!isNonOcc && !isJailed && !isHazardous && !isWomenLumpsum && !isHeir && !isRPALumpsum"
+    >
+      {{ 'BENEFITS.LUMPSUM-BENEFIT-HEADING' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isNonOcc">
+      {{ 'BENEFITS.NONOCC-LUMPSUM-BENEFIT-HEADING' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isJailed">
+      {{ 'BENEFITS.REQUEST-JAILED-LUMPSUM-BENEFIT' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isHazardous">
+      {{ 'BENEFITS.REQUEST-HAZARDOUS-LUMPSUM-BENEFIT' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isWomenLumpsum">
+      {{ 'BENEFITS.REQ-WOMAN-LUMPSUM-BENEFIT' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isHeir">
+      {{ 'BENEFITS.REQUEST-HEIR-LUMPSUM-BENEFIT' | translate }}
+    </div>
+    <div class="col-auto mr-auto header" *ngIf="isRPALumpsum">
+      {{ 'BENEFITS.REQUEST-RPA-LUMPSUM-BENEFIT' | translate }}
+    </div>
+  </div>
+  <div [ngClass]="{ hide: hideAlertComponent(currentTab, wizardItems) }">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div [ngClass]="{ hide: wizardItems.length <= 1 }">
+    <gosi-progress-wizard-dc [wizardItems]="wizardItems" (clickWizard)="selectedWizard($event)" #applyLumpsumWizard>
+    </gosi-progress-wizard-dc>
+  </div>
+  <div *ngIf="isNotEligible">
+    <gosi-alert-dc
+      [message]="isHeir ? 'BENEFITS.HEIR-NOT-ELIGIBLE-LUMPSUM' : 'BENEFITS.NOT-ELIGIBLE-LUMPSUM'"
+      type="warning"
+      [dismissible]="false"
+      [noPadding]="true"
+    >
+      <a
+        actOnAlert
+        class="view-link"
+        id="view-ineligible"
+        routerLinkActive="active"
+        (click)="ShowEligibilityPopup(eligibilityCriteria)"
+        >{{ 'BENEFITS.VIEW-INELIGIBLE-DETAILS' | translate }}</a
+      >
+    </gosi-alert-dc>
+  </div>
+
+  <div class="hide-tab">
+    <!-- *ngIf="!isHazardous && !isJailed && !isNonOcc" -->
+    <tabset type="pills" #retirementDetailsTab>
+      <tab
+        *ngIf="!isHeir && !isHazardous && !isNonOcc"
+        [active]="isTabSlctdInWizard(uiConst.IMPRISONMENT_DETAILS, currentTab, wizardItems)"
+      >
+        <bnt-imprisonment-benefits-dc
+          *ngIf="jailedPeriods"
+          [jailedPeriods]="jailedPeriods"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [parentForm]="benefitsForm"
+          [isValidator]="isValidator"
+          (clearAllAlerts)="clearAllAlerts()"
+          (nextForm)="getDependentForPrisoners($event, retirementDetailsTabSet, applyLumpsumWizard)"
+          (cancel)="cancelTransaction()"
+        >
+        </bnt-imprisonment-benefits-dc>
+      </tab>
+      <tab
+        *ngIf="isHeir && !isHazardous && !isJailed && !isNonOcc"
+        [active]="isTabSlctdInWizard(uiConst.REASON_FOR_BENEFIT, currentTab, wizardItems)"
+      >
+        <bnt-heir-reason-benefit-dc
+          *ngIf="reasonForbenefits"
+          #benefitReason
+          [reasonForbenefits]="reasonForbenefits"
+          [systemRunDate]="systemRunDate"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [benefitReasonList]="benefitReasonList$ | async"
+          [isValidator]="isValidator"
+          [isAppPrivate]="isAppPrivate"
+          [parentForm]="benefitsForm"
+          (save)="goToAddHeir($event, retirementDetailsTabSet, applyLumpsumWizard)"
+          (cancel)="cancelTransaction()"
+        >
+        </bnt-heir-reason-benefit-dc>
+      </tab>
+      <!--Heir Details-->
+      <tab
+        *ngIf="isHeir && !isHazardous && !isJailed && !isNonOcc && heirDetailsData"
+        [active]="isTabSlctdInWizard(uiConst.HEIR_DETAILS, currentTab, wizardItems)"
+      >
+        <bnt-heir-details-sc
+          [isDraft]="routerData?.draftRequest"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [heirDetails]="heirDetails"
+          [heirList]="$heirList"
+          [systemParameter]="systemParameter"
+          [systemRunDate]="systemRunDate"
+          [benefitCalculation]="benefitCalculation"
+          [benefitType]="benefitType"
+          [requestDate]="benefitsForm?.get('requestDate')?.value"
+          [benefitRequestId]="benefitRequestId"
+          [referenceNo]="referenceNo"
+          [sin]="socialInsuranceNo"
+          [lang]="lang"
+          [heirDetailsData]="heirDetailsData"
+          [parentForm]="benefitsForm"
+          [isAppPrivate]="isAppPrivate"
+          [isValidator]="isValidator"
+          (save)="applyForBenefitWithHier($event)"
+          (cancel)="cancelTransaction()"
+          (previous)="previousForm()"
+          [isBankAccountRequired]="false"
+          [eligibleForPensionReform]="eligibleForPensionReform"
+        ></bnt-heir-details-sc>
+      </tab>
+      <tab
+        *ngIf="!isHeir && !isHazardous && !isJailed && !isNonOcc"
+        [active]="isTabSlctdInWizard(uiConst.IMPRISONMENT_DETAILS, currentTab, wizardItems)"
+      >
+        <bnt-imprisonment-benefits-dc
+          *ngIf="jailedPeriods"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [jailedPeriods]="jailedPeriods"
+          [parentForm]="benefitsForm"
+          [isValidator]="isValidator"
+          (clearAllAlerts)="clearAllAlerts()"
+          (nextForm)="getDependentForPrisoners($event, retirementDetailsTabSet, applyLumpsumWizard)"
+          (cancel)="cancelTransaction()"
+        >
+        </bnt-imprisonment-benefits-dc>
+      </tab>
+      <tab
+        *ngIf="!isHeir && !isHazardous && !isNonOcc"
+        [active]="isTabSlctdInWizard(uiConst.DEPENDENTS_DETAILS, currentTab, wizardItems)"
+      >
+        <bnt-dependent-details-sc
+          [isDraft]="routerData?.draftRequest"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [parentForm]="benefitsForm"
+          [isValidator]="isValidator"
+          [listOfDependents]="dependentDetails"
+          [contributorDetails]="personDetails"
+          [eligibilityStartDate]="benefitEligibilityAndStartDate?.benefitEligibilityDate"
+          [benefitStartDate]="benefitEligibilityAndStartDate?.benefitStartDate"
+          [eligibleForBenefit]="eligibleForBenefit"
+          [isAppPrivate]="isAppPrivate"
+          [sin]="socialInsuranceNo"
+          [benefitType]="benefitType"
+          [isLumpsum]="true"
+          [lateRequest]="lateRequest"
+          [annuityResponse]="annuityResponse"
+          [newRequestDate]="currentRequestDate"
+          [requestDateChangedByValidator]="requestDateChangedByValidator"
+          (getDependentsByDate)="getDependentsBackdated($event, benefitRequestId, referenceNo, cancelTransactionPopup)"
+          (save)="saveDependent($event)"
+          (cancel)="cancelTransaction()"
+          (previousForm)="previousForm()"
+          [showPrevButton]="currentTab !== 0"
+          [isIndividualApp]="isIndividualApp"
+        >
+        </bnt-dependent-details-sc>
+      </tab>
+      <tab [active]="isTabSlctdInWizard(uiConst.BENEFIT_DETAILS, currentTab, wizardItems)">
+        <bnt-gosi-ui-annuity-benefits-dc
+          [benefitDetails]="benefitCalculation"
+          [systemRunDate]="systemRunDate"
+          [isValidator]="isValidator"
+          [systemParameter]="systemParameter"
+          [showRequestDateDc]="currentTab === 0 && isAppPrivate"
+          [annuityResponse]="annuityResponse"
+          [benefitType]="benefitType"
+          [parentForm]="benefitsForm"
+          [isAppPrivate]="isAppPrivate"
+          [lateRequest]="lateRequest"
+          [isNonOcc]="isNonOcc"
+          [annuityBenefit]="eligibilityApiResponse"
+          [newRequestDate]="annuityResponse?.requestDate"
+          [isIndividualApp]="isIndividualApp"
+          [heirEligibilityDetails]="heirEligibility"
+          [showConfirmButton]="!hasDependentOrHeir && !isValidator"
+          [eligibleForBenefit]="!hasDependentOrHeir && !isValidator ? eligibleForBenefit : true"
+          [heirDetailsData]="heirDetailsData"
+          (onPreviousAdjustmentsClicked)="navigateToPrevAdjustment()"
+          (getBenefitDetailsByDate)="requestDateChanged($event, true)"
+          [annuitybenefits]="annuitybenefits"
+          [eligibleForPensionReform]="eligibleForPensionReform"
+        >
+        </bnt-gosi-ui-annuity-benefits-dc>
+
+        <bnt-refund-voluntary-contributions-dc
+          *ngIf="creditBalanceDetails && benefitCalculation?.beneficiaryBenType === 1025"
+          [creditBalanceDetails]="creditBalanceDetails"
+        >
+        </bnt-refund-voluntary-contributions-dc>
+        <!-- PAYMENT DETAILS-->
+        <bnt-payment-details-dc
+          *ngIf="(isAppPrivate || isIndividualApp) && !isHeir && benefitCalculation"
+          [payeeList]="payeeList"
+          [paymentMethodList]="paymentMethodList$ | async"
+          [preselctdAttorney]="preSelectedAuthperson"
+          [attorneyDetailsWrapper]="attorneyDetailsWrapper"
+          [isValidator]="isValidator"
+          [lang]="lang"
+          [isHeirAlive]="!personDetails.deathDate?.gregorian"
+          [isDraft]="routerData?.draftRequest"
+          [bankName]="bankName"
+          [showPaymentMethod]="showPaymentMethod"
+          [savedPayeType]="savedPayeType"
+          [savedPayMethod]="savedPayMethod"
+          [personId]="getPersonId()"
+          [parentForm]="benefitsForm"
+          [bankDetails]="bankAccountList"
+          [listOfGuardians]="guardianList"
+          [isIndividualApp]="isIndividualApp"
+          [bankAccountList]="bankAccountList"
+          [saveApiResp]="saveApiResp"
+          [newBankForm]="true"
+          [showAccountInfo]="true"
+          [guardianDetails]="guardianDetails"
+          [hideChooseGuardian]="true"
+          [listYesNo]="listYesNo$ | async"
+          [nationalityList$]="nationalityList$"
+          (searchForGuardian)="searchForGuardian($event)"
+          (getBankName)="getBankName($event)"
+          (loadBankInfoForId)="getBankDetails($event)"
+          (clearSuccessMessage)="clearSuccessMessage()"
+          (getAuthPerson)="getAttorneyDetailsById($event)"
+          (getGuardian)="getAttorneyDetailsById($event, null, true)"
+        >
+        </bnt-payment-details-dc>
+        <bnt-bank-account-details-dc
+          *ngIf="!isAppPrivate && !isIndividualApp && !isHeir"
+          [bankName]="bankName"
+          [lang]="lang"
+          [isDraft]="routerData?.draftRequest"
+          [listYesNo]="listYesNo$ | async"
+          [bankDetails]="bankAccountList"
+          [parentForm]="benefitsForm"
+          (getBankName)="getBankName($event)"
+        >
+        </bnt-bank-account-details-dc>
+        <!--        <bnt-bank-details-saned-dc-->
+        <!--          *ngIf="!isAppPrivate && !isIndividualApp && !isHeir"-->
+        <!--          [bankDetails]="bankDetails"-->
+        <!--          [parentForm]="benefitsForm"-->
+        <!--          [saveApiResp]="saveApiResp"-->
+        <!--          [lang]="lang"-->
+        <!--        >-->
+        <!--        </bnt-bank-details-saned-dc>-->
+
+        <!-- confirm button not required (Defect 447020)-->
+        <!-- <bnt-request-date-dc
+          *ngIf="isAppPrivate && !hasDependentOrHeir && !isHazardous && !isJailed"
+          [disableDate]="isValidator"
+          [showConfirmButton]="false"
+          [parentForm]="benefitsForm"
+          [disableDate]="isValidator"
+          [showConfirmButton]="!isValidator"
+          (confirm)="requestDateChanged($event)"
+        >
+        </bnt-request-date-dc> -->
+        <bnt-reason-for-late-request-dc
+          *ngIf="lateRequest && (eligibleForBenefit || isIndividualApp)"
+          [isNonOcc]="isNonOcc"
+          [lateRequestDetails]="annuityResponse?.lateRequestDetails"
+          [parentForm]="benefitsForm"
+          [systemParameter]="systemParameter"
+        ></bnt-reason-for-late-request-dc>
+
+        <!-- DECLARATIONS -->
+        <bnt-declaration-dc
+          *ngIf="!isAppPrivate"
+          [content]="'BENEFITS.ANNUITY-REQUEST-DECLARATION'"
+          [heading]="'BENEFITS.DECLARATION'"
+          [checkBoxLabel]="'BENEFITS.ACCEPT-DECLARATION'"
+          [parentForm]="benefitsForm"
+          (checkBoxClicked)="changeCheck($event)"
+        ></bnt-declaration-dc>
+        <!-- Form Action -->
+        <div *ngIf="showActionButtons(currentTab, wizardItems)" class="row">
+          <div class="col-auto form-action-btn" *ngIf="!isReopenCase">
+            <gosi-button-dc
+              [ngClass]="isSmallScreen ? '' : 'float-left'"
+              id="cancelButton"
+              [isFullWidth]="isSmallScreen"
+              type="secondary"
+              (submit)="cancelTransaction()"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="col-auto form-action-btn" [ngClass]="!isSmallScreen ? 'float-right' : ''">
+            <gosi-button-dc
+              id="previous"
+              *ngIf="hasDependentOrHeir && currentTab !== 0"
+              name="submitTransaction"
+              [isFullWidth]="isSmallScreen"
+              type="secondary"
+              (submit)="previousForm()"
+            >
+              {{ 'BENEFITS.PRE-SECTION' | translate }}
+            </gosi-button-dc>
+          </div>
+          <div class="ml-auto col-auto form-action-btn" *ngIf="wizardItems && wizardItems.length === 1">
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="apply"
+              [isFullWidth]="isSmallScreen"
+              [disabled]="disableSaveAndNext"
+              type="primary"
+              (submit)="submitBenefitDetails()"
+            >
+              {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+          <div class="ml-auto col-auto form-action-btn" *ngIf="wizardItems && wizardItems.length > 1">
+            <gosi-button-dc
+              [ngClass]="!isSmallScreen ? 'float-right' : ''"
+              id="saveAndNext"
+              [disabled]="
+                (!hasDependentOrHeir && !eligibleForBenefit && !isValidator && !isIndividualApp) || disableSaveAndNext
+              "
+              type="primary"
+              [isFullWidth]="isSmallScreen"
+              (submit)="submitBenefitDetails()"
+            >
+              {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </tab>
+      <!-- ADDRESS AND CONTACT DETAILS -->
+      <tab [active]="isTabSlctdInWizard(uiConst.CONTACT_DETAILS, currentTab, wizardItems)">
+        <bnt-contact-details-dc
+          #contactForm
+          [showSubmitButton]="currentTab === wizardItems.length - 1"
+          [disableSaveAndNext]="disableSaveAndNext"
+          [currentTab]="currentTab"
+          [contactDetails]="contactDetails"
+          [cityList]="cityList$ | async"
+          [countryList]="countryList$ | async"
+          [isAddressOptional]="isAddressOptional"
+          [isAddressavailable]="isAddressavailable"
+          [personalDetails]="personalDetails"
+          (save)="saveContactDetails($event)"
+          (cancel)="cancelTransaction()"
+          (confirm)="confirm()"
+          (decline)="decline()"
+          (contactNumberDetails)="showFormValidation()"
+          (previous)="previousForm()"
+        >
+        </bnt-contact-details-dc>
+      </tab>
+      <tab [active]="isTabSlctdInWizard(uiConst.UI_DOCUMENTS, currentTab, wizardItems)">
+        <div class="row">
+          <div class="col-md-12">
+            <bnt-document-dc
+              #documentDetailsForm
+              [isDisabled]="disableSubmitButton"
+              [businessKey]="benefitRequestId"
+              [requestTransactionId]="pensionTransactionId"
+              [referenceNo]="referenceNo"
+              [documentList]="requiredDocs"
+              [documents]="reqdocumentList"
+              [isWorkflow]="isWorkflow"
+              [parentForm]="documentForm"
+              [processType]="processType"
+              [isSelectedReasonOthers]="isSelectedReasonOthers"
+              (confirmCancelAction)="confirm()"
+              (decline)="decline()"
+              (cancelDoc)="cancelTransaction()"
+              (uploadFailed)="showErrorMessages($event)"
+              (uploadSuccess)="docUploadSuccess($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+            >
+            </bnt-document-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+
+  <ng-template #cancelLumpsum>
+    <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <ng-template #cancelTransactionLumpsum>
+    <bnt-transaction-cancel-popup-dc
+      (keepDraftEvent)="onKeepDraft()"
+      (discardEvent)="onDiscard()"
+      (onCancel)="hideModal()"
+    ></bnt-transaction-cancel-popup-dc>
+  </ng-template>
+  <ng-template #eligibilityCriteria>
+    <bnt-eligibility-criteria-dc (close)="hideModal()" [benefitInfo]="eligibilityApiResponse">
+    </bnt-eligibility-criteria-dc>
+  </ng-template>
+  <ng-template #cancelTransactionPopup>
+    <bnt-cancel-transaction-popup-dc
+      [lateRequest]="lateRequest"
+      (close)="hideModal()"
+      (addNewRequest)="addNewRequest()"
+      [parentForm]="benefitsForm"
+      [requestDate]="requestDate"
+      [newRequestDate]="currentRequestDate"
+    ></bnt-cancel-transaction-popup-dc>
+  </ng-template>
+</div>

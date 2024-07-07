@@ -1,0 +1,561 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div
+  id="contributorSection"
+  class="row"
+  *ngIf="transactionDetails && transactionDetails?.contributors && transactionDetails?.contributors.length > 0"
+>
+  <div class="col-md-12">
+    <frm-content-heading-dc icon="user" [heading]="'VIOLATIONS.CONTRIBUTOR-DETAILS' | translate" [canEdit]="false">
+    </frm-content-heading-dc>
+  </div>
+</div>
+
+<ng-container
+  *ngIf="transactionDetails && transactionDetails?.contributors && transactionDetails?.contributors.length > 0"
+>
+  <div class="row">
+    <div class="col-lg-12" *ngIf="transactionDetails?.contributors?.showSaveError">
+      <gosi-alert-dc
+        [message]="'CORE.ERROR.MANDATORY-FIELDS'"
+        type="danger"
+        class="successMessage"
+        noPadding="true"
+        [dismissible]="false"
+      >
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <accordion *ngFor="let contributor of transactionDetails?.contributors; let i = index">
+    <accordion-group
+      id="{{ i }}"
+      class="accordion-group-class"
+      [ngClass]="transactionDetails?.showSaveError && !contributor?.isSaved ? 'accordion-error' : ''"
+      (isOpenChange)="selectPanel($event, i + 1)"
+      [isOpen]="accordionPanel === i + 1"
+    >
+      <div accordion-heading>
+        <span class="name-value">
+          {{
+            contributor.contributorName?.english === null
+              ? contributor.contributorName?.arabic
+              : (contributor.contributorName | bilingualText)
+          }}
+        </span>
+        <ng-container>
+          <ng-container>
+            <div *ngIf="contributor.persionIdentifier?.idType === 'NIN'">
+              <div class="identity-value">
+                {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} :
+                {{ contributor.persionIdentifier?.personIdentifier }}
+              </div>
+            </div>
+            <div *ngIf="contributor.persionIdentifier?.idType === 'IQAMA'">
+              <div class="identity-value">
+                {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ contributor.persionIdentifier?.personIdentifier }}
+              </div>
+            </div>
+            <div *ngIf="contributor.persionIdentifier?.idType === 'GCCID'">
+              <div class="identity-value">
+                {{ 'VIOLATIONS.GCCID' | translate }} : {{ contributor.persionIdentifier?.personIdentifier }}
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+      <div accordion-heading>
+        <span class="name-value">
+          {{ contributor.penaltyAmount }}
+        </span>
+      </div>
+
+      <div class="arrow" accordion-heading>
+        <span class="arrow-up" accordion-heading>
+          <fa-icon icon="angle-up" size="lg"></fa-icon>
+        </span>
+        <span class="arrow-down" accordion-heading>
+          <fa-icon icon="angle-down" size="lg"></fa-icon>
+        </span>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="docs?.length">
+          <gosi-document-list-view-dc [documents]="contributor.documents"></gosi-document-list-view-dc>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.APPEAL-REASON'"
+            [value]="transactionDetails.contributors[i].reason"
+          ></gosi-label-dc>
+        </div>
+      </div>
+
+      <ng-container *ngIf="contributorDetailsForm.controls?.length">
+        <div class="row">
+          <!------------- Is_reviewer_violation --------------->
+          <ng-container>
+            <!-- reviewerIsAcceptedFormally الدراسه من الناحيه الشكليه -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('reviewerIsAcceptedFormally')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-radio-dc
+                id="valid-{{ i }}"
+                name="valid-{{ i }}"
+                [label]="'VIOLATIONS.APPEAL-DOCUMENTS-COMPLETE'"
+                [control]="contributorDetailsForm?.controls[i]?.get('reviewerIsAcceptedFormally')"
+                [list]="approveOrRejectList"
+                [hideOptionalLabel]="true"
+                [disabled]="!isREVIEWER"
+              ></gosi-input-radio-dc>
+            </div>
+            <!-- reviewerComments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('reviewerComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="notes-{{ i }}"
+                name="notes-{{ i }}"
+                [label]="'VIOLATIONS.APPEAL-REVIEWER-DOCUMENTS-NOTES'"
+                [control]="contributorDetailsForm?.controls[i]?.get('reviewerComments')"
+                [hideOptionalLabel]="true"
+                [disabled]="!isREVIEWER"
+                [maxLength]="maxCharLength"
+              ></gosi-input-text-area-dc>
+            </div>
+            <!-- reviewerIsAcceptedObjectively  الدراسه من الناحيه الموضوعيه -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('reviewerIsAcceptedObjectively')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-radio-dc
+                *ngIf="approveOrRejectList"
+                id="reviewerIsAcceptedObjectively-{{ i }}"
+                name="reviewerIsAcceptedObjectively-{{ i }}"
+                [label]="'APPEALS.REVIEW-IS-OBJECTIVE-PERSPECTIVE' | translate"
+                [hideOptionalLabel]="true"
+                [control]="contributorDetailsForm?.controls[i]?.get('reviewerIsAcceptedObjectively')"
+                [list]="approveOrRejectList"
+                [disabled]="!isREVIEWER"
+              ></gosi-input-radio-dc>
+            </div>
+
+            <!-- reviewerObjectionComments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('reviewerObjectionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="reviewerObjectionComments-{{ i }}"
+                name="reviewerObjectionComments-{{ i }}"
+                [label]="'APPEALS.OBJECTION-NOTES' | translate"
+                [maxLength]="maxCharLength"
+                [rowSize]="4"
+                [control]="contributorDetailsForm?.controls[i]?.get('reviewerObjectionComments')"
+                [disabled]="!isREVIEWER"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+
+            <!-- التوصيه النهائيه -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('reviewerDecision')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-select-dc
+                id="ReviewerDecision-{{ i }}"
+                name="ReviewerDecision-{{ i }}"
+                [label]="'APPEALS.REVIEWER-DECISION' | translate"
+                [lookup]="legalOpinionsList"
+                [placeholder]="'APPEALS.REVIEWER-DECISION' | translate"
+                [control]="contributorDetailsForm?.controls[i]?.get('reviewerDecision')"
+                [bindValueIsCode]="true"
+                [canValidateData]="false"
+                [disabled]="!isREVIEWER"
+              >
+              </gosi-input-select-dc>
+            </div>
+          </ng-container>
+
+          <!-- Legal_reviewer_violation Approver (1) -->
+          <ng-container *ngIf="canViewLegalReviewer">
+            <span class="form-separator my-4"></span>
+
+            <div class="form-label mb-4">
+              {{ 'APPEALS.LEGAL-OPINION-STUDIED-OBJECTION' | translate }}
+            </div>
+            <!-- opinion -->
+            <div *ngIf="contributorDetailsForm?.controls[i]?.get('opinion')" class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-input-select-dc
+                name="opinion-{{ i }}"
+                [control]="contributorDetailsForm?.controls[i]?.get('opinion')"
+                [label]="'APPEALS.SEARCH' | translate"
+                [hideOptionalLabel]="true"
+                [lookup]="appealSearchList"
+                [bindValueIsCode]="true"
+                [canValidateData]="false"
+                [disabled]="!isAPPROVER1"
+              ></gosi-input-select-dc>
+            </div>
+            <!-- opinionComments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('opinionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                name="OpinionComments-{{ i }}"
+                label="APPEALS.THE-REASON"
+                [control]="contributorDetailsForm?.controls[i]?.get('opinionComments')"
+                [hideOptionalLabel]="true"
+                [disabled]="!isAPPROVER1"
+                gosiSpecialCharacterMask
+                [rowSize]="4"
+                [maxLength]="maxCharLength"
+              ></gosi-input-text-area-dc>
+            </div>
+            <!-- legalOpinion -->
+            <div *ngIf="contributorDetailsForm?.controls[i]?.get('legalOpinion')" class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-input-select-dc
+                class="min-width-300"
+                id="LegalOpinion-{{ i }}"
+                name="LegalOpinion-{{ i }}"
+                [label]="'APPEALS.LEGAL-OPINION' | translate"
+                [control]="contributorDetailsForm?.controls[i]?.get('legalOpinion')"
+                [hideOptionalLabel]="true"
+                [lookup]="legalOpinionsList"
+                [bindValueIsCode]="true"
+                [canValidateData]="false"
+                [placeholder]="'APPEALS.LEGAL-OPINION' | translate"
+                [disabled]="!isAPPROVER1"
+              ></gosi-input-select-dc>
+            </div>
+            <!-- legalOpinionComments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('legalOpinionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="NOTS-{{ i }}"
+                name="NOTS-{{ i }}"
+                label="APPEALS.NOTES"
+                [control]="contributorDetailsForm?.controls[i]?.get('legalOpinionComments')"
+                [hideOptionalLabel]="true"
+                [disabled]="!isAPPROVER1"
+                gosiSpecialCharacterMask
+                [rowSize]="4"
+                [maxLength]="maxCharLength"
+              ></gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!-- Legal_manger_violation Approver (3) -->
+          <ng-container *ngIf="isAPPROVER3 || transactionDetails.contributors[i]?.finalLegalOpinion">
+            <span class="form-separator my-4"></span>
+
+            <div class="form-label mb-4">
+              {{ 'APPEALS.STUDY-THE-OBJECTION' | translate }}
+            </div>
+            <!--  Final Opinion - Dropdown -->
+            <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="contributorDetailsForm?.controls[i]?.get('finalOpinion')">
+              <ng-container>
+                <gosi-input-select-dc
+                  id="finalOpinion-{{ i }}"
+                  name="finalOpinion-{{ i }}"
+                  [label]="'APPEALS.FINAL-OPINION' | translate"
+                  [hideOptionalLabel]="true"
+                  [bindValueIsCode]="true"
+                  [canValidateData]="false"
+                  [lookup]="appealSearchList"
+                  [placeholder]="'APPEALS.FINAL-OPINION' | translate"
+                  [disabled]="!isAPPROVER3"
+                  [control]="contributorDetailsForm?.controls[i]?.get('finalOpinion')"
+                >
+                </gosi-input-select-dc>
+              </ng-container>
+            </div>
+
+            <!-- Final Opinion Comments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalOpinionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="finalOpinionComments-{{ i }}"
+                name="finalOpinionComments-{{ i }}"
+                label="APPEALS.FINAL-OPINION-COMMENTS"
+                [rowSize]="4"
+                [disabled]="!isAPPROVER3"
+                [maxLength]="maxCharLength"
+                [control]="contributorDetailsForm?.controls[i]?.get('finalOpinionComments')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+
+            <!-- Final Legal Opinion - Dropdown  -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalLegalOpinion')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <ng-container>
+                <gosi-input-select-dc
+                  id="finalLegalOpinion-{{ i }}"
+                  name="finalLegalOpinion-{{ i }}"
+                  [label]="'APPEALS.FINAL-LEGAL-OPINION' | translate"
+                  [hideOptionalLabel]="true"
+                  [bindValueIsCode]="true"
+                  [canValidateData]="false"
+                  [disabled]="!isAPPROVER3"
+                  [lookup]="legalOpinionsList"
+                  [placeholder]="'APPEALS.FINAL-LEGAL-OPINION' | translate"
+                  [control]="contributorDetailsForm?.controls[i]?.get('finalLegalOpinion')"
+                >
+                </gosi-input-select-dc>
+              </ng-container>
+            </div>
+
+            <!-- Final Legal Opninion Comments -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalLegalOpinionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="finalLegalOpinionComments-{{ i }}"
+                name="finalLegalOpinionComments-{{ i }}"
+                [label]="'APPEALS.FINAL-LEGAL-OPINION-COMMENTS' | translate"
+                [rowSize]="4"
+                [maxLength]="maxCharLength"
+                [disabled]="!isAPPROVER3"
+                [control]="contributorDetailsForm?.controls[i]?.get('finalLegalOpinionComments')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!-- Legal_auditor_violation Approver (2) -->
+          <ng-container *ngIf="isAPPROVER2 || transactionDetails.contributors[i]?.auditorDecision != null">
+            <span class="form-separator my-4"></span>
+
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('auditorDecision')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-radio-dc
+                *ngIf="agreeOrDisagreeList"
+                id="auditorDecision-{{ i }}"
+                name="auditorDecision-{{ i }}"
+                [label]="'APPEALS.AGREE-WITH-REVIEWER' | translate"
+                [hideOptionalLabel]="true"
+                [control]="contributorDetailsForm?.controls[i]?.get('auditorDecision')"
+                [list]="agreeOrDisagreeList"
+                [disabled]="!isAPPROVER2"
+                (select)="onAuditorDecisionChanged($event, i)"
+              ></gosi-input-radio-dc>
+            </div>
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-input-text-area-dc
+                *ngIf="transactionDetails.contributors[i]?.showAuditorComments"
+                id="auditorComments-{{ i }}"
+                name="auditorComments-{{ i }}"
+                [rowSize]="4"
+                [hideOptionalLabel]="true"
+                [label]="'APPEALS.NOTES' | translate"
+                [disabled]="!isAPPROVER2"
+                [control]="contributorDetailsForm?.controls[i]?.get('auditorComments')"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!------------- #  Preparation Team: فريق التحضير ------------->
+          <ng-container
+            *ngIf="roles.Preparation_Team_Violation === validatorType || transactionDetails.contributors[i]?.summary"
+          >
+            <span class="form-separator my-4"></span>
+            <div *ngIf="contributorDetailsForm?.controls[i]?.get('summary')" class="col-sm-12 col-md-12 col-lg-12">
+              <gosi-input-text-area-dc
+                id="summary-{{ i }}"
+                name="summary-{{ i }}"
+                label="APPEALS.NOTES"
+                [hideOptionalLabel]="true"
+                [rowSize]="4"
+                [maxLength]="maxCharLength"
+                [control]="contributorDetailsForm?.controls[i]?.get('summary')"
+                [disabled]="roles.Preparation_Team_Violation !== validatorType"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!-- Appeal Clerk   -->
+          <ng-container
+            *ngIf="roles.Appeal_Clerk_Violation === validatorType || transactionDetails.contributors[i]?.finalDecision"
+          >
+            <span class="form-separator my-4"></span>
+
+            <div class="form-label mb-4">
+              {{ 'APPEALS.RESULT-OF-OBJECTION' | translate }}
+            </div>
+
+            <!-- Appeal Final Decision -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalDecision')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <ng-container *ngIf="legalOpinionsList">
+                <gosi-input-select-dc
+                  id="finalDecision-{{ i }}"
+                  name="finalDecision-{{ i }}"
+                  [label]="'APPEALS.FINAL-DECISION' | translate"
+                  [lookup]="legalOpinionsList"
+                  [placeholder]="'APPEALS.FINAL-DECISION' | translate"
+                  [control]="contributorDetailsForm?.controls[i]?.get('finalDecision')"
+                  [bindValueIsCode]="true"
+                  [canValidateData]="false"
+                  [disabled]="roles.Appeal_Clerk_Violation !== validatorType"
+                >
+                </gosi-input-select-dc>
+              </ng-container>
+            </div>
+
+            <!-- Appeal Final Decision Date -->
+
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalDecisionDate')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-date-dc
+                id="finalDecisionDate-{{ i }}"
+                name="finalDecisionDate-{{ i }}"
+                [label]="'APPEALS.FINAL-DECISION-DATE' | translate"
+                [control]="contributorDetailsForm?.controls[i]?.get('finalDecisionDate').get('gregorian')"
+                [hideOptionalLabel]="true"
+                [disabled]="roles.Appeal_Clerk_Violation !== validatorType"
+                [maxDate]="maxStartDate"
+              >
+              </gosi-input-date-dc>
+            </div>
+
+            <!-- Appeal Final Decision Comment -->
+
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('finalDecisionComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="finalDecisionComments-{{ i }}"
+                name="finalDecisionComments-{{ i }}"
+                [label]="'APPEALS.FINAL-DECISION-COMMENTS' | translate"
+                [rowSize]="4"
+                [maxLength]="maxCharLength"
+                [hideOptionalLabel]="true"
+                [control]="contributorDetailsForm?.controls[i]?.get('finalDecisionComments')"
+                [disabled]="roles.Appeal_Clerk_Violation !== validatorType"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!-------------- #appeal Executor ----------------------------->
+          <ng-container *ngIf="isEXECUTOR || transactionDetails.contributors[i]?.executorDecision">
+            <span class="form-separator my-4"></span>
+
+            <div class="form-label mb-4">
+              {{ 'APPEALS.PROCESSING-REQUEST' | translate }}
+            </div>
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('executorDecision')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-radio-dc
+                *ngIf="processedList"
+                id="executorDecision-{{ i }}"
+                name="executorDecision-{{ i }}"
+                [label]="'APPEALS.HAS-THE-REQUEST-PROCESSED' | translate"
+                [hideOptionalLabel]="true"
+                [control]="contributorDetailsForm?.controls[i]?.get('executorDecision')"
+                [list]="processedList"
+                [disabled]="!isEXECUTOR"
+              ></gosi-input-radio-dc>
+            </div>
+            <!-- ملاحظات -->
+            <div
+              *ngIf="contributorDetailsForm?.controls[i]?.get('executorComments')"
+              class="col-sm-12 col-md-12 col-lg-12"
+            >
+              <gosi-input-text-area-dc
+                id="executorComments-{{ i }}"
+                name="executorComments-{{ i }}"
+                label="APPEALS.NOTES"
+                [rowSize]="2"
+                [hideOptionalLabel]="true"
+                [maxLength]="maxCharLength"
+                [control]="contributorDetailsForm?.controls[i]?.get('executorComments')"
+                [disabled]="!isEXECUTOR"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+          </ng-container>
+
+          <!--  Save Button Area -->
+          <div
+            class="col-sm-12 col-md-12 col-lg-12"
+            [hidden]="isSpecialist || roles.Committee_secretary_violation === validatorType"
+          >
+            <div class="col-lg-12 save-btn">
+              <div class="float-right mt-3">
+                <gosi-button-dc type="primary" (click)="submitCotrinutorForm(i)">{{
+                  'VIOLATIONS.VIOLATIONS-SAVE' | translate
+                }}</gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </accordion-group>
+  </accordion>
+
+  <!-- File Input -->
+  <div *ngIf="roles.Appeal_Clerk_Violation === validatorType" class="col-sm-12 col-md-12 col-lg-12">
+    <div>
+      <div class="form-label mb-4">
+        <frm-content-heading-dc
+          icon="Benefits"
+          [isSvg]="true"
+          [canEdit]="false"
+          heading="{{ 'APPEALS.RESULT-OF-OBJECTION' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+
+      <!-- File Result of Objection -->
+      <div class="document-container upload-docs">
+        <gosi-input-file-sc
+          *ngFor="let document of uploadResultofObjectionDocuments; let documentIndex = index"
+          [document]="document"
+          [businessKey]="transactionDetails.appealId"
+          [index]="documentIndex"
+          [isSequenceNo]="true"
+          [uuid]="uuid"
+          [label]="'APPEALS.UPLOAD-RESULT-OF-OBJECTIONS' | translate"
+          [byPassDeleteAPI]="true"
+          [referenceNo]="referenceNo"
+        ></gosi-input-file-sc>
+      </div>
+    </div>
+  </div>
+
+  <!-- Specialist Role -->
+  <!-- <ng-container *ngIf="isSpecialist">
+    <gosi-input-text-area-dc
+      label="APPEALS.NOTES"
+      [hideOptionalLabel]="true"
+      [rowSize]="4"
+      [control]="contributorDetailsForm.controls[0].get('comments')"
+    >
+    </gosi-input-text-area-dc>
+  </ng-container> -->
+</ng-container>

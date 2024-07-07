@@ -1,0 +1,206 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<br />
+
+<div class="table-scroll table-responsive full-width">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr>
+        <th id="claimsPeriod">
+          {{ 'OCCUPATIONAL-HAZARD.REQUEST-DATE' | translate | uppercase }}
+          <span class="sort-icon" [class.selected]="'assignedDate' === currentSortColumn">
+            <fa-icon [icon]="['fas', 'sort']" class="header-icon"></fa-icon>
+          </span>
+        </th>
+        <th id="claimsType">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIM-TYPE' | translate | uppercase }}
+        </th>
+        <th id="claimsPayee">
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIM-PAYEE' | translate }}
+        </th>
+        <th id="allowanceAmount">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.AMOUNT' | translate | uppercase }}
+        </th>
+        <th id="allowanceStatus">
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.STATUS' | translate | uppercase }}
+        </th>
+      </tr>
+    </thead>
+    <tbody *ngFor="let task of claimsDetails.claims; let i = index">
+      <ng-container>
+        <ng-container>
+          <tr class="data-row">
+            <td>
+              <div class="description-content" *ngIf="task && task.requestDate">
+                {{ task.requestDate.gregorian | gosiDate }}
+              </div>
+            </td>
+            <td>
+              <div class="description-content" *ngIf="task && task.claimType">
+                <ng-container
+                  *ngIf="
+                    task &&
+                      task.claimType &&
+                      (task.claimType?.english === 'Total Disability Repatriation Expense' ||
+                        task.claimType?.english === 'Dead Body Repatriation Expenses');
+                    else otherClaims
+                  "
+                >
+                  <span class="claims-type" *ngIf="task.claimType.english === 'Total Disability Repatriation Expense'">
+                    {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-DISABILITY' | translate }}</span
+                  >
+                  <span class="claims-type" *ngIf="task.claimType.english === 'Dead Body Repatriation Expenses'">
+                    {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DEAD-BODY' | translate }}</span
+                  >
+                  <span *ngIf="task.reissue">({{ 'OCCUPATIONAL-HAZARD.CLAIMS.RE-ISSUE CLAIM' | translate }})</span>
+                </ng-container>
+
+                <ng-template #otherClaims>
+                  <span class="claims-type" *ngIf="task"> {{ task.claimType | bilingualText }}</span>
+                  <span *ngIf="task.reissue">({{ 'OCCUPATIONAL-HAZARD.CLAIMS.RE-ISSUE CLAIM' | translate }})</span>
+                </ng-template>
+              </div>
+              <div class="description-content" *ngIf="task && task.claimType === null">
+                <span class="claims-type">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.REIMBURSEMENT-REQUEST' | translate }}
+                </span>
+              </div>
+            </td>
+            <td *ngIf="task.payeeDetails.payableTo.english === 'TPA'">
+              <div class="description-content">
+                {{ 'OCCUPATIONAL-HAZARD.TPA' | translate }} ({{ task.payeeDetails.payeeName | bilingualText }})
+              </div>
+            </td>
+            <td class="currency claims-payee" *ngIf="task.payeeDetails.payableTo.english === 'Contributor'">
+              <div class="description-content" *ngIf="isAppPrivate">
+                <a class="select-link" (click)="navigateToContributor()"> {{ task.claimsPayee | bilingualText }}</a>
+              </div>
+              <div class="description-content" *ngIf="!isAppPrivate">
+                <a class="select-link-inactive" (click)="navigateToContributor()">
+                  {{ task.claimsPayee | bilingualText }}</a
+                >
+              </div>
+            </td>
+            <td class="currency claims-payee" *ngIf="task.payeeDetails.payableTo.english === 'Establishment'">
+              <div class="description-content">
+                <a class="select-link" (click)="navigateToEstProfile()"> {{ task.claimsPayee | bilingualText }}</a>
+              </div>
+            </td>
+            <td class="currency claims-payee" *ngIf="task.payeeDetails.payableTo.english === 'Hospital'">
+              <div class="description-content">
+                {{ task.payeeDetails.payableTo | bilingualText }}
+              </div>
+            </td>
+            <td class="currency claims-payee" *ngIf="task.payeeDetails.payableTo.english === 'Authorized Person'">
+              <div class="description-content">
+                {{ task.payeeDetails.payableTo | bilingualText }}
+              </div>
+            </td>
+            <td class="currency claims-payee" *ngIf="task.payeeDetails.payableTo.english === null">
+              <div class="description-content">
+                {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+              </div>
+            </td>
+            <td>
+              <div class="description-content">
+                {{ getTotalClaims(task) }}
+              </div>
+            </td>
+            <td *ngIf="(task && task.paymentStatus && task?.claimType) || task.paymentStatus?.english !== 'Requested'">
+              <div class="claims-view">
+                <span [ngClass]="getColor(task.paymentStatus)">{{
+                  task.paymentStatus | bilingualText | uppercase
+                }}</span>
+              </div>
+            </td>
+            <td
+              *ngIf="
+                task &&
+                task?.paymentStatus &&
+                task?.claimType === null &&
+                task.reImbId != null &&
+                task.paymentStatus?.english === 'Requested'
+              "
+            >
+              <div class="claims-view">
+                <span [ngClass]="getColor(task.paymentStatus)">
+                  {{ 'OCCUPATIONAL-HAZARD.IN-PROGRESS' | translate | uppercase }}</span
+                >
+              </div>
+            </td>
+            <ng-container
+              *ngIf="
+                task &&
+                  task?.paymentStatus &&
+                  task?.claimType === null &&
+                  task.reImbId != null &&
+                  (task.paymentStatus?.english === 'Approved' ||
+                    task.paymentStatus?.english === 'Partially Approved' ||
+                    task.paymentStatus?.english === 'Case rejected' ||
+                    task.actualPaymentStatus?.english === 'Cancelled');
+                else showClaims
+              "
+            >
+            </ng-container>
+            <ng-template #showClaims>
+              <td (click)="toggleFunction(i, task.icon, task.claimType, task.isDisabled)">
+                <fa-icon icon="{{ task.icon }}" size="1x"></fa-icon>
+              </td>
+            </ng-template>
+          </tr>
+        </ng-container>
+        <tr>
+          <td colspan="6" *ngIf="task.showBox">
+            <div [hidden]="!task.showBox">
+              <ng-container *ngIf="task">
+                <ng-container
+                  *ngIf="
+                    task.claimType?.english !== 'Companion Daily Allowance' &&
+                    task.claimType?.english !== 'Companion Conveyance Allowance' &&
+                    task?.claimType?.english !== 'Companion Allowance'
+                  "
+                >
+                  <oh-expenses-calculation-dc
+                    [claims]="task"
+                    [showDocs]="
+                      task.paymentStatus?.english !== 'Requested' &&
+                      task.claimType === null &&
+                      task.reImbId &&
+                      showNewClaims
+                        ? true
+                        : false
+                    "
+                    (upload)="uploadDocuments($event)"
+                    [documents]="documents"
+                    [claimBreakUpList]="claimBreakUpList"
+                  >
+                  </oh-expenses-calculation-dc>
+                </ng-container>
+                <ng-container
+                  *ngIf="
+                    task.claimType?.english === 'Companion Conveyance Allowance' ||
+                    task.claimType?.english === 'Companion Daily Allowance' ||
+                    task?.claimType?.english === 'Companion Allowance'
+                  "
+                >
+                  <oh-allowance-calculation-dc
+                    [allowances]="task"
+                    [claimsIndicator]="true"
+                    [companionDetails]="task.companionDetails"
+                    [calculationWrapper]="task.calculationWrapper"
+                    [tabView]="true"
+                    [workDisabilityDate]="workDisabilityDate"
+                  >
+                  </oh-allowance-calculation-dc>
+                </ng-container>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

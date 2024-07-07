@@ -1,0 +1,129 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <ng-container *ngIf="activeTab < totalTab">
+    <!-- Heading -->
+    <cnt-header-section-dc
+      heading="CONTRIBUTOR.CANCEL-VIC.CANCEL-VIC-TITLE"
+      (goBack)="onTransactionCancel(cancelTemplate)"
+    >
+    </cnt-header-section-dc>
+    <!-- Contributor static details -->
+    <div class="row mt-4" *ngIf="contributor">
+      <div class="col-lg-12">
+        <cnt-contributor-banner-dc
+          [contributor]="contributor"
+          [requiredFields]="cancelVicBanner"
+        ></cnt-contributor-banner-dc>
+      </div>
+    </div>
+    <!-- Alert -->
+    <gosi-alert-sc></gosi-alert-sc>
+    <!-- Progress wizard -->
+    <gosi-progress-wizard-dc
+      [wizardItems]="wizardItems"
+      (clickWizard)="selectFormWizard($event)"
+      #progressWizardItems
+    ></gosi-progress-wizard-dc>
+  </ng-container>
+  <div class="hide-tab">
+    <tabset class="pills">
+      <!-- Cancellation details -->
+      <tab [active]="activeTab === 0">
+        <cnt-cancel-vic-details-dc
+          [parentForm]="cancelVicForm"
+          [vicEngagement]="vicEngagement"
+          [vicContributionDetails]="vicContributionDetails"
+          [bankDetails]="bankAccountDetails"
+          [cancellationDetails]="cancellationDetails"
+          [leavingReasonList]="terminationReason$ | async"
+          [cancellationReasonList]="cancellationReason$ | async"
+          [bankNameList$]="bankName$"
+          [isEditMode]="isEditMode"
+          [lang]="lang"
+          [isPREligible]="isPREligible"
+          [isBankDetailsPending]="isBankDetailsPending"
+          (verifyIBAN)="getBankDetails($event)"
+          (save)="onCancelVicSave($event)"
+          (cancel)="onTransactionCancel(cancelTemplate)"
+          (showError)="showErrorByKey($event)"
+          (clearError)="clearErrorAlerts()"
+        ></cnt-cancel-vic-details-dc>
+      </tab>
+      <!-- Document scan/upload section -->
+      <tab [active]="activeTab === 1">
+        <div class="row" *ngIf="documents.length > 0">
+          <div class="col-12">
+            <cnt-document-upload-dc
+              [documentList]="documents"
+              [businessKey]="engagementId"
+              [transactionId]="transactionId"
+              [parentForm]="cancelVicForm"
+              [referenceNo]="referenceNo"
+              [showDocuments]="true"
+              (refresh)="refreshDoc($event)"
+              [showComments]="true"
+            ></cnt-document-upload-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <cnt-action-area-dc
+              primaryButtonLabel="CONTRIBUTOR.SUBMIT"
+              showPreviousSection="true"
+              (previous)="setPreviousSection()"
+              (submit)="onSubmitCancelVic()"
+              (cancel)="onTransactionCancel(cancelTemplate)"
+            >
+            </cnt-action-area-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<!-- Modals -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #vicCancelConfirmationMessage>
+  <gosi-modal-dc>
+    <div modalContent>
+      <div class="row">
+        <div class="modal-head col-12">
+          <span>{{ 'CONTRIBUTOR.CANCEL-VIC.CANCEL-VIC-TITLE' | translate }}</span>
+        </div>
+        <div
+          *ngIf="vicContributionDetails?.refundableCreditBalance > 0"
+          class="modal-message col-12"
+          [innerHTML]="'CONTRIBUTOR.TERMINATE-VIC.CREDIT-AMOUNT-INFO' | translate"
+        ></div>
+        <div
+          class="modal-message col-12"
+          [innerHTML]="'CONTRIBUTOR.CANCEL-VIC.CREDIT-CONFIRMATION-CANCEL' | translate: personName"
+        ></div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="form-action d-flex justify-content-between">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="hideModal()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+        <gosi-button-dc id="confirm" type="primary" (submit)="submitCancelVicRequest()">
+          {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

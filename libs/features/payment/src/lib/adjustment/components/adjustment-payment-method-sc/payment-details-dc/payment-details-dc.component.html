@@ -1,0 +1,178 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="payment-main-content px-0">
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        [label]="'BENEFITS.RECEIPT-MODE' | translate"
+        id="receiptMode"
+        [control]="receiptModeForm.get('receiptMode')"
+        [list]="receiptMode"
+        (select)="createPaymentDetailsForm('isSelected')"
+        [placeholder]="'BENEFITS.RECEIPT-MODE' | translate | lowercase"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+
+  <!-- <div class="row">
+    <ng-container *ngIf="currentReceiptMode">
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          [label]="'BENEFITS.BANK-NAME' | translate"
+          id="bankName"
+          [control]="paymentDetailsForm.get('bankName')"
+          [list]="saudiBankList"
+          [placeholder]="'BENEFITS.BANK-NAME' | translate"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </ng-container>
+  </div> -->
+  <div class="row">
+    <ng-container *ngIf="currentReceiptMode">
+      <div class="col-lg-6">
+        <gosi-input-date-dc
+          id="transactionDate"
+          [label]="'BENEFITS.TRANSACTION-DATE' | translate | titlecase"
+          [control]="paymentDetailsForm.get('transactionDate').get('gregorian')"
+          [maxDate]="maxDate"
+          [minDate]="transactionMinDate"
+        >
+        </gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="currentReceiptMode">
+        <gosi-input-number-dc
+        id="transactionReferenceNumber"
+        [label]="'BENEFITS.PAYMENT-REFERENCE-NUMBER' | translate"
+        [control]="paymentDetailsForm.get('paymentReferenceNo')"
+        [maxLength]="transactionNoMaxLength"
+        [placeholder]="'BENEFITS.PAYMENT-REFERENCE-NUMBER' | translate | titlecase"
+        >
+        </gosi-input-number-dc>
+      </div>
+    </ng-container>
+   <!-- <ng-container *ngIf="currentReceiptMode">
+     <div class="col-lg-6">
+       <gosi-input-number-dc
+         id="transactionReferenceNumber"
+         [label]="'BENEFITS.PAYMENT-REFERENCE-NUMBER' | translate"
+         [control]="paymentDetailsForm.get('paymentReferenceNo')"
+         [maxLength]="transactionNoMaxLength"
+         [placeholder]="'BENEFITS.PAYMENT-REFERENCE-NUMBER' | translate | titlecase"
+       >
+       </gosi-input-number-dc>
+     </div>
+   </ng-container> -->
+
+    <ng-container *ngIf="currentReceiptMode">
+      <div class="col-lg-6">
+        <gosi-input-currency-dc
+          [label]="'ADJUSTMENT.AMOUNT-PAID' | translate"
+          [placeholder]="'ADJUSTMENT.AMOUNT-PAID' | translate | titlecase"
+          [disabled]="true"
+          [control]="paymentDetailsForm.get('amountTransferred').get('amount')"
+          id="amountReceived"
+          [separatorLimit]="amountReceivedSeparatorLimit"
+        >
+        </gosi-input-currency-dc>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-lg-12">
+      <ng-container *ngIf="currentReceiptMode">
+        <gosi-input-text-area-dc
+          [label]="'BENEFITS.ADDITIONAL-PAYMENT-DETAILS' | translate"
+          id="description"
+          name="description"
+          [maxLength]="additionalDetailsMaxLength"
+          [control]="paymentDetailsForm.get('additionalPaymentDetails')"
+        >
+        </gosi-input-text-area-dc>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-lg-12">
+      <ng-container *ngIf="currentReceiptMode">
+        <gosi-input-text-area-dc
+          [label]="'BENEFITS.COMMENTS' | translate"
+          id="comment"
+          name="comment"
+          [maxLength]="additionalDetailsMaxLength"
+          [control]="paymentDetailsForm.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </ng-container>
+    </div>
+  </div>
+
+  <ng-container *ngIf="currentReceiptMode">
+    <gosi-alert-dc [message]="'CORE.ERROR.DOCUMENT-UPLOAD'" type="info"> </gosi-alert-dc>
+    <div class="row">
+      <div class="col-sm-12">
+        <ng-container *ngIf="otherPaymentReqDocument?.length > 0">
+          <ng-container *ngFor="let item of otherPaymentReqDocument; let i = index">
+            <gosi-input-file-sc
+              [index]="i"
+              [isScan]="isAppPrivate"
+              [document]="item"
+              [businessKey]="adjustmentRepayId"
+              [referenceNo]="referenceNo"
+              [transactionId]="transactionConstant"
+              [uuid]="inEditMode ? null : documentuuid"
+              (delete)="deleteDoc($event)"
+              (refresh)="refreshDocument($event)"
+              (uploadedEvent)="refreshDocument($event)"
+            ></gosi-input-file-sc>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">
+        {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left mx-3 prev-section btn-section">
+      <gosi-button-dc id="prevActionButton" type="secondary" (submit)="goToPrevAction()">
+        {{ 'BENEFITS.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section" *ngIf="!inEditMode">
+      <gosi-button-dc
+        [disabled]="!receiptModeForm.value.receiptMode.english"
+        id="submit"
+        type="primary"
+        (submit)="submitpayment()"
+      >
+        {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-right btn-section" *ngIf="inEditMode">
+      <gosi-button-dc
+        [disabled]="!receiptModeForm.dirty && !paymentDetailsForm.dirty && !isDocDeleted && !isAdjFormModified"
+        id="submit"
+        type="primary"
+        (submit)="submitpayment()"
+      >
+        {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="BENEFITS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

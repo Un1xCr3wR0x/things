@@ -1,0 +1,252 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="!establishmentDetails">
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6" *ngIf="lang === 'en' && englishName">
+        <gosi-label-dc id="contributorName" [control]="englishName" [label]="'BILLING.CONTRIBUTOR-NAME'">
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="lang === 'ar' || englishName === undefined">
+        <gosi-label-dc id="contributorName" [control]="arabicName" [label]="'BILLING.CONTRIBUTOR-NAME'">
+        </gosi-label-dc>
+      </div>
+
+      <div class="col-lg-6" *ngIf="contributorNumber">
+        <gosi-label-dc id="contributorNo" [control]="contributorNumber" label="BILLING.CONTRIBUTOR-NUMBER">
+        </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<!-----------------end of contributor  Details ------------------>
+<ng-container *ngIf="establishmentDetails">
+  <div class="sub-content-item">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="establishmentName"
+          [control]="
+            establishmentDetails?.name.english === null
+              ? establishmentDetails?.name.arabic
+              : (establishmentDetails?.name | bilingualText)
+          "
+          [label]="'BILLING.ESTABLISHMENT-NAME'"
+        >
+        </gosi-label-dc>
+      </div>
+
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="registrationNo"
+          [control]="establishmentDetails?.registrationNo"
+          label="BILLING.REGISTRATION-NUMBER"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="legalEntity"
+          [control]="
+            establishmentDetails?.legalEntity.english == null
+              ? establishmentDetails?.legalEntity.arabic
+              : (establishmentDetails?.legalEntity | bilingualText)
+          "
+          label="BILLING.LEGAL-ENTITY"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc id="status" [control]="establishmentDetails?.status" label="BILLING.ESTABLISHMENT-STATUS">
+        </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-----------------end of Establishment Details ------------------>
+<!-----------------strat of Account Details ------------------>
+<div class="sub-content-item">
+  <frm-content-heading-dc icon="money-check-alt" heading="BILLING.ACCOUNT-DETAILS" [canEdit]="false">
+  </frm-content-heading-dc>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-currency-label-dc
+        id="totalAmt"
+        [label]="'BILLING.TOTAL-DUE-AMOUNT'"
+        [currencyTo]="waiverDetails?.dueAmount.total.toString()"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-currency-label-dc
+        id="contributionDueAmt"
+        [label]="'BILLING.CONTRIBUTIONS-AMOUNT'"
+        [currencyTo]="waiverDetails?.dueAmount.contribution.toString()"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-currency-label-dc
+        id="penalityDueAmt"
+        [label]="'BILLING.LATE-FEES-AMOUNT'"
+        [currencyTo]="waiverDetails?.dueAmount.penalty.toString()"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="!vicExceptionalFlag && !isPPA">
+      <gosi-currency-label-dc
+        id="rejectionAmt"
+        [label]="
+          waiverDetails?.dueAmount.rejectedOh !== null ? 'BILLING.REJECTED-OH-AMOUNT' : 'BILLING.VIOLATIONS-AMOUNT'
+        "
+        [currencyTo]="
+          waiverDetails?.dueAmount.rejectedOh !== null
+            ? waiverDetails?.dueAmount.rejectedOh
+            : waiverDetails?.dueAmount.violation
+        "
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6" *ngIf="establishmentDetails && !vicExceptionalFlag && !isPPA">
+      <gosi-currency-label-dc
+        id="violationDueAmt"
+        [label]="'BILLING.VIOLATIONS-AMOUNT'"
+        [currencyTo]="waiverDetails?.dueAmount.violation"
+        [countryCodeFrom]="'BILLING.SAR' | translate"
+      ></gosi-currency-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="previouslyApprovedInd"
+        [label]="'BILLING.PREVIOUS-LATE-FEES-WAVIER-INDICATOR'"
+        [control]="waiverDetails?.previouslyApprovedInd"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</div>
+<!-----------------end of Account Details ------------------>
+<!-----------------strat of Late Fees Waiver Details ------------------>
+<div class="sub-content-item">
+  <div class="row">
+    <div class="col-lg-12 sub-heading">
+      {{ 'BILLING.LATE-FEES-WAVIER-DETAILS' | translate }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="exceptionReason"
+        [label]="'BILLING.WAIVER-REASON' | translate"
+        [control]="waiverDetails?.exceptionReason"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-6 mainStyle">
+      <div class="value-clrs">
+        {{ 'BILLING.PERIOD-OF-WAIVER' | translate }}
+      </div>
+      <div class="previous-Indicator" *ngIf="!sameMonthFlag">
+        {{ waiverDetails?.waiverStartDate.gregorian | date: 'MM/yyyy' }}
+        <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+        <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+        {{ waiverDetails?.waiverEndDate.gregorian | date: 'MM/yyyy' }}
+      </div>
+      <div class="previous-Indicator" *ngIf="sameMonthFlag">
+        {{ waiverDetails?.waiverStartDate.gregorian | date: 'MM/yyyy' }}
+      </div>
+      <div class="amount-icon">
+        <fa-icon [icon]="['fas', 'info-circle']"></fa-icon>
+        <span>
+          {{ 'BILLING.AMOUNT-APPLICABLE' | translate }}
+          <b>({{ amount | number: '1.2-2' }}</b>
+          {{ 'BILLING.SAR' | translate }})</span
+        >
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="penaltyPercentage"
+        [label]="'BILLING.WAIVED-PENALITY-PERCETANGES' | translate"
+        [control]="waivedPenaltyPercentage"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <div id="eligiblePenaltyAmt">
+        <gosi-currency-label-dc
+          id="eligiblePenaltyAmt"
+          [label]="'BILLING.PENALTY-AMOUNT-ELIGIBLE' | translate"
+          [currencyTo]="waiverDetails?.eligibleWaiveOffAmount.toString()"
+          [countryCodeFrom]="'BILLING.SAR' | translate"
+        ></gosi-currency-label-dc>
+      </div>
+    </div>
+  </div>
+</div>
+<!-----------------end of Late Fees Waiver Details ------------------>
+<!-----------------strat of payment Details ------------------>
+
+<div class="row">
+  <div class="col-lg-12 sub-heading">
+    {{ 'BILLING.REQUIRED-PAYMENT-DETAILS' | translate }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-6" *ngIf="waiverDetails?.paymentRequired">
+    <gosi-label-dc
+      id="paymentRequired"
+      [label]="'BILLING.IS-PAYMENT-REQUIRED' | translate"
+      [control]="waiverDetails?.paymentRequired | bilingualText"
+    ></gosi-label-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-6" *ngIf="waiverDetails?.terms?.amountToBePaid !== null">
+    <gosi-currency-label-dc
+      id="amountToBePaid"
+      [label]="'BILLING.PAYMENT-REQUIRED' | translate"
+      [currencyTo]="waiverDetails?.terms?.amountToBePaid.toString()"
+      [countryCodeFrom]="'BILLING.SAR' | translate"
+    ></gosi-currency-label-dc>
+  </div>
+  <div
+    id="previousIndicator"
+    class="col-lg-6 mainStyle"
+    *ngIf="waiverDetails?.terms !== null && waiverDetails?.paymentRequired?.english !== 'No'"
+  >
+    <div>
+      <div class="totalGracePeriod">
+        {{ 'BILLING.GRACE-PERIOD' | translate }}
+      </div>
+      <div class="previous-Indicator">
+        <div>
+          {{ totalGracePeriod }}
+          {{ 'BILLING.BUSINESS-DAYS' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div
+    class="col-lg-6"
+    *ngIf="waiverDetails?.extensionReason !== null && waiverDetails?.paymentRequired?.english !== 'No'"
+  >
+    <gosi-label-dc
+      id="extensionReason"
+      [label]="'BILLING.REASON-FOR-EXTENSION' | translate"
+      [control]="waiverDetails?.extensionReason"
+    ></gosi-label-dc>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="header">
+    <a
+      *ngIf="establishmentDetails?.status?.english === 'Registered' && isUserLoggedIn"
+      (click)="onCancel()"
+      class="icon-seprator"
+    >
+      <fa-icon
+        class="back-icon-size"
+        [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']"
+        size="2x"
+      ></fa-icon>
+    </a>
+    <span class="header-size">{{ 'BILLING.CONTIBUTOR-REFUND-REQUEST' | translate }}</span>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row" *ngIf="refundAmountExceedError">
+    <div class="col-lg-12 mt-4">
+      <gosi-alert-dc message="BILLING.REFUND-AMOUNT-EXCEED-ERROR" type="danger" [dismissible]="true" [noPadding]="true">
+      </gosi-alert-dc>
+    </div>
+  </div>
+  <!------------------------Login View----------------------------------->
+  <ng-container *ngIf="!isUserLoggedIn">
+    <div class="row search-contributor-wrapper">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <ng-container>
+              <div [formGroup]="verifyPersonForm">
+                <div class="row justify-content-center">
+                  <div class="col-lg-4">
+                    <gosi-input-number-dc
+                      name="registrationNo"
+                      id="registrationNo"
+                      [label]="'BILLING.REGISTRATION-NUMBER' | translate"
+                      [control]="verifyPersonForm?.get('registrationNo')"
+                      [maxLength]="maxLength.REG_NUMBER"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-4">
+                    <gosi-input-number-dc
+                      name="socialInsuranceNo"
+                      id="socialInsuranceNo"
+                      [label]="'BILLING.OCIAL-INSURANCE-NO' | translate"
+                      [control]="verifyPersonForm?.get('socialInsuranceNo')"
+                      [maxLength]="maxLength.SIN"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="col-lg-2 pt-4 mt-3">
+                    <gosi-button-dc type="primary" id="search" (submit)="searchContributor()">
+                      {{ 'BILLING.SEARCH' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                </div>
+                <div class="row justify-content-center"></div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <!------------------------Login View Ends----------------------------------->
+  <!------------------------LoggedIn View Ends----------------------------------->
+  <ng-container *ngIf="isUserLoggedIn">
+    <blg-contributor-details-dc [contributorDetails]="contributorDetails"></blg-contributor-details-dc>
+
+    <blg-backdated-termination-details-dc
+      [backdatedTerminationTransactionsDetails]="backdatedTerminationTransactionsDetails"
+      [establishmentDetails]="establishmentDetails"
+      [loadSelectedPeriodValue]="selectedPeriod"
+      [establishmentCreditDetails]="establishmentCreditDetails"
+      (refundAmount)="navigateToRefundAmountPage()"
+      (refundAmountExceededErrorEmit)="setRefundExceededError($event)"
+      (selectedTerminationPeriod)="selectedTerminationPeriod($event)"
+      [isWorkflow]="isWorkflow"
+      (generate)="showModal(confirmTemplate, 'md')"
+      [transactionsDetails]="transactionsDetails"
+    >
+    </blg-backdated-termination-details-dc>
+  </ng-container>
+  <div
+    class="row form-action"
+    *ngIf="
+      establishmentDetails?.status?.english === 'Registered' &&
+      !backdatedTerminationTransactionsDetails?.eligibleForRefund &&
+      isUserLoggedIn
+    "
+  >
+    <div class="col-lg-12">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="secondaryButton" type="primary" (submit)="showModal(confirmTemplate, 'md')">{{
+          'BILLING.GENERATE-STATEMENT' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancel" type="secondary" (submit)="showModal(cancelTemplate, 'md')">
+          {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>
+<!--------------------------Modal Templates----------------------------------->
+<ng-template #confirmTemplate>
+  <div class="custom-modal">
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="confirmation-popup">
+          <div class="row">
+            <div class="col-lg-12 confirm-heading">
+              {{ 'BILLING.GENERATE-STATEMENT' | translate }}
+            </div>
+          </div>
+          <div class="confirm-content">{{ 'BILLING.CONTRIBUTOR-GENERATE-LETTER' | translate }}</div>
+        </div>
+      </div>
+
+      <div modalAction>
+        <div class="row">
+          <div class="col-md-12 form-action">
+            <div class="float-right btn-section">
+              <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="generateStatement()">
+                {{ 'BILLING.CONFIRM' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="float-left btn-section">
+              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="hideModal()">
+                {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BILLING.INFO-CANCEL'" (onConfirm)="navigateToHome()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!--------------------------Modal Templates----------------------------------->

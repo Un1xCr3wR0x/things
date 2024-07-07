@@ -1,0 +1,120 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="billing-breadcrumb">
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+  <div class="header-section">
+    <div class="heading-main event-title">
+      {{ 'BILLING.MAINTAIN-EVENT-DATE' | translate }}
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row" *ngIf="modifyFlag">
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments"> </gosi-comments-dc>
+    </div>
+  </div>
+  <div class="row header-style">
+    <div class="header calendar-width">
+      <div class="text-left">
+        <div class="d-inline-block for-year">{{ 'BILLING.FOR-YEAR' | translate }}</div>
+        <div class="d-inline-block">
+          <gosi-input-multi-select-dropdown-dc
+            id="yearSelection"
+            name="yearSelection"
+            [ignoreLabel]="true"
+            [control]="verifyDueDateParentForm.get('selectedYear')"
+            [list]="yearListLov"
+            (selected)="onYearSelection($event)"
+            [selectedValues]="selectedValues"
+          >
+          </gosi-input-multi-select-dropdown-dc>
+        </div>
+      </div>
+    </div>
+    <div class="calendar-width">
+      <div class="event-date-align calendar-type">
+        <div class="pick-calendar-type">
+          <div class="column calender-type-selected calender-text">
+            {{ 'BILLING.MAINTAIN-EVENT-DATE-GREGORIAN' | translate }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <blg-get-months-dc
+    *ngIf="contributionList && selectedyearList && pendingEventInfo"
+    (onSubmitClicked)="submitEventDate($event)"
+    (cancel)="cancelNavigation()"
+    [selectedyearList]="selectedyearList"
+    [contributionList]="contributionList"
+    [pendingEventInfo]="pendingEventInfo"
+    [isEditMode]="modifyFlag"
+    (doc)="refreshDocuments($event, true)"
+    [documents]="documents"
+    [isScan]="false"
+    [transactionId]="documentTransactionId"
+    [businessKey]="idNumber"
+    [uuid]="uuid"
+  >
+  </blg-get-months-dc>
+</div>
+
+<ng-template #confirmTemplate>
+  <div class="modal-body card-header-custom confirmation-margin">
+    <div class="d-flex justify-content-center">
+      {{ 'BILLING.LATE-FEES-UPDATE' | translate }}
+    </div>
+    <div class="d-flex flex-column confirmation-padding">
+      <table class="table table-bordered rounded">
+        <thead>
+          <tr>
+            <th class="row-width">
+              {{ 'BILLING.YEAR' | translate }}
+            </th>
+            <th class="row-width">
+              {{ 'BILLING.BILL-MONTH' | translate }}
+            </th>
+            <th class="row-width">
+              {{ 'BILLING.BILL-NEW-DATE' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let eventDate of transformedEventInfo">
+            <tr *ngFor="let year of eventDate['eventDateInfo']; let i = index">
+              <td>{{ eventDate['year'] }}</td>
+              <td>
+                <span *ngIf="lang === 'en'; else monthArabic">{{ year['month']['english'] }}</span>
+                <ng-template #monthArabic>{{ year['month']['arabic'] }}</ng-template>
+              </td>
+              <td>{{ year['eventDate']['gregorian'] | date: 'dd/MM/yyyy' }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-header d-flex justify-content-center">
+    <div class="btn-section">
+      <gosi-button-dc id="cancelBtn" type="outline-secondary" (submit)="confirmCancel()">
+        {{ 'BILLING.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <span class="mr-3"></span>
+    <div class="btn-section">
+      <gosi-button-dc id="confirmBtn" type="primary" (submit)="confirmSubmit()">
+        {{ 'BILLING.CONFIRM' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>

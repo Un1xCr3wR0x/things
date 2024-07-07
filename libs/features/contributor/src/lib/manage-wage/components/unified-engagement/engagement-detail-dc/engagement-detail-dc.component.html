@@ -1,0 +1,139 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<ng-container *ngIf="engagement; else noActiveEngagement">
+  <cnt-wage-content-heading-dc
+    [displayIcon]="showUnifiedHeader ? 'building' : 'user-clock'"
+    headingLabel="CONTRIBUTOR.WAGE.CURRENT-MONTH-ENGAGEMENT-DETAILS"
+    [canEdit]="isShow"
+    [isVic]="engagement.engagementType === typeVic ? true : false"
+    [currentEngagement]="engagement"
+    [disableEdit]="isEdit ? true : isFutureEngagement"
+    [showUnifiedHeader]="showUnifiedHeader"
+    (onEdit)="handleWageEdit()"
+  ></cnt-wage-content-heading-dc>
+  <!-- Info for futture engagement -->
+  <div *ngIf="isFutureEngagement">
+    <gosi-alert-dc
+      [dismissable]="false"
+      message="CONTRIBUTOR.WAGE.VIC-FUTURE-ENGAGEMENT-INFO"
+      [messageParam]="{ joiningDate: engagement.joiningDate.gregorian | date: 'dd/MM/yyyy' }"
+      [dismissible]="false"
+      [noPadding]="true"
+      type="info"
+    ></gosi-alert-dc>
+  </div>
+  <!-- Info for future period -->
+  <div *ngIf="!isFutureEngagement && !isWageUpdatePending && hasFuturePeriods">
+    <gosi-alert-dc
+      [dismissable]="false"
+      message="CONTRIBUTOR.WAGE.VIC-FUTURE-ENGAGEMENT-PERIOD-INFO"
+      [messageParam]="{
+        newWage: engagement.engagementPeriod[0].wage.totalWage,
+        oldWage: engagement.engagementPeriod[1].wage.totalWage,
+        effectiveStartDate: engagement.engagementPeriod[0].startDate.gregorian | date: 'dd/MM/yyyy'
+      }"
+      [dismissible]="false"
+      [noPadding]="true"
+      type="info"
+    ></gosi-alert-dc>
+  </div>
+  <div class="row">
+    <div class="col-md-4" *ngIf="!engagement?.ppaIndicator">
+      <gosi-label-dc
+        id="job"
+        [value]="engagement.engagementPeriod[0]?.occupation | bilingualText"
+        label="CONTRIBUTOR.OCCUPATION"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="name"
+        [value]="
+          engagement?.establishmentName?.english === null
+            ? engagement?.establishmentName?.arabic
+            : (engagement?.establishmentName | bilingualText)
+        "
+        label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4">
+      <gosi-label-dc
+        id="date"
+        [value]="engagement?.joiningDate | dateType"
+        label="CONTRIBUTOR.ENGAGEMENT-START-DATE"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4" *ngIf="engagement?.ppaIndicator">
+      <gosi-label-dc
+        id="date"
+        [value]="engagement?.engagementPeriod[0]?.jobClassName | bilingualText"
+        label="CONTRIBUTOR.JOB-CLASS"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4" *ngIf="engagement?.ppaIndicator">
+      <gosi-label-dc
+        id="date"
+        [value]="engagement?.engagementPeriod[0]?.jobRankName | bilingualText"
+        label="CONTRIBUTOR.RANK"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-md-4" *ngIf="engagement?.ppaIndicator">
+      <gosi-label-dc
+        id="date"
+        [value]="engagement?.engagementPeriod[0]?.jobGradeName | bilingualText"
+        label="CONTRIBUTOR.GRADE"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <!-- Wage table section -->
+  <cnt-wage-table-dc
+    [isVic]="engagement.engagementType === typeVic"
+    [showLastUpdate]="true"
+    [engagementPeriod]="
+      isFutureEngagement
+        ? engagement.engagementPeriod[0]
+        : hasFuturePeriods
+        ? engagement.engagementPeriod[1]
+        : engagement.engagementPeriod[0]
+    "
+    [purposeOfReg]="engagement.purposeOfRegistration"
+    [disableSection]="isFutureEngagement"
+    [isIndividualProfile]="isIndividualProfile"
+    [joiningDate]="joiningDate"
+    [isPpa]="engagement?.ppaIndicator"
+    [isPREligible]="isPREligible"
+  ></cnt-wage-table-dc>
+  <!-- Coverage and contributory icons -->
+  <div class="pb-5" [ngClass]="{ 'section-disabled': isFutureEngagement }">
+    <cnt-coverage-contributory-wage-section-dc
+      [displayIcon]="true"
+      [engagementPeriod]="
+        isFutureEngagement
+          ? engagement.engagementPeriod[0]
+          : hasFuturePeriods
+          ? engagement.engagementPeriod[1]
+          : engagement.engagementPeriod[0]
+      "
+      [isTotalShare]="true"
+      [isIndividualProfile]="isIndividualProfile"
+      [isVic]="engagement.engagementType === typeVic ? true : false"
+    ></cnt-coverage-contributory-wage-section-dc>
+  </div>
+</ng-container>
+
+<!-- No Active engagement template-->
+<ng-template #noActiveEngagement>
+  <cnt-wage-content-heading-dc
+    displayIcon="user-clock"
+    headingLabel="CONTRIBUTOR.WAGE.CURRENT-MONTH-ENGAGEMENT-DETAILS"
+    [canEdit]="false"
+  ></cnt-wage-content-heading-dc>
+  <div class="no-active-engmt">
+    <img src="assets/images/case.svg" alt="no active engagement" />
+    <div class="p-5">{{ 'CONTRIBUTOR.WAGE.NO-ACTIVE-ENGAGEMENT' | translate }}</div>
+  </div>
+</ng-template>

@@ -1,0 +1,126 @@
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-heading-dc [heading]="'VIOLATIONS.REPORT-VIOLATION' | translate"></frm-main-heading-dc>
+  <gosi-progress-wizard-dc
+    [wizardItems]="reportwizardItems"
+    (clickWizard)="selectWizard($event)"
+    #reportViolationWizard
+  >
+  </gosi-progress-wizard-dc>
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="activeTab === 0">
+            <div class="row">
+              <div class="col-md-12">
+                <!-- violation details -->
+                <vol-report-violation-details-dc
+                  [violationTypeDetails]="violationTypeList$ | async"
+                  [inspectionTypeDetails]="inspectionTypeList$ | async"
+                  [violationYesOrNoList]="violationYesOrNoList$ | async"
+                  [parentForm]="reportViolationForm"
+                  (violationType)="violationTypeSelected($event)"
+                  [violationDetails]="violationDetails"
+                  [editMode]="editMode"
+                  [establishmentDetails]="establishmentDetails"
+                >
+                </vol-report-violation-details-dc>
+              </div>
+            </div>
+            <div class="row contributor-section">
+              <div class="col-md-12">
+                <!-- contributor details -->
+                <vol-report-contributor-details-dc
+                  [violationYesOrNoList]="violationYesOrNoList$ | async"
+                  [wrongBenefitsType]="wrongBenefitsType$ | async"
+                  (verify)="getContributorInfo($event)"
+                  [isVerified]="isPersonVerified"
+                  (resetPerson)="resetPerson()"
+                  [contributorSummaryDetails]="contributorSummaryDetails"
+                  [engagementsInfo]="engagementsInfo"
+                  [raiseViolationData]="raiseViolationData"
+                  [violationData]="violationData"
+                  [violationType]="violationType"
+                  [hideContributor]="hideContributor"
+                  (saveEng)="saveEngagement()"
+                  (addContributorBtn)="addContributorBtn()"
+                  (saveContributor)="saveContributor()"
+                  (cancelCurrentContributor)="cancelCurrentContributor()"
+                  (removeAddedContributor)="removeAddedContributor($event, removeContributor)"
+                  [addedContributorDetail]="addedContributorDetail"
+                  [engInfo]="engInfo"
+                  (updateAddedContributor)="updateAddedContributor($event)"
+                  [isContributorEdit]="isContributorEdit"
+                  (cancelCurrentEdit)="cancelCurrentEdit()"
+                  [removeNewlyAdedEng]="removeNewlyAdedEng"
+                  [establishmentDetails]="establishmentDetails"
+                  [makeAddContributorRed]="makeAddContributorRed"
+                  [hasProactiveEng]="hasProactiveEng"
+                >
+                </vol-report-contributor-details-dc>
+              </div>
+            </div>
+            <div id="actionArea">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="float-right save-next">
+                    <gosi-button-dc id="save-next" type="primary" (click)="saveViolationDetails(true)">
+                      {{ 'VIOLATIONS.SAVE-NEXT' | translate }}</gosi-button-dc
+                    >
+                  </div>
+                  <div class="float-left cancel-button">
+                    <gosi-button-dc id="cancel-next" type="secondary" (click)="viewModal(cancelTemplate)">
+                      {{ 'VIOLATIONS.CANCEL' | translate }}
+                    </gosi-button-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </tab>
+          <tab [active]="activeTab === reportwizardItems.length - 1">
+            <div>
+              <!-- <div class="col-md-12"> -->
+              <!-- documents upload section -->
+              <vol-document-upload-dc
+                [registrationNumber]="violationId"
+                [documentList]="documentList"
+                [isScan]="true"
+                (submit)="submitReportViolation()"
+                (cancelBtn)="viewModal(cancelTemplate)"
+                (previous)="previousSectionDetails()"
+                [parentForm]="reportViolationForm"
+                (refresh)="refreshDocument($event)"
+                [transactionNo]="transactionNo"
+                [referenceNo]="transactionTraceId"
+                [editMode]="editMode"
+              >
+              </vol-document-upload-dc>
+
+              <!-- </div> -->
+            </div>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'VIOLATIONS.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #removeContributor>
+  <gosi-confirm-modal-dc
+    message="VIOLATIONS.DELETE-CONTRIBUTOR-CONFIRM"
+    (onConfirm)="confirmRemove()"
+    (onCancel)="hideRemoveContributorModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!-- <ng-template #violationTypeChange>
+  <gosi-confirm-modal-dc [message]="'VIOLATIONS.INFO-CANCEL'" (onConfirm)="confirmTypeChange()" (onCancel)="cancelTypeChange()">
+  </gosi-confirm-modal-dc>
+</ng-template> -->

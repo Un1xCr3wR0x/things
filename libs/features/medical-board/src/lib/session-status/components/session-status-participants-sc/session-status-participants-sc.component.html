@@ -1,0 +1,188 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<table class="table table-borderless" *ngIf="sessionStatusDetails?.participantList?.length > 0">
+  <thead class="thead-light">
+    <tr>
+      <th>#</th>
+      <th>
+        {{ 'MEDICAL-BOARD.IDENTIFICATION-NUMBER' | translate }}
+      </th>
+      <th>
+        {{ 'MEDICAL-BOARD.PARTICIPANT-NAME' | translate }}
+      </th>
+      <th>{{ 'MEDICAL-BOARD.PARTICIPANT-TYPE' | translate }}</th>
+      <th>
+        {{ 'MEDICAL-BOARD.DISABILITY-TYPE' | translate }}
+      </th>
+      <th>
+        {{ 'MEDICAL-BOARD.ASSESMENT-TYPE' | translate }}
+      </th>
+      <th>
+        {{ 'MEDICAL-BOARD.CONTACT-NUMBER' | translate }}
+      </th>
+      <th>
+        {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+      </th>
+      <th>{{ 'MEDICAL-BOARD.ASSESSMENT-SLOT' | translate }}</th>
+      <th>
+        {{ 'MEDICAL-BOARD.STATUS' | translate }}
+      </th>
+      <th></th>
+
+    </tr>
+  </thead>
+  <tbody
+    id="table-body"
+    *ngFor="
+      let session of sessionStatusDetails?.participantList
+        | paginate
+          : {
+              id: 'paginationId',
+              itemsPerPage: itemsPerPage,
+              currentPage: pageDetails.currentPage,
+              totalItems: sessionStatusDetails?.totalNoOfParticipantRecords
+            };
+      let p = index
+    "
+  >
+    <tr class="border-bottom">
+      <td>{{ getListNo(p) }}</td>
+      <td id="identity-participant">
+        <ng-container *ngIf="session.identity; else notAvailable">
+          <a class="participant-click" (click)="navigateToProfile(session.identity)">{{ session.identity }}</a>
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.name; else notAvailable">
+          <span *ngIf="lang === 'en'">
+            {{
+              session?.name?.english === null || session?.name?.english?.length === 0
+                ? session?.name?.arabic
+                : session?.name?.english
+            }}
+          </span>
+          <span *ngIf="lang === 'ar'">
+            {{ session?.name?.arabic }}
+          </span>
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.participantType; else notAvailable">
+          {{ session.participantType | bilingualText }}
+        </ng-container>
+      </td>
+
+      <td>
+        <ng-container *ngIf="session.disabilityType; else notAvailable">
+          {{ session.disabilityType | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.assessmentType; else notAvailable">
+          {{ session.assessmentType | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.mobileNo; else notAvailable">
+          <fa-icon
+            icon="phone"
+            size="1x"
+            class="admin-phone pr-1"
+            outsideClick="true"
+            (click)="isPhoneClicked(p)"
+            transform="rotate-{{ rotatedeg }} down-2"
+          ></fa-icon>
+
+          <ng-container *ngIf="session.isPhoneClicked">
+            <span id="prefixValue">{{ getISDCodePrefix(session) }}</span>
+            {{ session.mobileNo | bilingualText }}
+          </ng-container>
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.location; else notAvailable">
+          {{ session.location | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container  *ngIf="session?.slot; else notAvailable">
+          {{ session.slot | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <ng-container *ngIf="session.status; else notAvailable">
+          {{ session.status | bilingualText }}
+        </ng-container>
+      </td>
+      <td>
+        <!-- acces for only ambo and pmbo -->
+        <div *gosiShow="allowedMedicalOfficerRole">
+          <fa-icon
+            class="dropdown-icon data-row"
+            placement="top"
+            [ngClass]="isDisablePartcipants || mbManager ? 'fa-disabled' : ''"
+            outsideClick="true"
+            [popover]="!isDisablePartcipants && !mbManager ? optionModal : null"
+            (click)="setValue(session)"
+            icon="ellipsis-v"
+          >
+          </fa-icon>
+        </div>
+        <!-- <div *ngIf="canHide"> -->
+          <!-- <fa-icon
+            class="dropdown-icon data-row"
+            placement="top"
+            [ngClass]="isDisablePartcipants ? 'fa-disabled' : ''"
+          >
+          </fa-icon> -->
+        <!-- </div> -->
+      </td>
+    </tr>
+  </tbody>
+</table>
+<gosi-pagination-dc
+  *ngIf="sessionStatusDetails?.totalNoOfParticipantRecords > itemsPerPage"
+  [totalSize]="sessionStatusDetails?.totalNoOfParticipantRecords"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  paginationId="paginationId"
+  (pageChange)="selectPage($event)"
+>
+</gosi-pagination-dc>
+<!-- period popup -->
+<ng-template #optionModal>
+  <button
+    type="button"
+    id="removebtn"
+    class="d-flex btn text-left action-pop-btn"
+    (click)="onAddMembers(removeConfirm)"
+  >
+    {{ 'MEDICAL-BOARD.REMOVE-PARTICIPANT' | translate }}
+  </button>
+  <button  *ngIf="!canHide" type="button" id="removebtn" class="d-flex btn text-left action-pop-btn" (click)="replaceParticipants()">
+    {{ 'MEDICAL-BOARD.REPLACE-PARTICIPANT' | translate }}
+  </button>
+</ng-template>
+<ng-template #notAvailable>
+  <div class="null-participant">
+    {{ 'MEDICAL-BOARD.NOT-ASSIGNED' | translate }}
+    <fa-icon size="1x" class="warning-icon mr-2" icon="exclamation-triangle"></fa-icon>
+  </div>
+</ng-template>
+<ng-template #noResult>
+  <div class="pt-4">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+</ng-template>
+<ng-template #removeConfirm>
+  <gosi-confirm-modal-dc
+    class="hold-modal"
+    [message]="lang === 'en' ? participantname?.english : participantname?.arabic"
+    (onConfirm)="removeParticipant()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

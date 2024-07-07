@@ -1,0 +1,233 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div style="margin-left: 2rem;color: #fff;font-weight: 100;" class="row header-section">
+
+  <div class="col-auto">
+    <a (click)="backNavigationToPage()">
+      <fa-icon class="back-icon color-white" [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']">
+      </fa-icon>
+    </a>
+  </div>
+
+  <div  style="font-size: 2rem;" class="col-auto heading-main border-right">  {{ 'BILLING.ADJUSTMENT-HISTORY' | translate }} </div>
+
+  <div class="d-none d-sm-block col-auto align-self-center mr-auto"> ({{ 'BILLING.REGISTRATION-NO' | translate }} : {{ recordidNumber }}) </div>
+  <div class="d-sm-none pt-2">({{ 'BILLING.REGISTRATION-NO' | translate }} : {{ recordidNumber }})</div>
+<!--  <div class="d-flex justify-content-end col pr-5">{{ 'BILLING.CURRENCY' | translate }} : {{ selectedCurrency }}</div>-->
+</div>
+
+<div class="content">
+
+  <div class="row pt-3 pb-3">
+    <div class="col-auto header standard-color">
+      <span style="display: -webkit-inline-box;">
+        <h3 style="font-weight: 300;">{{ 'BILLING.ADJUSTMENT-HISTORY' | translate }}</h3>
+        <h6 style="padding-left: 10px; margin: auto;padding-right:10px;"> ({{this.miscAdjustmentResponse.adjustments.length}} {{ 'BILLING.ADJUSTMENTS' | translate }})</h6>
+      </span>
+    </div>
+    <div class="col-lg-9 d-flex justify-content-end">
+      <div class="serch-sort-sec menu">
+        <div class="row d-flex flex-row">
+          <div class="search" id="searchid">
+            <!--            <gosi-search-dc [placeholder]="'BILLING.ENTER-RECEIPT-NUMBER' | translate"></gosi-search-dc>-->
+          </div>
+          <div class="filter">
+            <!--            <gosi-filter-dc></gosi-filter-dc>-->
+          </div>
+        </div>
+        <div class="sort" id="searchid">
+          <!--          <gosi-sort-dc [list]="receiptSortFields$ | async"></gosi-sort-dc>-->
+        </div>
+      </div>
+    </div>
+
+
+    <ng-container>
+      <div class="table-effect col-lg-12">
+        <div class="table-responsive">
+
+          <table class="table table-borderless" style="margin-bottom: 28px;margin-top: 22px;box-shadow: 1px 5px 6px 4px #88888840;">
+            <thead class="table-header">
+            <tr style="height: 68px;padding-bottom: 20px;padding-top: 19px;box-shadow: 1px 5px 6px 4px #88888840;">
+              <th class="standard-color font-weight-500 width-25">{{ 'BILLING.ADJUSTMENT-DATE' | translate }}</th>
+              <th class="standard-color font-weight-500 width-25"> {{ 'BILLING.ADJUSTMENT-TYPE' | translate }}</th>
+              <th class="standard-color font-weight-500 width-25">{{ 'BILLING.DESCRIPTION' | translate }}</th>
+              <th class="standard-color font-weight-500 width-25"> {{ 'BILLING.AMOUNT' | translate }} </th>
+            </tr>
+            </thead>
+          </table>
+          <!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+          <accordion>
+            <accordion-group class="accordion-group-class"
+                             *ngFor="let adjustment of miscAdjustmentResponse.adjustments">
+              <span class="arrow-ups arrow-color" accordion-heading>
+                <table class="table table-borderless">
+                  <thead class="table-header">
+                    <tr>
+                      <th class="standard-color width-25" style="padding-left: 0px;width: 24%;">{{adjustment.adjustmentDate| date: 'dd/MM/yyyy' }}</th>
+                      <th class="standard-color width-25" style="width: 26%;" *ngIf="adjustment && adjustment.miscType === 1001">{{'BILLING.DEBIT' | translate}}</th>
+                      <th class="standard-color width-25" style="width: 26%;" *ngIf="adjustment && adjustment.miscType === 1002">{{'BILLING.CREDIT' | translate}}</th>
+                      <th class="standard-color width-25" style="width: 26%;">{{adjustment.description}}</th>
+                      <th class="standard-color width-25" >{{adjustment.totalAmount * exchangeRate }} {{ 'BILLING.'+selectedCurrency | translate }}</th>
+                    </tr>
+                  </thead>
+                </table>
+              </span>
+              <!-- <span class="arrow-downs arrow-color" accordion-heading>
+
+              <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+            </span> -->
+              <div class="col-lg-12" style="border: 1px solid #ded8e1;">
+                <div class="table-scroll table-responsive" style="padding-top: 14px;">
+                  <table class="table table-borderless">
+                    <thead class="thead-light">
+                    <tr>
+                      <th class="header-align" rowspan="2">{{ 'BILLING.RELATED-TO-CONTRIBUTOR' | translate }}</th>
+                      <th class="header-align" rowspan="2">{{ 'BILLING.CONTRIBUTOR-DETAILS' | translate }}</th>
+                      <!--                        <th class="header-align" rowspan="2">{{ 'BILLING.ADJUSTMENT-DATE' | translate }}</th>-->
+                      <!--                        <th class="header-align" rowspan="2">{{ 'BILLING.DESCRIPTION' | translate }}</th>-->
+                      <th class="header-align" colspan="2">{{ 'BILLING.ADJUSTMENT-PERIOD' | translate }}</th>
+
+
+
+                      <th *ngIf="!hidenDetails.annuity" class="header-align" colspan="2">{{ 'BILLING.ANNUITY' |
+                        translate }}</th>
+                      <!-- <th *ngIf="!hidenDetails.ppaAnnuity" class="header-align" colspan="2">{{ 'BILLING.PPA-ANNUITY' |
+                          translate }}</th>
+                          <th *ngIf="!hidenDetails.ppaPension" class="header-align" colspan="2">{{ 'BILLING.PPA-PENSION' |
+                            translate }}</th> -->
+                      <th *ngIf="!hidenDetails.ui" class="header-align" colspan="2">{{ 'BILLING.UI' | translate }}
+                      </th>
+                      <th *ngIf="!hidenDetails.oh" class="header-align" colspan="2">{{ 'BILLING.OH' | translate }}
+                      </th>
+                      <th *ngIf="!hidenDetails.rejectedOh" class="header-align" colspan="2">{{ 'BILLING.REJECTED-OH' |
+                        translate }}</th>
+                      <th *ngIf="!hidenDetails.violation" class="header-align" colspan="2">{{ 'BILLING.VIOLATION' |
+                        translate }}</th>
+                      <th class="header-align" rowspan="2">{{ 'BILLING.AMOUNT' | translate }}</th>
+                    </tr>
+                    <tr>
+                      <!-- Adjustment Period -->
+                      <th>{{ 'BILLING.START-DATE' | translate }}</th>
+                      <th>{{ 'BILLING.END-DATE' | translate }}</th>
+                      <!-- Annuity -->
+                      <th *ngIf="!hidenDetails.annuity">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+                      <th *ngIf="!hidenDetails.annuity">{{ 'BILLING.LATE-FEES' | translate }}</th>
+                      <!-- PPA Annuity 
+                      <th *ngIf="!hidenDetails.ppaAnnuity">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+                      <th *ngIf="!hidenDetails.ppaAnnuity">{{ 'BILLING.LATE-FEES' | translate }}</th>
+                        PR Annuity  
+                       <th *ngIf="!hidenDetails.ppaPension">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+                       <th *ngIf="!hidenDetails.ppaPension">{{ 'BILLING.LATE-FEES' | translate }}</th>
+                      UI -->
+                      <th *ngIf="!hidenDetails.ui">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+                      <th *ngIf="!hidenDetails.ui">{{ 'BILLING.LATE-FEES' | translate }}</th>
+                      <!-- OH -->
+                      <th *ngIf="!hidenDetails.oh">{{ 'BILLING.CONTRIBUTION' | translate }}</th>
+                      <th *ngIf="!hidenDetails.oh">{{ 'BILLING.LATE-FEES' | translate }}</th>
+ <!-- Rejected OH -->
+                      <th *ngIf="!hidenDetails.rejectedOh">{{ 'BILLING.CASE-NUMBER' | translate }}</th>
+                      <th *ngIf="!hidenDetails.rejectedOh">{{ 'BILLING.AMOUNT' | translate }}</th>
+
+                      <th *ngIf="!hidenDetails.violation">{{ 'BILLING.VIOLATION-NUMBER' | translate }}</th>
+                      <th *ngIf="!hidenDetails.violation">{{ 'BILLING.AMOUNT' | translate }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                      <td class="td-style" *ngIf="adjustment.relatedToContributor === false">{{ 'BILLING.NO' | translate }}</td>
+                      <td class="td-style" *ngIf="adjustment.relatedToContributor === true">{{ 'BILLING.YES' | translate }}</td>
+                      <td class="td-style" *ngIf="adjustment.relatedToContributor === false">-</td>
+                      <td class="td-style" *ngIf="adjustment.relatedToContributor === true">{{ adjustment.contributorId }}</td>
+                      <!--                        <td class="td-style">{{ adjustment.adjustmentDate | date: 'dd/MM/yyyy' }}</td>-->
+                      <!--                        <td class="td-style">{{ adjustment.description }}</td>-->
+                      <td class="td-style">{{ adjustment.periodStartDate | date: 'dd/MM/yyyy' }}</td>
+                      <td class="td-style">{{ adjustment.periodEndDate | date: 'dd/MM/yyyy' }}</td>
+                      <td class="td-style" *ngIf="!adjustment.annContribution && !hidenDetails.annuity">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.annContribution && !hidenDetails.annuity">{{ adjustment.annContribution *
+                        exchangeRate | number: '1.2-2' }}</td>                          
+                      <td class="td-style" *ngIf="!adjustment.annPenality && !hidenDetails.annuity">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.annPenality && !hidenDetails.annuity">{{ adjustment.annPenality *
+                        exchangeRate | number: '1.2-2' }}</td>
+                     <!-- <td class="td-style" *ngIf="!adjustment.ppaAnnContribution && !hidenDetails.ppaAnnuity">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.ppaAnnContribution && !hidenDetails.ppaAnnuity">{{ adjustment.ppaAnnContribution *
+                        exchangeRate | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="!adjustment.ppaAnnPenality && !hidenDetails.ppaAnnuity">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.ppaAnnPenality && !hidenDetails.ppaAnnuity">{{ adjustment.ppaAnnPenality *
+                        exchangeRate | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="!adjustment.prAnnContribution && !hidenDetails.ppaPension">{{ 0 | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="adjustment.prAnnContribution && !hidenDetails.ppaPension">{{ adjustment.prAnnContribution *
+                          exchangeRate | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="!adjustment.prAnnPenality && !hidenDetails.ppaPension">{{ 0 | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="adjustment.prAnnPenality && !hidenDetails.ppaPension">{{ adjustment.prAnnPenality *
+                          exchangeRate | number: '1.2-2' }}</td> -->
+                      <td class="td-style" *ngIf="!adjustment.uicontribution && !hidenDetails.ui">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.uicontribution && !hidenDetails.ui">{{ adjustment.uicontribution *
+                        exchangeRate | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="!adjustment.uipenality && !hidenDetails.ui">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.uipenality && !hidenDetails.ui">{{ adjustment.uipenality * exchangeRate |
+                        number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="!adjustment.ohcontribution && !hidenDetails.oh">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.ohcontribution && !hidenDetails.oh">{{ adjustment.ohcontribution *
+                        exchangeRate | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="!adjustment.ohpenality && !hidenDetails.oh">{{ 0 | number: '1.2-2' }}</td>
+                      <td class="td-style" *ngIf="adjustment.ohpenality && !hidenDetails.oh">{{ adjustment.ohpenality * exchangeRate |
+                        number: '1.2-2' }}</td>
+
+
+
+                        <td class="td-style" *ngIf="!adjustment.rejectedOHCaseNo && !hidenDetails.rejectedOh">-</td>
+                        <td class="td-style" *ngIf="adjustment.rejectedOHCaseNo && !hidenDetails.rejectedOh">{{ adjustment.rejectedOHCaseNo }}</td>
+
+                        <td class="td-style" *ngIf="adjustment.rejectedOHAmount && hidenDetails.rejectedOh">{{ 0 | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="adjustment.rejectedOHAmount && !hidenDetails.rejectedOh">{{adjustment.rejectedOHAmount * exchangeRate | number: '1.2-2' }}</td>
+
+                         <td class="td-style" *ngIf="!adjustment.violationNo && !hidenDetails.violation">-</td>
+                        <td class="td-style" *ngIf="adjustment.violationNo && !hidenDetails.violation">{{ adjustment.violationNo }}</td>
+
+                        <td  class="td-style" *ngIf="!adjustment.violationAmount && !hidenDetails.violation">{{ 0 | number: '1.2-2' }}</td>
+                        <td class="td-style" *ngIf="adjustment.violationAmount && !hidenDetails.violation">{{ adjustment.violationAmount * exchangeRate | number: '1.2-2' }}</td>
+
+
+                      <td class="td-style">{{ adjustment.totalAmount * exchangeRate | number: '1.2-2' }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </accordion-group>
+          </accordion>
+        </div>
+      </div>
+
+      <ng-container>
+        <div>
+          <!--        <gosi-pagination-dc-->
+          <!--          (pageChange)="selectPage($event)"-->
+          <!--          *ngIf="noOfRecords > itemsPerPage"-->
+          <!--          [itemsPerPage]="itemsPerPage"-->
+          <!--          [pageDetails]="pageDetails"-->
+          <!--          [totalSize]="noOfRecords"-->
+          <!--          paginationId="paginationId"-->
+          <!--        >-->
+          <!--        </gosi-pagination-dc>-->
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #noResult>
+      <div class="mt-5 text-center">
+        <img alt="search-error" src="assets/images/search-error.svg" />
+        <br />
+        <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

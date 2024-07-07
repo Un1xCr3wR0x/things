@@ -1,0 +1,175 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+    <!---------------Legal Entity Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-LEGAL-ENTITY' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc name="legalEntity" [establishment]="establishment">
+        </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          [heading]="'ESTABLISHMENT.EST-LEGAL-ENTITY-DETAILS-AFTER-CHANGES' | translate"
+          (onEdit)="navigateToEditLegalEntity(0)"
+        ></frm-content-heading-dc>
+        <div class="row">
+          <div
+            class="col-md-6"
+            *ngIf="establishmentToValidate.legalEntity?.english != establishment.legalEntity?.english"
+          >
+            <gosi-label-dc
+              [label]="'ESTABLISHMENT.LEGAL-ENTITY' | translate"
+              [control]="establishmentToValidate.legalEntity"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6"
+            *ngIf="establishmentToValidate.nationalityCode?.english != establishment.nationalityCode?.english"
+          >
+            <gosi-label-dc
+              [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+              [control]="establishmentToValidate.nationalityCode"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-12"
+            *ngIf="
+              establishmentToValidate.establishmentAccount?.paymentType?.english &&
+              establishmentToValidate.establishmentAccount?.paymentType?.english !==
+                establishment.establishmentAccount?.paymentType?.english
+            "
+          >
+            <gosi-label-dc
+              [label]="'ESTABLISHMENT.IS-MOF-PAYING-EMPLOYER-CONTRIBUTOR' | translate"
+              [control]="establishmentToValidate.establishmentAccount?.paymentType"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6"
+            *ngIf="
+              isFieldOfficeTransaction &&
+              establishmentToValidate.establishmentAccount?.lateFeeIndicator?.english &&
+              establishmentToValidate.establishmentAccount?.lateFeeIndicator?.english !==
+                establishment.establishmentAccount?.lateFeeIndicator?.english
+            "
+          >
+            <gosi-label-dc
+              [control]="establishmentToValidate.establishmentAccount?.lateFeeIndicator"
+              label="ESTABLISHMENT.IS-LATE-FEE-APPLICABLE"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="currentOwners.length > 0">
+          <div class="col-md-12">
+            <est-owner-list-dc [owners]="currentOwners"></est-owner-list-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="addedOwners.length > 0">
+          <div class="col-md-12">
+            <h6 class="card-heading">
+              {{ 'ESTABLISHMENT.NEW-OWNER-DETAILS' | translate }}
+            </h6>
+          </div>
+        </div>
+        <div class="col-md-12" *ngIf="addedOwners.length > 0">
+          <accordion class="owner-accordion">
+            <ng-container *ngFor="let owner of addedOwners; let i = index">
+              <accordion-group class="wrapper-accordion-group">
+                <div accordion-heading class="float-left font-weight-bold">
+                  <est-owner-name-dc [owner]="owner" [ownerIndex]="i"> </est-owner-name-dc>
+                </div>
+                <div class="header-wrapper ml-auto" accordion-heading>
+                  <span class="arrow-up">
+                    <fa-icon icon="angle-up" size="2x"></fa-icon>
+                  </span>
+                  <span class="arrow-down" accordion-heading>
+                    <fa-icon icon="angle-down" size="2x"></fa-icon>
+                  </span>
+                </div>
+                <est-owner-details-dc [person]="owner.person" [showHeading]="false" [isGcc]="isGcc">
+                </est-owner-details-dc>
+              </accordion-group>
+            </ng-container>
+          </accordion>
+        </div>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(legalEntityDetailsValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(legalEntityDetailsValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(legalEntityDetailsValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="legalEntityDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-LEGAL-ENTITY' | translate"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(legalEntityDetailsValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="legalEntityDetailsValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-LEGAL-ENTITY' | translate"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(legalEntityDetailsValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="legalEntityDetailsValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(legalEntityDetailsValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

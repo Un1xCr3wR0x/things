@@ -1,0 +1,367 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<!-- <gosi-breadcrumb-dc> </gosi-breadcrumb-dc> -->
+<ng-container *ngIf="!isDisabilityDetailsNotRequiredScreen && !isRequestMedicalReports">
+  <div class="content">
+    <div id="mainHeading">
+      <div class="row">
+        <div class="col-md-12">
+          <h4 class="main-heading">
+            {{ 'MEDICAL-BOARD.REQUEST-CLARIFICATION' | translate }}
+            <div class="float-right">
+              <div class="d-flex justify-content-end">
+                <gosi-button-dc
+                  [type]="'primary'"
+                  [size]="'sm'"
+                  [outlineOnly]="true"
+                  (submit)="showMedicalReportModal(medicalReportModal)"
+                  >{{ 'MEDICAL-BOARD.NEED-HELP' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </h4>
+        </div>
+      </div>
+      <!-- <div> -->
+      <gosi-progress-wizard-dc
+        (clickWizard)="selectedWizard($event)"
+        [wizardItems]="assessmentWizards"
+        #assessmentWizard
+      >
+      </gosi-progress-wizard-dc>
+      <!-- </div> -->
+      <div class="hide-tab">
+        <tabset type="pills" #disabilityAssessmentDetailsTab>
+          <tab [active]="currentTab === 0" heading="'MEDICAL-BOARD.DISABILITY-DETAILS'">
+            <div class="row">
+              <div class="col-md-12">
+                <!--request date card-->
+                <mb-medical-report-download-dc
+                  [hospital]="hospital$ | async"
+                  [parentForm]="parentForm"
+                  (hospitalName)="onServiceProviderSelected($event)"
+                  [serviceAddress]="serviceAddress"
+                  [previousDisabilityDetails]="previousDisabilityDetails"
+                  (selectedProvider)="downloadMedicalReport()"
+                  (pychiatricForm)="downloadPsychiatricForm()"
+                ></mb-medical-report-download-dc>
+              </div>
+              <div class="col-md-12">
+                <gosi-card-dc
+                  heading="{{ 'MEDICAL-BOARD.DISABILITY-DETAILS-LOWER' | translate }}"
+                  type="secondary"
+                  headingSize="md"
+                >
+                  <gosi-input-text-area-dc
+                    [label]="'MEDICAL-BOARD.DISABILITY-DESCRPTION' | translate"
+                    id="disabilityDescription"
+                    [maxLength]="disabilityMaxLength"
+                    name="disabilityDescription"
+                    [control]="requestDisabilityAssessmentForm.get('disabilityDescription')"
+                    [noMargin]="true"
+                  >
+                  </gosi-input-text-area-dc>
+                </gosi-card-dc>
+                <!-- <oh-disability-description-dc [parentForm]="requestDisabilityAssessmentForm"></oh-disability-description-dc> -->
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-auto form-action-btn">
+                <gosi-button-dc
+                  [ngClass]="isSmallScreen ? '' : 'float-left'"
+                  id="cancelButton"
+                  [isFullWidth]="isSmallScreen"
+                  type="secondary"
+                  (click)="cancelTransaction()"
+                >
+                  {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="ml-auto col-auto form-action-btn">
+                <gosi-button-dc
+                  [ngClass]="!isSmallScreen ? 'float-right' : ''"
+                  id="saveAndNext"
+                  type="primary"
+                  [isFullWidth]="isSmallScreen"
+                  (submit)="saveDisabilityDescription()"
+                >
+                  {{ 'MEDICAL-BOARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </tab>
+          <tab [active]="currentTab === 1">
+            <!-- comment section -->
+            <gosi-comments-dc [comments]="comment"></gosi-comments-dc>
+
+            <div class="row">
+              <div class="col-12">
+                <mb-document-upload-dc
+                  #scanDocsComp
+                  [registrationNumber]="disabilityAssessmentId"
+                  [documentList]="documentScanList"
+                  (submit)="saveDocuments($event)"
+                  (onDocUploadCancel)="showCancelTemplate(confirmTemplate)"
+                  (previous)="previousForm()"
+                  (refresh)="refreshDocument($event)"
+                  [transactionId]="getTransactionId()"
+                  [isScan]="false"
+                  [isClarification]="true"
+                  [isAddOtherDocuments]="true"
+                  [referenceNo]="getRefNo()"
+                ></mb-document-upload-dc>
+              </div>
+            </div>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="isDisabilityDetailsNotRequiredScreen && !isRequestMedicalReports">
+  <div class="content">
+    <div id="mainHeading">
+      <div class="row">
+        <div class="col-md-12">
+          <h4 class="main-heading">
+            {{ 'MEDICAL-BOARD.REQUEST-CLARIFICATION' | translate }}
+            <div class="float-right">
+              <div class="d-flex justify-content-end">
+                <gosi-button-dc
+                  [type]="'primary'"
+                  [size]="'sm'"
+                  [outlineOnly]="true"
+                  (submit)="showMedicalReportModal(medicalReportModal)"
+                  >{{ 'MEDICAL-BOARD.NEED-HELP' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </h4>
+        </div>
+      </div>
+      <gosi-comments-dc [comments]="comment ? comment : []"></gosi-comments-dc>
+      <gosi-alert-sc></gosi-alert-sc>
+      <div class="row">
+        <div
+          class="col-12"
+          *ngIf="routerData.resourceType !== 'Close Complication TPA' && routerData.resourceType !== 'Close Injury TPA'"
+        >
+          <mb-medical-report-download-dc
+            [hospital]="hospital$ | async"
+            [parentForm]="parentForm"
+            (hospitalName)="onServiceProviderSelected($event)"
+            [serviceAddress]="serviceAddress"
+            [previousDisabilityDetails]="previousDisabilityDetails"
+            (selectedProvider)="downloadMedicalReport()"
+            (pychiatricForm)="downloadPsychiatricForm()"
+          ></mb-medical-report-download-dc>
+        </div>
+        <div class="col-12">
+          <mb-document-upload-dc
+            #scanDocsComp
+            [registrationNumber]="getcheckUnivId()"
+            [documentList]="requiredDocs"
+            (submit)="submitClarification($event)"
+            (onDocUploadCancel)="showCancelTemplate(confirmTemplate)"
+            (previous)="previousForm()"
+            (refresh)="refreshDocument($event)"
+            [transactionId]="getClarificationRefNo()"
+            [isScan]="false"
+            [isClarification]="true"
+            [isAddOtherDocuments]="true"
+            [showPreviousButton]="false"
+            [referenceNo]="getRefNo()"
+          ></mb-document-upload-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="isRequestMedicalReports">
+  <div class="content">
+    <div id="mainHeading">
+      <div class="row">
+        <div class="col-md-12">
+          <h4 class="main-heading">
+            {{ 'MEDICAL-BOARD.REQUEST-MEDICAL-REPORTS' | translate }}
+            <div class="float-right">
+              <div class="d-flex justify-content-end">
+                <gosi-button-dc
+                  [type]="'primary'"
+                  [size]="'sm'"
+                  [outlineOnly]="true"
+                  (submit)="newMedicalReportsModal()"
+                  >{{ 'MEDICAL-BOARD.NEED-HELP' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </h4>
+        </div>
+      </div>
+      <gosi-comments-dc [comments]="comment ? comment : []"></gosi-comments-dc>
+      <div class="row">
+        <div class="col-12">
+          <mb-document-upload-dc
+            *ngIf="investigationDoc"
+            #scanDocsComp
+            [registrationNumber]="getcheckUnivId()"
+            [documentList]="medicalReportsDoc"
+            (submit)="submitMedicalReports($event)"
+            (onDocUploadCancel)="showCancelTemplate(confirmTemplate)"
+            (previous)="previousForm()"
+            (refresh)="refreshDocument($event)"
+            [transactionId]="getClarificationRefNo()"
+            [isScan]="false"
+            [isAddOtherDocuments]="true"
+            [showPreviousButton]="false"
+            [isRequestMedicalReports]="isRequestMedicalReports"
+            [investigationDoc]="investigationDoc"
+            [referenceNo]="getRefNo()"
+          ></mb-document-upload-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'MEDICAL-BOARD.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hide()">
+    <!-- (onConfirm)="confirm()" (onCancel)="decline() -->
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #medicalReportModal>
+  <gosi-modal-dc [modalHeader]="'MEDICAL-BOARD.MEDICAL-REPORT-DETAILS' | translate">
+    <div modalContent>
+      <div class="row no-gutters mb-4">
+        <!-- main heading -->
+        <div class="col-auto mr-auto header">
+          {{ 'MEDICAL-BOARD.INSTRUCTIONS' | translate }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-9 col-md-9 col-lg-9">
+          <div id="report" class="form-group form-label fc-margin">
+            <label>
+              {{ 'MEDICAL-BOARD.REASSESSMENT-INSTRUCTIONS' | translate }}
+            </label>
+            <div class="label-value pb-2" *ngFor="let instructions of instructions; let i = index">
+              <span>{{ i + 1 }} . {{ instructions | bilingualText }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pt-4" modalAction>
+      <div class="align" id="proceedButton">
+        <gosi-button-dc id="saveAndNext" type="primary" (click)="hide()">
+          {{ 'OCCUPATIONAL-HAZARD.PROCEED' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<ng-template #requestReports>
+  <gosi-modal-dc
+    [modalHeader]="'MEDICAL-BOARD.MEDICAL-REPORT-DETAILS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="modalRef.hide()"
+    style="min-height: 550px"
+  >
+    <div class="row" modalContent style="min-height: 400px">
+      <div class="col-lg-12">
+        <br />
+        <div class="col-md-12">
+          {{ 'MEDICAL-BOARD.MEDICAL-REPORT-INFO-THREE' | translate }}
+        </div>
+        <br />
+        <h5 class="col-md-12">
+          {{ 'OCCUPATIONAL-HAZARD.REQUIRE-MEDICAL-REPORTS' | translate }}
+        </h5>
+        <br />
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="col-md-6">
+                {{ 'MEDICAL-BOARD.REQUIRED-DOCUMENTS' | translate }}
+              </th>
+              <th class="col-md-6">
+                {{ 'MEDICAL-BOARD.SPECIALTY' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of tPAReportDetail?.requestDocumentsDetails">
+              <tr class="border-bottom">
+                <td class="col-md-6">
+                  <span *ngIf="item?.reportDetails">
+                    <span class="comma">
+                      {{ item?.reportDetails }}
+                    </span>
+                  </span>
+                </td>
+                <td class="col-md-6">
+                  <span *ngIf="item?.specialty">
+                    <span class="comma">
+                      {{ item?.specialty | bilingualText }}
+                    </span>
+                  </span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+        <br />
+        <div class="col-md-12">
+          <h5>
+            {{ 'MEDICAL-BOARD.LIST-OF-HOSPITALS' | translate }}
+          </h5>
+        </div>
+        <br />
+        <div class="col-md-12">
+          {{ 'MEDICAL-BOARD.PLEASE-VISIT-HOSPITAL' | translate }}
+        </div>
+        <br />
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th class="col-md-6">
+                {{ 'MEDICAL-BOARD.HOSPITAL-NAME' | translate }}
+              </th>
+              <th class="col-md-6">
+                {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of hospitalList">
+              <tr class="border-bottom">
+                <td class="col-md-6">
+                  <span *ngIf="item?.hospitalName">
+                    <span>
+                      {{ item?.hospitalName | bilingualText }}
+                    </span>
+                  </span>
+                </td>
+                <td class="col-md-6">
+                  <span *ngIf="item?.street">
+                    <span> {{ item?.street }},{{ item?.country | bilingualText }} </span>
+                  </span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="d-flex justify-content-center mt-3">
+        <gosi-button-dc name="savenext" type="primary" (submit)="proceedDocuments()">
+          {{ 'MEDICAL-BOARD.SUBMIT-DOCUMENT' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div></gosi-modal-dc
+  >
+</ng-template>

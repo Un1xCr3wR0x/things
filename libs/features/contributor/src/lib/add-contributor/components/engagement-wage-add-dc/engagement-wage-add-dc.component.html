@@ -1,0 +1,250 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div [formGroup]="engagementWageAddForm" *ngIf="isEngagementWageAddFormVisible">
+  <div *ngIf="mandatoryAlert">
+    <gosi-alert-dc
+      message="CORE.ERROR.MANDATORY-FIELDS"
+      type="danger"
+      [dismissible]="true"
+      (closed)="mandatoryAlert = false"
+    ></gosi-alert-dc>
+  </div>
+  <div class="wage-details-border p-2">
+    <div class="row pl-lg-3 row justify-content-between">
+      <!--------- Calender type  --------->
+      <div class="col-lg-2" *ngIf="engagementWageDetails.length > 0 && checkPrivate">
+        <div class="cal-label">{{ 'CONTRIBUTOR.CONTRACT-AUTH.CALENDER-TYPE' | translate }}</div>
+        <cnt-calender-radio-dc
+          id="calenderTypeRadio"
+          *ngIf="dateForm?.get('dateFormat.english').value"
+          (onSelected)="switchCalendarType($event)"
+          [calendarType]="dateForm?.get('dateFormat.english').value"
+          [disabled]="disableAll || disableJoining"
+        ></cnt-calender-radio-dc>
+      </div>
+
+      <div [ngClass]="engagementWageDetails.length > 0 && checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+        <div>
+          <gosi-input-month-dc
+            *ngIf="!isHijiriFormat"
+            class="min-width-seven"
+            id="startDate"
+            [minDate]="ppaEstablishment ? ppaMinGregorianDate : minWageAddDate"
+            [disabled]="disableAll || disableJoining"
+            [maxDate]="maxWageAddDate"
+            [control]="engagementWageAddForm?.get('startDate')?.get('gregorian')"
+            [label]="'CONTRIBUTOR.WAGE-START-MONTH' | translate"
+            [readOnly]="true"
+          >
+          </gosi-input-month-dc>
+          <div [ngClass]="{ disabledIcon: disableAll || disableJoining }">
+            <gosi-input-hijiri-dc
+              *ngIf="isHijiriFormat"
+              class="min-width-seven"
+              id="hijiriStartDate"
+              [minDate]="minHijiriDate"
+              [maxDate]="maxHijiriLeavingDate && leavingDate ? maxHijiriLeavingDate : maxHijiriDate"
+              [control]="engagementWageAddForm?.get('startDate')?.get('hijiri')"
+              [disabled]="disableAll || disableJoining"
+              [label]="'CONTRIBUTOR.WAGE-START-MONTH' | translate"
+              [readOnly]="true"
+              [hideOptionalLabel]="true"
+              [isMonthPicker]="true"
+              [show]="false"
+            >
+            </gosi-input-hijiri-dc>
+          </div>
+        </div>
+      </div>
+      <div [ngClass]="engagementWageDetails.length > 0 && checkPrivate ? 'col-lg-5' : 'col-lg-6'">
+        <div>
+          <gosi-input-select-dc
+            *ngIf="!ppaEstablishment && !hideOccupation"
+            class="min-width-300"
+            id="occupation"
+            [control]="engagementWageAddForm?.get('occupation')"
+            [list]="occupationList"
+            [label]="'CONTRIBUTOR.OCCUPATION'"
+            [placeholder]="'CONTRIBUTOR.OCCUPATION-PLH' | translate"
+            [disabled]="disableAll || disableOccupation"
+            appendTo="body"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div>
+          <gosi-input-select-dc
+            *ngIf="ppaEstablishment"
+            class="min-width-300"
+            id="jobClass"
+            [control]="engagementWageAddForm?.get('jobClassName')"
+            [lookup]="jobClassLov"
+            [label]="'CONTRIBUTOR.JOB-CLASS'"
+            [placeholder]="'CONTRIBUTOR.JOB-CLASS' | translate"
+            [disabled]="disableAll"
+            appendTo="body"
+            (selectLov)="selectJobClass($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+      <ng-container *ngIf="ppaEstablishment">
+        <div
+          [ngClass]="engagementWageDetails.length > 0 && checkPrivate && !ppaEstablishment ? 'col-lg-5' : 'col-lg-6'"
+        >
+          <gosi-input-select-dc
+            class="min-width-300"
+            id="rank"
+            [control]="engagementWageAddForm?.get('jobRankName')"
+            [lookup]="jobRankLov"
+            [label]="'CONTRIBUTOR.RANK'"
+            [placeholder]="'CONTRIBUTOR.RANK' | translate"
+            [disabled]="disableAll"
+            appendTo="body"
+            (selectLov)="selectJobRank($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+
+        <div
+          [ngClass]="engagementWageDetails.length > 0 && checkPrivate && !ppaEstablishment ? 'col-lg-5' : 'col-lg-6'"
+        >
+          <gosi-input-select-dc
+            class="min-width-300"
+            id="grade"
+            [control]="engagementWageAddForm?.get('jobGradeName')"
+            [lookup]="jobGradeLov"
+            [label]="'CONTRIBUTOR.GRADE'"
+            [placeholder]="'CONTRIBUTOR.GRADE' | translate"
+            [disabled]="disableAll"
+            appendTo="body"
+            (selectLov)="selectJobGrade($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </ng-container>
+    </div>
+    <div class="row pl-lg-3">
+      <div class="col-12">
+        <div class="wage-section">
+          <div>
+            <gosi-input-currency-dc
+              id="basicWage"
+              (blur)="onBlur(engagementWageAddForm)"
+              (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+              [label]="'CONTRIBUTOR.BASIC-WAGE' | translate"
+              [control]="engagementWageAddForm?.get('wage')?.get('basicWage')"
+              [disabled]="
+                ppaEstablishment
+                  ? disableAll || engagementWageAddForm?.get('wage')?.get('basicWage').disabled
+                  : disableAll
+              "
+              [separatorLimit]="wageSeparatorLimit"
+            >
+            </gosi-input-currency-dc>
+          </div>
+          <span class="align-self-center faw-icons">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+          </span>
+          <div>
+            <gosi-input-currency-dc
+              id="hra"
+              (blur)="onBlur(engagementWageAddForm)"
+              (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+              [label]="'CONTRIBUTOR.HOUSING' | translate"
+              [placeholder]="'CONTRIBUTOR.HOUSING' | translate"
+              [control]="engagementWageAddForm?.get('wage')?.get('housingBenefit')"
+              [disabled]="ppaEstablishment ? true : disableAll"
+              [hideOptionalLabel]="true"
+              [separatorLimit]="wageSeparatorLimit"
+            >
+            </gosi-input-currency-dc>
+          </div>
+          <span class="align-self-center faw-icons">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+          </span>
+          <div>
+            <gosi-input-currency-dc
+              id="commission"
+              (blur)="onBlur(engagementWageAddForm)"
+              (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+              [label]="'CONTRIBUTOR.COMMISSIONS' | translate"
+              [placeholder]="'CONTRIBUTOR.COMMISSIONS' | translate"
+              [control]="engagementWageAddForm?.get('wage')?.get('commission')"
+              [disabled]="ppaEstablishment ? true : disableAll"
+              [hideOptionalLabel]="true"
+              [separatorLimit]="wageSeparatorLimit"
+            >
+            </gosi-input-currency-dc>
+          </div>
+          <span class="align-self-center faw-icons">
+            <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+          </span>
+          <div>
+            <gosi-input-currency-dc
+              id="otherAllowance"
+              (blur)="onBlur(engagementWageAddForm)"
+              (totalWageCalc)="calculateTotalWage(engagementWageAddForm)"
+              [label]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+              [placeholder]="'CONTRIBUTOR.OTHER-ALLOWANCE' | translate"
+              [control]="engagementWageAddForm?.get('wage')?.get('otherAllowance')"
+              [disabled]="ppaEstablishment ? true : disableAll"
+              [hideOptionalLabel]="true"
+              [separatorLimit]="wageSeparatorLimit"
+            >
+            </gosi-input-currency-dc>
+          </div>
+          <span class="align-self-center faw-icons">
+            <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+          </span>
+          <div>
+            <gosi-input-currency-dc
+              id="totalWage"
+              [control]="engagementWageAddForm?.get('wage')?.get('totalWage')"
+              [label]="'CONTRIBUTOR.TOTAL-WAGE' | translate"
+              [disabled]="true"
+              (blur)="onBlur(engagementWageAddForm)"
+            >
+            </gosi-input-currency-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center align-items-center" *ngIf="!isUpdate">
+      <div class="col-auto" *ngIf="engagementWageDetails.length >= 1">
+        <gosi-button-dc type="outline-secondary" id="cancelnewperiod" (submit)="cancelAddWagePeriod()" [size]="'md'">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="col-auto">
+        <gosi-button-dc
+          type="outline-primary"
+          id="addnewperiod"
+          (submit)="addWagePeriod()"
+          size="md"
+          [disabled]="disableAll"
+        >
+          <span class="pr-1 pl-1">
+            <fa-icon [icon]="['fas', 'business-time']"></fa-icon>
+          </span>
+          {{ 'CONTRIBUTOR.ADD-ENGAGEMENT-PERIOD' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div class="row justify-content-center" *ngIf="isUpdate">
+      <div class="col-auto">
+        <gosi-button-dc type="outline-secondary" id="canceledit" size="md" (submit)="cancelWageEdit()">
+          {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="col-auto">
+        <gosi-button-dc type="outline-primary" id="updatewage" size="md" (submit)="updateWageDetails()">
+          {{ 'CONTRIBUTOR.SAVE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </div>
+</div>

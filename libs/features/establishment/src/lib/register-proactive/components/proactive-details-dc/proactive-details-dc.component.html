@@ -1,0 +1,221 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary" class="proactive-card" *ngIf="showCrn">
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <gosi-label-dc id="crnNumber" [control]="establishment.crn?.number" label="ESTABLISHMENT.CRN-NUMBER">
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-6 col-md-12" *ngIf="isBranch">
+      <gosi-label-dc id="mainCrnNumber" [control]="establishment.mainCrn?.number" label="ESTABLISHMENT.MAIN-CRN-NUMBER">
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <gosi-label-dc
+        [date]="true"
+        id="crnIssueDate"
+        [control]="establishment.crn?.issueDate?.gregorian"
+        label="ESTABLISHMENT.CRN-ISSUE-DATE"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <gosi-label-dc
+        [date]="true"
+        id="crnExpiryDate"
+        [control]="establishment.crn?.expiryDate?.gregorian"
+        label="ESTABLISHMENT.CRN-EXPIRY-DATE"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc
+  type="secondary"
+  *ngIf="!showCrn"
+  heading="{{ 'ESTABLISHMENT.MOL-REGISTRATION-DETAILS' | translate }}"
+  class="proactive-card"
+>
+  <est-mol-details-dc [molDetails]="establishment.molEstablishmentIds"></est-mol-details-dc>
+</gosi-card-dc>
+<gosi-card-dc type="secondary" class="proactive-card">
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <gosi-input-number-dc
+        *ngIf="!showCrn"
+        id="unifiedNationalNumber"
+        label="ESTABLISHMENT.UNIFIED-NATIONAL-NO"
+        [control]="establishmentForm.get('unifiedNationalNumber')"
+        [maxLength]="unnMax"
+        [disabled]="crnDateVerified"
+      ></gosi-input-number-dc>
+
+      <gosi-label-dc
+        *ngIf="showCrn"
+        id="unifiedNationalNumber"
+        label="ESTABLISHMENT.UNIFIED-NATIONAL-NO"
+        [control]="establishment.unifiedNationalNumber"
+      ></gosi-label-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <gosi-label-dc
+        id="establishmentType"
+        label="ESTABLISHMENT.ESTABLISHMENT-TYPE"
+        [control]="establishment.establishmentType"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-lg-6 col-md-12" *ngIf="!showCrn">
+      <gosi-label-dc
+        id="recruitmentNumber"
+        label="ESTABLISHMENT.RECRUITMENT-NO"
+        [control]="establishment.recruitmentNo"
+      ></gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary" class="proactive-card" *ngIf="!showCrn">
+  <div class="row" *ngIf="establishmentForm">
+    <div class="col-12">
+      <div class="row ml-2 mr-2">
+        <div class="col-12 sub-section"></div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12 col-sm-12">
+      <gosi-input-number-dc
+        id="crnNumber"
+        name="crnNumber"
+        [control]="establishmentForm.get('crn').get('number')"
+        [label]="'ESTABLISHMENT.CRN-NUMBER' | translate"
+        [disabled]="crnDateVerified"
+        [maxLength]="crnMax"
+        (blur)="alterFieldValidations()"
+      ></gosi-input-number-dc>
+    </div>
+  </div>
+  <div class="row" *ngIf="establishmentForm">
+    <div class="col-lg-6 col-md-12 col-sm-12">
+      <gosi-input-date-dc
+        id="crnIssueDate"
+        name="crnIssueDate"
+        [control]="establishmentForm.get('crn').get('issueDate').get('gregorian')"
+        label="ESTABLISHMENT.CRN-ISSUE-DATE"
+        [disabled]="true"
+      ></gosi-input-date-dc>
+    </div>
+    <div class="col-lg-6 col-md-12 col-sm-12">
+      <gosi-input-date-dc
+        id="crnExpiryDate"
+        name="crnExpiryDate"
+        [control]="establishmentForm.get('crn').get('expiryDate').get('gregorian')"
+        label="ESTABLISHMENT.CRN-EXPIRY-DATE"
+        [disabled]="true"
+      ></gosi-input-date-dc>
+    </div>
+  </div>
+  <div
+    class="row"
+    *ngIf="establishmentForm.get('crn').get('number').value && establishmentForm?.get('unifiedNationalNumber').value"
+  >
+    <div class="col-md-6 col-sm-12">
+      <est-footer-buttons-dc
+        [noMarginTop]="true"
+        [showCancel]="crnDateVerified"
+        [showPrimary]="!crnDateVerified"
+        [showPrevious]="false"
+        [hasOnlyPrimary]="!crnDateVerified"
+        primaryId="verifyCrn"
+        cancelId="resetCrn"
+        cancelLabel="ESTABLISHMENT.RESET"
+        primaryLabel="ESTABLISHMENT.VERIFY"
+        (cancel)="resetCRNDetails()"
+        (submit)="verifyCRNNumber()"
+      >
+      </est-footer-buttons-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary" class="proactive-card">
+  <div class="row">
+    <div class="col-md-6 col-sm-12" *ngIf="establishment.legalEntity">
+      <gosi-input-select-dc
+        id="legalEntity"
+        name="legalEntity"
+        [control]="establishmentForm.get('legalEntity')"
+        [label]="'ESTABLISHMENT.LEGAL-ENTITY' | translate"
+        [list]="legalEntityList"
+        [disabled]="disableLegalEntity"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<gosi-card-dc type="secondary" class="proactive-card" *ngIf="!showCrn">
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <gosi-input-text-dc
+        id="licenseNumber"
+        name="licenseNumber"
+        [label]="'ESTABLISHMENT.LICENSE-NUMBER' | translate"
+        [control]="establishmentForm.get('license').get('number')"
+        [maxLength]="licenseNoMax"
+        [readOnly]="disableLicense"
+        (blur)="alterFieldValidations()"
+      >
+      </gosi-input-text-dc>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <div>
+        <gosi-input-select-dc
+          id="licenseIssuingAuthority"
+          name="licenseIssuingAuthority"
+          [label]="'ESTABLISHMENT.LICENSE-ISSUING-AUTHORITY' | translate"
+          [control]="establishmentForm.get('license').get('issuingAuthorityCode')"
+          [list]="licenseIssuingAuthorityList"
+          [disabled]="disableLicense"
+          (select)="alterFieldValidations()"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <gosi-input-date-dc
+        id="licenseIssueDate"
+        name="licenseIssueDate"
+        label="ESTABLISHMENT.LICENSE-ISSUE-DATE"
+        [control]="establishmentForm.get('license').get('issueDate').get('gregorian')"
+        [maxDate]="currentDate"
+        [disabled]="disableLicense"
+        (blur)="alterFieldValidations()"
+      ></gosi-input-date-dc>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <gosi-input-date-dc
+        id="licenseExpiryDate"
+        name="licenseExpiryDate"
+        label="ESTABLISHMENT.LICENSE-EXPIRY-DATE"
+        [control]="establishmentForm.get('license').get('expiryDate').get('gregorian')"
+        [disabled]="disableLicense && disableLicenseExpiryDate"
+        (blur)="alterFieldValidations()"
+        [gosiDateOverlap]="establishmentForm.get('license').get('issueDate').get('gregorian')"
+      ></gosi-input-date-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<est-footer-buttons-dc *ngIf="showSaveButton"
+  [showCancel]="true"
+  [showPrevious]="false"
+  [hasOnlyPrimary]="false"
+  primaryLabel="ESTABLISHMENT.NEXT"
+  primaryId="proactiveNext"
+  (submit)="saveCRNDetails()"
+  (cancel)="cancel.emit()"
+></est-footer-buttons-dc>

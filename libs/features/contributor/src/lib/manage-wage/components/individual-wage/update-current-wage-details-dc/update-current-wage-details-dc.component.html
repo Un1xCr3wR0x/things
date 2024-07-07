@@ -1,0 +1,218 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <gosi-card-dc
+      type="secondary"
+      [heading]="'CONTRIBUTOR.WAGE.CURRENT-WAGE-AND-OCCUPATION-DETAILS' | translate"
+      [noHeadingMargin]="true"
+    >
+      <div class="row mt-4">
+        <div class="col-md-6" *ngIf="!isHijiriFormat">
+          <gosi-input-date-dc
+            id="submissionDate"
+            [label]="'CONTRIBUTOR.WAGE.APPLICABLE-FROM' | translate"
+            [disabled]="true"
+            [control]="wageDetailsForm.get('startDate').get('gregorian')"
+          ></gosi-input-date-dc>
+        </div>
+        <div class="col-md-6" *ngIf="isHijiriFormat">
+          <gosi-input-hijiri-dc
+            id="hijiriStartDate"
+            [control]="wageDetailsForm.get('startDate').get('hijiri')"
+            [disabled]="true"
+            [label]="'CONTRIBUTOR.WAGE.APPLICABLE-FROM' | translate"
+            [readOnly]="true"
+            [show]="false"
+          >
+          </gosi-input-hijiri-dc>
+        </div>
+        <div class="col-md-6" *ngIf="!currentEngagmentDetails?.ppaIndicator">
+          <gosi-input-select-dc
+            id="occupation"
+            [label]="'CONTRIBUTOR.WAGE.OCCUPATION' | translate"
+            [list]="occupationLovList"
+            [control]="wageDetailsForm.get('occupation')"
+            [disabled]="currentEngagmentDetails?.proactive"
+          ></gosi-input-select-dc>
+        </div>
+        <!-- *ngIf="!currentEngagmentDetails?.ppaIndicator" -->
+        <div class="col-md-6" *ngIf="currentEngagmentDetails?.ppaIndicator">
+          <gosi-input-select-dc
+            class="min-width-300"
+            id="jobClass"
+            [control]="wageDetailsForm.get('jobClassName')"
+            [lookup]="jobClassLov"
+            [label]="'CONTRIBUTOR.JOB-CLASS'"
+            [placeholder]="'CONTRIBUTOR.JOB-CLASS' | translate"
+            (selectLov)="selectJobClass($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+        <div class="col-md-6" *ngIf="currentEngagmentDetails?.ppaIndicator">
+          <gosi-input-select-dc
+            class="min-width-300"
+            id="rank"
+            [control]="wageDetailsForm.get('jobRankName')"
+            [lookup]="jobRankLov"
+            [label]="'CONTRIBUTOR.RANK'"
+            [placeholder]="'CONTRIBUTOR.RANK' | translate"
+            (selectLov)="selectJobRank($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+
+        <div class="col-md-6" *ngIf="currentEngagmentDetails?.ppaIndicator">
+          <gosi-input-select-dc
+            class="min-width-300"
+            id="grade"
+            [control]="wageDetailsForm.get('jobGradeName')"
+            [lookup]="jobGradeLov"
+            [label]="'CONTRIBUTOR.GRADE'"
+            [placeholder]="'CONTRIBUTOR.GRADE' | translate"
+            (selectLov)="selectJobGrade($event)"
+          >
+          </gosi-input-select-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <gosi-alert-dc class="info-msg"
+          *ngIf="currentEngagmentDetails?.proactive"
+  message="CONTRIBUTOR.CHANGE-ENG-NON-SAUDI-INFO"
+  type="info"
+  [dismissible]="false"
+  ></gosi-alert-dc>
+          <!-- <gosi-alert-dc
+            *ngIf="currentEngagmentDetails?.proactive"
+            [message]="'CONTRIBUTOR.WAGE.DISABLE-OCCUPATION-NON-SAUDI'"
+            type="warning"
+            [dismissible]="false"
+            [transparent]="true"
+            [noPadding]="true"
+          ></gosi-alert-dc> -->
+        </div>
+      </div>
+      <div class="row">
+        <div
+          class="col-12 px-4"
+          [ngClass]="
+            currentEngagmentDetails?.ppaIndicator && wageDetailsForm.get('wage').get('basicWage').disabled === false
+              ? ''
+              : ' pb-4'
+          "
+        >
+          {{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}
+        </div>
+        <div
+          class="col-12"
+          *ngIf="
+            currentEngagmentDetails?.ppaIndicator && wageDetailsForm.get('wage').get('basicWage').disabled === false
+          "
+        >
+          <gosi-alert-dc [message]="'CONTRIBUTOR.WAGE-UPDATE-MSG'" type="info" [dismissible]="false"></gosi-alert-dc>
+        </div>
+        <div class="col-12">
+          <div class="wage-section">
+            <div>
+              <gosi-input-currency-dc
+                id="basicWage"
+                [label]="'CONTRIBUTOR.WAGE.BASIC-WAGE' | translate"
+                [control]="wageDetailsForm.get('wage').get('basicWage')"
+                (blur)="onBlur()"
+                (totalWageCalc)="calculateTotalWage()"
+                [separatorLimit]="wageSeparatorLimit"
+              ></gosi-input-currency-dc>
+            </div>
+            <span class="icon">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="hra"
+                [label]="'CONTRIBUTOR.WAGE.HRA' | translate"
+                [control]="wageDetailsForm.get('wage').get('housingBenefit')"
+                (blur)="onBlur()"
+                (totalWageCalc)="calculateTotalWage()"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+                [disabled]="currentEngagmentDetails?.ppaIndicator ? true : false"
+              ></gosi-input-currency-dc>
+            </div>
+            <span class="icon">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="commissions"
+                [label]="'CONTRIBUTOR.WAGE.COMMISSIONS' | translate"
+                [control]="wageDetailsForm.get('wage').get('commission')"
+                (blur)="onBlur()"
+                (totalWageCalc)="calculateTotalWage()"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+                [disabled]="currentEngagmentDetails?.ppaIndicator ? true : false"
+              ></gosi-input-currency-dc>
+            </div>
+            <span class="icon">
+              <fa-icon [icon]="['fas', 'plus']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="otherAllowance"
+                [label]="'CONTRIBUTOR.WAGE.OTHER-ALLOWANCE' | translate"
+                [control]="wageDetailsForm.get('wage').get('otherAllowance')"
+                (blur)="onBlur()"
+                (totalWageCalc)="calculateTotalWage()"
+                [hideOptionalLabel]="true"
+                [separatorLimit]="wageSeparatorLimit"
+                [disabled]="currentEngagmentDetails?.ppaIndicator ? true : false"
+              ></gosi-input-currency-dc>
+            </div>
+            <span class="icon">
+              <fa-icon [icon]="['fas', 'equals']"></fa-icon>
+            </span>
+            <div>
+              <gosi-input-currency-dc
+                id="totalwage"
+                [label]="'CONTRIBUTOR.WAGE.TOTAL-WAGE' | translate"
+                [control]="wageDetailsForm.get('wage').get('totalWage')"
+                [readOnly]="true"
+                [disabled]="true"
+              ></gosi-input-currency-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+
+  <div class="col-lg-12" *ngIf="isScan">
+    <cnt-document-upload-dc
+      [documentList]="documentList"
+      [businessKey]="currentEngagmentDetails?.engagementId"
+      [transactionId]="manageWageTransactionId"
+      [referenceNo]="referenceNo"
+      [showDocuments]="true"
+      [showComments]="true"
+      [parentForm]="parentForm"
+      (refresh)="refreshDocument($event)"
+      [uuid]="uuid"
+    ></cnt-document-upload-dc>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <cnt-action-area-dc
+      primaryButtonLabel="CONTRIBUTOR.WAGE.SAVE"
+      (submit)="updateWage()"
+      (cancel)="cancelWage()"
+      [disablePrimary]="apiTriggered"
+    ></cnt-action-area-dc>
+  </div>
+</div>

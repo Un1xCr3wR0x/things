@@ -1,0 +1,274 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+  <div class="row">
+    <div class="col-md-12 table-responsive" *ngIf="engagementWageDetails.length > 0">
+      <div>
+        <gosi-alert-dc *ngIf="wagePreviousEdit" [alert]="wagePreviousEdit"></gosi-alert-dc>
+      </div>
+      <div *ngIf="hideWageInfoSection">
+        <gosi-alert-dc  *ngIf="!inEditMode" [message]="'CONTRIBUTOR.WAGE-OCCUPATION-INFO' | translate" type="info"></gosi-alert-dc>
+      </div>
+  
+      <table class="table table-wage row_separate">
+        <thead *ngIf="!editWagePeriodOn || (editWagePeriodOn && engagementWageDetails.length > 1)">
+          <tr>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+            </th>
+            <th class="text-left" scope="col">
+              {{ 'CONTRIBUTOR.OCCUPATION' | translate | uppercase }}
+            </th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let wageDetail of engagementWageDetails; let i = index; last as isLast; first as isFirst"
+            style="height: 4rem"
+          >
+            <ng-container *ngIf="!wageDetail.canEdit">
+              <td class="engagementPeriod">
+                <span>
+                  {{ wageDetail.startDate.gregorian | date: 'MMM yyyy' }}
+                </span>
+  
+                <span class="ml-1 faw-icons">
+                  <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                  <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+                </span>
+                <span class="ml-1">
+                  <span *ngIf="!wageDetail?.endDate?.gregorian">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                </span>
+                <span *ngIf="wageDetail?.endDate?.gregorian">
+                  {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                </span>
+              </td>
+  
+              <td>{{ wageDetail.wage.basicWage | number }}</td>
+              <td>{{ wageDetail.wage.housingBenefit | number }}</td>
+              <td>{{ wageDetail.wage.commission | number }}</td>
+              <td>{{ wageDetail.wage.otherAllowance | number }}</td>
+              <td>{{ wageDetail.wage.totalWage | number }}</td>
+              <td>{{ wageDetail.occupation | bilingualText }}</td>
+              <td>
+                <div>
+                  <a id="'edit' + i" class="delete-icon" (click)="editWagePeriod(wageDetail, i)">
+                    <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <a id="{{ 'delete' + i }}" class="delete-icon" (click)="removeWagePeriod(i)" *ngIf="isFirst">
+                    <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                  </a>
+                </div>
+              </td>
+            </ng-container>
+            <ng-container *ngIf="wageDetail.canEdit">
+              <td style="background: none; border: none" colspan="9">
+                <cnt-e-wage-add-dc
+                  [isUpdate]="wageDetail.canEdit"
+                  [disableJoining]="isLast"
+                  [disableOccupation]="disableOccupation"
+                  [engagementWageEntryEditDetails]="engagementWageEntryEditDetails"
+                  [occupationList]="occupationList"
+                  [engagementWageDetails]="engagementWageDetails"
+                  (wageUpdateEvent)="updateWageDetails($event)"
+                  (cancelWageEditEvent)="cancelWageEdit()"
+                >
+                </cnt-e-wage-add-dc>
+              </td>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="wage-border-sd p-4" 
+      *ngFor="let wageDetail of engagementWageDetails; let i = index; last as isLast; first as isFirst">
+        <!-- <div class="wage-card">
+          <div class="row pl-lg-3">
+            <div class="col-12">
+              <div class="wage-section"> -->
+                <table class="table-responsive"
+                 [ngStyle]="{ 'overflow-x': lang === 'ar' ? 'visible' : 'auto' }">
+                  <tr style="height: 4rem">
+                    <ng-container *ngIf="!wageDetail.canEdit">
+                      <tr>
+                        <th>
+                          {{ 'CONTRIBUTOR.START-DATE' | translate | uppercase }}
+                        </th>
+                        <div class="edit-icon" *ngIf="lang === 'en'">
+                          <td>
+                            <div>
+                              <a id="'edit' + i" class="delete-icon" (click)="editWagePeriod(wageDetail, i)">
+                                <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                              </a>
+                            </div>
+                          </td>
+                          <td>
+                            <div style="padding-left: 10px;">
+                              <a id="{{ 'delete' + i }}" class="delete-icon" (click)="removeWagePeriod(i)" *ngIf="isFirst">
+                                <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                              </a>
+                            </div>
+                          </td>
+                        </div>
+                        <div class="edit-icon-ar" *ngIf="lang === 'ar'">
+                          <td>
+                            <div>
+                              <a id="'edit' + i" class="delete-icon" (click)="editWagePeriod(wageDetail, i)">
+                                <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                              </a>
+                            </div>
+                          </td>
+                          <td>
+                            <div style="padding-right: 10px;">
+                              <a id="{{ 'delete' + i }}" class="delete-icon" (click)="removeWagePeriod(i)" *ngIf="isFirst">
+                                <fa-icon [icon]="['fas', 'trash-alt']"></fa-icon>
+                              </a>
+                            </div>
+                          </td>
+                        </div>
+                      </tr>
+                      <tr>
+                        <td class="base-gap engagementPeriod">
+                          <span>
+                            {{ wageDetail.startDate.gregorian | date: 'MMM yyyy' }}
+                          </span>
+            
+                          <span class="ml-1 faw-icons">
+                            <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                            <fa-icon class="arrow-right" [icon]="['fas', 'arrow-right']"></fa-icon>
+                          </span>
+                          <span class="ml-1">
+                            <span *ngIf="!wageDetail?.endDate?.gregorian">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                          </span>
+                          <span *ngIf="wageDetail?.endDate?.gregorian">
+                            {{ wageDetail.endDate.gregorian | date: 'MMM yyyy' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.BASIC-WAGE' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td class="base-gap">
+                          <span *ngIf="wageDetail?.wage?.basicWage as value; else nullValue"
+                            >{{ value | number: '1.2-2' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.HRA' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td class="base-gap">
+                          <span *ngIf="wageDetail?.wage?.housingBenefit as value; else nullValue"
+                            >{{ value | number: '1.2-2' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.COMMISSIONS' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td class="base-gap">
+                          <span *ngIf="wageDetail?.wage?.commission as value; else nullValue"
+                            >{{ value | number: '1.2-2' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td class="base-gap">
+                          <span *ngIf="wageDetail?.wage?.otherAllowance as value; else nullValue"
+                            >{{ value | number: '1.2-2' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.TOTAL-WAGE' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td class="base-gap">
+                          <span *ngIf="wageDetail?.wage?.totalWage as value; else nullValue"
+                            >{{ value | number: '1.2-2' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th class="heading-gap">
+                          {{ 'CONTRIBUTOR.OCCUPATION' | translate | uppercase }}
+                        </th>
+                      </tr>
+                      <tr>
+                        <td>
+                          <span *ngIf="wageDetail?.occupation as value; else notAvailable"
+                            >{{ wageDetail?.occupation | bilingualText }} 
+                          </span>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    <ng-container *ngIf="wageDetail.canEdit" class="table table-wage row_separate">
+                      <td style="background: none; border: none" colspan="9">
+                        <cnt-e-wage-add-dc
+                          [isUpdate]="wageDetail.canEdit"
+                          [disableJoining]="isLast"
+                          [disableOccupation]="disableOccupation"
+                          [engagementWageEntryEditDetails]="engagementWageEntryEditDetails"
+                          [occupationList]="occupationList"
+                          [engagementWageDetails]="engagementWageDetails"
+                          (wageUpdateEvent)="updateWageDetails($event)"
+                          (cancelWageEditEvent)="cancelWageEdit()"
+                        >
+                        </cnt-e-wage-add-dc>
+                      </td>
+                    </ng-container>
+                  </tr>
+                </table>
+              <!-- </div>
+            </div>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+<ng-template #nullValue>0.00</ng-template>
+<ng-template #notAvailable>
+  <div class="null-value">{{ 'CONTRIBUTOR.WAGE.NOT-AVAILABLE' | translate }}</div>
+</ng-template>
+  

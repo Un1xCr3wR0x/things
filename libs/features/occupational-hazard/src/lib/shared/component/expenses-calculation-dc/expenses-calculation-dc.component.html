@@ -1,0 +1,565 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row details-heading" *ngIf="claims">
+  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ADDITIONAL-DETAILS' | translate }}
+</div>
+<div class="row" *ngIf="claims">
+  <div class="col-md-3 col-lg-3 col-sm-3">
+    <gosi-label-dc
+      id="transactionId"
+      label="OCCUPATIONAL-HAZARD.ALLOWANCE.TRANSACTION-ID"
+      [value]="claims.transactionId ? claims.transactionId : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)"
+      noMargin="true"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-md-3 col-lg-3 col-sm-3">
+    <gosi-label-dc
+      id="requestDate"
+      label="OCCUPATIONAL-HAZARD.REQUEST-DATE"
+      [value]="
+        claims.requestDate
+          ? (claims.requestDate.gregorian | gosiDate)
+          : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)
+      "
+      noMargin="true"
+    >
+    </gosi-label-dc>
+  </div>
+
+  <div
+    class="col-md-3 col-lg-3 col-sm-3"
+    *ngIf="
+      (claims?.paymentStatus?.english === 'Paid' || claims?.paymentStatus?.english === 'Approved') &&
+      claims?.paymentMethod?.english !== 'LC Cheque'
+    "
+  >
+    <gosi-label-dc
+      id="paymentDate"
+      label="OCCUPATIONAL-HAZARD.ALLOWANCE.PAYMENT-DATE"
+      [control]="
+        claims.paymentDate
+          ? (claims.paymentDate.gregorian | date: 'dd/MM/yyyy')
+          : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)
+      "
+      noMargin="true"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-md-3 col-lg-3` col-sm-3">
+    <gosi-label-dc
+      id="invoiceNumber"
+      label="OCCUPATIONAL-HAZARD.INVOICE-NUMBER"
+      [control]="claims.invoiceNo ? claims.invoiceNo : ('OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate)"
+      noMargin="true"
+    >
+    </gosi-label-dc>
+  </div>
+  <div class="col-md-3 col-lg-3` col-sm-3" *ngIf="claims?.payeeDetails?.payableTo?.english === 'Hospital'">
+    <gosi-label-dc
+      id="hospital"
+      value="{{ claims?.payeeDetails?.payeeName | bilingualText }}"
+      label="OCCUPATIONAL-HAZARD.ALLOWANCE.HOSPITAL-PAYEE"
+    ></gosi-label-dc>
+  </div>
+</div>
+
+<div class="row" *ngIf="claims && !showDocs">
+  <ng-container>
+    <div class="col-md-3 col-lg-3 col-sm-3 payment-header" *ngIf="claims.payableTo && !showDocs && validatorView">
+      <gosi-label-dc
+        *ngIf="claims.payableTo === 'GlobeMed' || claims.payableTo === 'TCS'"
+        id="payableTo"
+        label="OCCUPATIONAL-HAZARD.CLAIMS.CLAIMS-PAYEE"
+        control="({{ getPayableTo(claims.payableTo, claims) | bilingualText }})"
+        noMargin="true"
+      >
+        <span id="prefixValue">{{ 'OCCUPATIONAL-HAZARD.TPA' | translate }}</span>
+      </gosi-label-dc>
+      <gosi-label-dc
+        *ngIf="claims.payableTo !== 'GlobeMed' && claims.payableTo !== 'TCS'"
+        id="payableTo"
+        value="{{ getPayableTo(claims.payableTo, claims) }}"
+        label="OCCUPATIONAL-HAZARD.CLAIMS.CLAIMS-PAYEE"
+        isLink="true"
+        (click)="handleNaviation(claims)"
+      ></gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3 payment-margin payment-header"
+      type="secondary"
+      *ngIf="claims?.actualPaymentStatus?.english === 'Paid' || claims?.actualPaymentStatus?.english === 'Approved'"
+    >
+      <label for="paymentMethod" placement="top" class="label-margin" noMargin="true" triggers="mouseenter:mouseleave"
+        >{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.PAYMENT-METHOD' | translate }}
+        <ng-container>
+          <div
+            class="row treatment-period"
+            *ngIf="claims?.paymentMethod?.english !== 'Establishment bill' && claims?.paymentMethod?.english"
+          >
+            <span *ngIf="isLabel">{{ paymentMethod | translate }}</span>
+            <span *ngIf="!isLabel">{{ paymentMethod | bilingualText }}</span>
+            <span
+              class="secondLbel"
+              *ngIf="
+                !validatorView || (validatorView && claims?.payeeDetails?.payableTo.english === 'Authorized Person')
+              "
+              >{{ secondLabel | translate }}</span
+            >
+          </div>
+          <div class="row treatment-period" *ngIf="claims?.paymentMethod?.english === 'Establishment bill'">
+            {{ claims?.paymentMethod | bilingualText }}
+          </div>
+          <div class="row treatment-period null-value" *ngIf="!claims?.paymentMethod">—</div>
+        </ng-container>
+      </label>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3 payment-header" *ngIf="accountNo">
+      <gosi-label-dc
+        id="accountNumber"
+        class="payee"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+        [control]="accountNo"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3 payment-header"
+      *ngIf="
+        (claims?.actualPaymentStatus?.english === 'Paid' || claims?.actualPaymentStatus?.english === 'Approved') &&
+        claims?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeNo"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-NUMBER"
+        [value]="claims.chequeNo"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3 payment-header"
+      *ngIf="
+        (claims?.actualPaymentStatus?.english === 'Paid' || claims?.actualPaymentStatus?.english === 'Approved') &&
+        claims?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeIssueDate"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-ISSUE-DATE"
+        [value]="claims.paymentDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-md-3 col-lg-3 col-sm-3 payment-header"
+      *ngIf="
+        (claims?.actualPaymentStatus?.english === 'Paid' || claims?.actualPaymentStatus?.english === 'Approved') &&
+        claims?.paymentMethod?.english === 'LC Cheque'
+      "
+    >
+      <gosi-label-dc
+        id="chequeCashedData"
+        label="OCCUPATIONAL-HAZARD.ALLOWANCE.CHEQUE-CASH-DATE"
+        [value]="claims.cashedDate?.gregorian | gosiDate"
+        noMargin="true"
+      >
+      </gosi-label-dc>
+    </div>
+  </ng-container>
+
+  <div
+    class="col-md-3 col-lg-3 col-sm-3 payment-header"
+    *ngIf="claims?.actualPaymentStatus?.english === 'Recovery in Progress'"
+  >
+    <gosi-label-dc
+      id="recoveryMethod"
+      label="OCCUPATIONAL-HAZARD.ALLOWANCE.RECOVERY-METHOD"
+      [value]="claims?.recoveryMethod | bilingualText"
+      noMargin="true"
+    >
+    </gosi-label-dc>
+  </div>
+</div>
+<div class="row" *ngIf="claims?.claimType?.english !== 'Reimbursement'">
+  <span class="space-between"></span>
+</div>
+<ng-container *ngIf="claims && claims?.invoiceItemId !== null && claimBreakUpList">
+  <oh-amount-details-dc
+    [claimBreakUpList]="claimBreakUpList"
+    [totalAmount]="totalExpense"
+    [total]="claims?.expenseDetails?.totalAmount"
+    [invoiceId]="claims.invoiceItemId"
+    [status]="claims.actualPaymentStatus.english"
+  ></oh-amount-details-dc>
+</ng-container>
+<div
+  class="row"
+  *ngIf="
+    !validatorView &&
+    claims &&
+    claims.claimType?.english !== 'Cashless Claim' &&
+    claims.claimType?.english !== 'Reconciliation Claim'
+  "
+>
+  <ng-container
+    *ngIf="
+      (claims && claims.claimType?.english !== 'Reimbursement') ||
+      (claims?.claimType?.english === 'Reimbursement' &&
+        claims?.invoiceItemId !== null &&
+        claims.claimType?.english !== 'Reissue Allowance' &&
+        !claims.reissue)
+    "
+  >
+    <div class="col-md-3 col-lg-3 col-sm-3 expense-details">
+      <gosi-button-dc
+        *ngIf="
+          !showDocs &&
+          !claims.reissue &&
+          claims?.claimType &&
+          claims.claimType?.english !== 'Reissue Allowance' &&
+          ((claims?.claimType?.english === 'Reimbursement' && claims?.expenseDetails?.totalAmount) ||
+            claims?.claimType?.english !== 'Reimbursement')
+        "
+        (click)="showModal(expensesDetails, 'md')"
+        id="expenses"
+        type="secondary"
+        size="md"
+        [outlineOnly]="true"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.VIEW-EXPENSE-DETAILS' | translate }}
+      </gosi-button-dc>
+    </div>
+  </ng-container>
+</div>
+<div class="col-lg-12" *ngIf="claims && claims.reImbId && claims.reimbComments">
+  <gosi-comments-dc
+    [comments]="claims.reimbComments"
+    [reimbPendingReason]="claims.paymentStatus?.english === 'Pending' ? claims.reimbPendingReason : null"
+    [reimbRejectionReason]="claims.paymentStatus?.english === 'Denied' ? claims.reimbRejectionReason : null"
+  >
+  </gosi-comments-dc>
+</div>
+<div class="row">
+  <ng-container
+    *ngIf="
+      claims &&
+      showDocs &&
+      claims.claimType?.english !== 'Reissue Allowance' &&
+      claims?.paymentStatus?.english !== 'Approved' &&
+      claims?.paymentStatus?.english !== 'Paid' &&
+      claims?.paymentStatus?.english !== 'Partially Approved'
+    "
+  >
+    <div class="col-md-3 col-lg-3 col-sm-3 doc-details">
+      <gosi-button-dc
+        (click)="uploadDocuments(claims?.reImbId, claims?.referenceNo)"
+        id="expenses"
+        type="secondary"
+        size="md"
+        [outlineOnly]="true"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.ADD-MORE-DOCUMENTS' | translate }}
+      </gosi-button-dc>
+    </div>
+  </ng-container>
+</div>
+<ng-container
+  *ngIf="claims?.claimType?.english === 'Cashless Claim' || claims?.claimType?.english === 'Reconciliation Claim'"
+>
+  <div class="row">
+    <div class="col-md-3 col-lg-3 col-sm-3 expense-details">
+      <gosi-button-dc
+        (click)="showModal(serviceDetails, 'lg')"
+        id="expenses"
+        type="secondary"
+        size="md"
+        [outlineOnly]="true"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.VIEW-SERVICE-DETAILS' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="col-md-3 col-lg-3 col-sm-3 expense-details">
+      <gosi-button-dc
+        (click)="showModal(rejectionDetails, 'lg')"
+        id="expenses"
+        type="secondary"
+        size="md"
+        [outlineOnly]="true"
+      >
+        {{ 'OCCUPATIONAL-HAZARD.VIEW-REJECTED-CLAIMS' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-container>
+<ng-container>
+  <div class="row" *ngIf="!validatorView && claims && claims.claimType?.english !== 'Reissue Allowance'">
+    <div class="col-lg-12 document-detail" *ngIf="claims?.document?.length > 0">
+      <gosi-card-dc type="secondary">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-document-list-view-dc [documents]="claims?.document"></gosi-document-list-view-dc>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #expensesDetails>
+  <ng-container *ngIf="claims?.claimType?.english !== 'Reimbursement'">
+    <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.ALLOWANCE.EXPENSE-DETAILS'">
+      <div modalContent>
+        <div class="expense-details-table mt-1">
+          <table class="table">
+            <tbody>
+              <tr *ngFor="let expense of claims.expenses">
+                <td class="valueContent">{{ expense.type | bilingualText }}</td>
+                <td class="valueContent">
+                  = {{ expense.amount }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+              </tr>
+              <tr>
+                <td class="expense-content">{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}</td>
+                <td class="expense-content">
+                  = {{ getTotal(claims.claimType.english) }} {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </ng-container>
+  <ng-container *ngIf="claims?.claimType?.english === 'Reimbursement'">
+    <div class="expense-table">
+      <div class="row main-heading">
+        {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.EXPENSE-DETAILS' | translate }}
+      </div>
+      <div class="row modal-details">
+        <div class="col-lg-3 col-md-3 col-sm-3">
+          <div class="claims-card-heading">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAl-AMOUNT' | translate }}</div>
+          <div class="claims-value">
+            {{ claims?.expenseDetails?.totalAmount === null ? '0' : (claims?.expenseDetails?.totalAmount | number) }}
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-3 col-sm-3">
+          <div class="claims-card-heading">{{ 'OCCUPATIONAL-HAZARD.INVOICE-NUMBER' | translate }}</div>
+          <div class="claims-value">{{ claims?.expenseDetails?.invoiceNo }}</div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+          <div class="claims-card-heading">
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TREATMENT-PERIOD' | translate }}
+          </div>
+          <ng-container *ngIf="claims?.expenseDetails?.startDate; else notAvailable">
+            <div class="claims-value">
+              {{ claims?.expenseDetails?.startDate | date: 'dd/MM/yyyy' }}
+              <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment"></fa-icon>
+              <fa-icon *ngIf="lang === 'ar'" class="treatment" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+              {{ claims?.expenseDetails?.endDate | date: 'dd/MM/yyyy' }}
+            </div>
+          </ng-container>
+          <ng-template #notAvailable>
+            {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+          </ng-template>
+        </div>
+      </div>
+      <ng-container>
+        <div class="table-responsive" id="reimbursementExpenseTable">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th id="claimsServiceId">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.SERVICE-ID' | translate }}
+                </th>
+                <th id="claimsTreatmentDate">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DATE' | translate }}
+                </th>
+                <th id="claimsDescription">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DESCRIPTION' | translate }}
+                </th>
+                <th id="claimsClaimed">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMED' | translate }}
+                </th>
+                <th id="claimsDiscount">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DISCOUNT' | translate }}
+                </th>
+                <th id="claimsDeduction">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.DEDUCTION' | translate }}
+                </th>
+                <th id="claimsVat">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.VAT' | translate }}
+                </th>
+                <th id="claimsPaid">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.PAID' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let expense of claims?.expenseDetails?.expenseList">
+                <tr class="border-bottom">
+                  <td>{{ expense.serviceId }}</td>
+                  <td>{{ expense.treatmentDate | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ expense.description }}</td>
+                  <td>
+                    {{ expense.claimedAmount }}
+                  </td>
+                  <td>
+                    {{ expense.discount }}
+                  </td>
+                  <td>
+                    {{ expense?.policyDeduction + expense?.medicalDeduction | number }}
+                  </td>
+                  <td>
+                    {{ expense.vat }}
+                  </td>
+                  <td>
+                    {{ expense.paidAmount }}
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+  <div class="row close-button">
+    <gosi-button-dc type="secondary" size="md" (click)="hideModal()" class="button">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+    </gosi-button-dc>
+  </div>
+</ng-template>
+<ng-template #serviceDetails>
+  <ng-container>
+    <div class="expense-table">
+      <div class="row main-heading">
+        {{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICE-DETAILS' | translate }}
+      </div>
+      <ng-container>
+        <div class="table-responsive" id="reimbursementExpenseTable">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th id="serviceId">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.SERVICE-ID' | translate }}
+                </th>
+                <th id="treatmentDate">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DATE' | translate }}
+                </th>
+                <th id="description">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DESCRIPTION' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let expense of claims?.serviceDetails.services; else: notAvailable">
+                <tr class="border-bottom">
+                  <td>{{ expense.serviceId }}</td>
+                  <td>{{ convertTreatmentDate(expense.treatmentDate) }}</td>
+                  <td>{{ expense.serviceDescription }}</td>
+                </tr>
+              </ng-container>
+              <ng-template #notAvailable>
+                {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+              </ng-template>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+  <div class="row close-button">
+    <gosi-button-dc type="secondary" size="md" (click)="hideModal()" class="button">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+    </gosi-button-dc>
+  </div>
+</ng-template>
+<ng-template #rejectionDetails>
+  <ng-container>
+    <div class="expense-table">
+      <div class="row main-heading reject-button">
+        {{ 'OCCUPATIONAL-HAZARD.VIEW-REJECTED-CLAIMS' | translate }}
+      </div>
+      <div class="row modal-details">
+        <div class="col-lg-3 col-md-3 col-sm-3">
+          <div class="claims-card-heading">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.TOTAl-REJECTED-AMOUNT' | translate }}</div>
+          <div class="claims-value">
+            {{ claims?.recoveryDetails?.totalAmount === null ? '0' : (claims?.recoveryDetails?.totalAmount | number) }}
+            {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.SAR' | translate }}
+          </div>
+        </div>
+      </div>
+      <ng-container>
+        <div class="table-responsive" id="reimbursementExpenseTable">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th id="serviceId">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.SERVICE-ID' | translate }}
+                </th>
+                <th id="treatmentDate">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DATE' | translate }}
+                </th>
+                <th id="description">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.DESCRIPTION' | translate }}
+                </th>
+                <th id="claimed">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.UNIT-REJECTED' | translate }}
+                </th>
+                <th id="unitPrice">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.UNIT-PRICE' | translate }}
+                </th>
+                <th id="vat">
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.REJECTED-AMOUNT' | translate }}
+                </th>
+                <th id="discount">
+                  {{ 'OCCUPATIONAL-HAZARD.CLAIMS.VAT' | translate }}
+                </th>
+                <th id="total">
+                  {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.TOTAL' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let service of claims?.recoveryDetails?.services">
+                <tr class="border-bottom">
+                  <td>{{ service.serviceId }}</td>
+                  <td>{{ convertTreatmentDate(service.treatmentDate) | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    {{ service.noOfUnits }}
+                  </td>
+                  <td>
+                    {{ service.unitPrice }}
+                  </td>
+                  <td>
+                    {{ service.rejectedAmount }}
+                  </td>
+                  <td>
+                    {{ service.vat }}
+                  </td>
+                  <td>
+                    {{ service.vat + service.rejectedAmount }}
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+  <div class="row close-button">
+    <gosi-button-dc type="secondary" size="md" (click)="hideModal()" class="button">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+    </gosi-button-dc>
+  </div>
+</ng-template>

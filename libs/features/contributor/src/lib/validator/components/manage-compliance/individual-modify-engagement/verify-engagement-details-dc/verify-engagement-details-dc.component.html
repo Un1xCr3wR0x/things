@@ -1,0 +1,325 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate"
+  type="secondary"
+  headingSize="md"
+  [negativeMobileMargin]="false"
+  [mobilePaddingBottom]="false"
+>
+  <ng-container *ngIf="engagementType === 'Cancelengagement'">
+    <gosi-alert-dc [message]="'CONTRIBUTOR.ENGAGEMENT-CANCEL-MESSAGE' | translate" type="info" [dismissible]="false">
+    </gosi-alert-dc>
+  </ng-container>
+
+  <div class="row">
+    <div class="col-lg-4">
+      <gosi-label-dc
+        id="establishmentName"
+        [value]="
+          engagementDetails.establishmentName.english === null
+            ? engagementDetails.establishmentName.arabic
+            : (engagementDetails.establishmentName | bilingualText)
+        "
+        label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-label-dc
+        id="registrationNo"
+        [control]="engagementDetails.registrationNo"
+        label="CONTRIBUTOR.ESTABLISHMENT-REG-NO"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-label-dc
+        id="engagementStartDate"
+        [value]="engagementDetails?.joiningDate?.gregorian | gosiDate"
+        label="CONTRIBUTOR.ENGAGEMENT-START-DATE"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4" *ngIf="engagementDetails?.leavingDate?.gregorian">
+      <gosi-label-dc
+        id="engagementLeavingDate"
+        [value]="engagementDetails?.leavingDate?.gregorian | gosiDate"
+        label="CONTRIBUTOR.ENGAGEMENT-LEAVING-DATE"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-4">
+      <gosi-label-dc
+        id="engagementStatus"
+        [control]="
+          engagementStatus === 'Active' ? ('CONTRIBUTOR.ACTIVE' | translate) : ('CONTRIBUTOR.INACTIVE' | translate)
+        "
+        label="CONTRIBUTOR.ENGAGEMENT-STATUS"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc
+  *ngIf="engagementType !== 'Cancelengagement'"
+  [heading]="'CONTRIBUTOR.NEW-ENGAGEMENT-DETAILS' | translate"
+  [paddingBottom]="false"
+  type="secondary"
+  headingSize="md"
+  [negativeMobileMargin]="false"
+  [mobilePaddingBottom]="false"
+>
+  <ng-container *ngIf="!isModifyWageAndOccupation">
+    <div class="row">
+      <div class="col-lg-4">
+        <gosi-label-dc
+          id="registrationNo"
+          [value]="displayNewEngDate | gosiDate"
+          [label]="
+          engagementType === 'JoiningDate' ? 'CONTRIBUTOR.CORRECT-JOINING-DATE' : 'CONTRIBUTOR.CORRECT-LEAVING-DATE'
+        "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4" *ngIf="engagementLeavingReason && engagementType === 'Terminateengagement'">
+        <gosi-label-dc
+          id="engagementLeavingReason"
+          [value]="engagementLeavingReason | bilingualText"
+          label="CONTRIBUTOR.REASON-FOR-LEAVING"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isModifyWageAndOccupation">
+
+    <wage-modifications-table-dc
+      [wageDetails]="wageDetails"
+      [engagementDetails]="engagementDetails"
+      [modifyEngagement]="modifyEngagement">
+
+    </wage-modifications-table-dc>
+
+  </ng-container>
+
+</gosi-card-dc>
+
+<gosi-card-dc
+  [heading]="'CONTRIBUTOR.VERIFY-INFO' | translate"
+  [paddingBottom]="false"
+  type="secondary"
+  headingSize="md"
+  [noHeadingMargin]="true"
+  [negativeMobileMargin]="false"
+  [mobilePaddingBottom]="false"
+>
+  <ng-container *ngIf="otpError?.english !== undefined">
+    <gosi-alert-dc [bilingualMessage]="otpError" type="danger"> </gosi-alert-dc>
+  </ng-container>
+  <ng-container *ngIf="otpUnathorizedError?.english !== undefined">
+    <gosi-alert-dc [bilingualMessage]="otpUnathorizedError" type="info" [dismissible]="false"> </gosi-alert-dc>
+  </ng-container>
+  <div class="otp-sub">{{ 'CONTRIBUTOR.VERIFY-OTP' | translate }}</div>
+  <div class="row">
+    <div class="col-lg-10">
+      <gosi-input-otp-dc
+        [componentId]="'absherOtp'"
+        [otpLength]="4"
+        (timerStopped)="hasRetriesExceeded()"
+        [isValid]="isOtpValid"
+        [control]="contractAuthForm.get('otp')"
+      >
+      </gosi-input-otp-dc>
+      <span class="mr-1"></span>
+      <div class="d-inline-block mt-3" *ngIf="isResend === false">
+        <fa-icon [icon]="['fas', 'stopwatch']"></fa-icon>
+      </div>
+      <span class="mr-2"></span>
+      <div class="d-inline-block timer-wrapper" *ngIf="isResend === false">
+        {{ 'CONTRIBUTOR.CONTRACT-AUTH.WILL-SEND-OTP' | translate }}
+        <gosi-timer-dc (timerStopped)="isResend = true" [min]="minutes"> </gosi-timer-dc>
+        {{ 'CONTRIBUTOR.CONTRACT-AUTH.MINUTE' | translate }}
+      </div>
+    </div>
+    <div class="d-flex align-items-end link-padding col-sm-2 justify-content-center link-margin">
+      <div *ngIf="isResend === true" class="regen-otp">
+        <a id="resendOtp" *ngIf="noOfIncorrectOtp !== noOfResend" class="resend-otp custom-wrap" (click)="reSendOtp()">
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.REGENERATEOTP' | translate }}
+        </a>
+        <a
+          id="reLoadApplication"
+          *ngIf="noOfIncorrectOtp == noOfResend"
+          class="resend-otp custom-wrap"
+          (click)="reLoadApplication()"
+        >
+          {{ 'CONTRIBUTOR.CONTRACT-AUTH.RELOAD-APP' | translate }}
+        </a>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-right btn-section">
+      <gosi-button-dc
+        id="saveAndNext"
+        type="primary"
+        (submit)="showModal(cancelTemplate1, 'md')"
+        [disabled]="isResend || !validUuid || contractAuthForm.value.otp ? checkAllOtpFieldsEntered() : true"
+      >
+        {{ 'CONTRIBUTOR.APPLY' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">
+        {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.INFO-CANCEL" (onCancel)="decline()" (onConfirm)="cancelAuth()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #cancelTemplate1>
+  <gosi-modal-dc>
+    <div class="row" modalContent>
+      <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+        <span class="times-icon" role="button" (click)="decline()">
+          <fa-icon icon="times" class="icon-font"></fa-icon>
+        </span>
+      </div>
+      <div class="col-lg-12">
+        <div class="header-part">
+          <!-- <div class="col-lg-10"> -->
+          <div class="modal-body text-center">
+            <img src="assets/icons/confirm_popup.svg" alt="Contributions" class="icon" />
+
+            <div class="message-font">
+              <span>{{ 'CONTRIBUTOR.RAISE-ENGAGEMENT-CANCELATION' | translate }}</span>
+              <span class="font-weight">
+                <ng-container
+                  *ngIf="
+                    engagementDetails.engagementDuration.noOfDays === 0 &&
+                    engagementDetails.engagementDuration.noOfMonths === 0
+                  "
+                >
+                  {{ 0 }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }} {{ 0 }}
+                  {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+                </ng-container>
+                <ng-container
+                  *ngIf="
+                    engagementDetails.engagementDuration.noOfMonths &&
+                    engagementDetails.engagementDuration.noOfMonths !== 0
+                  "
+                >
+                  <ng-container
+                    *ngIf="
+                      !(
+                        lang === 'ar' &&
+                        (engagementDetails.engagementDuration.noOfMonths === 1 ||
+                          engagementDetails.engagementDuration.noOfMonths === 2)
+                      )
+                    "
+                  >
+                    {{ engagementDetails.engagementDuration.noOfMonths }}
+                  </ng-container>
+                  {{
+                    engagementDetails.engagementDuration.noOfMonths === 1
+                      ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                      : engagementDetails.engagementDuration.noOfMonths === 2
+                      ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                      : engagementDetails.engagementDuration.noOfMonths > 2 &&
+                        engagementDetails.engagementDuration.noOfMonths < 11
+                      ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                      : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+                  }}
+                </ng-container>
+                <ng-container
+                  *ngIf="
+                    engagementDetails.engagementDuration.noOfDays && engagementDetails.engagementDuration.noOfDays !== 0
+                  "
+                >
+                  <ng-container
+                    *ngIf="
+                      !(
+                        lang === 'ar' &&
+                        (engagementDetails.engagementDuration.noOfDays === 1 ||
+                          engagementDetails.engagementDuration.noOfDays === 2)
+                      )
+                    "
+                  >
+                    {{ engagementDetails.engagementDuration.noOfDays }}
+                  </ng-container>
+                  {{
+                    engagementDetails.engagementDuration.noOfDays === 1
+                      ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                      : engagementDetails.engagementDuration.noOfDays === 2
+                      ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                      : engagementDetails.engagementDuration.noOfDays > 2 &&
+                        engagementDetails.engagementDuration.noOfDays < 11
+                      ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                      : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                  }}
+                </ng-container>
+              </span>
+              <span>. {{ 'CONTRIBUTOR.SURE-TO-PROCEED' | translate }}</span>
+            </div>
+            <!-- <div  class="message-font"
+              *ngIf="lang=='en' && engagementDetails.engagementDuration.noOfMonths!=0 && engagementDetails.engagementDuration.noOfDays!=0">
+              You're about to raise an engagement cancelation of <b>{{popup_message.noOfMonths}} {{showMonth}}
+                {{popup_message.noOfDays}} {{showDays}}</b>. Are you sure you want to proceed?
+            </div>
+
+            <div  class="message-font"
+              *ngIf="lang=='en' && engagementDetails.engagementDuration.noOfMonths==0 && engagementDetails.engagementDuration.noOfDays!=0">
+              You're about to raise an engagement cancelation of <b> {{popup_message.noOfDays}} {{showDays}} </b>. Are
+              you sure you want to proceed?
+            </div>
+            <div  class="message-font"
+              *ngIf="lang=='en' && engagementDetails.engagementDuration.noOfDays==0 && engagementDetails.engagementDuration.noOfMonths!=0">
+              You're about to raise an engagement cancelation of <b>{{popup_message.noOfMonths}} {{showMonth}}</b>. Are
+              you sure you want to proceed?
+            </div>
+            <div  class="message-font"
+              *ngIf="lang=='ar' && engagementDetails.engagementDuration.noOfMonths!=0 && engagementDetails.engagementDuration.noOfDays!=0 ">
+أنت على وشك رفع طلب إلغاء مدد اشتراك. المدة المراد إلغائها
+              <b>{{popup_message.noOfMonths}}
+                {{showMonth}} {{popup_message.noOfDays}} {{showDays}}</b>. هل متأكد من رفع الطلب؟ </div>
+
+            <div class="message-font"
+              *ngIf="lang=='ar' && engagementDetails.engagementDuration.noOfDays==0 && engagementDetails.engagementDuration.noOfMonths!=0">
+أنت على وشك رفع طلب إلغاء مدد اشتراك. المدة المراد إلغائها
+               <b>{{popup_message.noOfMonths}}
+                {{showMonth}} </b>. هل متأكد من رفع الطلب؟ </div>
+
+            <div class="message-font"
+              *ngIf="lang=='ar' && engagementDetails.engagementDuration.noOfMonths==0 && engagementDetails.engagementDuration.noOfDays!=0">
+أنت على وشك رفع طلب إلغاء مدد اشتراك. المدة المراد إلغائها
+               <b>{{popup_message.noOfDays}}
+                {{showDays}}</b> . هل متأكد من رفع الطلب؟ </div> -->
+            <div class="form-action d-flex justify-content-center">
+              <div class="btn-section mr-4">
+                <gosi-button-dc id="cancelBtn" type="secondary" (submit)="decline()">
+                  {{ 'CONTRIBUTOR.CANCEL' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section">
+                <gosi-button-dc id="confirmBtn" type="primary" (submit)="confirm()">
+                  {{ 'CONTRIBUTOR.CONFIRM' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+          <!-- </div> -->
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

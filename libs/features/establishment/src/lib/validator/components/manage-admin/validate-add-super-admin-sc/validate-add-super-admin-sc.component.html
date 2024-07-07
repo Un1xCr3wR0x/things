@@ -1,0 +1,189 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <!---------------Heading Section------------------------>
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="heading | translate"> </frm-main-heading-dc>
+    </div>
+    <!-----------------Content Section--------------------->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc [establishment]="establishment"></est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="user-cog"
+          [heading]="'ESTABLISHMENT.SUPER-ADMIN-DETAILS' | translate"
+          [canEdit]="canEdit"
+          (onEdit)="navigateToRegisterSuperAdmin()"
+        ></frm-content-heading-dc>
+        <div class="col-md12" *ngIf="superAdmin">
+          <div class="row pt-3">
+            <div id="ArabicName" class="col-sm-6" *ngIf="superAdmin.person">
+              <gosi-label-dc id="ArabicName" [value]="getAdminName(superAdmin)" label="ESTABLISHMENT.NAME-IN-ARABIC">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6" *ngIf="superAdmin.person.name.english">
+              <gosi-label-dc
+                id="EnglishName"
+                [control]="superAdmin.person.name.english.name"
+                label="ESTABLISHMENT.NAME-IN-ENGLISH"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row pt-3">
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="nationality"
+                [control]="superAdmin.person.nationality"
+                label="ESTABLISHMENT.NATIONALITY"
+              >
+              </gosi-label-dc>
+            </div>
+            <ng-container *ngIf="!checkNull(superAdmin.person.identity) && getIdentifierType(superAdmin)">
+              <ng-container *ngFor="let item of superAdmin.person.identity">
+                <div class="col-sm-12 col-lg-6 nin" *ngIf="saudiNationality">
+                  <gosi-label-dc id="nin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6 gcc" *ngIf="gccNationality && item.id">
+                  <gosi-label-dc id="nationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6 iqama" *ngIf="(gccNationality || others) && item.iqamaNo">
+                  <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+                  </gosi-label-dc>
+                </div>
+                <div class="col-sm-12 col-lg-6 passport" *ngIf="gccNationality && item.passportNo">
+                  <gosi-label-dc id="passportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+                  </gosi-label-dc>
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <gosi-label-dc id="Gender" [control]="superAdmin.person.sex" label="ESTABLISHMENT.GENDER">
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6" *ngIf="superAdmin.person.birthDate">
+              <gosi-label-dc
+                [date]="true"
+                id="birthDate"
+                [control]="superAdmin.person.birthDate.gregorian"
+                label="ESTABLISHMENT.BIRTH-DATE"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row" *ngIf="superAdmin.person.contactDetail">
+            <div class="col-sm-12 col-md-12">
+              <div class="sub-content-last-item">
+                <div class="row">
+                  <div class="col-sm-12 col-md-12">
+                    <div class="sub-heading ml-0 mr-0">
+                      {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+                    </div>
+                  </div>
+                  <div class="col-sm-12 col-lg-6 pt-3">
+                    <gosi-label-dc
+                      id="TelephoneNumber"
+                      [control]="superAdmin.person.contactDetail.telephoneNo?.primary"
+                      label="ESTABLISHMENT.TELEPHONE-NUMBER"
+                    ></gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6">
+                    <gosi-label-dc
+                      id="Extension"
+                      [control]="superAdmin.person.contactDetail.telephoneNo?.extensionPrimary"
+                      label="ESTABLISHMENT.EXTENSION"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6">
+                    <gosi-label-dc
+                      id="MobileNo"
+                      [control]="superAdmin.person.contactDetail.mobileNo?.primary"
+                      label="ESTABLISHMENT.MOBILE-NUMBER"
+                      ><span id="prefixValue">{{ getISDCodePrefix() }}</span>
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6">
+                    <gosi-label-dc
+                      id="EmailId"
+                      [control]="superAdmin.person.contactDetail?.emailId?.primary"
+                      label="ESTABLISHMENT.EMAIL-ID"
+                    >
+                    </gosi-label-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-----------Action Section----------------------->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        (approveEvent)="approveTransaction(superAdminValidationForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(superAdminValidationForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(superAdminValidationForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="superAdminValidationForm"
+    heading="ESTABLISHMENT.REJECT.SUPER-ADMIN"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(superAdminValidationForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="superAdminValidationForm"
+    heading="ESTABLISHMENT.RETURN.SUPER-ADMIN"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(superAdminValidationForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="superAdminValidationForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(superAdminValidationForm)"
+  ></frm-approve-template-dc>
+</ng-template>

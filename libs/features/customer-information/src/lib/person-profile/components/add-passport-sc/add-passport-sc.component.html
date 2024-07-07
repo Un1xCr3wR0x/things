@@ -1,0 +1,61 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<cim-transaction-template-dc [transactionName]="'CUSTOMER-INFORMATION.ADD-PASSPORT'" [contributor]="contributor"
+    [showInfo]="currentTab === 0 ? true : false" [showFeedback]="currentTab === 1 ? true : false"
+    [feedbackMessage]="feedBackMessage"
+    [showSubHeadings]="(editTransaction || manageService.isEdit) && currentTab === 0" [subHeadings]="subHeadings">
+    <div id = "comments" *ngIf="comments.length !== 0 && currentTab === 0">
+      <div class="row">
+        <div class="col-12">
+          <gosi-comments-dc [comments]="comments"></gosi-comments-dc>
+        </div>
+      </div>
+    </div>
+    <div id="transactionContent" *ngIf="currentTab === 0">
+        <ng-container *ngIf="person">
+   
+        <cim-add-passport-dc
+        [parentForm]="passportForm"
+        [uuid]="uuid"
+        [personId]="person.personId"
+        [documents]="documents$ | async"
+        [referenceNo]="passportReferenceNo"
+        [comments]="comments$ | async"
+        (refresh)="refreshDocument(false, $event)">
+        
+        </cim-add-passport-dc>
+
+
+   
+    </ng-container>
+    </div>
+    <div id="transactionAction" *ngIf="currentTab === 0">
+        <cim-footer-button-dc
+          *ngIf="showFeedback === false"
+          primaryLabel="CUSTOMER-INFORMATION.SUBMIT"
+          [showPrevious]="false"
+          (submit)="savePassport()"
+          (cancel)="showModal(cancelTemplate)"
+        >
+        </cim-footer-button-dc>
+      </div>
+      <div id="transactionAction" *ngIf="currentTab === 1">
+        <div class="d-flex flex-wrap justify-content-between">
+          <div id="goToButton">
+            <gosi-button-dc [id]="'cancel'" type="secondary" (submit)="navigateToPage()">
+              {{ 'CUSTOMER-INFORMATION.HOME' | translate }}
+            </gosi-button-dc>
+          </div>
+        </div>
+      </div>
+      <ng-template #cancelTemplate>
+        <gosi-confirm-modal-dc
+          iconName="warning"
+          message="ESTABLISHMENT.INFO-CANCEL"
+          (onConfirm)="cancelModal()"
+          (onCancel)="decline()"
+        >
+        </gosi-confirm-modal-dc>
+      </ng-template>
+</cim-transaction-template-dc>

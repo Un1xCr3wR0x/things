@@ -1,0 +1,225 @@
+<gosi-modal-dc>
+  <div modalContent>
+    <div class="d-flex flex-wrap align-items-center justify-content-between table-headers pt-4 pb-4">
+      <div class="d-flex justify-content-start">
+        <div class="header">{{ 'MEDICAL-BOARD.' + heading | translate }}</div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <ng-container *ngIf="count !== 0 && action === 'add'">
+          <div id="selection" class="d-flex align-items-center pb-3">
+            <span class="value">{{ count }}</span>
+            <span class="label">{{ 'MEDICAL-BOARD.SELECTED' | translate }}</span>
+          </div>
+        </ng-container>
+        <gosi-search-dc
+          id="search-area"
+          [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+          class="pr-2 pl-2 search-value"
+          (search)="onSearchParticipants($event)"
+          (keyup)="onSearchEnabled($event.target.value)"
+          [searchParam]="searchParams"
+          (reset)="resetSearch()"
+        >
+        </gosi-search-dc>
+        <mb-add-participant-filter-dc
+          [specialtyList]="specialtyLists"
+          [locationList]="locationLists"
+          [assessmentTypeLists]="assessmentTypeLists"
+          (filter)="onFilter($event)"
+          #participantFilter
+        >
+        </mb-add-participant-filter-dc>
+      </div>
+    </div>
+    <div
+      class="col-lg-12 warning-alert"
+      *ngIf="showSpecialityWarning && medicalBoardType.english === 'Primary Medical Board'"
+    >
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.ALLOWED-SPECIALITY'" type="warning" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 warning-alert" *ngIf="alreadyExist">
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.ALREADY-ADDED'" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 warning-alert" *ngIf="isMaxParticipant">
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.MAXIMUM-PARTICIPANTS-TEMPLATE'" type="warning" [dismissible]="false">
+      </gosi-alert-dc>
+    </div>
+    <div class="col-lg-12 warning-alert" *ngIf="isLocation && medicalBoardType?.english === 'Primary Medical Board'">
+      <gosi-alert-dc [message]="'MEDICAL-BOARD.ERROR-LOCATION'" type="warning" [dismissible]="false"> </gosi-alert-dc>
+    </div>
+    <ng-container *ngIf="addParticipantsList?.length > 0; noValue">
+      <div class="col-lg-12 warning-alert" *ngIf="countExceeded">
+        <gosi-alert-dc [message]="'MEDICAL-BOARD.PARTICIPANTS-WARNING'" type="warning" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+      <div class="col-lg-12 warning-alert" *ngIf="isHold">
+        <gosi-alert-dc [message]="'MEDICAL-BOARD.HOLD-SESSION-MSG'" type="warning" [dismissible]="false">
+        </gosi-alert-dc>
+      </div>
+      <div class="col-lg-12 warning-alert" *ngIf="showParticipantErrors">
+        <gosi-alert-dc [bilingualMessage]="availableParticipantMsg" [dismissible]="false" type="danger"></gosi-alert-dc>
+      </div>
+
+      <!-- <div class="col-lg-12">
+        <gosi-alert-dc
+          *ngIf="showUnavailability"
+          [message]="'MEDICAL-BOARD.UNAVAILABILITY-OF-A-PARTICIPANT' | translate"
+          [dismissible]="false"
+          type="danger"
+        >
+        </gosi-alert-dc>
+      </div> -->
+      <div class="table-view">
+        <table class="table table-borderless">
+          <thead class="thead-light">
+            <tr>
+              <th></th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.NAME' | translate }}
+              </th>
+
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.DISABILITY-TYPE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.REQUIRED-SPECIALITY' | translate }}
+              </th>
+
+              <th class="headings-location">
+                {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+              </th>
+              <th class="heading">
+                {{ 'MEDICAL-BOARD.DAYS-IN-QUEUE' | translate }}
+              </th>
+              <th class="headings">
+                {{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="border-bottom"
+              *ngFor="
+                let participant of addParticipantsList
+                  | paginate
+                    : {
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: totalResponse
+                      };
+                let i = index
+              "
+            >
+              <td style="width: 1%" *ngIf="action === 'add'">
+                <gosi-input-checkbox-dc
+                  [control]="checkForm?.controls[i]?.get('flag')"
+                  (select)="selectedParticipants($event, participant, i)"
+                  [disabled]="participant.isNoSpeciality"
+                ></gosi-input-checkbox-dc>
+              </td>
+              <td style="width: 1%" *ngIf="action === 'replace'">
+                <gosi-input-radio-dc
+                  id="participant {{ i }}"
+                  name="participant{{ i }}"
+                  [list]="replacementList"
+                  ignoreLabel="true"
+                  [control]="replacementForm?.controls[i]?.get('replace')"
+                  (select)="onReplaceParticipant($event, participant, i)"
+                >
+                </gosi-input-radio-dc>
+              </td>
+
+              <td>
+                <div class="d-flex flex-column">
+                  <span *ngIf="lang === 'en'">
+                    {{
+                      participant?.name?.english === null || participant?.name?.english?.length === 0
+                        ? participant?.name?.arabic
+                        : participant?.name?.english
+                    }}
+                  </span>
+                  <span *ngIf="lang === 'ar'">
+                    {{ participant?.name?.arabic }}
+                  </span>
+                  <span>
+                    <ng-container *ngIf="participant?.idType === ninId">
+                      <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                    </ng-container>
+                    <ng-container *ngIf="participant?.idType === iqamaId">
+                      <span class="id-label"> {{ 'MEDICAL-BOARD.IQAMA-NUMBER' | translate }} :</span>
+                    </ng-container>
+                    <ng-container *ngIf="participant?.idType === gccId">
+                      <span class="id-label"> {{ 'MEDICAL-BOARD.GCCID' | translate }} :</span>
+                    </ng-container>
+                    <ng-container *ngIf="participant?.idType === borderNo">
+                      <span class="id-label"> {{ 'MEDICAL-BOARD.BORDER-NO' | translate }} :</span>
+                    </ng-container>
+                    <a class="member-click" (click)="getParticipants(participant.identityNumber)">{{
+                      participant.identityNumber
+                    }}</a>
+                  </span>
+                </div>
+              </td>
+              <td>
+                {{ participant.assessmentType | bilingualText }}
+              </td>
+              <td style="width: 15%">
+                <span>
+                  {{ participant?.specialty | bilingualText }}, {{ participant?.subSpecialty | bilingualText }}</span
+                >
+              </td>
+              <td style="width: 10%">
+                {{ participant.location | bilingualText }}
+              </td>
+              <td class="number-days-body">
+                {{ participant.noOfDaysInQueue }}
+              </td>
+              <td class="mobile-body">
+                <span id="prefixValue">{{ getISDCodePrefix(participant) }}</span>
+                {{ participant.mobileNumber }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <gosi-pagination-dc
+        #paginationComponent
+        *ngIf="totalResponse > itemsPerPage"
+        [pageDetails]="pageDetails"
+        [totalSize]="totalResponse"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onSelectPage($event)"
+      >
+      </gosi-pagination-dc>
+    </ng-container>
+  </div>
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="onCancel()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right" *ngIf="isSessionstatus && totalNoOfParticipantRecords >= maxParticipants">
+      <gosi-button-dc id="submit" [disabled]="isDisabled" type="primary" (submit)="onClickAddParticipants()">
+        {{ 'MEDICAL-BOARD.' + heading | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right" *ngIf="!isSessionstatus || maxParticipants > totalNoOfParticipantRecords">
+      <gosi-button-dc
+        id="submit"
+        [disabled]="isDisabled || showParticipantErrors"
+        (submit)="onAddParticipants()"
+        type="primary"
+      >
+        {{ 'MEDICAL-BOARD.' + heading | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>
+<ng-template #noValue>
+  <div *ngIf="addParticipantsList?.length === 0" class="pt-4">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+</ng-template>

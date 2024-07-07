@@ -1,0 +1,293 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <frm-content-heading-dc
+      icon="Penalty Calculation Details icon"
+      [heading]="'VIOLATIONS.PENALTY-AMOUNT-DETAILS' | translate"
+      [canEdit]="isValidator1 && !isReopenClosingInProgress"
+      [isSvg]="true"
+      (onEdit)="editScreen.emit()"
+    >
+    </frm-content-heading-dc>
+    <div *ngIf="!isSimisFlag">
+      <div class="row form-label">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.REASON-FOR-MODIFICATION' | translate"
+            [control]="violationDetails?.modificationReason | bilingualText"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="violationDetails?.comments">
+          <gosi-label-dc [label]="'VIOLATIONS.COMMENTS' | translate" [value]="violationDetails?.comments">
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <div class="block">{{ 'VIOLATIONS.REQUESTED-BY' | translate }}</div>
+          <div class="value">
+            {{ violationDetails?.requestedBy }}
+          </div>
+          <div class="value">
+            <span class="lighter-label">({{ violationDetails?.role | bilingualText }}) </span>
+          </div>
+        </div>
+      </div>
+      <div class="row form-label row-two">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate"
+            [control]="violationDetails?.currentPenaltyAmount | number: '1.2-2'"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate"
+            [control]="violationDetails?.newPenaltyAmount | number: '1.2-2'"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div class="mobile-view">
+        <div
+          *ngFor="
+            let contributor of violationDetails?.contributors
+              | paginate
+                : {
+                    id: 'paginationId',
+                    itemsPerPage: itemPerPage,
+                    currentPage: pageDetails.currentPage,
+                    totalItems: noOfRecords
+                  };
+            let i = index;
+            let odd = odd
+          "
+        >
+          <div
+            class="txn-item card p-0 py-3 m-0 bg-white border rounded-0 border-top-0 border-right-0 border-left-0"
+            [ngClass]="odd ? 'odd' : 'even'"
+          >
+            <div class="card-body align-items-center">
+              <div class="first-row d-flex flex-row justify-content-between my-2">
+                <div class="first-cell">
+                  <p class="title">
+                    {{
+                      contributor.contributorName.english === null
+                        ? contributor.contributorName.arabic
+                        : (contributor.contributorName | bilingualText)
+                    }}
+                  </p>
+                  <ng-container *ngIf="checkForSIN(contributor.identity) === 1; else checkSinTemplate">
+                    <div *ngFor="let identifier of contributor?.identity">
+                      <div *ngIf="identifier?.idType === 'NIN'">
+                        <div class="text-grayed sub-title">
+                          {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'IQAMA'">
+                        <div class="text-grayed sub-title">
+                          {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'GCCID'">
+                        <div class="text-grayed sub-title">
+                          {{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #checkSinTemplate>
+                    <div class="text-grayed sub-title">
+                      {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                    </div>
+                  </ng-template>
+                  <p class="title-two" *ngIf="!isViolatingProvision">
+                    {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }} :
+                    {{ contributor.currentPenaltyAmount | number: '1.2-2' }}
+                  </p>
+                  <p class="title-two" *ngIf="!isViolatingProvision">
+                    {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }} :
+                    {{ contributor.newPenaltyAmount | number: '1.2-2' }}
+                  </p>
+                </div>
+                <div class="second-cell">
+                  <gosi-status-badge-dc
+                    [label]="
+                      contributor.isExcluded
+                        ? ('VIOLATIONS.EXCLUDED' | translate)
+                        : contributor.modified
+                        ? ('VIOLATIONS.MODIFIED' | translate)
+                        : ''
+                    "
+                    [type]="statusBadgeType(contributor)"
+                  ></gosi-status-badge-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desktop-view">
+        <div class="table-penalty">
+          <table class="table-borderless w-100" id="penalty-table">
+            <thead class="thead-light">
+              <tr class="table-row">
+                <th class="table-head" id="contributor-heading">
+                  {{ 'VIOLATIONS.CONTRIBUTOR' | translate }}
+                </th>
+
+                <th class="table-head" id="contributor-current-penalty-amount">
+                  <ng-container *ngIf="!isViolatingProvision">
+                    {{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}
+                    <span class="lighter-label">
+                      {{ 'VIOLATIONS.SAR' | translate }}
+                    </span>
+                  </ng-container>
+                </th>
+                <th class="table-head" id="contributor-new-penalty-amount">
+                  <ng-container *ngIf="!isViolatingProvision">
+                    {{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}
+                    <span class="lighter-label">
+                      {{ 'VIOLATIONS.SAR' | translate }}
+                    </span>
+                  </ng-container>
+                </th>
+                <th class="table-head" id="status-excluded"></th>
+              </tr>
+            </thead>
+            <tbody class="tbody-body">
+              <tr
+                class="content border-bottom"
+                *ngFor="
+                  let contributor of violationDetails?.contributors
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: noOfRecords
+                        };
+                  let i = index
+                "
+              >
+                <td class="table-body">
+                  <div class="settlement" id="contributor-name-value">
+                    {{
+                      contributor.contributorName.english === null
+                        ? contributor.contributorName.arabic
+                        : (contributor.contributorName | bilingualText)
+                    }}
+                  </div>
+                  <ng-container *ngIf="checkForSIN(contributor.identity) === 1; else checkForSinTemplate">
+                    <div *ngFor="let identifier of contributor?.identity">
+                      <div *ngIf="identifier?.idType === 'NIN'">
+                        <div class="lighter-label">
+                          {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identifier?.newNin }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'IQAMA'">
+                        <div class="lighter-label">
+                          {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identifier?.iqamaNo }}
+                        </div>
+                      </div>
+                      <div *ngIf="identifier?.idType === 'GCCID'">
+                        <div class="lighter-label">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identifier?.id }}</div>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #checkForSinTemplate>
+                    <div class="text-grayed sub-title">
+                      {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ contributor?.socialInsuranceNo }}
+                    </div>
+                  </ng-template>
+                </td>
+
+                <td class="table-body" *ngIf="!isViolatingProvision">
+                  <div class="col-md-4" id="old-penalty-value">
+                    {{ contributor.currentPenaltyAmount | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td class="table-body" *ngIf="!isViolatingProvision">
+                  <div class="col-md-4">
+                    {{ contributor.newPenaltyAmount | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td class="table-body">
+                  <div class="lighter-label col-md-4">
+                    <gosi-status-badge-dc
+                      [label]="
+                        contributor.isExcluded
+                          ? ('VIOLATIONS.EXCLUDED' | translate)
+                          : contributor.modified
+                          ? ('VIOLATIONS.MODIFIED' | translate)
+                          : ''
+                      "
+                      [type]="statusBadgeType(contributor)"
+                    >
+                    </gosi-status-badge-dc>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div *ngIf="noOfRecords > itemPerPage">
+        <div class="border-bottom p-3">
+          <ng-container>
+            <gosi-pagination-dc
+              [totalSize]="noOfRecords"
+              [itemsPerPage]="itemPerPage"
+              [pageDetails]="pageDetails"
+              (pageChange)="selectPage($event)"
+              paginationId="paginationId"
+            ></gosi-pagination-dc>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    <div class="termination-table" *ngIf="isSimisFlag">
+      <table class="table">
+        <thead class="thead-light"></thead>
+        <tbody>
+          <tr>
+            <td class="termination-head">{{ 'VIOLATIONS.CURRENT-PENALITY-AMOUNT' | translate }}</td>
+            <td class="termination-tail">
+              {{ violationDetails?.currentPenaltyAmount | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+            </td>
+          </tr>
+          <tr>
+            <td class="termination-head">{{ 'VIOLATIONS.NEW-PENALITY-AMOUNT' | translate }}</td>
+            <td class="termination-tail">
+              {{ violationDetails?.newPenaltyAmount | number: '1.2-2' }} {{ 'VIOLATIONS.CURRENCY' | translate }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="row form-label" id="simis-label">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <gosi-label-dc
+            [label]="'VIOLATIONS.REASON-FOR-MODIFICATION' | translate"
+            [control]="violationDetails?.modificationReason | bilingualText"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="violationDetails?.comments">
+          <gosi-label-dc [label]="'VIOLATIONS.COMMENTS' | translate" [value]="violationDetails?.comments">
+          </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6" id="simis-violation-request">
+          <div class="block">{{ 'VIOLATIONS.REQUESTED-BY' | translate }}</div>
+          <div class="value" id="simis-emp-name">
+            {{ violationDetails?.requestedBy }}
+            <span class="lighter-label">({{ violationDetails?.role | bilingualText }}) </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

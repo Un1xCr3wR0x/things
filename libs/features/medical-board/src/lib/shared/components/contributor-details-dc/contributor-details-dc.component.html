@@ -1,0 +1,203 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div class="row mx-0">
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <gosi-label-dc
+        id="contributorName"
+        label="{{
+          isContributor
+            ? ('OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME' | translate)
+            : (assessmentType === 'Dependent Disability' || assessmentType === 'Dependent Disability Assessment')
+            ? ('MEDICAL-BOARD.DEPENDENT-NAME' | translate)
+            : ('MEDICAL-BOARD.HEIR-NAME' | translate)
+        }}"
+        [value]="personDetails?.name | nameToString: true"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <gosi-label-dc
+        id="contributorNIN"
+        [value]="identity?.id"
+        label="{{ identityLabel | translate }}"
+        isLink="true"
+        (click)="onNavigateToContributor(identity?.id)"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <div class="label-color">{{ 'OCCUPATIONAL-HAZARD.DATE-OF-BIRTH' | translate }}</div>
+      <div class="label-content">
+        {{ personDetails?.birthDate?.gregorian | gosiDate }} ({{ 'OCCUPATIONAL-HAZARD.AGE-TITLE' | translate }} :
+        {{ personDetails?.ageInHijiri }})
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <gosi-label-dc
+        id="gender"
+        [value]="personDetails?.sex | bilingualText"
+        label="{{ 'OCCUPATIONAL-HAZARD.GENDER' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <gosi-label-dc
+        id="mobileNumber"
+        label="{{ 'OCCUPATIONAL-HAZARD.MOBILE-NUMBER' | translate }}"
+        [value]="personDetails?.contactDetail?.mobileNo?.primary"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- value to be given from BE -->
+    <div
+      class="col-sm-6 col-md-6 col-lg-4"
+      *ngIf="assessmentType === assessmentTypeEnum.NON_OCC_DIS || assessmentType === assessmentTypeEnum.HEIR_DIS"
+    >
+      <gosi-label-dc
+        id="education"
+        label="{{ 'OCCUPATIONAL-HAZARD.NATIONALITY' | translate }}"
+        [value]="personDetails?.nationality | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- value to be given from BE -->
+    <div class="col-sm-6 col-md-6 col-lg-4">
+      <gosi-label-dc
+        id="education"
+        label="{{ 'OCCUPATIONAL-HAZARD.EDUCATION' | translate }}"
+        [value]="personDetails?.education | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- value to be given from BE -->
+    <div
+      class="col-sm-6 col-md-6 col-lg-4"
+      *ngIf="assessmentType === assessmentTypeEnum.NON_OCC_DIS || assessmentType === assessmentTypeEnum.HEIR_DIS"
+    >
+      <div class="label-color">{{ 'MEDICAL-BOARD.TOTAL-CONTRIBUTIONS' | translate }}</div>
+      <div class="label-content">
+        130
+        <a id="viewBenefitDetails" (click)="onShowEngagementClicked.emit()">
+          <u>{{ 'OCCUPATIONAL-HAZARD.VIEW-DETAILS' | translate }}</u>
+        </a>
+      </div>
+    </div>
+    <!-- Story 324542 : Occupation at the time of injury, applicable only for occupational disability assessments -->
+    <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="assessmentType === assessmentTypeEnum.OCC_DIS || assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT">
+      <div class="label-color">{{ 'OCCUPATIONAL-HAZARD.OCCUPATION-INJURY' | translate }}</div>
+      <div class="label-content">
+        {{ injuryDetailsById?.injuryDetailsDto?.occupation | bilingualText }}
+        <span
+          >({{ getYears(injuryDetailsById?.injuryDetailsDto?.engagementDetails?.engagementStartDate?.gregorian) }}
+          {{ 'OCCUPATIONAL-HAZARD.MORE-THAN-TWO' | translate }})
+          <a id="occViewBenefitDetails" class="view-link" (click)="onShowEngagementClicked.emit()">{{
+            'OCCUPATIONAL-HAZARD.VIEW-DETAILS' | translate
+          }}</a></span
+        >
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="assessmentType === assessmentTypeEnum.OCC_DIS && assessmentDetails?.city">
+      <gosi-label-dc
+        id="city"
+        label="{{ 'OCCUPATIONAL-HAZARD.CITY-LBL' | translate }}"
+        [value]="assessmentDetails?.city | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="assessmentType === assessmentTypeEnum.OCC_DIS  || assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT">
+      <gosi-label-dc
+        id="injuryDate"
+        label="{{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-DATE' | translate }}"
+        [value]="injuryDetailsById?.injuryDetailsDto?.injuryDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="assessmentType === assessmentTypeEnum.OCC_DIS ||assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT">
+      <gosi-label-dc
+        id="injuryId"
+        label="{{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-ID' | translate }}"
+        [value]="injuryDetailsById?.injuryDetailsDto?.injuryId"
+        [isLink]="true"
+        (select)="onInjuryIdClicked.emit($event)"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-sm-6 col-md-6 col-lg-4"
+      *ngIf="(assessmentType === assessmentTypeEnum.OCC_DIS ||assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT) && complicationDetails"
+    >
+      <gosi-label-dc
+        id="complicationId"
+        label="{{ 'OCCUPATIONAL-HAZARD.COMPLICATION.ID' | translate }}"
+        [value]="complicationDetails?.complicationDetailsDto?.complicationId"
+        [isLink]="true"
+        (select)="onInjuryIdClicked.emit($event)"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-sm-6 col-md-6 col-lg-4"
+      *ngIf="(assessmentType === assessmentTypeEnum.OCC_DIS || assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT) && complicationDetails"
+    >
+      <gosi-label-dc
+        id="complicationDate"
+        label="{{ 'OCCUPATIONAL-HAZARD.COMPLICATION.DATE' | translate }}"
+        [value]="complicationDetails?.complicationDetailsDto?.complicationDate?.gregorian | gosiDate"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div
+    class="d-flex justify-content-start mx-0"
+    *ngIf="
+      isContributor &&
+      (assessmentType === assessmentTypeEnum.OCC_DIS ||
+        assessmentType === assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT || 
+        assessmentType===assessmentTypeEnum.OCCUPATIONAL_DISABILITY_ASSESSMENT)
+    "
+  >
+    <div>
+      <gosi-button-dc
+        type="primary"
+        id="previousMBAssessmentsButton"
+        size="sm"
+        [outlineOnly]="true"
+        (submit)="onShowMBAssessmentClicked.emit()"
+      >
+        <span class="mx-2">{{ 'MEDICAL-BOARD.PREVIOUS-MEDICAL-BOARD-ASSESSMENTS' | translate }}</span>
+      </gosi-button-dc>
+    </div>
+    <span class="mx-2"></span>
+    <div>
+      <gosi-button-dc id="previousOH" type="primary" [outlineOnly]="true" size="sm" (submit)="onOHClicked.emit()">
+        <span class="mx-2">
+          {{ 'MEDICAL-BOARD.PREVIOUS-OCCUPATIONAL-HAZARDS' | translate }}
+        </span>
+      </gosi-button-dc>
+    </div>
+  </div>
+  <div
+    class="row mx-0 pt-3"
+    *ngIf="
+      isContributor &&
+      assessmentType !== assessmentTypeEnum.OCC_DIS &&
+      assessmentType !== assessmentTypeEnum.OCC_DISABILITY_REASSESSMENT &&
+      assessmentType !==assessmentTypeEnum.OCCUPATIONAL_DISABILITY_ASSESSMENT
+    "
+  >
+    <div class="col-lg-4">
+      <gosi-button-dc
+        type="primary"
+        id="previousMBAssessmentsButton"
+        size="sm"
+        [outlineOnly]="true"
+        (submit)="onShowMBAssessmentClicked.emit()"
+      >
+        <span class="mx-2">{{ 'MEDICAL-BOARD.VIEW-PREVIOUS-ASSESSMENTS' | translate }}</span>
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-container>

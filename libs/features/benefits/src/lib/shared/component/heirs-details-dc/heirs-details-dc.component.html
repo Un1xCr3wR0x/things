@@ -1,0 +1,412 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row" *ngIf="heirDetails?.length">
+  <div class="col-md-12">
+    <span class="header w-100">{{ 'BENEFITS.HEIR_DETAILS' | translate }}</span>
+    <!-- Heir Details added manually -->
+    <span *ngIf="addedHeirDetails?.length" class="sub-header">{{ 'BENEFITS.MANUALLY_ADDED' | translate }}</span>
+  </div>
+  <accordion class="heir-accordion w-100 mx-3 col-12">
+    <ng-container *ngFor="let heir of addedHeirDetails; let i = index">
+      <accordion-group class="wrapper-accordion-group w-100">
+        <div class="heir-name" accordion-heading>
+          <div class="font-weight-normal">
+            <span class="heir-type">
+              {{ heir?.name | nameToString: true }}
+            </span>
+            <gosi-status-badge-dc [key]="heir?.editStatus | bilingualText" [type]="statusBadgeType(heir?.editStatus)">
+            </gosi-status-badge-dc>
+            <span class="relation d-block"> ({{ heir?.relationship | bilingualText }})</span>
+          </div>
+        </div>
+        <div class="header-wrapper ml-auto mr-0" accordion-heading>
+          <!-- TODO status badge status should be status message is not getting from API -->
+          <gosi-status-badge-dc
+            [label]="heir?.statusAfterValidation | bilingualText"
+            [type]="statusBadgeType(heir?.statusAfterValidation.english)"
+          >
+          </gosi-status-badge-dc>
+          <span class="arrow-up">
+            <fa-icon icon="angle-up" size="lg"></fa-icon>
+          </span>
+          <span class="arrow-down">
+            <fa-icon icon="angle-down" size="lg"></fa-icon>
+          </span>
+        </div>
+
+        <div class="row px-4 py-4">
+          <!-- <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="heir?.identity[0]">
+                <gosi-label-dc
+                  id="contributorNIN"
+                  [value]="getIdentifierLabelOrValue('value', heir?.identity[0])"
+                  label="{{ getIdentifierLabelOrValue('label', heir?.identity[0]) | translate }}"
+                ></gosi-label-dc>
+              </div> -->
+          <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="heir?.identity[0]?.newNin">
+            <gosi-label-dc
+              id="contributorNIN"
+              isLink="false"
+              [value]="heir?.identity[0].newNin"
+              label="{{ 'BENEFITS.NATIONAL-ID' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.name">
+            <gosi-label-dc id="heirInEnglish" [value]="getName(heir?.name)" label="{{ 'BENEFITS.NAME' | translate }}">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.name">
+            <gosi-label-dc
+              id="heirInArabic"
+              [value]="getName(heir?.name, 'ar')"
+              label="{{ 'BENEFITS.NAME-IN-ARABIC' | translate }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dob"
+              [control]="'BENEFITS.AGE' | translate: { age: heir?.age }"
+              label="BENEFITS.DATE-OF-BIRTH"
+            >
+              <span id="prefixValue">{{ heir?.birthDate?.gregorian | date: 'dd/MM/yyyy' }} </span>
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dobHijiri"
+              [control]="'BENEFITS.AGE' | translate: { age: heir?.age }"
+              label="BENEFITS.DATE-OF-BIRTH-HIJIRI"
+            >
+              <span id="prefixValue">{{ heir?.birthDate?.hijiri | date: 'dd/MM/yyyy' }}</span>
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="
+              heir?.heirStatus &&
+              (benefitType === benefitTypes.heirMissingLumpsum ||
+                benefitType === benefitTypes.heirLumpsumDeadContributor)
+            "
+          >
+            <gosi-label-dc id="heirStatus" [value]="heir?.heirStatus | bilingualText" label="BENEFITS.STATUS">
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="
+              heir?.statusDate &&
+              (benefitType === benefitTypes.heirMissingLumpsum ||
+                benefitType === benefitTypes.heirLumpsumDeadContributor)
+            "
+          >
+            <gosi-label-dc
+              id="heirStatus"
+              [value]="heir?.statusDate?.gregorian | date: 'dd/MM/yyyy'"
+              label="BENEFITS.STATUS-DATE"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="nationality"
+              [value]="heir?.nationality | bilingualText"
+              label="{{ 'BENEFITS.NATIONALITY' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="gender"
+              [value]="heir?.gender | bilingualText"
+              label="{{ 'BENEFITS.GENDER' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.benefitStatus && isModifyBenefit">
+            <gosi-label-dc
+              id="benefitStatus"
+              [value]="heir?.benefitStatus | bilingualText"
+              label="{{ 'BENEFITS.BENEFIT-STATUS' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <!-- API integration pending
+            Annual notification date (old) and Updated Annual Notification date (overseas heir)
+            Label confirmation pending from Sulthana-->
+
+          <!-- Hiding till value to be binded is confirmed -->
+          <!-- <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="requestType === benefitTypes.addModifyHeir">
+            <gosi-label-dc
+              id="annualNotificationOld"
+              [value]=""
+              label="{{ 'BENEFITS.ANNUAL-NOTIFICATION-DATE-OLD' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="requestType === benefitTypes.addModifyHeir">
+            <gosi-label-dc
+              id="annualNotificationOverseas"
+              [value]=""
+              label="{{ 'BENEFITS.ANNUAL-NOTIFICATION-DATE-OVERSEAS-HEIR' | translate }}"
+            ></gosi-label-dc>
+          </div> -->
+          <ng-container *ngIf="heir?.disabilityStatus">
+            <div class="col-12 mb-2 sub-header">
+              {{ 'BENEFITS.DISABILITY-ASSESSMENT-DETAILS' | translate }}
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+              <gosi-label-dc
+                id="disability-assessment"
+                [value]="heir?.disabilityStatus | bilingualText"
+                label="{{ 'BENEFITS.ASSESSMENT-RESULT' | translate }}"
+              ></gosi-label-dc>
+            </div>
+          </ng-container>
+
+          <div class="col-sm-12 col-md-12 col-lg-12 mb-2 sub-header">
+            {{ 'BENEFITS.PAYMENT-DETAILS' | translate }}
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="payee"
+              [value]="heir?.payeeType | bilingualText"
+              label="{{ 'BENEFITS.PAYEE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="paymentmethod"
+              [value]="heir?.paymentMode | bilingualText"
+              label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="bankAccNo"
+              [value]="heir?.bankAccount?.ibanBankAccountNo"
+              label="{{ 'BENEFITS.IBANACCOUNT-NUMBER' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="bankName"
+              [value]="heir?.bankAccount?.bankName | bilingualText"
+              label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.bankAccount?.swiftCode && heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="swiftCode"
+              [value]="heir?.bankAccount?.swiftCode"
+              label="{{ 'BENEFITS.SWIFT-CODE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="status"
+              label="{{ 'BENEFITS.BANK-STATUS' | translate }}"
+              [value]="heir?.bankAccount?.status | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <!-- <div class="row" *ngIf="heir.paymentMode?.english === 'Cheque' && heir.payeeType?.english === 'Self'"> -->
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <!--contact details -->
+            <bnt-person-contact-details-dc *ngIf="heir?.contactDetail" [contactDetail]="heir?.contactDetail">
+            </bnt-person-contact-details-dc>
+          </div>
+          <!-- </div> -->
+
+          <!-- <div class="col-lg-12">
+              <gosi-button-dc
+               [size]="'md'"
+              [outlineOnly]="true"
+              (click)="viewBenefitDetails()"
+              type="secondary">
+              {{
+                'BENEFITS.VIEW-HEIR-HISTORY' | translate
+              }}</gosi-button-dc>
+            </div> -->
+          <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="heir?.payeeType?.english === 'Authorized Person'">
+            <!-- Auth person details -->
+            <bnt-attorney-details-dc
+              [isHeir]="true"
+              [annuityBenefitDetails]="heir"
+            >
+            </bnt-attorney-details-dc>
+          </div>
+          <div
+            class="col-sm-12 col-md-12 col-lg-12"
+            *ngIf="heir?.paymentMode?.english === 'Cheque' && heir?.payeeType?.english === 'Authorized Person'"
+          >
+            <!-- Auth person contact details -->
+            <bnt-person-contact-details-dc
+              *ngIf="heir?.agentContactDetails"
+              [contactDetail]="heir?.agentContactDetails"
+            >
+            </bnt-person-contact-details-dc>
+          </div>
+          <!-- View Heir benefit History Not in the Scope of Story 392232  -->
+          <!-- This section removed as a part of Story 469840: Review comments -->
+          <!-- <div class="col-sm-12 col-md-12 col-lg-12">
+            <gosi-button-dc [size]="'md'" [outlineOnly]="true" type="secondary">{{
+              'BENEFITS.VIEW-HEIR-HISTORY' | translate
+            }}</gosi-button-dc>
+          </div> -->
+        </div>
+      </accordion-group>
+    </ng-container>
+  </accordion>
+  <!-- Heir Details retrieved from moj -->
+  <div *ngIf="nicHeirDetails?.length" class="col-sm-12 col-md-12 col-lg-12 sub-header">
+    {{ 'BENEFITS.RETRIEVED-FROM-MOJ' | translate }}
+  </div>
+  <accordion class="heir-accordion w-100 col-12">
+    <ng-container *ngFor="let heir of nicHeirDetails; let i = index">
+      <accordion-group class="wrapper-accordion-group w-100">
+        <div class="heir-name float-left" accordion-heading>
+          <div class="font-weight-normal">
+            <span class="heir-type float-left">{{ heir?.name | nameToString: true }}</span>
+            <span class="relation"> ({{ heir?.relationship | bilingualText }})</span>
+          </div>
+        </div>
+        <div class="header-wrapper ml-auto mr-0" accordion-heading>
+          <!-- TODO status badge -->
+          <gosi-status-badge-dc [label]="heir?.editStatus | translate" [type]="statusBadgeType(heir?.editStatus)">
+          </gosi-status-badge-dc>
+          <span class="arrow-up">
+            <fa-icon icon="angle-up" size="lg"></fa-icon>
+          </span>
+          <span class="arrow-down">
+            <fa-icon icon="angle-down" size="lg"></fa-icon>
+          </span>
+        </div>
+
+        <div class="row px-4 py-2">
+          <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="heir?.identity[0]?.newNin">
+            <gosi-label-dc
+              id="contributorNIN"
+              [value]="heir?.identity[0].newNin"
+              label="{{ 'BENEFITS.NATIONAL-ID' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.name">
+            <gosi-label-dc id="heirInEnglish" [value]="getName(heir?.name)" label="{{ 'BENEFITS.NAME' | translate }}">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.name">
+            <gosi-label-dc
+              id="heirInArabic"
+              [value]="getName(heir?.name, 'ar')"
+              label="{{ 'BENEFITS.NAME-IN-ARABIC' | translate }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dob"
+              [control]="'BENEFITS.AGE' | translate: { age: heir?.age }"
+              label="BENEFITS.DATE-OF-BIRTH"
+            >
+              <span id="prefixValue">{{ heir?.birthDate?.gregorian | date: 'dd/MM/yyyy' }} </span>
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="dobHijiri"
+              [control]="'BENEFITS.AGE' | translate: { age: heir?.age }"
+              label="BENEFITS.DATE-OF-BIRTH-HIJIRI"
+            >
+              <span id="prefixValue">{{ heir?.birthDate?.hijiri | date: 'dd/MM/yyyy' }}</span>
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="nationality"
+              [value]="heir?.nationality | bilingualText"
+              label="{{ 'BENEFITS.NATIONALITY' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="gender"
+              [value]="heir?.gender | bilingualText"
+              label="{{ 'BENEFITS.GENDER' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12 mb-2 sub-header">
+            {{ 'BENEFITS.PAYMENT-DETAILS' | translate }}
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="payee"
+              [value]="heir?.payeeType | bilingualText"
+              label="{{ 'BENEFITS.PAYEE' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <gosi-label-dc
+              id="paymentmethod"
+              [value]="heir?.paymentMode | bilingualText"
+              label="{{ 'BENEFITS.PAYMENT-METHOD' | translate }}"
+            ></gosi-label-dc>
+          </div>
+
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="bankAccNo"
+              [value]="heir?.bankAccount?.ibanBankAccountNo"
+              label="{{ 'BENEFITS.IBANACCOUNT-NUMBER' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="bankName"
+              [value]="heir?.bankAccount?.bankName | bilingualText"
+              label="{{ 'BENEFITS.BANK-NAME' | translate }}"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="heir?.paymentMethod !== 'Cheque'">
+            <gosi-label-dc
+              id="status"
+              label="{{ 'BENEFITS.BANK-STATUS' | translate }}"
+              [value]="heir?.bankAccount?.status | bilingualText"
+            >
+            </gosi-label-dc>
+          </div>
+
+          <!-- <div class="row" *ngIf="heir.paymentMode?.english === 'Cheque' && heir.payeeType?.english === 'Self'"> -->
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <bnt-person-contact-details-dc *ngIf="heir?.contactDetail" [contactDetail]="heir?.contactDetail">
+            </bnt-person-contact-details-dc>
+          </div>
+          <!-- </div> -->
+
+          <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="heir?.payeeType?.english === 'Authorized Person'">
+            <bnt-attorney-details-dc
+              [isHeir]="true"
+              [annuityBenefitDetails]="heir"
+            >
+            </bnt-attorney-details-dc>
+          </div>
+          <div
+            class="col-sm-12 col-md-12 col-lg-12"
+            *ngIf="heir?.paymentMode?.english === 'Cheque' && heir?.payeeType?.english === 'Authorized Person'"
+          >
+            <bnt-person-contact-details-dc
+              *ngIf="heir?.agentContactDetails"
+              [contactDetail]="heir?.agentContactDetails"
+            >
+            </bnt-person-contact-details-dc>
+          </div>
+        </div>
+      </accordion-group>
+    </ng-container>
+  </accordion>
+</div>

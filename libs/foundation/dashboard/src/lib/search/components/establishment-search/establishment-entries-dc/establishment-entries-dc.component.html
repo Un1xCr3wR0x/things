@@ -1,0 +1,118 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="table-responsive">
+  <div class="row">
+    <div class="col-lg-12 table-establishment">
+      <table class="table table-condensed mx-0">
+        <thead *ngIf="isPrivate">
+          <tr *ngIf="establishmentEntry.length !== 0">
+            <th>
+              {{ 'DASHBOARD.ESTABLISHMENT-NAME' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.REGISTRATION-NUMBER' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.FIELD-OFFICE-LOCATION' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.LEGAL-ENTITY' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.STATUS' | translate | uppercase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="data-row"
+            *ngFor="
+              let item of establishmentEntry
+                | paginate
+                  : {
+                      id: estPagination,
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: establishmentSearchCount
+                    }
+            "
+            (click)="navigateToEstablishment(item.registrationNo)"
+          >
+            <td>
+              <div [ngClass]="[!isPrivate ? 'd-flex align-items-center' : '']">
+                <fa-icon
+                  *ngIf="!isPrivate"
+                  class="icon-wrapper"
+                  [ngClass]="[selectedLang === 'en' ? 'mr-2' : 'ml-2']"
+                  icon="building"
+                  size="md"
+                ></fa-icon>
+                <span>
+                  <ng-container *ngIf="!isPrivate">
+                    <span class="row-heading"> {{ 'DASHBOARD.ESTABLISHMENT-NAME' | translate | uppercase }}</span
+                    ><br />
+                  </ng-container>
+                  <span [ngClass]="[!isPrivate ? 'table-content' : '']">
+                    {{ item.name.arabic }} <br />
+                    {{ item.name.english }}
+                  </span>
+                </span>
+              </div>
+            </td>
+            <td>
+              <ng-container *ngIf="!isPrivate">
+                <span class="row-heading"> {{ 'DASHBOARD.REGISTRATION-NUMBER' | translate | uppercase }}</span
+                ><br />
+              </ng-container>
+              <span [ngClass]="[!isPrivate ? 'table-content' : '']"> {{ item.registrationNo }} </span>
+            </td>
+            <td>
+              <ng-container *ngIf="!isPrivate">
+                <span class="row-heading"> {{ 'DASHBOARD.FIELD-OFFICE-LOCATION' | translate | uppercase }}</span
+                ><br />
+              </ng-container>
+              <span [ngClass]="[!isPrivate ? 'table-content' : '']">
+                {{
+                  item.fieldOfficeName
+                    ? (item.fieldOfficeName | bilingualText | titlecase)
+                    : ('DASHBOARD.NOT-AVAILABLE' | translate)
+                }}
+              </span>
+            </td>
+            <td>
+              <ng-container *ngIf="!isPrivate">
+                <span class="row-heading"> {{ 'DASHBOARD.LEGAL-ENTITY' | translate | uppercase }}</span
+                ><br />
+              </ng-container>
+              <span [ngClass]="[!isPrivate ? 'table-content' : '']">
+                {{ item.legalEntity | bilingualText | titlecase }}
+              </span>
+            </td>
+            <td>
+              <ng-container *ngIf="!isPrivate">
+                <span class="row-heading"> {{ 'DASHBOARD.STATUS' | translate | uppercase }}</span
+                ><br />
+              </ng-container>
+              <span [ngClass]="[!isPrivate ? 'table-content' : '']">
+                {{ item.status | bilingualText | titlecase }}</span
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<gosi-pagination-dc
+  #paginationComponent
+  *ngIf="establishmentSearchCount > itemsPerPage && !isRecent"
+  [totalSize]="establishmentSearchCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+  [paginationId]="estPagination"
+>
+</gosi-pagination-dc>

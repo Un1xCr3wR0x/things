@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-card-dc
+  type="secondary"
+  [heading]="'CONTRIBUTOR.CANCEL-CON.CANCELLATION-DETAILS' | translate"
+  [noHeadingMargin]="true"
+>
+  <div class="row mt-4" *ngIf="vicEngagement || cancellationDetails">
+    <div class="col-lg-6" *ngIf="!isPREligible">
+      <gosi-input-month-dc
+        id="joiningDate"
+        [dateFormat]="'MM/YYYY'"
+        [control]="cancelVicForm.get('joiningDate').get('gregorian')"
+        [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+        [disabled]="true"
+      ></gosi-input-month-dc>
+    </div>
+    <div class="col-lg-6" *ngIf="isPREligible">
+      <gosi-input-date-dc
+        id="joiningDate"
+        [control]="cancelVicForm.get('joiningDate').get('gregorian')"
+        [label]="'CONTRIBUTOR.JOINING-DATE' | translate"
+        [disabled]="true"
+      ></gosi-input-date-dc>
+    </div>
+    <ng-container *ngIf="vicEngagement?.leavingDate || cancellationDetails?.leavingDate">
+      <div class="col-lg-6" *ngIf="!isPREligible">
+        <gosi-input-month-dc
+          id="leavingDate"
+          [dateFormat]="'MM/YYYY'"
+          [control]="cancelVicForm.get('leavingDate').get('gregorian')"
+          [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+          [disabled]="true"
+        ></gosi-input-month-dc>
+      </div>
+      <div class="col-lg-6" *ngIf="isPREligible">
+        <gosi-input-date-dc
+          id="leavingDate"
+          [control]="cancelVicForm.get('leavingDate').get('gregorian')"
+          [label]="'CONTRIBUTOR.LEAVING-DATE' | translate"
+          [disabled]="true"
+        ></gosi-input-date-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-input-select-dc
+          id="leavingReason"
+          [label]="'CONTRIBUTOR.LEAVING-REASON' | translate"
+          [control]="cancelVicForm.get('leavingReason')"
+          [list]="leavingReasonList"
+          [disabled]="true"
+        >
+        </gosi-input-select-dc>
+      </div>
+    </ng-container>
+    <div class="col-lg-6">
+      <gosi-input-select-dc
+        id="leavingReason"
+        [label]="'CONTRIBUTOR.CANCEL-CON.CANCELLATION-REASON' | translate"
+        [control]="cancelVicForm.get('cancellationReason')"
+        [list]="cancellationReasonList"
+      ></gosi-input-select-dc>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-lg-12">
+      <cnt-vic-contribution-details-dc
+        [vicContributionDetails]="vicContributionDetails"
+        [isCancelVic]="true"
+        [isPREligible]="isPREligible"
+        [lang]="lang"
+      ></cnt-vic-contribution-details-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!-- VIC Bank Details -->
+<cnt-person-bank-details-dc
+  [bankNameList$]="bankNameList$"
+  [bankDetails]="bankDetails"
+  [parentForm]="parentForm"
+  [isEditMode]="isEditMode"
+  [isBankDetailsPending]="isBankDetailsPending"
+  (IBANChange)="verifyIBAN.emit($event)"
+  (bankEditMode)="toggelBankEditMode($event)"
+  (cancel)="clearErrors()"
+></cnt-person-bank-details-dc>
+
+<!-- Action area -->
+<cnt-action-area-dc
+  primaryButtonLabel="CONTRIBUTOR.SAVE-AND-NEXT"
+  [showPreviousSection]="false"
+  (submit)="saveCancellationDetails()"
+  (cancel)="cancel.emit()"
+></cnt-action-area-dc>

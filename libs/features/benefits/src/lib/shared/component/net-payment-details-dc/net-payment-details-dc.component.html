@@ -1,0 +1,341 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="row">
+  <!--  <div class="col-lg-12">-->
+  <div *ngIf="isRPALumpsum" class="col-lg-12 annuity-type">
+    {{ 'BENEFITS.ADJUSTMENT-DETAILS' | translate }}
+  </div>
+  <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="holdBenefit">
+    <gosi-alert-dc [message]="holdMessage | translate" type="info" [dismissible]="false" [noPadding]="true">
+      <a actOnAlert id="view-ineligible" (click)="viewAdjustmentDetails()"
+        ><u>{{ 'BENEFITS.VIEW-ADJUSTMENT-DETAILS' | translate }}</u></a
+      >
+    </gosi-alert-dc>
+  </div>
+  <!--    <div class="row pt-2">-->
+  <div
+    class="col-lg-6"
+    *ngIf="
+      heirBenefitDetails?.benefitAmount &&
+      (benefitType === benefitTypes.heirMissingLumpsum ||
+        benefitType === benefitTypes.heirLumpsumDeadContributor ||
+        benefitType === benefitTypes.heirLumpsum)
+    "
+  >
+    <gosi-label-dc
+      id="BENEFIT-AMOUNT-ELIGIBLE"
+      [value]="
+        'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: heirBenefitDetails?.benefitAmount || 0 | number: '1.2-2' }
+      "
+      label="{{ 'BENEFITS.BENEFIT-AMOUNT-ELIGIBLE' | translate }}"
+    ></gosi-label-dc>
+    <!--      </div>-->
+    <div class="col-lg-6" *ngIf="heirBenefitDetails?.deathGrant">
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT' | translate: { amount: heirBenefitDetails?.deathGrant || 0 | number: '1.2-2' }
+        "
+        label="BENEFITS.DEATH-GRANT"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <ng-container *ngIf="requestType !== benefitTypes.addModifyBenefit; else addModify">
+    <!-- <div class="col-6" *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount">
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT'
+            | translate
+              : {
+                  amount:
+                    adjustmentCalculationDetails?.previousAdjustmentAmount || 0 | numToPositive | number : '1.2-2'
+                }
+        "
+        [customStyle]="adjustmentDetails?.debit ? labelStyle.red : labelStyle.green"
+        label="BENEFITS.PRE-ADJUSTMENTS"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount || adjustmentDetails?.adjustments?.length"
+      class="{{ isHeirAdjustment ? 'col-lg-12 col-md-12 col-sm-12 pb-4 pt-0' : 'col-6 pl-0' }}"
+    >
+      <a (click)="viewPrevAdjustment()" routerLinkActive="active"
+        ><u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u>
+      </a>
+    </div> -->
+    <!-- /* Net previous adjustment and view previous adjustment section */ -->
+    <!--      <div class="row pb-3 pt-0">-->
+    <div class="col-md-12" *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount">
+      {{ 'BENEFITS.PRE-ADJUSTMENTS' | translate }}
+    </div>
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-lg-4">
+          <span
+            *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount"
+            [ngClass]="
+              adjustmentCalculationDetails?.previousAdjustmentAmount >= 0 ? 'net-value-green' : 'net-value-red'
+            "
+            >{{ adjustmentCalculationDetails?.previousAdjustmentAmount || 0 | numToPositive | number: '1.2-2' }}
+            {{ 'BENEFITS.SR' | translate }}
+          </span>
+        </div>
+        <div class="col-lg-6">
+          <span
+            class="link-value float-right ml-0 mr-3"
+            *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount || adjustmentDetails?.adjustments?.length"
+          >
+            <a (click)="viewPrevAdjustment()" routerLinkActive="active"
+              ><u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u></a
+            >
+          </span>
+        </div>
+      </div>
+      <!--        </div>-->
+    </div>
+    <!-- end   -->
+    <!--      <div class="row" *ngIf="adjustmentCalculationDetails?.netAdjustmentAmount">-->
+    <div
+      class="col-12 mt-3"
+      *ngIf="
+        annuityBenefitDetails?.benefitType?.english?.includes('Lumpsum') &&
+        adjustmentCalculationDetails?.netPayableAmount
+      "
+    >
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT'
+            | translate
+              : {
+                  amount:
+                    Math.abs(adjustmentCalculationDetails?.netPayableAmount) || 0 | numToPositive | number: '1.2-2'
+                }
+        "
+        [customStyle]="adjustmentCalculationDetails?.isNetPayableAmountDebit ? labelStyle.red : labelStyle.green"
+        label="BENEFITS.NET-PAYABLE-AMOUNT"
+      >
+      </gosi-label-dc>
+    </div>
+    <!--      </div>-->
+    <!-- TODO arabic label and value pending -->
+    <!-- <div class="col-lg-12" *ngIf="adjustmentDetails?.netMonthlyDeductionAmount">
+    <gosi-label-dc
+      [value]="
+        'BENEFITS.AVERAGE-AMOUNT'
+          | translate
+            : {
+                amount: adjustmentDetails?.netMonthlyDeductionAmount || 0 | number: '1.2-2'
+              }
+      "
+      [customStyle]="adjustmentDetails?.debit ? labelStyle.red : labelStyle.green"
+      label="BENEFITS.NET-CONTRIBUTOR-ADJUSTMENT-DEDUCTIONS"
+    >
+    </gosi-label-dc>
+  </div> -->
+    <!--      <div class="row ml-2">-->
+    <!--custom label-->
+    <div
+      *ngIf="!this.isHeir && adjustmentCalculationDetails?.netPendingBenefitAmount"
+      id="netPendingBenefitAmount"
+      class="col-12 form-group form-label fc-margin"
+    >
+      <label class="label-color">
+        {{ 'BENEFITS.NET-PENDING-BENEFITS-AMOUNT' | translate }}
+      </label>
+      <div class="label-value">
+        <span [ngClass]="adjustmentDetails?.debit ? 'net-value-red' : 'net-value-green'"
+          >{{ adjustmentCalculationDetails?.netPendingBenefitAmount || 0 | numToPositive | number }}
+          {{ 'BENEFITS.SR' | translate }}</span
+        >
+        <span class="link-value float-right">
+          <a (click)="onViewHistoryDetails(heirBenefitDetails?.personId)"
+            ><u>{{ 'BENEFITS.VIEW-PAYMENT-HISTORY' | translate }}</u></a
+          ></span
+        >
+      </div>
+    </div>
+    <!--custom label-->
+    <!--        <div class="col-md-12">-->
+    <!--          {{ 'BENEFITS.NET-PENDING-BENEFITS-AMOUNT' | translate }}-->
+    <!--        </div>-->
+    <!--        <div class="col-md-12">-->
+    <!--            <span [ngClass]="adjustmentDetails?.debit ? 'net-value-red' : 'net-value-green'"-->
+    <!--            >{{ adjustmentCalculationDetails?.netPendingBenefitAmount | numToPositive | number }}-->
+    <!--              {{ 'BENEFITS.SR' | translate }}</span-->
+    <!--            >-->
+    <!--          <span class="link-value float-right">-->
+    <!--              <a (click)="onViewHistoryDetails(heirBenefitDetails?.personId)"-->
+    <!--              ><u>{{ 'BENEFITS.VIEW-PAYMENT-HISTORY' | translate }}</u></a-->
+    <!--              ></span-->
+    <!--          >-->
+    <!--        </div>-->
+    <!--      </div>-->
+
+    <!-- Net Adjustments to be shown even if 0 or less than 0, as confirmed by BA : adjustmentCalculationDetails?.netAdjustmentAmount > 0 removed -->
+    <div
+      class="col-lg-12 pt-3"
+      *ngIf="
+        annuityBenefitDetails &&
+        !annuityBenefitDetails?.benefitType?.english?.includes('Lumpsum') &&
+        adjustmentCalculationDetails?.netAdjustmentAmount
+      "
+    >
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT'
+            | translate
+              : {
+                  amount:
+                    Math.abs(adjustmentCalculationDetails?.netAdjustmentAmount) || 0 | numToPositive | number: '1.2-2'
+                }
+        "
+        [customStyle]="adjustmentCalculationDetails?.isNetAdjustmentAmountDebit ? labelStyle.red : labelStyle.green"
+        label="BENEFITS.NET-ADJUSTMENT_AMOUNT"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- *ngIf="adjustmentDetails && adjustmentDetails?.adjustments.length -->
+    <!-- put benfit on hold checkbox not required in add/modify(dep and heir) screens---new requirement as per discussion with biz -->
+    <div
+      class="col-lg-12"
+      *ngIf="
+        showActionButtons &&
+        !isLumpsum &&
+        requestType !== benefitTypes?.addModifyHeir &&
+        requestType !== benefitTypes?.restartbenefit
+      "
+    >
+      <gosi-input-checkbox-dc
+        [disabled]="!isValidator || adjustmentForm.get('initiateDirectPayment')?.value"
+        id="put-hold"
+        name="put-hold"
+        [control]="adjustmentForm?.get('holdBenefit')"
+        [label]="'BENEFITS.PUT-BENEFIT-ON-HOLD' | translate"
+      >
+      </gosi-input-checkbox-dc>
+    </div>
+
+    <!--net adjustment amout ne prev adjustment-->
+    <div class="col-lg-12">
+      <gosi-label-dc
+        *ngIf="
+          heirBenefitDetails?.benefitAmountAfterDeduction &&
+          heirBenefitDetails?.adjustmentCalculationDetails?.totalAdjustmentAmount &&
+          isLumpsum
+        "
+        id="BENEFIT-AMOUNT-AFTER-DEDUCTIONS"
+        [customStyle]="heirBenefitDetails?.benefitAmountAfterDeduction >= 0 ? labelStyle.green : labelStyle.red"
+        [value]="Math.abs(heirBenefitDetails?.benefitAmountAfterDeduction)"
+        label="{{ 'BENEFITS.BENEFIT-AMOUNT-AFTER-DEDUCTIONS' | translate }}"
+      ></gosi-label-dc>
+    </div>
+    <div
+      class="col-lg-12 col-md-12 col-sm-12"
+      *ngIf="
+        showActionButtons &&
+        adjustmentCalculationDetails?.netAdjustmentAmount > 0 &&
+        (!isHeir || (isHeir && requestType !== benefitTypes.holdbenefit)) &&
+        !isLumpsum
+      "
+    >
+      <!--Not required for hold heir-->
+      <gosi-input-checkbox-dc
+        id="allow-direct-payment-request"
+        name="allow-direct-payment"
+        [disabled]="
+          isValidator2 ||
+          disableDirectPayment ||
+          !isValidator ||
+          !adjustmentCalculationDetails?.netAdjustmentAmount ||
+          adjustmentCalculationDetails?.netAdjustmentAmount <= 0 ||
+          adjustmentForm.get('holdBenefit')?.value === true
+        "
+        [control]="adjustmentForm?.get('initiateDirectPayment')"
+        [label]="'BENEFITS.ALLOW-DIRECT-PAYMENT' | translate"
+      >
+        <span><fa-icon class="blue-circle" icon="info-circle" size="lg"></fa-icon></span>
+      </gosi-input-checkbox-dc>
+    </div>
+  </ng-container>
+  <ng-template #addModify>
+    <!--Story 469840 : API integration pending, after BE changes -->
+    <!--    <div class="col-lg-6 col-md-6 col-sm-6">-->
+    <!--      <gosi-label-dc-->
+    <!--        [value]="-->
+    <!--          'BENEFITS.AVERAGE-AMOUNT'-->
+    <!--            | translate-->
+    <!--              : {-->
+    <!--                  amount: adjustmentCalculationDetails?.previousAdjustmentAmount || 0 | number: '1.2-2'-->
+    <!--                }-->
+    <!--        "-->
+    <!--        [customStyle]="adjustmentDetails?.debit ? labelStyle.red : labelStyle.green"-->
+    <!--        label="BENEFITS.BENEFIT-AMOUNT-ELIGIBLE"-->
+    <!--      >-->
+    <!--      </gosi-label-dc>-->
+    <!--    </div>-->
+    <div class="col-lg-6 col-md-6 col-sm-6">
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT'
+            | translate
+              : {
+                  amount: Math.abs(adjustmentCalculationDetails?.previousAdjustmentAmount) || 0 | number: '1.2-2'
+                }
+        "
+        [customStyle]="adjustmentCalculationDetails?.previousAdjustmentAmount >= 0 ? labelStyle.green : labelStyle.red"
+        label="BENEFITS.PRE-ADJUSTMENTS"
+      >
+      </gosi-label-dc>
+    </div>
+    <div
+      class="col-lg-6 col-md-6 col-sm-6"
+      *ngIf="adjustmentCalculationDetails?.previousAdjustmentAmount || adjustmentDetails?.adjustments?.length"
+    >
+      <a (click)="viewPrevAdjustment()" routerLinkActive="active"
+        ><u>{{ 'BENEFITS.VIEW-PREVIOUS-ADJUSTMENT' | translate }}</u>
+      </a>
+    </div>
+    <div class="col-lg-12">
+      <gosi-label-dc
+        [value]="
+          'BENEFITS.AVERAGE-AMOUNT'
+            | translate: { amount: Math.abs(adjustmentCalculationDetails?.netAdjustmentAmount) || 0 | number: '1.2-2' }
+        "
+        [customStyle]="adjustmentCalculationDetails?.isNetAdjustmentAmountDebit ? labelStyle.red : labelStyle.green"
+        label="BENEFITS.NET-ADJUSTMENT_AMOUNT"
+      >
+      </gosi-label-dc>
+    </div>
+    <!-- put benfit on hold checkbox not required in add/modify(dep and heir) screens---new requirement as per discussion with biz -->
+    <!-- <div class="col-lg-12">
+      <gosi-input-checkbox-dc
+        [disabled]="!isValidator || adjustmentForm.get('initiateDirectPayment')?.value === true"
+        id="put-hold"
+        name="put-hold"
+        [control]="adjustmentForm?.get('holdBenefit')"
+        [label]="'BENEFITS.PUT-BENEFIT-ON-HOLD' | translate"
+      >
+      </gosi-input-checkbox-dc>
+    </div> -->
+    <div
+      class="col-lg-12 col-md-12 col-sm-12"
+      *ngIf="showActionButtons && adjustmentCalculationDetails?.netAdjustmentAmount > 0"
+    >
+      <!-- adjustmentForm.get('holdBenefit')?.value === true -->
+      <gosi-input-checkbox-dc
+        id="allow-direct-payment-modify"
+        name="allow-direct-payment"
+        [disabled]="isValidator2 || !isValidator || disableDirectPayment"
+        [control]="adjustmentForm?.get('initiateDirectPayment')"
+        [label]="'BENEFITS.ALLOW-DIRECT-PAYMENT' | translate"
+      >
+        <span><fa-icon class="blue-circle" icon="info-circle" size="lg"></fa-icon></span>
+      </gosi-input-checkbox-dc>
+      <!-- !adjustmentCalculationDetails?.eligibleForDirectPayment -->
+    </div>
+  </ng-template>
+
+  <!--  </div>-->
+</div>

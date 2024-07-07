@@ -1,0 +1,133 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <ng-container *ngIf="!showOutsideGroup">
+    <div class="col-lg-12 pl-4 validator-table">
+      <table class="table">
+        <thead class="thead-light">
+          <tr>
+            <th>{{ 'BILLING.ESTABLISHMENT-DETAILS' | translate }}</th>
+            <th>{{ 'BILLING.STATUS' | translate }}</th>
+            <th>
+              {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+              <span class="currency-fontsize"
+                >({{ gccFlag && otherCurrency ? (currency | bilingualText) : ('BILLING.SAR' | translate) }})
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="
+              let paymentBranch of insideBranch
+                | paginate
+                  : {
+                      id: 'paginationIdInside',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetailsInside.currentPage,
+                      totalItems: insideLength
+                    };
+              let i = index
+            "
+          >
+            <ng-container *ngIf="!showOutsideGroup && !paymentBranch.outsideGroup">
+              <tr>
+                <td>
+                  <div>
+                    {{ paymentBranch.name | bilingualText: true }}
+                  </div>
+                  <div class="size-adjust">
+                    {{ 'BILLING.ESTABLISHMENT-REG-NO' | translate }}:
+                    {{ paymentBranch.registrationNo }}
+                  </div>
+                </td>
+                <td>{{ paymentBranch.status | bilingualText | titlecase }}</td>
+                <td>
+                  {{ paymentBranch.allocatedAmount.amount | number: '1.2-2' }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+      <ng-container>
+        <div>
+          <gosi-pagination-dc
+            *ngIf="insideLength > itemsPerPage"
+            [totalSize]="insideLength"
+            [itemsPerPage]="itemsPerPage"
+            [pageDetails]="pageDetailsInside"
+            (pageChange)="selectedPageInside($event)"
+            paginationId="paginationIdInside"
+          ></gosi-pagination-dc>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="showOutsideGroup">
+    <div class="col-lg-12 pl-4 validator-table">
+      <table class="table">
+        <thead class="thead-light">
+          <tr>
+            <th>{{ 'BILLING.ESTABLISHMENT-DETAILS' | translate }}</th>
+            <th>{{ 'BILLING.STATUS' | translate }}</th>
+            <th>
+              {{ 'BILLING.ALLOCATION-AMOUNT' | translate }}
+              <span class="currency-fontsize"
+                >({{ gccFlag && otherCurrency ? (currency | bilingualText) : ('BILLING.SAR' | translate) }})
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="
+              let item of outsideBranch
+                | paginate
+                  : {
+                      id: 'paginationIdOutside',
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetailsOutside.currentPage,
+                      totalItems: outsideLength
+                    };
+              let i = index
+            "
+          >
+            <ng-container *ngIf="showOutsideGroup && item.outsideGroup">
+              <tr>
+                <td>
+                  <div>
+                    {{ item.name | bilingualText: true }}
+                  </div>
+                  <div class="size-adjust">
+                    {{ 'BILLING.ESTABLISHMENT-REG-NO' | translate }}:
+                    {{ item.registrationNo }}
+                  </div>
+                </td>
+                <td>{{ item.status | bilingualText | titlecase }}</td>
+                <td>
+                  {{ item.allocatedAmount.amount | number: '1.2-2' }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <ng-container>
+      <div>
+        <gosi-pagination-dc
+          *ngIf="outsideLength > itemsPerPage"
+          [totalSize]="outsideLength"
+          [itemsPerPage]="itemsPerPage"
+          [pageDetails]="pageDetailsOutside"
+          (pageChange)="selectedPageOutside($event)"
+          paginationId="paginationIdOutside"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

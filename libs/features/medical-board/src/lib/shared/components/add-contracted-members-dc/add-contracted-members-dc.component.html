@@ -1,0 +1,239 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-modal-dc>
+  <div modalContent>
+    <div class="d-flex flex-wrap align-items-center justify-content-between table-headers pt-4 pb-4">
+      <div class="d-flex justify-content-start">
+        <div class="header">{{ 'MEDICAL-BOARD.ADD-CONTRACTED-MEMBER' | translate }}</div>
+      </div>
+      <div class="d-flex justify-content-end">
+        <ng-container *ngIf="count !== 0">
+          <div id="selection" class="d-flex align-items-center pb-3">
+            <span class="value">{{ count }}</span>
+            <span class="label">{{ 'MEDICAL-BOARD.SELECTED' | translate }}</span>
+          </div>
+        </ng-container>
+        <gosi-search-dc
+          id="search-area"
+          [placeholder]="'MEDICAL-BOARD.SEARCH-PLACEHOLDER-VALUE' | translate"
+          class="pr-2 pl-2 search-value"
+          (search)="onSearchMember($event)"
+          (keyup)="onSearchEnable($event.target.value)"
+          [searchParam]="searchParams"
+          (reset)="onResetSearch()"
+        >
+        </gosi-search-dc>
+        <mb-add-member-filter-dc
+          [specialityLists]="specialityLists"
+          [fieldOfficeLists]="fieldOfficeLists"
+          [addContractedDoctor]="true"
+          [isAmbOfficer]="isAmb"
+          [isAdhoc]="isAdhoc"
+          (filter)="onFilterApply($event)"
+          #memberFilter
+        ></mb-add-member-filter-dc>
+      </div>
+    </div>
+    <!-- As per business requirement removing this warning message since the members are filtered as PMB and AMB so this message is not required -->
+    <!-- <gosi-alert-dc
+      *ngIf="showWarning"
+      [message]="'MEDICAL-BOARD.PMB-DOCTOR-FOR-AMB-WARNING' | translate"
+      [dismissible]="false"
+      type="warning"
+    ></gosi-alert-dc> -->
+    <gosi-alert-dc
+      *ngIf="showUnavailability"
+      [message]="'MEDICAL-BOARD.UNAVAILABILITY-OF-A-MEMBER' | translate"
+      [dismissible]="false"
+      type="danger"
+    ></gosi-alert-dc>
+    <gosi-alert-dc
+      *ngIf="showErrors"
+      [bilingualMessage]="availableMsg"
+      [dismissible]="false"
+      type="danger"
+    ></gosi-alert-dc>
+    <div class="table-view">
+      <table class="table table-borderless">
+        <thead class="thead-light">
+          <tr>
+            <th></th>
+            <th id="name">
+              {{ 'MEDICAL-BOARD.NAME' | translate }}
+            </th>
+            <th id="type">
+              {{ 'MEDICAL-BOARD.CONTRACT-TYPE' | translate }}
+            </th>
+            <th id="specialty">
+              {{ 'MEDICAL-BOARD.SPECIALITY' | translate }}
+            </th>
+            <th id="subspecialty">
+              {{ 'MEDICAL-BOARD.SUB-SPECIALITY' | translate }}
+            </th>
+            <th id="location">
+              {{ 'MEDICAL-BOARD.LOCATION' | translate }}
+            </th>
+            <th id="mobNo">
+              {{ 'MEDICAL-BOARD.MOBILE-NO' | translate }}
+            </th>
+            <th id="availabilty">
+              {{ 'MEDICAL-BOARD.AVAILABILITY' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="border-bottom"
+            *ngFor="
+              let member of contractedMembers
+                | paginate
+                  : {
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: totalResponse
+                    };
+              let i = index
+            "
+          >
+            <td style="width: 1%">
+              <gosi-input-checkbox-dc
+                [control]="inputCheckForm?.controls[absoluteIndex(i)]?.get('flag')"
+                (select)="selectMember($event, member, i)"
+                [disabled]="!member?.isAvailable"
+              ></gosi-input-checkbox-dc>
+            </td>
+            <td style="width: 15%">
+              <div class="first-row">
+                <ng-template #excludedTemplate>
+                  <ng-container *ngTemplateOutlet="excludedTemplateInfo; context: { contributor: member.doctorName }">
+                  </ng-container>
+                </ng-template>
+                <div
+                  class="row"
+                  [tooltip]="isTooltipNeeded(member?.doctorName) === 1 ? excludedTemplate : ''"
+                  placement="right"
+                >
+                  <div class="value" *ngIf="lang === 'en'">
+                    {{
+                      member?.doctorName?.english === null || member?.doctorName?.english?.length === 0
+                        ? member?.doctorName?.arabic
+                        : member?.doctorName?.english
+                    }}
+                  </div>
+                  <div class="value" *ngIf="lang === 'ar'">
+                    {{ member?.doctorName?.arabic }}
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <ng-container *ngIf="member?.nationalIdType === ninId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.NATIONAL-ID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="member?.nationalIdType === iqamaId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.IQAMA-NUMBER' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="member?.nationalIdType === gccId">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.GCCID' | translate }} :</span>
+                </ng-container>
+                <ng-container *ngIf="member?.nationalIdType === borderNo">
+                  <span class="id-label"> {{ 'MEDICAL-BOARD.BORDER-NO' | translate }} :</span>
+                </ng-container>
+                <span
+                  ><a class="member-click" (click)="getMembers(member.nationalId)">{{ member.nationalId }}</a></span
+                >
+              </div>
+            </td>
+            <ng-template #excludedTemplateInfo let-contributorName="contributor">
+              <div class="d-flex flex-column">
+                <div class="value" *ngIf="lang === 'en'">
+                  {{
+                    member?.doctorName?.english === null || member?.doctorName?.english?.length === 0
+                      ? member?.doctorName?.arabic
+                      : member?.doctorName?.english
+                  }}
+                </div>
+                <div class="value" *ngIf="lang === 'ar'">
+                  {{ member?.doctorName?.arabic }}
+                </div>
+              </div>
+            </ng-template>
+            <td style="width: 15%">
+              {{ member.contractType | bilingualText }}
+            </td>
+            <td style="width: 15%">
+              <ng-container *ngFor="let speciality of member?.speciality">
+                <span class="days mb-1"> {{ speciality | bilingualText }}</span></ng-container
+              >
+            </td>
+            <td style="width: 15%">
+              <ng-container *ngFor="let subspeciality of member?.subSpeciality">
+                <span class="days mb-1"> {{ subspeciality | bilingualText }}</span></ng-container
+              >
+            </td>
+            <td style="width: 15%">
+              <ng-container *ngFor="let location of member?.location">
+                <span class="days mb-1"> {{ location | bilingualText }}</span></ng-container
+              >
+            </td>
+            <td style="width: 15%">
+              <ng-container *ngIf="member.mobileNumber">
+                <fa-icon
+                  icon="phone"
+                  size="1x"
+                  class="admin-phone pr-1"
+                  outsideClick="true"
+                  (click)="isIconClicked(i)"
+                  transform="rotate-{{ rotatedeg }} down-2"
+                ></fa-icon>
+
+                <ng-container *ngIf="member.isIconClicked">
+                  {{ member.mobileNumber }}
+                </ng-container>
+              </ng-container>
+            </td>
+            <td>
+              <gosi-status-badge-dc
+                class="d-flex status" 
+                [label]="
+                  member?.isAvailable
+                    ? ('MEDICAL-BOARD.AVAILABLE' | translate)
+                    : ('MEDICAL-BOARD.NOT-AVAILABLE' | translate)
+                "
+                type="{{ member?.isAvailable ? 'success' : 'danger' }}"
+              >
+              </gosi-status-badge-dc>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="contractedMembers?.length === 0" class="pt-4">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+    </div>
+    <gosi-pagination-dc
+      #paginationComponent
+      *ngIf="totalResponse > itemsPerPage"
+      [pageDetails]="pageDetails"
+      [totalSize]="totalResponse"
+      [itemsPerPage]="itemsPerPage"
+      (pageChange)="onSelectPage($event)"
+    >
+    </gosi-pagination-dc>
+  </div>
+
+  <div class="pt-4" modalAction>
+    <div class="btn-section float-left">
+      <gosi-button-dc id="cancel" type="secondary" (submit)="onCancelValues()">
+        {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="btn-section float-right">
+      <gosi-button-dc id="submit" [disabled]="isDisabled" (submit)="onAddMembers()" type="primary">
+        {{ 'MEDICAL-BOARD.ADD-MEMBERS' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</gosi-modal-dc>

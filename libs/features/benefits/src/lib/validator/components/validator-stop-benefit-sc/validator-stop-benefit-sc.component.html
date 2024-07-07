@@ -1,0 +1,293 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div>
+  <gosi-breadcrumb-dc #brdcmb> </gosi-breadcrumb-dc>
+</div>
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <div>
+        <frm-main-heading-dc heading="{{ stopHeading | translate }}"></frm-main-heading-dc>
+      </div>
+    </ng-container>
+    <frm-main-content-dc [documents]="documentList" [comments]="comments">
+      <gosi-alert-dc> </gosi-alert-dc>
+      <div id="contentArea">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary" lessPadding="true">
+              <!-- Contributor  Details -->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="user"
+                    [canEdit]="validatorCanEdit"
+                    (onEdit)="navigateToEdit()"
+                    heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+                  >
+                  </frm-content-heading-dc>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorNin"
+                        label="{{ 'BENEFITS.NIN' | translate }}"
+                        [isLink]="true"
+                        [value]="identity?.id"
+                        (click)="viewContributorDetails()"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorName"
+                        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-EN' | translate }}"
+                        [value]="contributorDetails?.name?.english"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="contributorNameArabic"
+                        label="{{ 'BENEFITS.CONTRIBUTOR-NAME-AR' | translate }}"
+                        [value]="contributorDetails?.name?.arabic"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="dateOfBirth"
+                        label="{{ 'BENEFITS.DATE-OF-BIRTH' | translate }}"
+                        value="{{ contributorDetails?.dateOfBirth?.gregorian | date: 'dd/MM/yyyy' }} ({{
+                          'BENEFITS.AGE-TITLE' | translate
+                        }}:{{ contributorDetails?.age }})"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="dobHijiri"
+                        label="{{ 'BENEFITS.DATE-OF-BIRTH-HIJIRI' | translate }}"
+                        value="{{ contributorDetails?.dateOfBirth?.hijiri | date: 'dd/MM/yyyy' }} ({{
+                          'BENEFITS.AGE-TITLE' | translate
+                        }}:{{ contributorDetails?.hijiriAge }})"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!----------------------- Benefit Details ---------------------------------->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="Benefits"
+                    isSvg="true"
+                    [canEdit]="false"
+                    heading="{{ eachType | translate }}"
+                  >
+                  </frm-content-heading-dc>
+                  <bnt-stop-benefit-details-dc [stopDetails]="stopDetails" [lang]="lang"></bnt-stop-benefit-details-dc>
+                </div>
+              </div>
+              <!-- view benefit details LINK -->
+              <div class="row pl-3">
+                <div class="view-benefit-details pb-4">
+                  <a id="paymentoptions" routerLinkActive="active" (click)="onViewBenefitDetails()">
+                    <u>{{ 'BENEFITS.VIEW-BENEFIT-DETAILS' | translate }}</u>
+                  </a>
+                </div>
+              </div>
+              <!-- Benefit Stop details -->
+              <div class="row">
+                <div class="col-lg-12">
+                  <frm-content-heading-dc
+                    icon="stopHold-gray"
+                    isSvg="true"
+                    [canEdit]="false"
+                    heading="{{ 'BENEFITS.BENEFIT-STOP-HEADING' | translate }}"
+                  >
+                  </frm-content-heading-dc>
+                  <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="requestdate"
+                        label="{{ 'BENEFITS.REQUEST-DATE' | translate }}"
+                        value="{{ stopDetails?.requestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        id="reasonForStop"
+                        label="{{ 'BENEFITS.REASON-FOR-STOP' | translate }}"
+                        [value]="stopDetails?.reason | bilingualText"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div
+                      class="col-sm-6 col-md-6 col-lg-6"
+                      *ngIf="
+                        stopDetails?.reason?.english === 'Beneficiary is dead' ||
+                        stopDetails?.reason?.english === 'Joining work'
+                      "
+                    >
+                      <gosi-label-dc
+                        id="deathDate"
+                        label="{{
+                          (stopDetails?.reason?.english === 'Beneficiary is dead'
+                            ? 'BENEFITS.DATE-OF-DEATH'
+                            : 'BENEFITS.DATE-OF-STOPPING'
+                          ) | translate
+                        }}"
+                        value="{{ stopDetails?.eventDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div
+                      class="col-sm-6 col-md-6 col-lg-6"
+                      *ngIf="stopDetails?.reason?.english === 'Beneficiary is missing'"
+                    >
+                      <gosi-label-dc
+                        id="deathDate"
+                        label="{{ 'BENEFITS.MISSING_DATE' | translate }}"
+                        value="{{ stopDetails?.eventDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                  </div>
+                  <div class="row pb-2">
+                    <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="stopDetails?.notes">
+                      <div>{{ 'BENEFITS.NOTES' | translate }}</div>
+                      {{ stopDetails?.notes | limitTo: limit }}
+                      <div *ngIf="stopDetails?.notes?.length > limitvalue">
+                        <a (click)="readFullNote(stopDetails?.notes)" class="read-more">
+                          {{ showMoreText | translate }}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <bnt-adjustment-validator-details-dc
+                    [adjustmentDetails]="stopDetails"
+                    [checkBenefitType]="checkBenefitType"
+                    [directDisabled]="directDisabled"
+                    [parentForm]="checkForm"
+                    (onPreviousAdjustmentsClicked)="navigateToPrevAdjustment()"
+                  ></bnt-adjustment-validator-details-dc>
+                </div>
+                <!-- <bnt-stop-adjustment-details-dc
+              [stopDetails]="stopDetails"
+              ></bnt-stop-adjustment-details-dc> -->
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+      </div>
+      <div id="actionArea">
+        <div class="row form-action">
+          <div class="col-lg-12">
+            <div class="col-lg-12 form-action">
+              <div class="btn-section float-right">
+                <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  id="approve"
+                  [disabled]="disableApprove"
+                  type="primary"
+                  (submit)="approveTransaction(approveTemplate)"
+                >
+                  {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+
+              <ng-container>
+                <div class="btn-section float-right" *ngIf="canReject">
+                  <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="danger"
+                    id="reject"
+                    (click)="rejectTransaction(rejectTemplate)"
+                  >
+                    {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+                  >
+                  </ng-container>
+                </div>
+
+                <div class="btn-section float-right" *ngIf="canReturn">
+                  <ng-container *gosiShow="validatorAccess">
+                  <gosi-button-dc
+                    type="secondary"
+                    id="return"
+                    (submit)="returnTransaction(returnTemplate)"
+                  >
+                    {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+                  >
+                  </ng-container>
+                </div>
+              </ng-container>
+              <div class="btn-section float-left">
+                <ng-container *gosiShow="validatorAccess">
+                <gosi-button-dc
+                  id="cancel"
+                  type="secondary"
+                  (submit)="showCancelTemplate(cancelBenefitTemplate)"
+                >
+                  {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+                >
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #cancelBenefitTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'BENEFITS.APPROVE' | translate }} - {{ stopHeading | translate }}"
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="stopBenefitForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveBenefit()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    heading="{{ 'BENEFITS.REJECT' | translate }} - {{ stopHeading | translate }}"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="stopBenefitForm"
+    (rejectEvent)="confirmRejectBenefit()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<!----Return template---->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ 'BENEFITS.STOP-STATUS' | translate }} {{ heading | translate }}"
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="stopBenefitForm"
+    (returnEvent)="returnBenefit()"
+  >
+  </frm-return-template-dc>
+</ng-template>

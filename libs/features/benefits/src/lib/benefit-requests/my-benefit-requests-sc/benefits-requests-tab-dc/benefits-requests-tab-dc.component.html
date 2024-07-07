@@ -1,0 +1,179 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="row mb-4 pt-3" *ngIf="myBenefitRequestsResponse">
+  <div class="col-md col-sm-3 col-6 my-3" (click)="filterTransaction(BenefitStatus.ONHOLD)">
+    <div [ngClass]="benefitStatusButtonEvent.onHold ? 'custom-card custom-card-active' : 'custom-card'">
+      <div class="row">
+        <div class="col-lg-12 card-text">
+          {{ 'BENEFITS.ON-HOLD-BENEFITS' | translate }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isAnnuities">
+          {{ benefitOverviewResponse?.annuities?.noOfOnHoldBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isOcc">
+          {{ benefitOverviewResponse?.occ?.noOfOnHoldBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isUi">
+          {{ benefitOverviewResponse?.ui?.noOfOnHoldBenefits }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-sm-3 col-6 my-3" (click)="filterTransaction(BenefitStatus.ACTIVE)">
+    <div [ngClass]="benefitStatusButtonEvent.active ? 'custom-card custom-card-active' : 'custom-card'">
+      <div class="row">
+        <div class="col-lg-12 card-text">
+          {{ 'BENEFITS.ACTIVE-BENEFITS' | translate }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isAnnuities">
+          {{ benefitOverviewResponse?.annuities?.noOfActiveBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isOcc">
+          {{ benefitOverviewResponse?.occ?.noOfActiveBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isUi">
+          {{ benefitOverviewResponse?.ui?.noOfActiveBenefits }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-sm-3 col-6 my-3" (click)="filterTransaction(BenefitStatus.STOPPED)">
+    <div [ngClass]="benefitStatusButtonEvent.stopped ? 'custom-card custom-card-active' : 'custom-card'">
+      <div class="row">
+        <div class="col-lg-12 card-text">
+          {{ 'BENEFITS.STOPPED-BENEFITS' | translate }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isAnnuities">
+          {{ benefitOverviewResponse?.annuities?.noOfStoppedBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isOcc">
+          {{ benefitOverviewResponse?.occ?.noOfStoppedBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isUi">
+          {{ benefitOverviewResponse?.ui?.noOfStoppedBenefits }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-sm-3 col-6 my-3" (click)="filterTransaction(BenefitStatus.WAIVED)">
+    <div [ngClass]="benefitStatusButtonEvent.waived ? 'custom-card custom-card-active' : 'custom-card'">
+      <div class="row">
+        <div class="col-lg-12 card-text">
+          {{ 'BENEFITS.WAIVED-BENEFITS' | translate }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isAnnuities">
+          {{ benefitOverviewResponse?.annuities?.noOfWavedBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isOcc">
+          {{ benefitOverviewResponse?.occ?.noOfWavedBenefits }}
+        </div>
+        <div class="col-lg-12 value-text" *ngIf="isUi">
+          {{ benefitOverviewResponse?.ui?.noOfWavedBenefits }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-sm-3 col-6"></div>
+</div>
+<ng-container *ngIf="myBenefitRequestsResponse?.benefits?.length > 0">
+  <div class="row mb-4">
+    <table class="table table-condensed table-responsive">
+      <thead>
+        <tr>
+          <th>{{ 'BENEFITS.REQUEST-DATE' | translate }}</th>
+          <th>{{ 'BENEFITS.CONTRIBUTOR' | translate }}</th>
+          <th>{{ 'BENEFITS.BENEFIT-TYPE' | translate }}</th>
+          <th class="text-center">{{ 'BENEFITS.BENEFIT-AMOUNT-SAR' | translate }}</th>
+          <th class="text-center">{{ 'BENEFITS.ADJUSTMENTS-SAR' | translate }}</th>
+          <th>{{ 'BENEFITS.REASON-FOR-HOLD' | translate }}</th>
+          <th>{{ 'BENEFITS.STATUS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="
+            let eachBenefit of myBenefitRequestsResponse?.benefits
+              | paginate
+                : {
+                    id: 'paginationId',
+                    itemsPerPage: itemsPerPage,
+                    currentPage: pageDetails.currentPage,
+                    totalItems: myBenefitRequestsResponse?.noOfBenefits
+                  };
+            let i = index
+          "
+          class="data-row"
+          (click)="onBenefitEntryCLick(eachBenefit)"
+        >
+          <td>{{ eachBenefit?.requestDate?.gregorian | date: 'dd/MM/yyyy' || '-' }}</td>
+          <td>
+            <div class="d-block">
+              <!-- {{ eachBenefit?.contributor?.name | nameToString: true }} -->
+              {{ (eachBenefit?.contributorName | bilingualText) || '-' }}
+            </div>
+            <div class="d-block nin-text">
+              <span>{{ eachBenefit?.identifier?.idType }} :</span>
+              {{ eachBenefit?.identifier?.id }}
+            </div>
+          </td>
+          <td>
+            <fa-icon *ngIf="isDisabilityType" class="icon-wrapper" icon="user-injured" size="md"></fa-icon>
+            <img *ngIf="isSanedType" class="saned-icon" src="assets/icons/svg/Saned.svg" alt="no-active-benefits" />
+            <img
+              *ngIf="isRetirementType"
+              class="retirement-icon"
+              src="assets/icons/svg/Retirement.svg"
+              alt="no-active-benefits"
+            />
+            {{ (eachBenefit?.benefitType | bilingualText) || '-' }}
+          </td>
+          <td class="text-center">
+            <span *ngIf="eachBenefit?.isLumpsum; else notLumpsum">
+              {{ eachBenefit?.amount || 0 | number: '1.0-2' }}
+            </span>
+            <ng-template #notLumpsum>
+              <span>
+                {{ 'BENEFITS.PER-MONTH' | translate: { amount: eachBenefit?.amount || 0 | number: '1.0-2' } }}
+              </span>
+            </ng-template>
+          </td>
+          <td class="text-center" [ngClass]="!eachBenefit?.isAdjustmentCredit ? 'net-value-red' : 'net-value-green'">
+            {{ Math.abs(eachBenefit?.adjustments || 0) | number: '1.0-2' }}
+          </td>
+          <td>{{ (eachBenefit?.reasonForHold | bilingualText) || '-' }}</td>
+          <td>
+            <gosi-status-badge-dc
+              [label]="eachBenefit?.benefitStatus"
+              type="{{
+                eachBenefit?.benefitStatus?.english === 'Waived'
+                  ? 'info'
+                  : eachBenefit?.benefitStatus?.english === 'Active'
+                  ? 'success'
+                  : eachBenefit?.benefitStatus?.english === 'Stopped'
+                  ? 'danger'
+                  : eachBenefit?.benefitStatus?.english === 'On Hold'
+                  ? 'warning'
+                  : eachBenefit?.benefitStatus?.english === 'Paid Up'
+                  ? 'warning'
+                  : ''
+              }}"
+            ></gosi-status-badge-dc>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="myBenefitRequestsResponse?.noOfBenefits > itemsPerPage">
+  <gosi-pagination-dc
+    #paginationComponent
+    [totalSize]="myBenefitRequestsResponse?.noOfBenefits"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    paginationId="paginationId"
+  >
+  </gosi-pagination-dc>
+</ng-container>

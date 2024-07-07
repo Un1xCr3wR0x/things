@@ -1,0 +1,184 @@
+<div class="row">
+  <div class="col-md-12">
+    <cnt-accordion-details-view-dc heading="{{ 'CONTRIBUTOR.PERSONAL-DETAILS' | translate }}">
+      <div body>
+        <cnt-contributor-personal-details-dc [contributor]="contributor" [age]="age">
+        </cnt-contributor-personal-details-dc>
+      </div>
+    </cnt-accordion-details-view-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <cnt-accordion-details-view-dc heading="{{ 'CONTRIBUTOR.BULK-WAGE.ESTABLISHMENT-DETAILS' | translate }}">
+      <div body>
+        <div class="row">
+          <div class="col-sm-4 col-md-4">
+            <gosi-label-dc
+              [control]="
+                engDetailsCsr?.actualEstablishment?.english
+                  ? engDetailsCsr?.actualEstablishment
+                  : engDetailsCsr?.actualEstablishment?.arabic
+              "
+              label="CONTRIBUTOR.ESTABLISHMENT-NAME"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="!isppaEstablishment">
+            <gosi-label-dc
+              [control]="engDetailsCsr?.commercialRegistrationNumber"
+              label="CONTRIBUTOR.COMMERCIAL-REGISTERATION-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="!isppaEstablishment">
+            <gosi-label-dc
+              [control]="engDetailsCsr?.unifiedNationalNumber"
+              label="CONTRIBUTOR.ESTABLISHMENT-UNIFIED-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="!isppaEstablishment">
+            <gosi-label-dc [control]="engDetailsCsr?.ownerId" label="CONTRIBUTOR.ESTABLISHMENT-OWNER-ID">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="!isppaEstablishment">
+            <gosi-label-dc [control]="engDetailsCsr?.hrsdEstablishmentId" label="CONTRIBUTOR.HRSD-ESTABLISHMENT-ID">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4">
+            <gosi-label-dc
+              [control]="engDetailsCsr?.gosiRegistrationNumber"
+              label="CONTRIBUTOR.GOSI-REGISTERATION-NUMBER"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="isppaEstablishment">
+            <gosi-label-dc [control]="engDetailsCsr?.lawType" label="CONTRIBUTOR.LAW-TYPE"> </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </cnt-accordion-details-view-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <cnt-accordion-details-view-dc heading="{{ 'CONTRIBUTOR.ENGAGEMENT-DETAILS' | translate }}">
+      <div body>
+        <div class="row">
+          <div class="col-sm-4 col-md-4">
+            <gosi-label-dc [control]="joiningDate" label="CONTRIBUTOR.JOINING-DATE"> </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4">
+            <gosi-label-dc [control]="engagementStatus | translate" label="CONTRIBUTOR.ENGAGEMENT-STATUS">
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="engDetailsCsr?.engagementRequestDto?.leavingDate">
+            <gosi-label-dc [control]="leavingDate" label="CONTRIBUTOR.LEAVING"> </gosi-label-dc>
+          </div>
+          <div class="col-sm-4 col-md-4" *ngIf="engDetailsCsr?.engagementRequestDto?.leavingDate">
+            <gosi-label-dc
+              [control]="engDetailsCsr?.engagementRequestDto?.leavingReason | bilingualText"
+              label="CONTRIBUTOR.LEAVE-REASON"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </cnt-accordion-details-view-dc>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <cnt-accordion-details-view-dc heading="{{ 'CONTRIBUTOR.WAGE-OCCUPATION-HISTORY' | translate }}">
+      <div body>
+        <div class="row">
+          <div class="col-md-12 table-responsive">
+            <table class="table table-wage row_separate">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col">{{ 'CONTRIBUTOR.START-DATE' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.HRA' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+                  <th scope="col">{{ 'CONTRIBUTOR.TOTAL-WAGE' | translate }}</th>
+                  <th *ngIf="!isppaEstablishment" scope="col">{{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+                  <th *ngIf="isppaEstablishment" scope="col">{{ 'CONTRIBUTOR.JOB-CLASS' | translate }}</th>
+                  <th *ngIf="isppaEstablishment" scope="col">{{ 'CONTRIBUTOR.RANK' | translate }}</th>
+                  <th *ngIf="isppaEstablishment" scope="col">{{ 'CONTRIBUTOR.GRADE' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of engDetailsCsr?.engagementRequestDto?.engagementPeriod" style="height: 4rem">
+                  <td class="engagementPeriod">
+                    <span>
+                      {{
+                        item?.startDate?.entryFormat === 'HIJIRA'
+                          ? (item?.startDate?.hijiri | singleFormat | monthNameHijri : 'mm-yyyy' ) 
+                          : (item?.startDate?.gregorian | date: 'MMM yyyy')
+                      }}
+                    </span>
+
+                    <span class="ml-1 faw-icons">
+                      <fa-icon class="arrow-left" [icon]="['fas', 'arrow-left']"></fa-icon>
+                      <fa-icon class="arrow-right h6" [icon]="['fas', 'arrow-right']"></fa-icon>
+                    </span>
+                    <span class="ml-1">
+                      <span *ngIf="!item?.endDate?.gregorian">{{ 'CONTRIBUTOR.ONWARDS' | translate }}</span>
+                    </span>
+                    <span *ngIf="item?.endDate?.gregorian">
+                      {{
+                        item?.endDate?.entryFormat === 'HIJIRA'
+                          ? (item?.endDate?.hijiri | singleFormat | monthNameHijri : 'mm-yyyy' )
+                          : (item?.endDate?.gregorian | date: 'MMM yyyy')
+                      }}
+                    </span>
+                  </td>
+                  <td>{{ item.wage.basicWage }}</td>
+                  <td>
+                    {{
+                      isppaEstablishment &&
+                      ((item?.wage?.housingBenefit | number) === '0' || item?.wage?.housingBenefit === null)
+                        ? '-'
+                        : (item?.wage?.housingBenefit | number)
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      isppaEstablishment &&
+                      ((item?.wage?.commission | number) === '0' || item?.wage?.commission === null)
+                        ? '-'
+                        : (item?.wage?.commission | number)
+                    }}
+                  </td>
+                  <td>
+                    {{
+                      isppaEstablishment &&
+                      ((item?.wage?.otherAllowance | number) === '0' || item?.wage?.otherAllowance === null)
+                        ? '-'
+                        : (item?.wage?.otherAllowance | number)
+                    }}
+                  </td>
+                  <td>{{ item?.wage?.totalWage }}</td>
+                  <td *ngIf="!isppaEstablishment">{{ item?.occupation | bilingualText }}</td>
+                  <td *ngIf="isppaEstablishment">{{ item?.jobClassName | bilingualText }}</td>
+                  <td *ngIf="isppaEstablishment">{{ item?.jobRankName | bilingualText }}</td>
+                  <td *ngIf="isppaEstablishment">{{ item?.jobGradeName | bilingualText }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </cnt-accordion-details-view-dc>
+  </div>
+</div>
+
+<!-- document view  -->
+
+<div class="row">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents" [isAccordionView]="true"> </gosi-document-list-view-dc>
+  </div>
+</div>

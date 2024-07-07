@@ -1,0 +1,106 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <est-heading-dc
+    [shouldPrompt]="true"
+    [canNavigate]="false"
+    [showSeparator]="false"
+    [showBackArrow]="false"
+    id="modifyOwnerHeading"
+    (backEvent)="showModal(cancelTemplate)"
+  >
+    {{ 'ESTABLISHMENT.REGISTER-EST-ADMIN' | translate }}
+  </est-heading-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-alert-dc
+    class="pb-4 pt-4"
+    message="ESTABLISHMENT.WARNING.UPDATE-MISSING-DETAILS"
+    [dismissible]="false"
+    type="warning"
+  ></gosi-alert-dc>
+  <gosi-card-dc type="secondary" heading="{{ 'ESTABLISHMENT.PERSONAL-DETAILS' | translate }}">
+    <div class="row" *ngIf="!checkNull(estAdmin?.person?.identity)">
+      <ng-container *ngFor="let item of estAdmin.person.identity">
+        <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === 'NIN'">
+          <gosi-label-dc id="nin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === 'GCCID'">
+          <gosi-label-dc id="nationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === 'IQAMA'">
+          <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER"> </gosi-label-dc>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-4" *ngIf="item.idType === 'PASSPORT'">
+          <gosi-label-dc id="passportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+          </gosi-label-dc>
+        </div>
+      </ng-container>
+    </div>
+    <est-person-details-dc
+      *ngIf="updateDetailsForm.get('isVerified').value === true"
+      [person]="personFormDetail"
+      [personDet]="admins[0].person"
+      [parentForm]="updateDetailsForm"
+      [readOnly]="false"
+      [isSaved]="updateDetailsForm.get('isSaved').value"
+      [hasDateFields]="false"
+      [showGender]="false"
+      [isGcc]="isGcc"
+    >
+    </est-person-details-dc>
+  </gosi-card-dc>
+  <gosi-card-dc heading="{{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}" type="secondary">
+    <div class="contactDetails">
+      <frm-contact-dc
+        [parentForm]="updateDetailsForm"
+        [isHeadingRequired]="false"
+        [emailMandatory]="true"
+        [contactDetails]="person?.contactDetail"
+        [readOnlyAll]="false"
+        [defaultOnly]="defaultToSaudi || updateDetailsForm.get('isSaved').value === true"
+      >
+      </frm-contact-dc>
+    </div>
+  </gosi-card-dc>
+  <est-footer-buttons-dc
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="confirmTemplates()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelTransaction()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #confirmTemplate>
+  <div class="custom-modal">
+    <gosi-modal-dc [modalHeader]="'ESTABLISHMENT.REGISTER-EST-ADMIN' | translate">
+      <div modalContent>
+        <div class="row">
+          <div class="confirm-message col-lg-12">
+            {{ 'ESTABLISHMENT.UPDATE-CONFIRM-MSG' | translate }}
+          </div>
+        </div>
+      </div>
+      <div modalAction>
+        <div class="form-action d-flex flex-row-reverse justify-content-between">
+          <gosi-button-dc id="confirm" type="primary" (submit)="updateTransaction()">
+            {{ 'ESTABLISHMENT.CONFIRM' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

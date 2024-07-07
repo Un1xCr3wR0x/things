@@ -1,0 +1,98 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="table-responsive pb-4" *ngIf="transactionEntry?.length > 0">
+  <div class="row">
+    <div class="col-lg-12 table-transaction">
+      <table class="table table-condensed mx-0">
+        <thead>
+          <tr>
+            <th>
+              {{ 'DASHBOARD.DESCRIPTION' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.INITIATED-DATE' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.TRANSACTION-NO' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.ENTRY-CHANNEL' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'DASHBOARD.PENDING-WITH' | translate | uppercase }}
+            </th>
+            <th calss="status-column">
+              {{ 'DASHBOARD.STATUS' | translate | uppercase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="data-row"
+            *ngFor="
+              let item of transactionEntry
+                | paginate
+                  : {
+                      id: txnPagination,
+                      itemsPerPage: itemsPerPage,
+                      currentPage: pageDetails.currentPage,
+                      totalItems: transactionSearchCount
+                    }
+            "
+            (click)="transactionNavigation(item)"
+          >
+            <td>
+              <div class="description-container">
+                <span class="title">
+                  {{ item.title | bilingualText }}
+                </span>
+                <span class="description">
+                  {{ item.description | bilingualText }}
+                </span>
+              </div>
+            </td>
+            <td class="txn-number">
+              {{ item.initiatedDate.gregorian | gosiDate }}
+            </td>
+            <td class="txn-number">
+              {{ item.transactionRefNo }}
+            </td>
+            <td class="txn-number">
+              {{ item.channel ? (item.channel | bilingualText) : ('DASHBOARD.NOT-AVAILABLE' | translate) }}
+            </td>
+            <td class="txn-number">
+              <ng-container *ngIf="item?.status?.english === 'In Progress'; else noResults">
+                {{
+                  item?.pendingWith?.english
+                    ? item.pendingWith.english === 'itsm-prj.ITSM'
+                      ? ('DASHBOARD.ITSM' | translate)
+                      : (item.pendingWith | bilingualText)
+                    : ('DASHBOARD.NOT-AVAILABLE' | translate)
+                }}
+              </ng-container>
+              <ng-template #noResults>
+                {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+              </ng-template>
+            </td>
+            <td class="status-column">
+              {{ item.status | bilingualText }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<gosi-pagination-dc
+  #paginationComponent
+  *ngIf="transactionSearchCount > itemsPerPage && !isRecent"
+  [totalSize]="transactionSearchCount"
+  [itemsPerPage]="itemsPerPage"
+  [pageDetails]="pageDetails"
+  (pageChange)="selectPage($event)"
+  [paginationId]="txnPagination"
+>
+</gosi-pagination-dc>

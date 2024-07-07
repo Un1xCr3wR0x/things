@@ -1,0 +1,235 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <frm-main-heading-dc
+        [heading]="'OCCUPATIONAL-HAZARD.CLAIMS.REIMBURSEMENT-REQUEST' | translate"
+        [subLabel]="'OCCUPATIONAL-HAZARD.SOCIAL-INSURANCE-NO' | translate"
+        [subValue]="socialInsuranceNo"
+      ></frm-main-heading-dc>
+    </ng-container>
+    <frm-main-content-dc [canEdit]="false" [documents]="documents ? documents : []" [comments]="comment ? comment : []">
+      <div id="contentArea">
+        <div class="col-lg-12">
+          <frm-content-heading-dc
+            id="estDetails"
+            icon="building"
+            heading="CUSTOMER-INFORMATION.ESTABLISHMENT-DETAILS"
+            [canEdit]="false"
+          >
+          </frm-content-heading-dc>
+          <div class="row ml-0 mr-0" *ngIf="contributor && contributor.person">
+            <oh-establishment-dtls-dc
+              *ngIf="contributor && establishment"
+              [isReimbursement]="true"
+              [establishment]="establishment"
+              [contributor]="contributor"
+            >
+            </oh-establishment-dtls-dc>
+          </div>
+          <!-- <div class="col-sm-12 col-md-12 col-lg-12 engagement-details"></div><div class="col-sm-12 col-md-12 col-lg-12 injury-details"></div> -->
+        </div>
+        <!-- <div class="row"> -->
+        <div clas="col-lg-12">
+          <frm-content-heading-dc
+            id="contactDetails"
+            icon="user"
+            [heading]="'OCCUPATIONAL-HAZARD.CONTACT-DETAILS' | translate"
+            [canEdit]="false"
+          >
+          </frm-content-heading-dc>
+          <div class="row mt-2">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="emergencyContactNumber"
+                [control]="reimbDetails?.mobileNo"
+                label="OCCUPATIONAL-HAZARD.EMERGENCY-CONTACT-NUMBER"
+              >
+                <span id="prefixValue">+{{ reimbDetails?.isdCode }}</span>
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="emailId"
+                [control]="reimbDetails?.emailId"
+                [label]="'OCCUPATIONAL-HAZARD.EMAIL-ADDRESS'"
+              ></gosi-label-dc>
+            </div>
+          </div>
+        </div>
+        <!-- </div> -->
+        <!-- <div class="row"> -->
+        <div clas="col-lg-12">
+          <frm-content-heading-dc
+            id="otherDetails"
+            icon="user"
+            [heading]="'OCCUPATIONAL-HAZARD.CLAIMS.OTHER-DETAILS' | translate"
+            [canEdit]="false"
+          >
+          </frm-content-heading-dc>
+          <div class="row mt-2">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                label="OCCUPATIONAL-HAZARD.INJURY.INJURY-ID"
+                [value]="injuryId"
+                isLink="true"
+                noMargin="true"
+                (select)="viewInjury()"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="vatAmount"
+                [label]="'OCCUPATIONAL-HAZARD.VAT' | translate"
+                [control]="reimbDetails?.vatAmount | number: '1.2-2'"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="isTreatmentWithinSaudiArabia"
+                [label]="'OCCUPATIONAL-HAZARD.PAYEE' | translate"
+                [control]="
+                  reimbDetails?.payableTo === 1
+                    ? ('OCCUPATIONAL-HAZARD.ESTABLISHMENT' | translate)
+                    : reimbDetails?.payableTo === 2
+                    ? ('OCCUPATIONAL-HAZARD.CONTRIBUTOR' | translate)
+                    : ('OCCUPATIONAL-HAZARD.ALLOWANCE.HOSPITAL-PAYEE' | translate)
+                "
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="isTreatmentWithinSaudiArabia"
+                [label]="'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DETAILS' | translate"
+                [control]="
+                  reimbDetails?.isTreatmentWithinSaudiArabia
+                    ? ('OCCUPATIONAL-HAZARD.YES' | translate)
+                    : ('OCCUPATIONAL-HAZARD.NO' | translate)
+                "
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-lg-6">
+              <gosi-label-dc
+                id="invoiceAmount"
+                [label]="'OCCUPATIONAL-HAZARD.INVOICE-CLAIM' | translate"
+                [control]="reimbDetails?.invoiceAmount | number"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col">
+              <gosi-label-dc
+                id="hospital"
+                [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.HOSPITAL-PAYEE' | translate"
+                [control]="reimbDetails?.hospital | bilingualText"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-lg-6" *ngIf="reimbDetails?.invoiceDate">
+              <gosi-label-dc
+                id="invoiceDate"
+                [label]="'OCCUPATIONAL-HAZARD.INVOICE-REQUEST-DATE' | translate"
+                [control]="reimbDetails?.invoiceDate?.gregorian | gosiDate"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+        <!-- </div> -->
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="add-injury">
+              <div class="btn-section float-right" *ngIf="canApprove">
+                <gosi-button-dc id="approve" type="primary" (click)="approveTransaction(approveTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canReject">
+                <gosi-button-dc
+                  [type]="'danger'"
+                  id="reject"
+                  name="rejection"
+                  (click)="rejectTransactionReimb(rejectTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canSubmit">
+                <gosi-button-dc id="submit" type="primary" (approveEvent)="confirmApproveInjury()">
+                  {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canRequestClarification">
+                <gosi-button-dc
+                  [type]="'secondary'"
+                  id="request"
+                  name="request-TPA"
+                  (submit)="showModalBySize(requestTpa, 'md')"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-left">
+                <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelEngagementTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    (cancelEvent)="hideModal()"
+    [heading]="'OCCUPATIONAL-HAZARD.CLAIMS.REIMBURSEMENT-REQUEST'"
+    (approveEvent)="confirmApprove()"
+    [parentForm]="reportInjuryForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.REJECT-TRANSACTION'"
+    [rejectReasonList$]="reimbrejectReasonList"
+    (cancelEvent)="hideModal()"
+    [parentForm]="reportInjuryForm"
+    (rejectEvent)="confirmRejectReimbursment()"
+    [transactionNumber]="transactionNumber"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #cancelEngagementTemplate> 
+  <gosi-confirm-modal-dc
+    (onCancel)="hideModal()"
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #requestTpa>
+  <gosi-confirm-modal-dc
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-SUBMIT'"
+    (onConfirm)="requestTpaResult()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

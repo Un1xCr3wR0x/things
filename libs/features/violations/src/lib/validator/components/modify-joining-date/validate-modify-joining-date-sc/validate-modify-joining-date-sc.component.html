@@ -1,0 +1,107 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [documents]="documents ? documents : []" [comments]="transactionReferenceData" [canEdit]="false">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'VIOLATIONS.REPORT-VIOLATION' | translate"
+        [transactionRefNo]="transactionDetails?.referenceNo"
+      ></frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <vol-validator-violations-details-dc
+        [transactionDetails]="transactionDetails"
+        [isModifyJoiningDate]="true"
+        [assigneeId]="assigneeId"
+        [assigneeIndex]="assigneeIndex"
+        [isReturn]="isReturn"
+        [parentForm]="modifyJoiningDateForm"
+        [booleanList]="yesOrNoList$ | async"
+      ></vol-validator-violations-details-dc>
+      <vol-validator-establishment-details-dc
+        [isModifyJoiningDate]="true"
+        [parentForm]="modifyJoiningDateForm"
+        [booleanList]="yesOrNoList$ | async"
+        [transactionDetails]="transactionDetails"
+        (estProfile)="navigateToEstProfile($event)"
+      ></vol-validator-establishment-details-dc>
+      <vol-inspection-details-dc [transactionDetails]="transactionDetails"></vol-inspection-details-dc>
+      <vol-contributor-details-dc
+        [transactionDetails]="transactionDetails"
+        [isModifyJoiningDate]="true"
+        [parentForm]="modifyJoiningDateForm"
+        (navigate)="navigateToProfile($event)"
+        (navigateToTrasaction)="navigateToTracker($event)"
+        [booleanList]="yesOrNoList$ | async"
+        [assigneeIndex]="assigneeIndex"
+        [isReturn]="isReturn"
+        (isSameLength)="getClassViolations($event)"
+        (viewPreviousViolations)="showPopupViolations($event)"
+        (contributorSaved)="contributorSaved($event)"
+      ></vol-contributor-details-dc>
+      <vol-penality-calculation-details-dc
+        [transactionDetails]="transactionDetails"
+        [isModifyJoiningDate]="true"
+        [isReturn]="isReturn"
+        [violationClassList]="violationClassList"
+        [parentForm]="modifyJoiningDateForm"
+        [booleanList]="yesOrNoList$ | async"
+        [penaltyInfoDetails]="penaltyInfoDetails"
+        [penaltyArrayLen]="penaltyArrayLen"
+        (excludeContributor)="navigateToExcludeContributorPage($event)"
+        [assignedRole]="assignedRole"
+        [assigneeName]="assigneeName"
+        [assigneeId]="assigneeId"
+        [assigneeIndex]="assigneeIndex"
+        [allExcluded]="allExcluded"
+        [notAllExcluded]="notallExcluded"
+        [penaltyCalculationResponse]="penaltyCalculationResponse"
+        [showVcAlert]="showVcAlert"
+        [saveContributorButtonClicked]="saveContributorButtonClicked"
+        (classValue)="getClassValue($event)"
+        (isExcluded)="getViolationClassList($event)"
+        (penalityDetails)="getPenaltyDetails($event)"
+      ></vol-penality-calculation-details-dc>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea" *ngIf="!isButtonApprove">
+      <frm-action-area-dc
+        (approveEvent)="showModal(approveTemplate, true)"
+        [canApprove]="!(billBatchInProgress && canReturn)"
+        [isReturn]="false"
+        [canReject]="false"
+        [canReturn]="canReturn"
+        (returnEvent)="showModal(returnTemplate, false)"
+        (cancelEvent)="showModal(cancelTemplate, false)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------------------------  Modals ----------------------------->
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'VIOLATIONS.INFO-CANCEL'" (onCancel)="hideModal()" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorMemberForm"
+    [heading]="'CORE.RETURN-REASON'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="manageWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    (cancelEvent)="hideModal()"
+    [parentForm]="modifyJoiningDateForm"
+    (approveEvent)="manageWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>

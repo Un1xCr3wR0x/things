@@ -1,0 +1,343 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div id="mainHeading">
+    <ng-container>
+      <frm-main-heading-dc
+        [heading]="'OCCUPATIONAL-HAZARD.INJURY.REPORT-OCCUPATIONAL-HAZARD' | translate"
+        [subLabel]="'OCCUPATIONAL-HAZARD.SOCIAL-INSURANCE-NO' | translate"
+        [subValue]="socialInsuranceNo"
+      ></frm-main-heading-dc>
+      <oh-vtr-injury-statistics-summary-dc
+        [injurySummaryStatistics]="injuryStatistics"
+        [socialInsuranceNo]="socialInsuranceNo"
+        [allowanceFlag]="allowanceFlag"
+      ></oh-vtr-injury-statistics-summary-dc>
+    </ng-container>
+    <div class="row" *ngIf="allowanceFlag">
+      <div class="form-group fc-margin col-lg-12 m-3" *ngIf="lang === 'en'">
+        <textarea
+          rows="5"
+          class="form-control"
+          id="declarationMessage"
+          readOnly="true"
+        >
+                    {{ 'OCCUPATIONAL-HAZARD.REGULATION-CONTENT-DESC' | translate : {name : personNameEnglish, id: contributorIdentity} }}
+                  </textarea
+        >
+      </div>
+      <div class="form-group fc-margin col-lg-12 m-3" *ngIf="lang === 'ar'">
+        <textarea
+          rows="5"
+          class="form-control"
+          id="declarationMessage"
+          readOnly="true"
+        >
+                    {{ 'OCCUPATIONAL-HAZARD.REGULATION-CONTENT-DESC-2' | translate : {name : personNameArabic, id: contributorIdentity} }}
+                  </textarea
+        >
+      </div>
+    </div>
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="documents ? documents : []"
+      [autoValidationComments]="injury.autoValidationComments && !allowanceFlag ? injury.autoValidationComments : []"
+      [comments]="comment ? comment : []"
+      (onEdit)="navigateToScan()"
+    >
+      <div id="contentArea">
+        <div class="row ml-0 mr-0" *ngIf="contributor && contributor.person">
+          <oh-vtr-personal-details-dc
+            [canEdit]="canEdit || allowanceFlag"
+            [person]="contributor.person"
+            [injuryDate]="injuryDate"
+            [engagement]="engagement"
+            (onEdit)="navigateToInjuryPage()"
+            (nameRegulation)="nameRegulation($event)"
+          >
+          </oh-vtr-personal-details-dc>
+          <div class="col-sm-12 col-md-12 col-lg-12 engagement-details"></div>
+          <oh-vtr-contact-details-dc 
+            class="col-lg-12 pl-0 pr-0"
+            [contributorDetails]="contributor.person"
+          ></oh-vtr-contact-details-dc>
+          <div class="col-sm-12 col-md-12 col-lg-12 personal-details"></div>
+          <oh-engagement-details-dc
+            [establishment]="establishment"
+            [contributor]="contributor"
+            [registrationNo]="registrationNo"
+            [allowanceFlag]="allowanceFlag"
+            [allowanceFlagVal]="allowanceFlagVal"
+            [allowanceFlagVal3]="allowanceFlagVal3"
+            [allowanceFlagVal4]="allowanceFlagVal4"
+          >
+          </oh-engagement-details-dc>
+          <div class="col-sm-12 col-md-12 col-lg-12 injury-details"></div>
+          <oh-vtr-injury-details-timeline-dc 
+            [canEdit]="false"
+            [idCode]="idCode"
+            [registrationNo]="registrationNo"
+            [socialInsuranceNo]="socialInsuranceNo"
+            [injuryDetails]="injury" 
+            (injurySelected)="viewInjury()"
+            [establishmentDetails]="establishment"
+            [engagement]="engagement"
+            (onEdit)="navigateToInjuryPage()"
+            [allowanceFlagVal]="allowanceFlagVal"
+            [allowanceFlag]="allowanceFlag"
+            [allowanceFlagVal3]="allowanceFlagVal3"
+            [allowanceFlagVal4]="allowanceFlagVal4"
+          ></oh-vtr-injury-details-timeline-dc>
+          <div class="col-sm-12 col-md-12 col-lg-12 personal-details"></div>
+          <oh-vtr-city-map-dc class="col-lg-12 pl-0 pr-0" [injuryDetails]="injury"></oh-vtr-city-map-dc>
+          
+          <div class="mt-5" *ngIf="allowanceFlag">
+            <div class="w-75">
+              <gosi-input-text-area-dc
+                id="delayByEmployer"
+                [name]="'delayByEmployer'"
+                label="OCCUPATIONAL-HAZARD.REASON-FOR-DELAY-EMPLOYER"
+                [control]="allowancePaymentForm.get('delayByEmployer')"
+                [maxLength]="maxLength"
+              >
+              </gosi-input-text-area-dc>
+            </div>
+            
+            <span class="allowance-details">{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYMENT-DETAILS' | translate }}</span>
+            <div class="mt-3">
+              <gosi-alert-dc
+                *ngIf="allowanceFlag && allowancePaymentForm.get('payeeType').get('english').value === 'Contributor'"
+                [message]="'OCCUPATIONAL-HAZARD.INJURY.PAYEE-INFO' | translate"
+                [dismissible]="false"
+                type="warning"
+                [noPadding]="true"
+              ></gosi-alert-dc>
+            </div>
+            <div>
+              <!-- <h4>Allowance payee</h4> -->
+              <div class="mt-4">
+                <gosi-input-radio-dc id="allowancePayee" [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PAYEE' | translate"
+                  [control]="allowancePaymentForm.get('payeeType')" [list]="payeeList" (select)="selectedpayeeList($event)"
+                >
+                </gosi-input-radio-dc>
+        
+                <div class="form-group fc-margin w-100 Declaration">
+                  <textarea rows="6" class="form-control" id="Declaration" readOnly="true">
+                      {{ 'OCCUPATIONAL-HAZARD.DOCUMENT_DECLARATION' | translate }}
+                    </textarea>
+                </div>
+        
+                <div>
+                  <gosi-input-checkbox-dc 
+                    id="declaration" 
+                    [label]="'OCCUPATIONAL-HAZARD.ACCEPT-DECLARATION'" 
+                    name="declaration"
+                    [control]="allowancePaymentForm.get('checkBoxFlag')">
+                  </gosi-input-checkbox-dc>
+                </div>
+        
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="add-injury">
+              <div class="btn-section float-right" *ngIf="canApprove">
+                <gosi-button-dc id="approve" type="primary" (click)="approveTransaction(approveTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canSubmit">
+                <gosi-button-dc id="submit" type="primary" (approveEvent)="confirmApproveInjury()">
+                  {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canReject">
+                <gosi-button-dc type="danger" id="reject" (click)="rejectTransaction(rejectTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right position-relative" *ngIf="validator1">
+                <gosi-button-dc type="secondary" [popover]="optionsModal" placement="top">
+                  {{ 'OCCUPATIONAL-HAZARD.MORE-OPTIONS' | translate }}
+                </gosi-button-dc>
+              </div>
+              <div class="btn-section float-right" *ngIf="canReturn">
+                <gosi-button-dc type="secondary" id="return" (submit)="showModal(modal, 'showReturnAddInjury')">
+                  {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-left">
+                <gosi-button-dc id="cancel" type="secondary" (submit)="showCancelTemplate(cancelEngagementTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+
+<ng-template #cancelEngagementTemplate>
+  <gosi-confirm-modal-dc
+    (onCancel)="hideModal()"
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+<ng-template #modal>
+  <gosi-modal-dc [modalHeader]="headingTextAddInjury | translate">
+    <div class="row" modalContent>
+      <div *ngIf="noteRequestAddInjury && !(allowanceFlagVal && (injury.delayByEmployer === null))">
+        <div class="form-group" *ngIf="validator1">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN' | translate }}</i>
+        </div>
+        <div class="form-group" *ngIf="!validator1">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN-VALIDATOR' | translate }}</i>
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div class="col-lg-12" *ngIf="commentAlert">
+          <gosi-alert-dc type="danger" message="CORE.ERROR.MANDATORY-FIELDS" [dismissible]="true"></gosi-alert-dc>
+        </div>
+        <div *ngIf="(allowanceFlagVal && (injury.delayByEmployer === null))" class="col-lg-12">
+          <gosi-alert-dc
+          message="OCCUPATIONAL-HAZARD.WARNING-VALIDATOR-WITHDRAWN"
+          type="warning"
+          [dismissible]="false"
+          ></gosi-alert-dc>
+        </div>
+        <div *ngIf="docAlert" class="col-lg-12">
+          <gosi-alert-dc
+            message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+            type="warning"
+            [dismissible]="false"
+          ></gosi-alert-dc>
+        </div>
+      </div>
+      <div class="col-md-12" *ngIf="returnToEstAdmin || returnTpa">
+        <gosi-input-multi-select-dropdown-dc
+          id="requestDocuments"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          [control]="reportInjuryModal.get('document')"
+          [list]="documentListLov"
+          (selected)="receiveDocumentList($event)"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          id="validatorComments"
+          label="OCCUPATIONAL-HAZARD.COMMENTS"
+          [name]="'rejectComments'"
+          [control]="reportInjuryModal.get('comments')"
+          [maxLength]="maxLengthComments"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right" *ngIf="showConfirmReturnBtnAddInjury">
+        <gosi-button-dc id="confirmReturnBtn" type="primary" class="action-button" (submit)="returnInjury()">
+          {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right" *ngIf="showConfirmSubmitBtnAddInjury">
+        <gosi-button-dc id="confirmSubmitBtn" type="danger" class="action-button" (submit)="requestTpa()">
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc id="cancelApproveBtn" type="secondary" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #optionsModal>
+  <button
+    type="button"
+    (click)="showModal(modal, 'showReturnAddInjury')"
+    class="d-flex btn text-left more-action-button"
+    *ngIf="returnToEstAdmin"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.RETURN-TO-ESTABLISHMENT_ADMIN' | translate }}
+    <!--Use labels-->
+  </button>
+  <button
+    type="button"
+    (click)="showModal(requestTemplate, 'showRequestAddInjury')"
+    class="d-flex btn text-left more-action-button"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.REQUEST-INSPECTION' | translate }}
+    <!--Use labels-->
+  </button>
+  <button
+    type="button"
+    (click)="showModal(modal, 'showSubmitAddInjury')"
+    class="d-flex btn text-left more-action-button"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+    <!--Use labels-->
+  </button>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.CNF-APPROVE'"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove()"
+    [parentForm]="reportInjuryForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<ng-template #requestTemplate>
+  <oh-request-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.REQUEST-INSPECTION'"
+    (cancelEvent)="hideModal()"
+    [warningMessage]="warningMsg | translate: { date: inspectionDate }"
+    [showInspectionError]="showInspectionError"
+    [errorMessage]="inspectionMsg | translate"
+    (submitEvent)="confirmInspection(null, actionName)"
+    (selectedInspect)="setInspectionMessage($event)"
+    [parentForm]="reportInjuryForm"
+    [inspectionList$]="inspectionList"
+    [prohibitInspection]="prohibitInspection"
+  >
+  </oh-request-template-dc>
+  <ng-template #closedOH>
+    <gosi-alert-dc [message]="inspectionMsg" type="danger" [dismissible]="false"></gosi-alert-dc>
+    <gosi-button-dc id="cancelBtn" type="secondary" (submit)="hideModal()" class="row pb-3 align-self-center">
+      {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+    </gosi-button-dc>
+  </ng-template>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [rejectReasonList$]="rejectReasonList"
+    [warningMessage]="warning"
+    (cancelEvent)="hideModal()"
+    [parentForm]="reportInjuryForm"
+    (rejectEvent)="confirmRejectInjury()"
+    [isRejectInjury]="true"
+    [type]="type"
+    [transactionNumber]="transactionNumber"
+    [allowanceFlag]="allowanceFlag"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+

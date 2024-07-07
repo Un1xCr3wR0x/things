@@ -1,0 +1,231 @@
+<div class="content">
+  <gosi-alert-dc></gosi-alert-dc>
+
+  <gosi-main-heading-dc header="{{ 'MEDICAL-BOARD.ASSIGN-TO-SESSION' | translate }}"> </gosi-main-heading-dc>
+  <div class="row">
+    <div class="col-lg-2 participants">
+      <div>{{ 'MEDICAL-BOARD.SPECIALITIES-SELECTED' | translate }}</div>
+    </div>
+    <div class="col-lg-2 participants">
+      <div>{{ 'MEDICAL-BOARD.NO-OF-PARTICIPANTS' | translate }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="lang === 'en'">
+    <div class="row" *ngFor="let selectedprimary of specialtyKeys()">
+      <div class="col-lg-2 participants">
+        <div class="pt-1">
+          <gosi-card-dc class="assign-value" type="secondary">{{ selectedprimary }}</gosi-card-dc>
+        </div>
+      </div>
+      <div class="col-lg-2 participantsar">
+        <div class="pt-1">
+          <gosi-card-dc class="assign-value" type="secondary"> {{ specialityCountsEn[selectedprimary] }}</gosi-card-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" *ngIf="lang === 'ar'">
+    <div class="row" *ngFor="let selectedprimary of specialtyKeysAr()">
+      <div class="col-lg-2 participants">
+        <div class="pt-1">
+          <gosi-card-dc class="assign-valuear" type="secondary">{{ selectedprimary }}</gosi-card-dc>
+        </div>
+      </div>
+      <div class="col-lg-2 participants">
+        <div class="pt-1">
+          <gosi-card-dc class="assign-count" type="secondary"> {{ specialityCountsAR[selectedprimary] }}</gosi-card-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-4 py-5">
+      <div class="heading">{{ 'MEDICAL-BOARD.AVAILABLE-SESSIONS' | translate }}</div>
+    </div>
+
+    <div class="col-lg-2 d-flex py-5">
+      <span class="dotgreen"></span>
+      <span class="mx-1"></span>
+      <div>{{ 'MEDICAL-BOARD.FULLY-AVAILABLE' | translate }}</div>
+    </div>
+
+    <div class="col-lg-2 d-flex py-5">
+      <span class="dotorange"></span>
+      <span class="mx-1"></span>
+      <div>{{ 'MEDICAL-BOARD.PARTIALLY-AVAILABLE' | translate }}</div>
+    </div>
+    <div class="col-lg-4 d-flex justify-content-end">
+      <span class="px-2 py-5"> {{ 'MEDICAL-BOARD.LOCATION' | translate }} : </span>
+      <gosi-input-select-dc
+        *ngIf="patchedLocation"
+        [list]="locationList"
+        [control]="participantForm.get('location')"
+        (select)="selectCountry($event)"
+      >
+      </gosi-input-select-dc>
+    </div>
+    <span> </span>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="col-lg-12 warning-padding" *ngIf="participantsInQueue?.allSessions">
+    <gosi-alert-dc [dismissible]="false" [details]="[]" type="warning">
+      <div actOnAlert>
+        {{ 'MEDICAL-BOARD.NO-SPECIALITY-WARNING' | translate }}
+        <a id="create-session-navgn" (click)="navigateToCreateSession()" class="view-link" routerLinkActive="active">{{
+          'MEDICAL-BOARD.ADD-PARTICIPANT-TO-SESSION' | translate
+        }}</a
+        >.
+      </div>
+    </gosi-alert-dc>
+  </div>
+  <div class="col-lg-12 warning-padding" *ngIf="isDifferent">
+    <gosi-alert-dc [message]="'MEDICAL-BOARD.DIFFERENT-SPECIALTY' | translate" [dismissible]="false" type="warning">
+    </gosi-alert-dc>
+  </div>
+
+  <div class="row pt-2" *ngIf="participantsInQueue && participantsInQueue.availableSessionInfoBySpeciality">
+    <div class="col-lg-12">
+      <ng-container
+        *ngFor="
+          let session of participantsInQueue?.availableSessionInfoBySpeciality
+            | paginate
+              : {
+                  id: 'paginationId',
+                  itemsPerPage: itemsPerPage,
+                  totalItems: noOfRecords,
+                  currentPage: currentPage
+                };
+          let i = index
+        "
+      >
+        <div
+          class="queue-value"
+          [ngClass]="{
+            green: session.filledBeneficiaries === 0,
+            yellow: session.filledBeneficiaries !== 0
+          }"
+          [class]="getBoxClass(session)"
+          (click)="selectparticipant(session)"
+        >
+          <div class="row">
+            <div class="col-lg-6" *ngIf="lang !== 'ar'">
+              <span class="participants" dir="ltr">
+                {{ getSessionAarabicTime(session?.sessionTime) }} | {{ session.sessionDate }} |
+                {{ session?.location?.english }}</span
+              >
+            </div>
+            <div class="col-lg-6" *ngIf="lang === 'ar'">
+              <span class="participants" dir="rtl">
+                {{ getSessionAarabicTime(session?.sessionTime) }} | {{ session.sessionDate }} |
+                {{ session?.location?.arabic }}</span
+              >
+            </div>
+            <div class="col-lg-6">
+              <!-- <div class="float-right"> -->
+              <span class="participants float-right">
+                {{ 'MEDICAL-BOARD.SLOTS-AVAILABLE' | translate }}:{{ session.filledBeneficiaries }}/{{
+                  session.maximumBeneficiaries
+                }}
+              </span>
+              <!-- </div> -->
+            </div>
+          </div>
+          <div class="row ml-2 pt-1 pb-1">
+            <ng-container *ngFor="let session of session.listOfSpeciality">
+              <gosi-card-dc class="p-1 assign-value" type="secondary">
+                <span>{{ session | bilingualText }}</span>
+              </gosi-card-dc>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 form-action">
+      <div class="form-value">
+        <div class="btn-section float-left">
+          <gosi-button-dc id="cancel" type="secondary" (submit)="onTemplateOpen(cancelTemplate)">
+            {{ 'MEDICAL-BOARD.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="btn-section float-right">
+          <gosi-button-dc
+            id="submit"
+            [disabled]="!selectedhighlight"
+            (submit)="onTemplateOpen(rejectPreview)"
+            type="primary"
+          >
+            {{ 'MEDICAL-BOARD.ASSIGN' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-container>
+  <gosi-pagination-dc
+    *ngIf="noOfRecords > itemsPerPage"
+    [totalSize]="noOfRecords"
+    [itemsPerPage]="itemsPerPage"
+    [itemType]="'MEDICAL-BOARD.BRANCHES' | translate"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    paginationId="paginationId"
+  ></gosi-pagination-dc>
+</ng-container>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="MEDICAL-BOARD.INFO-CANCEL" (onConfirm)="confirmCancel(2)" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #assignTemplate>
+  <gosi-confirm-modal-dc message="MEDICAL-BOARD.INFO-ASSIGN" (onConfirm)="assignSession()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectPreview>
+  <div class="custom-modal">
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="heading text-center pt-1" *ngIf="showalert(selectedBox)">
+          <gosi-alert-dc
+            message="{{ 'MEDICAL-BOARD.ASSIGN-WARNING' | translate }}"
+            type="info"
+            [dismissible]="false"
+            class="documents-alert"
+          >
+            <div actOnAlert *ngIf="showAvailbalePart">
+              {{ 'MEDICAL-BOARD.ONLY' | translate }}{{ availableSlot }}{{ 'MEDICAL-BOARD.OUT-OF' | translate
+              }}{{ pCount }}{{ 'MEDICAL-BOARD.PARTICIPANT-ASSIGN' | translate }}
+            </div>
+          </gosi-alert-dc>
+        </div>
+        <div class="text-center mt-3 info-class" *ngIf="isDifferent">
+          {{ 'MEDICAL-BOARD.INFO-ASSIGN-DIFFERENT' | translate }}
+        </div>
+        <div class="text-center mt-3 info-class" *ngIf="!isDifferent">
+          {{ 'MEDICAL-BOARD.INFO-ASSIGN' | translate }}
+        </div>
+      </div>
+
+      <div modalAction>
+        <div class="row">
+          <div class="col-md-12 form-action modalsection">
+            <div class="btn-section section-btn">
+              <gosi-button-dc id="confirm" type="primary" [size]="'md'" (submit)="assignSession()">
+                {{ 'CONTRIBUTOR.CONFIRM' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section">
+              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="confirmCancel(1)">
+                {{ 'CONTRIBUTOR.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

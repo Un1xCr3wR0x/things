@@ -1,0 +1,23 @@
+/**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */
+
+export enum DueDateWidgetLabels {
+  ZERO_DAYS = 'BILLING.DAYS',
+  ONE_DAY = 'BILLING.1-DAY',
+  TWO_DAYS = 'BILLING.2-DAYS',
+  THREE_TO_TEN_DAYS = 'BILLING.3-TO-10-DAYS',
+  GRT_THAN_TEN_DAYS = 'BILLING.GRT-THAN-10-DAYS',
+
+  ZERO_HOURS = 'BILLING.HOURS',
+  ONE_HOUR = 'BILLING.1-HOUR',
+  TWO_HOURS = 'BILLING.2-HOURS',
+  THREE_TO_TEN_HOURS = 'BILLING.3-TO-10-HOURS',
+  GRT_THAN_TEN_HOURS = 'BILLING.GRT-THAN-10-HOURS',
+
+  ONE_MONTH = 'BILLING.ONE_MONTH',
+  TWO_MONTHS = 'BILLING.TWO_MONTHS',
+  MORE_THAN_THREE_MONTHS = 'BILLING.MORE_THAN_THREEE_MONTHS'
+}

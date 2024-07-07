@@ -1,0 +1,207 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="report-oh-frame content">
+  <input type="hidden" id="injuryId" value="{{ injuryNumber }}" />
+  <div class="row">
+    <div class="col-md-12">
+      <div class="main-heading" *ngIf="processType !== 'reopen' && processType !== 'modify'">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.REPORT-OCCUPATIONAL-HAZARD' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 'reopen'">
+        {{ 'OCCUPATIONAL-HAZARD.REOPEN-INJURY-TRANSACTION' | translate }}
+      </div>
+      <div class="main-heading" *ngIf="processType === 'modify'">
+        {{ 'OCCUPATIONAL-HAZARD.MODIFY-INJURY-TRANSACTION' | translate }}
+      </div>
+    </div>
+  </div>
+  <!-- Contributor details view  -->
+  <oh-contributor-info-dc
+    *ngIf="currentTab < totalTabs - 1 && processType !== 'reopen'"
+    #personDetails
+    [personDetails]="person"
+  >
+  </oh-contributor-info-dc>
+
+  <gosi-comments-dc
+    *ngIf="
+      ((isWorkflow &&
+        injury &&
+        currentTab !== 3 &&
+        processType != 'modify' &&
+        !isAppPrivate &&
+        processType != 'reopen') ||
+      (routerData?.taskId && !isAppPrivate && processType === 'reopen')) && !allowanceFlag
+    "
+    [comments]="comment ? comment : []"
+  ></gosi-comments-dc>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab < totalTabs - 1"
+    [wizardItems]="addInjuryWizard"
+    (clickWizard)="selectWizard($event)" 
+    #reportOHWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab">
+    <tabset type="pills" #reportOHTabs>
+      <tab [active]="currentTab === 0">
+        <div class="row" *ngIf="processType !== 'reopen' && !allowanceFlag">
+          <div class="col-md-12">
+            <oh-injury-statistics-dc
+              [injuryStatistics]="injuryStatistics"
+              [socialInsuranceNo]="socialInsuranceNo"
+            ></oh-injury-statistics-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <oh-report-injury-dc
+              [isEdit]="isEdit"
+              [previousInjury]="injuryStatistics.injuries"
+              (alertEmit)="displayMsg($event)"
+              [processType]="processType"
+              [taskid]="taskid"
+              [booleanList]="booleanList$ | async"
+              [isValidator1]="isValidator1"
+              [injuryOccuredPlace]="injuryOccuredPlace$ | async"
+              [employeeActivityAtInjuryTime]="occupationList$ | async"
+              [injuryTypeList]="injuryTypeList$ | async"
+              [injuryreasonList]="injuryReasonList$ | async"
+              [cityList]="cityList$ | async"
+              [countryList]="countryList$ | async"
+              [governmentSectorList]="governmentSectorList$ | async"
+              (submit)="saveInjuryDetails($event)"
+              [parentForm]="reportInjuryMainForm"
+              (selectInjuryType)="getInjuryReason($event)"
+              (selectgovernmentSector)="getDocs($event)"
+              [injuryNumber]="injuryNumber"
+              [occupation]="occupation"
+              [reopenReasonList]="reopenReason$ | async"
+              [isAddressAvailable]="isAddressPresent"
+              [isAppPrivate]="isAppPrivate"
+              [viewInjuryDetails]="injury"
+              [isWorkflow]="isWorkflow"
+              (template)="showCancelTemplate()"
+              [establishmentName]="establishmentName"
+              [registrationNumber]="registrationNo"
+              [establishmentList]="establishmentList$ | async"
+              (selectRegNo)="selectEstablishment($event)"
+              (reopenReasonDetails)="showFormValidation()"
+              (modifyIndicator)="setModifyIndicator($event)"
+              (reopenReason)="setReopenReason($event)"
+              (establismentDetails)="showEstablishmentValidation($event)"
+              [allowanceFlag]="allowanceFlag"
+              [allowanceFlagReturn]="allowanceFlagReturn"
+              [allowanceFlagReopen]="allowanceFlagReopen"
+            >
+            </oh-report-injury-dc>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 1" *ngIf="processType != 'reopen'">
+        <div class="row">
+          <div class="col-md-12">
+            <oh-personal-details-dc
+              #personDetails
+              [isAddressOptional]="isAddressOptional"
+              [isdControl]="isdControl"
+              [cityList]="cityList$ | async"
+              [countryList]="countryList$ | async"
+              [isValidator1]="isValidator1"
+              [prohibitUpdate]="prohibitInspection"
+              (submit)="saveInjury($event)"
+              (previous)="previousForm()"
+              [person]="person"
+              [workFlowType]="workFlowType"
+              [disabled]="disabled"
+              [processType]="processType"
+              [payeeT]="payeeT"
+              [isAddressPresent]="isAddressPresent"
+              [emergencyContact]="emergencyContactNo"
+              (template)="showCancelTemplate()"
+              (contactNumberDetails)="showFormValidation()"
+              [allowanceFlag]="allowanceFlag"
+            >
+            </oh-personal-details-dc>
+          </div>
+        </div>
+      </tab>
+
+      <tab [active]="currentTab === 2">
+        <div class="row">
+          <div class="col-md-12 upload-documents">
+            <oh-document-dc
+              #documentDetailsForm
+              [transactionId]="injuryTransactionId"
+              [businessKey]="injuryId"
+              [requiredList]="documentsList"
+              [isValidator1]="isValidator1"
+              [isValidator2]="isValidator2"
+              [documentList]="documentItem"
+              [documents]="reqdocumentList"
+              (submit)="submitDocument($event)"
+              (uploadFailed)="showMandatoryDocErrorMessage($event)"
+              (documentFormDetails)="showFormValidation()"
+              (previous)="previousForm()"
+              (refresh)="refreshDocument($event)"
+              [isWorkflow]="isWorkflow"
+              [taskId]="taskid"
+              [parentForm]="documentForm"
+              (template)="showCancelTemplate()"
+              [processType]="processType"
+              [isSelectedReasonOthers]="isSelectedReasonOthers" 
+              [allowanceFlag]="allowanceFlag"
+              [allowanceFlagReturn]="allowanceFlagReturn"
+            >
+            </oh-document-dc>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <ng-template #cancelInjury>
+              <gosi-confirm-modal-dc
+                [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+                (onConfirm)="confirmCancel()"
+                (onCancel)="decline()"
+              >
+              </gosi-confirm-modal-dc>
+            </ng-template>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="currentTab === 3">
+        <div class="row">
+          <div class="col-md-12">
+            <oh-feedback-injury-dc
+              [personDetails]="person"
+              [injuryNumber]="injuryNumber"
+              [reportedInjuryInformation]="reportedInjuryInformation"
+              [feedbackdetails]="feedbackdetails"
+            >
+            </oh-feedback-injury-dc>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+</div>
+<ng-template #errorTemplate>
+  <div class="row message justify-content-center">
+    <gosi-modal-dc>
+      <div modalContent>
+        <gosi-alert-dc [bilingualMessage]="payeeInfoMessage" type="info" [dismissible]="false"> </gosi-alert-dc>
+      </div>
+      <div class="d-flex close-button justify-content-center" modalAction>
+        <gosi-button-dc type="secondary" id="close" (submit)="clearModal()">
+          {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+        >
+      </div>
+    </gosi-modal-dc>
+  </div>
+</ng-template>

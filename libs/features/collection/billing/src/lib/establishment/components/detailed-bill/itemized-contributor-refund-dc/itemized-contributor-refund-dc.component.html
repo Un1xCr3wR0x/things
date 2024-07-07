@@ -1,0 +1,99 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ tabHeader | translate }}">
+    <span class="arrow-ups arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}:{{ totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-downs arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ totalAmount * exchangeRate | numToPositive | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container>
+      <div class="row">
+        <div class="col-lg-12 search-margin">
+          <div class="period-search-sort-filter search-menu">
+            <div class="search" id="searchid">
+              <gosi-search-dc> </gosi-search-dc>
+            </div>
+          </div>
+        </div>
+        <ng-container *ngIf="creditRefundDetails?.refundDetails?.length > 0; else noResult">
+          <div class="col-lg-12 full-width">
+            <div class="table-scroll table-responsive">
+              <table class="table table-borderless">
+                <thead class="thead-light">
+                  <tr>
+                    <th>
+                      {{ 'BILLING.TRANSACTION-DATE' | translate }}
+                    </th>
+                    <th>
+                      {{ 'BILLING.APPROVED-AMOUNT' | translate }}
+                    </th>
+                    <th>
+                      {{ 'BILLING.TRANSFERRED-TO' | translate }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container
+                    *ngFor="
+                      let item of creditRefundDetails.refundDetails
+                        | paginate
+                          : {
+                              id: 'paginationId',
+                              itemsPerPage: itemsPerPage,
+                              currentPage: pageDetails.currentPage,
+                              totalItems: creditRefundDetails.numberOfRecords
+                            };
+                      let i = index
+                    "
+                  >
+                    <tr class="border-bottom">
+                      <td>{{ item.transactionDate.gregorian | date: 'dd/MM/yyyy' }}</td>
+                      <td>{{ item.approvedAmount | number: '1.2-2' }}</td>
+                      <td>{{ item.iban ? item.iban : (item.paymentType | bilingualText) }}</td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <ng-container>
+              <div>
+                <gosi-pagination-dc
+                  *ngIf="creditRefundDetails.numberOfRecords > itemsPerPage"
+                  [totalSize]="creditRefundDetails.numberOfRecords"
+                  [itemsPerPage]="itemsPerPage"
+                  [pageDetails]="pageDetails"
+                  (pageChange)="selectPage($event)"
+                  paginationId="paginationId"
+                ></gosi-pagination-dc>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </accordion-group>
+</accordion>
+
+<ng-template #noResult>
+  <div class="col-lg-12">
+    <div class="mt-10 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </div>
+</ng-template>

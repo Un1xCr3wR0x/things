@@ -1,0 +1,153 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc
+    [canEdit]="disableIconReopen || backDatedValidator ? false : !canReturn"
+    (onEdit)="navigateToCsrView(isContractRequired ? 4 : 2)"
+    [documents]="documents ? documents : []"
+    [comments]="comments"
+  >
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate | uppercase"
+        [badge]="hasInspectionCompleted ? ('CONTRIBUTOR.INSPECTION-PERFORMED' | translate | uppercase) : ''"
+        [subValue]="socialInsuranceNo"
+        [formSubmissionDate]="engagement?.formSubmissionDate?.gregorian"
+        [transactionRefNo]="referenceNo"
+      ></frm-main-heading-dc>
+    </div>
+    <div id="entityDetails"></div>
+    <!-- alter message on establishment reopened closing in progress -->
+    <div id="contentArea" class="row" *ngIf="disableIconReopen">
+      <div class="col-lg-12 mt-4">
+        <gosi-alert-dc [message]="'CONTRIBUTOR.EST-REOPEN'" type="info" [dismissible]="false" [noPadding]="true">
+        </gosi-alert-dc>
+      </div>
+    </div>
+
+    <div id="contentArea">
+      <cnt-personal-details-dc
+        *ngIf="establishment && contributor"
+        [contributor]="contributor"
+        [registrationNumber]="registrationNo"
+        [establishmentDetails]="establishment"
+        [canEdit]="disableIconReopen || backDatedValidator ? false : !canReturn"
+        [conType]="contributor.contributorType"
+        [isBeneficiary]="isBeneficiary"
+        (onEdit)="navigateToCsrView(0)"
+      ></cnt-personal-details-dc>
+      <cnt-engagement-details-view-dc
+        *ngIf="engagement && contributor"
+        [canEdit]="disableIconReopen || backDatedValidator ? false : !canReturn"
+        [canEditPenalty]="canChangePenaltyIndicator"
+        [isFCValidator]="isFCValidator"
+        [engagement]="engagement"
+        (onEdit)="navigateToCsrView(1)"
+        [conType]="contributor.contributorType"
+        [cntValidatorForm]="validatorForm"
+      >
+      </cnt-engagement-details-view-dc>
+      <div class="row" *ngIf="isContractRequired">
+        <frm-content-heading-dc
+          icon="newspaper"
+          class="col-sm"
+          heading="CONTRIBUTOR.CONTRACT-AUTH.CONTRACT-DETAILS"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+        <div class="custom-btn-sm">
+          <gosi-button-dc
+            type="primary"
+            [size]="'md'"
+            [outlineOnly]="true"
+            id="viewContractsDetails"
+            (submit)="onViewContractsClick()"
+          >
+            {{ 'CONTRIBUTOR.CONTRACT-AUTH.VIEW-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <div id="actionArea">
+        <cnt-validator-action-area-dc
+          [showApprove]="true"
+          [showReject]="canReject"
+          [showReturn]="canReturn"
+          [showRequestInspection]="canRequestInspection  && !establishment?.ppaEstablishment"
+          [isReInspection]="hasInspectionCompleted"
+          (requestInspection)="checkForActiveInspection()"
+          (approveEvent)="showModal(approveTemplate)"
+          (rejectEvent)="showModal(rejectTemplate)"
+          (returnEvent)="showModal(returnTemplate)"
+          (cancelEvent)="navigateToInbox()"
+          [disableApprove]="isBillBatch"
+        ></cnt-validator-action-area-dc>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------------------------  Modals ----------------------------->
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CORE.REJECT-REASON'"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="handleWorkflowEvents(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CORE.RETURN-REASON'"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="handleWorkflowEvents(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [infoMessage]="isBeneficiary ? 'CONTRIBUTOR.INFO-VALIDATOR-BENEFICIARY' : null"
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="handleWorkflowEvents(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'CONTRIBUTOR.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #legalEntityChangeTemplate>
+  <gosi-modal-dc>
+    <div class="row my-4" modalContent>
+      <div class="col-lg-12 info">{{ 'CONTRIBUTOR.LEGAL-ENTITY-CHANGE-INFO' | translate }}</div>
+    </div>
+    <div class="row" modalAction>
+      <div class="col-lg-12 form-action">
+        <div class="btn-section d-flex justify-content-center">
+          <gosi-button-dc id="ok" type="secondary" (submit)="handleLegalEntityChange()">
+            {{ 'CONTRIBUTOR.OK' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

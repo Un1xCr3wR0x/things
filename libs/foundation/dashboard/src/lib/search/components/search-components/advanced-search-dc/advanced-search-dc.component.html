@@ -1,0 +1,470 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="advanced-search-wrapper mb-4 mt-2">
+  <div class="pt-0 pb-4">
+    <div class="d-flex justify-content-between">
+      <span class="adv-search">{{ 'DASHBOARD.ADVANCED-SEARCH' | translate }}</span>
+      <span class="close-search"
+        ><a (click)="onClose()">{{ 'DASHBOARD.CLOSE-ADVANCED-SEARCH' | translate }}</a></span
+      >
+    </div>
+    <div class="mt-4">
+      <ng-container *ngIf="isTransaction">
+        <div class="row">
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.CONTRIBUTOR-PLACEHOLDER' | translate }}</label>
+            <gosi-input-text-dc
+              gosiSpecialCharacterMask
+              [onlyDigits]="true"
+              id="personIdentifier"
+              label="DASHBOARD.CONTRIBUTOR"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              [maxLength]="10"
+              gosiSpecialCharacterMask
+              [onlyDigits]="true"
+              [placeholder]="'DASHBOARD.CONTRIBUTOR-PLACEHOLDER' | translate"
+              class="custom-input"
+              [control]="parentForm.get('advancedSearchForm').get('personIdentifier')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ESTABLISHMENT-REGISTRATION-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              gosiSpecialCharacterMask
+              [onlyDigits]="true"
+              id="registrationNo"
+              label="DASHBOARD.ESTABLISHMENT-REGISTRATION-NUMBER"
+              [ignoreLabel]="true"
+              [maxLength]="9"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [control]="parentForm.get('advancedSearchForm').get('registrationNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.START-DATE' | translate }}</label>
+            <!-- start date -->
+            <gosi-input-date-dc
+              #datePicker
+              id="startDate"
+              [control]="parentForm.get('advancedSearchForm').get('startDate').get('gregorian')"
+              [maxDate]="maxStartDate"
+              class="custom-input"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.END-DATE' | translate }}</label>
+            <gosi-input-date-dc
+              #datePicker
+              id="endDate"
+              [control]="parentForm.get('advancedSearchForm').get('endDate').get('gregorian')"
+              [maxDate]="maxEndDate"
+              class="custom-input"
+              [hideOptionalLabel]="true"
+              [gosiDateOverlap]="parentForm.get('advancedSearchForm').get('startDate').get('gregorian')"
+              [canBeSame]="true"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <gosi-input-multi-select-dropdown-dc
+              id="txnType"
+              class="custom-input"
+              [list]="txnTypesList"
+              [allowSearch]="true"
+              [label]="'DASHBOARD.TRANSACTION_TYPE' | translate"
+              [hideOptionalLabel]="true"
+              [searchPlaceholder]="'DASHBOARD.TRANSACTION_TYPE' | translate"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.TRANSACTION_TYPE' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('transactionId')"
+              [selectedValues]="selectedTransactionTypesOptions"
+              [noMarginLabel]="true"
+              (selected)="selectedTransactionTypesOptions = $event"
+              ></gosi-input-multi-select-dropdown-dc>
+          </div>
+            <div class="col-lg-3 custom-text">
+              <gosi-input-multi-select-dropdown-dc              
+              id="statusSelection"
+              [label] = "'DASHBOARD.TRANSACTION-STATUS' | translate"
+              [hideOptionalLabel]="true"
+              [isRequired]="false"
+              [control]="parentForm.get('advancedSearchForm').get('status')"
+              [list]="txnStatusList"
+              [placeholder]="'DASHBOARD.STATUS' | translate"
+              [selectedValues]="selectedStatusOptions"
+              (selected)="selectedStatusOptions = $event"
+              [noMarginLabel]="true"
+              class="custom-input"
+              >
+              </gosi-input-multi-select-dropdown-dc>
+            </div>
+            <div class="col-lg-3 custom-text">
+              <gosi-input-multi-select-dropdown-dc              
+              id="channelSelection"
+              [label]="'DASHBOARD.CHANNEL' | translate"
+              [hideOptionalLabel]="true"
+              [control]="parentForm.get('advancedSearchForm').get('channel')"
+              [list]="channelList"
+              [placeholder]="'DASHBOARD.CHANNEL' | translate"
+              [selectedValues]="selectedChannelOptions"
+              (selected)="selectedChannelOptions = $event"
+              [noMarginLabel]="true"
+              class="custom-input"
+              >
+              </gosi-input-multi-select-dropdown-dc>
+            </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="isIndividual">
+        <div class="row">
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.FIRST-NAME' | translate }}</label>
+            <gosi-input-text-dc
+              id="firstName"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.FIRST-NAME' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('firstName')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.SECOND-NAME' | translate }}</label>
+            <gosi-input-text-dc
+              id="secondName"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.SECOND-NAME' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('secondName')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.THIRD-NAME' | translate }}</label>
+            <gosi-input-text-dc
+              id="thirdName"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.THIRD-NAME' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('thirdName')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.FAMILY-NAME' | translate }}</label>
+            <gosi-input-text-dc
+              id="familyName"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.FAMILY-NAME' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('familyName')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-4 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.NAME-IN-ENGLISH' | translate }}</label>
+            <gosi-input-text-dc
+              id="nameinEnglish"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.NAME-IN-ENGLISH' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('englishName')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.OLD-NATIONAL-ID' | translate }}</label>
+            <gosi-input-text-dc
+              id="nationalId"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.OLD-NATIONAL-ID' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('oldNationalId')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.MOBILE-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="lmobileNo"
+              [ignoreLabel]="true"
+              [maxLength]="10"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.MOBILE-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('phoneNumber')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.DOB' | translate }}</label>
+            <gosi-input-date-dc
+              #datePicker
+              id="birthDate"
+              [control]="parentForm.get('advancedSearchForm').get('birthDate')"
+              [maxDate]="maxDate"
+              class="custom-input"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-date-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.NATIONALITY' | translate }}</label>
+            <gosi-input-select-dc
+              id="nationality"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [placeholder]="'DASHBOARD.NATIONALITY' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('nationality')"
+              [list]="nationalityList"
+              (selectLov)="onNationalitySelect($event)"
+              [hideOptionalLabel]="true"
+            >
+            </gosi-input-select-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.PASSPORT-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="passportNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [maxLength]="30"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.PASSPORT-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('passportNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.BORDER-NO' | translate }}</label>
+            <gosi-input-text-dc
+              id="borderNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.BORDER-NO' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('borderNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-2 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.GCC-ID' | translate }}</label>
+            <gosi-input-text-dc
+              id="gccId"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.GCC-ID' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('gccId')"
+            ></gosi-input-text-dc>
+          </div>
+          <!-- <div class="col-lg-3 custom-text">
+              <label class="m-0 custom-label">{{ 'DASHBOARD.SOCIAL-INSURANCE-NO' | translate }}</label>
+              <gosi-input-text-dc
+                id="sin"
+                [ignoreLabel]="true"
+                class="custom-input"
+                [overridePlaceholder]="true"
+                [placeholder]="'DASHBOARD.SOCIAL-INSURANCE-NO' | translate"
+                [control]="parentForm.get('advancedSearchForm').get('sin')"
+              ></gosi-input-text-dc>
+          </div> -->
+        </div>
+      </ng-container>
+      <ng-container *ngIf="isEstablishment">
+        <div class="row">
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.CONTRIBUTOR-PLACEHOLDER' | translate }}</label>
+            <gosi-input-text-dc
+              id="personIdentifier"
+              [ignoreLabel]="true"
+              [overridePlaceholder]="true"
+              [maxLength]="10"
+              gosiSpecialCharacterMask
+              [onlyDigits]="true"
+              [placeholder]="'DASHBOARD.CONTRIBUTOR-PLACEHOLDER' | translate"
+              class="custom-input"
+              [control]="parentForm.get('advancedSearchForm').get('personIdentifier')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ADMIN-PHONE-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="phoneNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [maxLength]="10"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.ADMIN-PHONE-NUMBER-PLACEHOLDER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('phoneNumber')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ADMIN-LICENCE-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="licenceNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [maxLength]="30"
+              [placeholder]="'DASHBOARD.ADMIN-LICENCE-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('licenceNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ADMIN-COMMERCIAL-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="commercialNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [maxLength]="10"
+              [placeholder]="'DASHBOARD.ADMIN-COMMERCIAL-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('commercialRegistrationNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ADMIN-RECRUITMENT-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="recruitmentNo"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [overridePlaceholder]="true"
+              [maxLength]="10"
+              [placeholder]="'DASHBOARD.ADMIN-RECRUITMENT-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('recruitmentNo')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ADMIN-UNIFIED-ID' | translate }}</label>
+            <gosi-input-number-dc
+              id="unifiedId"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [maxLength]="10"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.ADMIN-UNIFIED-ID' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('unifiedIdentificationNo')"
+            ></gosi-input-number-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.GCC-REGISTRATION-NUMBER' | translate }}</label>
+            <gosi-input-text-dc
+              id="gccId"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [maxLength]="10"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.GCC-REGISTRATION-NUMBER' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('gccId')"
+            ></gosi-input-text-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.GCC-COUNTRY' | translate }}</label>
+            <gosi-input-multi-select-dropdown-dc
+              id="gccCountry"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [list]="gccCountryList"
+              [allowSearch]="true"
+              [searchPlaceholder]="'DASHBOARD.GCC-COUNTRY' | translate"
+              [overridePlaceholder]="true"
+              [placeholder]="'DASHBOARD.GCC-COUNTRY' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('gccCountry')"
+              (selected)="onGccCountrySelect($event)"
+              [selectedValues]="selectedGccCountry"
+            ></gosi-input-multi-select-dropdown-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.REGISTRATION-STATUS' | translate }}</label>
+            <gosi-input-multi-select-dropdown-dc
+              id="registrationStatus"
+              [ignoreLabel]="true"
+              class="custom-input"
+              [allowSearch]="true"
+              (selected)="onRegistrationStatusSelect($event)"
+              [selectedValues]="selectedRegistrationStatus"
+              [list]="registrationStatusList"
+              [overridePlaceholder]="true"
+              [searchPlaceholder]="'DASHBOARD.REGISTRATION-STATUS' | translate"
+              [placeholder]="'DASHBOARD.REGISTRATION-STATUS' | translate"
+              [control]="parentForm.get('advancedSearchForm').get('registrationStatus')"
+            ></gosi-input-multi-select-dropdown-dc>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.UNIFIED-ESTABLISHMENT-ID' | translate }}</label>
+            <div class="d-flex text-container">
+              <div class="prefix">
+                <gosi-input-number-dc
+                  id="unifiedEstablishmentIdPrefix"
+                  [ignoreLabel]="true"
+                  class="custom-input"
+                  [maxLength]="2"
+                  [overridePlaceholder]="true"
+                  placeholder="00"
+                  [control]="parentForm.get('advancedSearchForm').get('unifiedEstablishmentIdPrefix')"
+                  (blur)="validate('unifiedEstablishmentId')"
+                  [validationChanged]="unifiedEstablishmentIdPrefixValidate"
+                ></gosi-input-number-dc>
+              </div>
+              <div class="suffix">
+                <gosi-input-number-dc
+                  id="unifiedEstablishmentIdSuffix"
+                  [ignoreLabel]="true"
+                  class="custom-input"
+                  [maxLength]="7"
+                  [overridePlaceholder]="true"
+                  placeholder="0000000"
+                  [control]="parentForm.get('advancedSearchForm').get('unifiedEstablishmentId')"
+                  (blur)="validate('unifiedEstablishmentIdPrefix')"
+                  [validationChanged]="unifiedEstablishmentIdValidate"
+                ></gosi-input-number-dc>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 custom-text">
+            <label class="m-0 custom-label">{{ 'DASHBOARD.ESTABLISHMENT-ID' | translate }}</label>
+            <div class="d-flex text-container">
+              <div class="prefix">
+                <gosi-input-number-dc
+                  id="establishmentIdPrefix"
+                  [ignoreLabel]="true"
+                  class="custom-input"
+                  [maxLength]="2"
+                  [overridePlaceholder]="true"
+                  placeholder="00"
+                  [control]="parentForm.get('advancedSearchForm').get('establishmentIdPrefix')"
+                  (blur)="validate('establishmentId')"
+                  [validationChanged]="establishmentIdPrefixValidate"
+                ></gosi-input-number-dc>
+              </div>
+              <div class="suffix">
+                <gosi-input-number-dc
+                  id="establishmentIdSuffix"
+                  [ignoreLabel]="true"
+                  class="custom-input"
+                  [maxLength]="7"
+                  [overridePlaceholder]="true"
+                  placeholder="0000000"
+                  [control]="parentForm.get('advancedSearchForm').get('establishmentId')"
+                  (blur)="validate('establishmentIdPrefix')"
+                  [validationChanged]="establishmentIdValidate"
+                ></gosi-input-number-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <div class="row">
+        <div class="col-lg-3">
+          <gosi-button-dc id="search" (submit)="onSearch()">{{ 'DASHBOARD.SEARCH' | translate }}</gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

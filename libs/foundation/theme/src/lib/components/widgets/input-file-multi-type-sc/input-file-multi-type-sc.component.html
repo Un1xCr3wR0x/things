@@ -1,0 +1,113 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="row">
+  <div class="col-lg-12">
+    <div
+      id="documentWrapper"
+      class="document-wrapper"
+      [ngClass]="[uploadFailed ? 'is-invalid' : '', isWorkflowInProgress ? 'disabled' : '']"
+    >
+      <div class="document-options">
+        <div class="document-content">
+          <!-- Document details before processing -->
+          <ng-container *ngIf="!isProcessing; else processing">
+            <div class="document-name">{{ documentName | translate }}</div>
+            <div class="upload-message" *ngIf="!upload && !isWorkflowInProgress">
+              {{ 'THEME.DRAG-AND-DROP-TEXT' | translate }}
+            </div>
+            <ng-container *ngIf="upload || (isWorkflowInProgress && fileDetails)">
+              <ng-container
+                *ngTemplateOutlet="Info; context: { details: isWorkflowInProgress ? fileDetails : upload }"
+              ></ng-container
+            ></ng-container>
+          </ng-container>
+
+          <ng-template #Info let-details="details">
+            <div class="doc-title">
+              <div class="excel-icon">
+                <fa-icon size="2x" [icon]="['far', 'file-excel']" alt="csv file"></fa-icon>
+              </div>
+              <div class="file-details">
+                <div>
+                  <strong>{{ details.name }} </strong>
+                </div>
+                <div>{{ details.size / 1024 | number }} kb</div>
+              </div>
+            </div>
+          </ng-template>
+
+          <!-- When document is under processing -->
+          <ng-template #processing>
+            <div class="doc-title" *ngIf="isProcessing && fileDetails">
+              <div class="processing">
+                <div class="processed-file">
+                  <div>
+                    <strong>{{ fileDetails.name }} </strong>
+                  </div>
+                  <div>
+                    {{ 'THEME.UPLOADED-ON' | translate }}: {{ fileDetails.uploadedOn | date: 'dd/MM/yyyy' }} |
+                    {{ 'THEME.FILE-SIZE' | translate }} : {{ fileDetails.size / 1024 | number }} kb
+                  </div>
+                </div>
+                <div class="info">
+                  <div>
+                    <img src="assets/images/loader.gif" alt="processing" />
+                  </div>
+                  <div class="px-3">
+                    <span class="font-weight-bold">{{ 'THEME.FILE-UNDER-PROCESSING' | translate }}</span
+                    >, {{ 'THEME.FILE-PROCESSING-INFO' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Document upload section -->
+      <div class="document-event" *ngIf="!upload && !isProcessing && !isWorkflowInProgress">
+        <div class="upload-doc" (click)="fileUpload.click()">
+          <input
+            style="display: none"
+            id="fileUpload"
+            #fileUpload
+            type="file"
+            (change)="handleFileUpload($event.target.files)"
+            accept=".csv, .xls, .xlsx"
+          />
+          <fa-icon class="upload-icon" icon="upload" size="2x"></fa-icon>
+        </div>
+      </div>
+
+      <!-- Document delete block -->
+      <div *ngIf="upload && !isProcessing && !isWorkflowInProgress" class="delete-doc">
+        <a id="deleteDocument" class="delete-icon" href="javascript:void(0)" (click)="showTemplate(deleteTemplate)">
+          <fa-icon icon="trash-alt" class="delete-icon-fa"> </fa-icon
+        ></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document processing block -->
+  <div class="col-lg-12" *ngIf="upload && !isProcessing && !isWorkflowInProgress && showProceed">
+    <div class="float-right">
+      <gosi-button-dc id="process" type="primary" (submit)="startProcessing()">{{
+        actionKey | translate
+      }}</gosi-button-dc>
+    </div>
+  </div>
+</div>
+
+<!-- Delete document template -->
+<ng-template #deleteTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'THEME.CONFIRM-DELETE-DOCUMENT'"
+    (onConfirm)="deleteDocument()"
+    (onCancel)="declinePopUp()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

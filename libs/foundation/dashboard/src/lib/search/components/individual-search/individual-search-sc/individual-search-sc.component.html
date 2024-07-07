@@ -1,0 +1,82 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div [ngClass]="!isPrivate ? 'p-4' : ''">
+  <div class="pt-0">
+    <dsb-common-search-dc
+      [isIndividual]="true"
+      (show)="onAdvancedSearchShow()"
+      (search)="onSearchIndividual()"
+      [parentForm]="searchForm.get('searchKeyForm')"
+      [isAdvancedSearch]="dashboardSearchService.enableIndividualAdvancedSearch"
+      [searchKey]="searchKey"
+      (reset)="onReset()"
+      [width]="width"
+    ></dsb-common-search-dc>
+    <dsb-advanced-search-dc
+      [isIndividual]="true"
+      *ngIf="dashboardSearchService.enableIndividualAdvancedSearch"
+      [parentForm]="searchForm"
+      [searchRequest]="searchRequest"
+      (close)="onAdvancedSearchClose()"
+      (search)="onAdvancedSearch()"
+      [nationalityList]="nationalityList$ | async"
+    >
+    </dsb-advanced-search-dc>
+
+    <dsb-search-header-dc
+      [isPrivate]="isPrivate"
+      [isSearch]="isSearch"
+      [commonSortFilter]="commonSortFilter"
+      [searchCount]="searchCount"
+    >
+    </dsb-search-header-dc>
+    <div class="desktop-view">
+      <dsb-individual-entries-dc
+        #indvEntry
+        *ngIf="individualEntry"
+        (navigate)="navigateToContributor($event)"
+        [individualSearchCount]="individualSearchCount"
+        [individualEntry]="individualEntry"
+        (limit)="onLimit($event)"
+        [limitItem]="searchRequest.limit"
+      >
+      </dsb-individual-entries-dc>
+    </div>
+
+    <div class="mobile-view">
+      <dsb-search-card-dc
+        #searchIndvEntry
+        *ngIf="individualEntry"
+        (navigate)="navigateToContributor($event)"
+        [isIndividual]="true"
+        [individualEntry]="individualEntry"
+        [totalSize]="individualSearchCount"
+        (limit)="onLimit($event)"
+        [limitItem]="searchRequest && searchRequest.limit"
+      >
+      </dsb-search-card-dc>
+    </div>
+    <div class="no-results d-flex justify-content-center align-items-center" *ngIf="noResults">
+      <gosi-no-result-dc></gosi-no-result-dc>
+    </div>
+    <ng-template #searchCount>
+      <dsb-search-results-label-dc
+        *ngIf="isSearchCount"
+        [count]="individualSearchCount"
+        [searchRequest]="searchRequest"
+        [isIndividual]="true"
+        [lang]="selectedLanguage"
+      ></dsb-search-results-label-dc>
+    </ng-template>
+    <ng-template #commonSortFilter> </ng-template>
+  </div>
+</div>
+<ng-template #warningTemplate>
+  <dsb-individual-profile-modal-dc
+    (navigate)="navigateToSimisProfile()"
+    (close)="hideModal()"
+  ></dsb-individual-profile-modal-dc>
+</ng-template>

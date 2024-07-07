@@ -1,0 +1,297 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div class="hide-tab">
+  <tabset class="pills">
+    <tab [active]="currentTab === 0">
+      <div class="content">
+        <div class="row no-gutters mb-4">
+          <div class="col-auto pr-3 border-right align-self-center back-button">
+            <a (click)="routeBack()">
+              <fa-icon
+                class="align-self-center backarrow-icon"
+                *ngIf="lang === 'ar'"
+                [icon]="['far', 'arrow-alt-circle-right']"
+                size="2x"
+              ></fa-icon>
+              <fa-icon
+                class="align-self-center backarrow-icon"
+                *ngIf="lang === 'en'"
+                [icon]="['far', 'arrow-alt-circle-left']"
+                size="2x"
+              ></fa-icon>
+            </a>
+          </div>
+          <div class="col-auto mr-auto header">
+            {{ 'BENEFITS.ACCEPT-ASSESSMENT-DECISION' | translate }}
+          </div>
+        </div>
+        <gosi-alert-sc></gosi-alert-sc>
+
+        <!-- Contributor Details -->
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc
+              type="secondary"
+              lessPadding="true"
+              heading="{{ 'BENEFITS.CONTRIBUTOR-DETAILS' | translate }}"
+            >
+              <bnt-contributor-common-dc
+                [contributorDetails]="holdBenefitDetails?.contributor"
+                [identity]="identity"
+                [identityLabel]="identityLabel"
+                [iscolfour]="iscolfour"
+                [lang]="lang"
+                [isStandAlone]="isAppMb"
+                (onContributorIdClicked)="navigateToContributor()"
+              ></bnt-contributor-common-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+
+        <!-- Medical Board Decision Details -->
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc
+              *ngIf="holdBenefitDetails?.assessmentDetails"
+              type="secondary"
+              lessPadding="true"
+              heading="{{ 'BENEFITS.MEDICAL-BOARD-DECISION' | translate }}"
+            >
+              <bnt-medical-board-details-dc
+                [assessmentDetails]="holdBenefitDetails?.assessmentDetails"
+                [lang]="lang"
+                [isStandAlone]="isAppMb"
+                (onContributorIdClicked)="navigateToProfile($event)"
+              ></bnt-medical-board-details-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+
+        <!-- Benefit Details -->
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary" lessPadding="true" heading="{{ 'BENEFITS.BENEFIT-DETAIL' | translate }}">
+              <bnt-reassessment-benefit-details-dc
+                [benefitDetails]="holdBenefitDetails?.pension"
+                [benefitType]="benefitType"
+              ></bnt-reassessment-benefit-details-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <gosi-card-dc
+                type="secondary"
+                heading="{{ 'OCCUPATIONAL-HAZARD.AUTHENTICATE-CUSTOMER' | translate }}"
+                lessPadding="true"
+              >
+                <div clas="row">
+                  <gosi-input-radio-dc
+                    id="authenticationMethod"
+                    [label]="'OCCUPATIONAL-HAZARD.AUTHENTICATION-METHOD' | translate"
+                    [control]="radioFormControl.get('authMethod')"
+                    (select)="selectRadio($event)"
+                    [list]="authenticationList"
+                  >
+                  </gosi-input-radio-dc>
+                </div>
+                <div class="row" *ngIf="showOtpFlag">
+                  <div class="col-lg-12 mt-4">
+                    <gosi-alert-dc type="info" [message]="showOtpErrorMsg" [dismissible]="false"> </gosi-alert-dc>
+                  </div>
+                </div>
+                <ng-container class="row">
+                  <div class="col-md-12" *ngIf="showOTPField">
+                    <div class="row">
+                      <gosi-button-dc id="genarate" type="primary" (click)="generateOTP()" size="sm">{{
+                        'BENEFITS.GENERATE-OTP' | translate
+                      }}</gosi-button-dc>
+                    </div>
+                  </div>
+                  <div class="row" *ngIf="giveOTPData">
+                    <gosi-card-dc type="secondary">
+                      <div class="row">
+                        <h6>{{ 'BENEFITS.OTP-DETAILS' | translate }}</h6>
+                      </div>
+                      <div class="row">
+                        <gosi-input-otp-dc
+                          [componentId]="'otpValue'"
+                          (timerStopped)="hasRetriesExceeded()"
+                          [isValid]="isValidOTP"
+                          [otpLength]="4"
+                          [disabledOTP]="disabledOTP"
+                          [control]="otpForm.get('otp')"
+                        >
+                        </gosi-input-otp-dc>
+                      </div>
+                      <div class="d-flex mt-3">
+                        <span class="mr-1"></span>
+                        <div class="d-inline-block" *ngIf="!isResend">
+                          <fa-icon [icon]="['fas', 'stopwatch']"></fa-icon>
+                        </div>
+                        <span class="mr-2"></span>
+                        <div class="d-flex timer-wrapper" *ngIf="!isResend">
+                          {{ 'CONTRIBUTOR.CONTRACT-AUTH.WILL-SEND-OTP' | translate }}
+                          <hr />
+                          <gosi-timer-dc (timerStopped)="isResend = true" [min]="minutes"> </gosi-timer-dc>
+                          {{ 'CONTRIBUTOR.CONTRACT-AUTH.SECOND' | translate }}
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-end link-padding col-sm-2 justify-content-center" *ngIf="true">
+                        <div *ngIf="isResend" class="regen-otp">
+                          <a
+                            *ngIf="noOfIncorrectOtp !== noOfResend"
+                            id="resendOtp"
+                            class="resend-otp custom-wrap"
+                            (click)="reSendOtp()"
+                          >
+                            {{ 'CONTRIBUTOR.CONTRACT-AUTH.REGENERATEOTP' | translate }}
+                          </a>
+                        </div>
+                      </div>
+                    </gosi-card-dc>
+                  </div>
+                  <div class="col-lg-12 form-action" *ngIf="giveOTPData">
+                    <div class="d-flex justify-content-center">
+                      <gosi-button-dc id="verify" type="primary" (submit)="verifyOTP()">
+                        {{ 'MEDICAL-BOARD.VERIFY' | translate }}
+                      </gosi-button-dc>
+                    </div>
+                  </div>
+                </ng-container>
+              </gosi-card-dc>
+            </div>
+          </div>
+        </ng-container>
+        <!-- Declaration section -->
+        <div class="row" *ngIf="isAppMb">
+          <div class="col-md-12">
+            <bnt-declaration-dc
+              [content]="'BENEFITS.DECLARATION-INFO'"
+              [heading]="'BENEFITS.DECLARATION'"
+              [checkBoxLabel]="'BENEFITS.ACCEPT-DECLARATION'"
+              [parentForm]="benefitsForm"
+              (checkBoxClicked)="changeCheck($event)"
+              [isAssessment]="true"
+            ></bnt-declaration-dc>
+          </div>
+        </div>
+
+        <!------ Document Section---->
+        <div class="row" *ngIf="!isAppMb && showDocumentField">
+          <div class="col-md-12">
+            <gosi-card-dc
+              type="secondary"
+              lessPadding="true"
+              heading="{{ 'BENEFITS.DOCUMENTS' | translate | titlecase }}"
+            >
+              <ng-container *ngIf="pensionReform;else nonReformHeading">
+                <div class="row">
+                  <div class="col-md-12 pb-1">
+                    {{ 'BENEFITS.DOCUMENT-ACKNOWLEDGMENT-MSG-PENSION-REFORM' | translate }}
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-template #nonReformHeading>
+              <div class="row">
+                <div class="col-md-12 pb-1">
+                  {{ 'BENEFITS.DOCUMENT-ACKNOWLEDGMENT-MSG' | translate }}
+                </div>
+              </div>
+            </ng-template>
+
+              <div class="row">
+                <div class="col-sm-12 col-md-12">
+                  <ng-container *ngIf="documentList?.length > 0">
+                    <ng-container *ngFor="let item of documentList; let i = index">
+                      <gosi-input-file-sc
+                        [index]="i"
+                        [document]="item"
+                        [businessKey]="benefitRequestId"
+                        [referenceNo]="referenceNo"
+                        [transactionId]="transactionId"
+                        (refresh)="refreshDocument($event)"
+                        [isScan]="!isAppMb"
+                        [isScanAndUpload]="true"
+                        [uuid]="uuid"
+                      ></gosi-input-file-sc>
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </div>
+            </gosi-card-dc>
+          </div>
+        </div>
+        <!-- Document Section -->
+
+        <!-- Actions -->
+        <div class="row form-action" *ngIf="!isAppMb">
+          <div class="col-lg-12 mt-0 form-action">
+            <div class="btn-section float-right">
+              <gosi-button-dc type="primary" (submit)="submitAssessmentDetails()" id="submit">
+                {{ 'BENEFITS.SUBMIT' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section float-left">
+              <gosi-button-dc id="cancel" type="secondary" (submit)="showModal(cancelTemplate)">
+                {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+        <div class="row form-action" *ngIf="isAppMb">
+          <div class="col-lg-12 mt-0 form-action">
+            <ng-container>
+              <div
+                class="btn-section float-right"
+                *ngIf="
+                  holdBenefitDetails &&
+                  (holdBenefitDetails?.assessmentDetails?.recordStatus === 'Processed' ||
+                    holdBenefitDetails?.assessmentDetails?.recordStatus === 'New')
+                "
+              >
+                <gosi-button-dc type="primary" id="reject" (submit)="acceptStandaloneAssessment()">
+                  {{ 'BENEFITS.ACCEPT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right">
+                <gosi-button-dc
+                  type="secondary"
+                  id="appeal"
+                  [disabled]="declarationDone || holdBenefitDetails?.assessmentDetails?.recordStatus === 'Appealed'"
+                  (submit)="appealAssessmentDetails()"
+                >
+                  {{ 'BENEFITS.APPEAL' | translate
+                  }}<img
+                    src="assets/icons/svg/arrow-up-right-from-square-solid.svg"
+                    class="arrow-up pl-2"
+                    alt="arrow-up"
+                  />
+                </gosi-button-dc>
+              </div>
+            </ng-container>
+            <div class="btn-section float-left">
+              <gosi-button-dc id="cancel" type="secondary" (submit)="cancelTransaction()">
+                {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </tab>
+    <tab [active]="currentTab === 1">
+      <bnt-status-display-dc
+        [recordStatus]="holdBenefitDetails?.assessmentDetails?.recordStatus"
+      ></bnt-status-display-dc>
+    </tab>
+  </tabset>
+</div>
+<!-- templates -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.INFO-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>

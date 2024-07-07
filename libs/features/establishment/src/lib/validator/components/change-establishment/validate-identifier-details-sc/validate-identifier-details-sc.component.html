@@ -1,0 +1,196 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="false">
+    <!-- Heading Section -->
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        *ngIf="establishment?.status?.english == reopenedClosingProgressStatus"
+        [message]="'ESTABLISHMENT.WARNING.REOPEN_CLOSING_VALIDATOR_INFO'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+    <!-- content-area -->
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc [establishment]="establishment"> </est-establishment-content-dc>
+      </div>
+      <div class="content-item">
+        <frm-content-heading-dc
+          icon="briefcase"
+          [canEdit]="!canReturn && canValidatorEdit"
+          (onEdit)="changeEstablishmentService.navigateToEditIdentifierDetails()"
+          [heading]="'ESTABLISHMENT.EST-IDENTIFIER-DETAILS-AFTER-CHANGES' | translate"
+        ></frm-content-heading-dc>
+
+        <div class="row">
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.license?.number !== establishment.license?.number"
+          >
+            <gosi-label-dc label="ESTABLISHMENT.LICENSE-NUMBER" [control]="establishmentToValidate.license?.number">
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate.license?.issueDate?.gregorian !== establishment.license?.issueDate?.gregorian
+            "
+          >
+            <gosi-label-dc
+              [date]="true"
+              label="ESTABLISHMENT.LICENSE-ISSUE-DATE"
+              [control]="establishmentToValidate.license?.issueDate?.gregorian"
+            ></gosi-label-dc>
+          </div>
+
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate.license?.expiryDate?.gregorian !== establishment.license?.expiryDate?.gregorian
+            "
+          >
+            <gosi-label-dc
+              [date]="true"
+              label="ESTABLISHMENT.LICENSE-EXPIRY-DATE"
+              [control]="establishmentToValidate.license?.expiryDate?.gregorian"
+            >
+            </gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="
+              establishmentToValidate.license?.issuingAuthorityCode?.english !==
+              establishment.license?.issuingAuthorityCode?.english
+            "
+          >
+            <gosi-label-dc
+              label="ESTABLISHMENT.LICENSE-ISSUING-AUTHORITY"
+              [control]="establishmentToValidate.license?.issuingAuthorityCode"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.departmentNumber !== establishment.departmentNumber"
+          >
+            <gosi-label-dc
+              label="ESTABLISHMENT.DEPARTMENT-ID"
+              [control]="establishmentToValidate.departmentNumber"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.unifiedNationalNumber !== establishment.unifiedNationalNumber"
+          >
+            <gosi-label-dc
+              label="ESTABLISHMENT.UNIFIED-NATIONAL-NO"
+              [control]="establishmentToValidate.unifiedNationalNumber"
+            ></gosi-label-dc>
+          </div>
+          <div class="col-md-6 col-sm-12" *ngIf="establishmentToValidate.recruitmentNo !== establishment.recruitmentNo">
+            <gosi-label-dc
+              label="ESTABLISHMENT.RECRUITMENT-NO"
+              [control]="establishmentToValidate.recruitmentNo"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12" *ngIf="hasCrnAndLicenseChange">
+            <div class="row ml-2 mr-2">
+              <div class="col-12 sub-section"></div>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-12" *ngIf="establishmentToValidate.crn?.number !== establishment.crn?.number">
+            <gosi-label-dc
+              [date]="false"
+              label="{{ 'ESTABLISHMENT.CRN-NUMBER' | translate }}"
+              [control]="establishmentToValidate.crn?.number"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.crn?.issueDate?.gregorian !== establishment.crn?.issueDate?.gregorian"
+          >
+            <gosi-label-dc
+              [date]="true"
+              label="ESTABLISHMENT.CRN-ISSUE-DATE"
+              [control]="establishmentToValidate.crn?.issueDate?.gregorian"
+            ></gosi-label-dc>
+          </div>
+          <div
+            class="col-md-6 col-sm-12"
+            *ngIf="establishmentToValidate.crn?.expiryDate?.gregorian !== establishment.crn?.expiryDate?.gregorian"
+          >
+            <gosi-label-dc
+              [date]="true"
+              label="ESTABLISHMENT.CRN-EXPIRY-DATE"
+              [control]="establishmentToValidate.crn?.expiryDate?.gregorian"
+            ></gosi-label-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn && !isReopenClosingInProgress"
+        (approveEvent)="approveTransaction(IdentifierValidatorForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(IdentifierValidatorForm, rejectTemplate)"
+        (returnEvent)="returnTransaction(IdentifierValidatorForm, returnTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!----------------------------------------- Modals ------------------------------->
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="IdentifierValidatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-IDENIFIER'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(IdentifierValidatorForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="IdentifierValidatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-IDENIFIER'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(IdentifierValidatorForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="IdentifierValidatorForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(IdentifierValidatorForm)"
+  ></frm-approve-template-dc>
+</ng-template>

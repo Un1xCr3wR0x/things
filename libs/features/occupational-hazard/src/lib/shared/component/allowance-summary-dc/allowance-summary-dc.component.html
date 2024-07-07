@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-card-dc type="secondary" headingSize="md" [lessPadding]="true">
+  <div class="row mb-2 allowance-summary">
+    <span *ngIf="!isPrevious">{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.ALLOWANCE-SUMMARY' | translate }}</span>
+    <span *ngIf="isPrevious">{{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.PREVIOUS-ALLOWANCE-SUMMARY' | translate }}</span>
+  </div>
+  <div class="row">
+    <div class="col-lg-4 col-md-4 col-sm-4">
+      <div class="form-group form-label fc-margin">
+        <label
+          class="label-color"
+          popover="{{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PERIOD' | translate }}"
+          placement="top"
+          triggers="mouseenter:mouseleave"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.ALLOWANCE.ALLOWANCE-PERIOD' | translate }}
+        </label>
+        <ng-container *ngIf="auditSummary?.allowanceDates?.startDate; else noData">
+          <div class="label-value">
+            {{ auditSummary?.allowanceDates?.startDate?.gregorian | gosiDate }}
+            <fa-icon *ngIf="lang === 'en'" [icon]="['fas', 'arrow-right']" class="treatment-arrow"></fa-icon>
+            <fa-icon *ngIf="lang === 'ar'" class="treatment-arrow" [icon]="['fas', 'arrow-left']"></fa-icon>
+
+            {{ auditSummary?.allowanceDates?.endDate?.gregorian | gosiDate }}
+            <span class="treatment">
+              ({{
+                findDateDifferenec(
+                  auditSummary?.allowanceDates?.startDate?.gregorian,
+                  auditSummary?.allowanceDates?.endDate?.gregorian
+                )
+              }}
+              )</span
+            >
+          </div>
+        </ng-container>
+        <ng-template #noData>
+          <div class="label-value">
+            {{ 'OCCUPATIONAL-HAZARD.NOT-AVAILABLE' | translate }}
+          </div>
+        </ng-template>
+      </div>
+    </div>
+    <ng-container *ngFor="let item of auditSummary?.allowancePeriod; let i = index">
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'InPatient Daily Allowance'">
+        <gosi-label-dc
+          id="inpatientDailyAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE-INPATIENT'"
+          [value]="getDays(item.allowanceDays)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'OutPatient Daily Allowance'">
+        <gosi-label-dc
+          id="outPatientDailyAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE-SICKLEAVE'"
+          [value]="getDays(item.allowanceDays)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'OutPatient Allowance'">
+        <gosi-label-dc
+          id="sickLeaveAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.DAILY-ALLOWANCE-SICKLEAVE'"
+          [value]="getDays(item.allowanceDays)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'Companion Daily Allowance'">
+        <gosi-label-dc
+          id="companionAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-ALLOWANCES'"
+          [value]="getDays(item.allowanceDays)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'Companion Conveyance Allowance'">
+        <gosi-label-dc
+          id="companionConveyanceAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.COMPANION-CONVEYANCE-ALLOWANCE'"
+          [value]="getDistance(item.distanceTravelled)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="item.allowanceType.english === 'Conveyance Allowance'">
+        <gosi-label-dc
+          id="conveyanceAllowance"
+          [label]="'OCCUPATIONAL-HAZARD.ALLOWANCE.CONVEYANCE-ALLOWANCES'"
+          [value]="getVisits(item.visits)"
+        >
+        </gosi-label-dc>
+      </div>
+    </ng-container>
+    <ng-container *ngFor="let claimdetail of auditSummary?.claimDetails; let j = index">
+      <div
+        class="col-lg-4 col-md-4 col-sm-4"
+        *ngIf="claimdetail.claimType.english === 'Dead Body Repatriation Expenses'"
+      >
+        <gosi-label-dc
+          id="deadbodyRepatriation"
+          [label]="'OCCUPATIONAL-HAZARD.CLAIMS.DEAD-BODY'"
+          [value]="getAmount(claimdetail?.amount)"
+        >
+        </gosi-label-dc>
+      </div>
+      <div
+        class="col-lg-4 col-md-4 col-sm-4"
+        *ngIf="claimdetail.claimType.english === 'Total Disability Repatriation Expenses'"
+      >
+        <gosi-label-dc
+          id="totalDisability"
+          [label]="'OCCUPATIONAL-HAZARD.CLAIMS.TOTAL-DISABILITY'"
+          [value]="getAmount(claimdetail?.amount)"
+        >
+        </gosi-label-dc>
+      </div>
+    </ng-container>
+    <div class="col-lg-4 col-md-4 col-sm-4" *ngIf="auditSummary.auditReason">
+      <gosi-label-dc
+        id="auditReason"
+        [label]="'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.AUDIT-REASON' | translate"
+        [value]="auditSummary.auditReason | bilingualText"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+</gosi-card-dc>

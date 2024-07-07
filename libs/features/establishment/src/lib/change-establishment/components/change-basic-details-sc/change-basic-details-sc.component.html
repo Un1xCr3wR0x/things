@@ -1,0 +1,192 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <!-- header part -->
+  <div class="row">
+  <div class="col-sm-12 col-md-12 col-lg-6">
+  <est-heading-dc [backLink]="routeToView" [shouldPrompt] ="false" (backEvent)="navigateRoutelink()">
+    {{ 'ESTABLISHMENT.EDIT-ESTABLISHMENT-DETAILS' | translate }}
+  </est-heading-dc>
+  </div>
+  <!-- claim pool -->
+ <div class="col-sm-12 col-md-12 col-lg-6 claim-section" *ngIf="isGOL && isValidator">
+   <est-claim-assign-release-dc
+   [payload]="payload"
+   [isUnclaimed]="isUnclaimed"
+   [taskId]="taskId"
+   (assign)="assignClicked()"
+   (release)="releaseClicked()"
+   >
+
+   </est-claim-assign-release-dc>
+  </div>
+  </div>
+
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- edit view  -->
+  <div class="row" *ngIf="isValidator">
+    <!-- Comment Section -->
+    <div class="col-12">
+      <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      <est-establishment-heading-dc
+        [establishment]="establishmentProfile"
+        [heading]="'ESTABLISHMENT.EST-BASIC-DETAILS'"
+      >
+      </est-establishment-heading-dc>
+    </div>
+  </div>
+  <gosi-card-dc
+    *ngIf="editBasicDetailsForm"
+    type="secondary"
+    heading="{{ 'ESTABLISHMENT.EST-BASIC-DETAILS' | translate }}"
+  >
+    <div class="row">
+      <div class="col-sm-6">
+        <gosi-input-text-dc
+          id="arabicName"
+          gosiArabicMask
+          name="arabicName"
+          [maxLength]="estNameArabicMaxLength"
+          [label]="'ESTABLISHMENT.ESTABLISHMENT-ARABIC' | translate"
+          [control]="editBasicDetailsForm.get('name').get('arabic')"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-6">
+        <gosi-input-text-dc
+          id="englishName"
+          gosiEnglishMask
+          [maxLength]="estNameEnglishMaxLength"
+          name="englishName"
+          [label]="'ESTABLISHMENT.ESTABLISHMENT-NAME-EN' | translate"
+          [control]="editBasicDetailsForm.get('name').get('english')"
+        >
+        </gosi-input-text-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6">
+        <gosi-input-select-dc
+          id="activityType"
+          [name]="'activityType'"
+          [label]="'ESTABLISHMENT.ACTIVITY-TYPE' | translate"
+          [control]="editBasicDetailsForm.get('activityType')"
+          [list]="activityTypeList$ | async"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-sm-6">
+        <gosi-input-select-dc
+          id="nationality"
+          [name]="'nationality'"
+          [label]="'ESTABLISHMENT.NATIONALITY' | translate"
+          [disabled]="disableNationality"
+          [control]="editBasicDetailsForm.get('nationalityCode')"
+          [list]="nationalityList$ | async"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-sm-6">
+        <gosi-input-select-dc
+          id="lawType"
+          [name]="'lawType'"
+          [label]="'ESTABLISHMENT.LAW-TYPE' | translate"
+          [disabled]="true"
+          [control]="editBasicDetailsForm.get('lawType')"
+          [list]="lawTypeList$ | async"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-sm-6" *ngIf="isGcc">
+        <gosi-input-select-dc
+          id="gccCountryName"
+          [name]="'gccCountryName'"
+          [label]="'ESTABLISHMENT.GCC-COUNTRY-NAME' | translate"
+          [control]="editBasicDetailsForm.get('gccEstablishment').get('country')"
+          [list]="gccCountryList$ | async"
+          (select)="setGccStartDate($event)"
+          [disabled]="disableGCCRegNo"
+        >
+        </gosi-input-select-dc>
+      </div>
+      <div class="col-sm-6" *ngIf="isGcc">
+        <gosi-input-text-dc
+          id="regNo"
+          name="regNo"
+          [label]="'ESTABLISHMENT.GCC-REGISTRATION-NUMBER' | translate"
+          [control]="editBasicDetailsForm.get('gccEstablishment').get('registrationNo')"
+          [maxLength]="gccRegNoMaxLength"
+        >
+        </gosi-input-text-dc>
+      </div>
+      <div class="col-sm-6" *ngIf="isGcc">
+        <gosi-input-month-dc
+          id="startDate"
+          [name]="'startDate'"
+          [label]="'ESTABLISHMENT.ESTABLISHMENT-START-DATE' | translate"
+          [control]="editBasicDetailsForm.get('startDate')?.get('gregorian')"
+          [dateFormat]="'DD/MM/YYYY'"
+          [minDate]="minDate"
+          [maxDate]="maxDate"
+          [readOnly]="true"
+          [disabled]="disableGCCRegNo"
+        >
+        </gosi-input-month-dc>
+      </div>
+    </div>
+  </gosi-card-dc>
+
+  <ng-container *ngIf="!(isGOL && isUnn)">
+    <est-documents-dc
+      [uuid]="uuid"
+      [documents]="basicDetailsDocuments"
+      [businessKey]="registrationNo"
+      [transactionId]="documentTransactionId"
+      [referenceNo]="referenceNo"
+      (refreshDocument)="bindDocContent($event)"
+    ></est-documents-dc>
+    <gosi-card-dc type="secondary" *ngIf="editBasicDetailsForm" [paddingBottom]="true">
+      <gosi-input-text-area-dc
+        label="ESTABLISHMENT.COMMENTS"
+        id="comments"
+        name="comments"
+        [maxLength]="commentsMaxLength"
+        [control]="editBasicDetailsForm.get('comments')"
+      >
+      </gosi-input-text-area-dc>
+    </gosi-card-dc>
+  </ng-container>
+
+  <est-footer-buttons-dc
+    *ngIf="showSaveButton"
+    primaryLabel="ESTABLISHMENT.SUBMIT"
+    [showPrevious]="false"
+    (submit)="updateBasicDetails()"
+    (cancel)="showModal(cancelTemplate)"
+  >
+  </est-footer-buttons-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    [message]="'ESTABLISHMENT.INFO-CANCEL'"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #feedBackPage>
+  <est-success-dc
+    id="basicDetails"
+    *ngIf="transactionFeedback"
+    [routeForView]="routeToView"
+    [message]="transactionFeedback.message"
+    [transactionId]="transactionFeedback.transactionId"
+  ></est-success-dc>
+</ng-template>

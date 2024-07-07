@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [documents]="documents ? documents : []" [comments]="transactionReferenceData" [canEdit]="false">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'VIOLATIONS.REPORT-VIOLATION' | translate"
+        [transactionRefNo]="transactionDetails?.referenceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <vol-validator-violations-details-dc
+        [parentForm]="wrongBenefitsForm"
+        [booleanList]="yesOrNoList$ | async"
+        [isWrongBenefits]="true"
+        [transactionDetails]="transactionDetails"
+        [assigneeIndex]="assigneeIndex"
+        [assigneeId]="assigneeId"
+        [isReturn]="isReturn"
+        [isRaiseVioFoVcm]="isRaiseVioFoVcm"
+      ></vol-validator-violations-details-dc>
+      <vol-validator-establishment-details-dc
+        [transactionDetails]="transactionDetails"
+        (estProfile)="navigateToEstProfile($event)"
+        (viewPreviousForEstablishmentViolations)="showPopupForEstablishmentViolations()"
+      ></vol-validator-establishment-details-dc>
+      <vol-inspection-details-dc
+        [transactionDetails]="transactionDetails"
+        [isRaiseVioFoVcm]="isRaiseVioFoVcm"
+      ></vol-inspection-details-dc>
+      <vol-contributor-details-dc
+        [isWrongBenefits]="true"
+        [transactionDetails]="transactionDetails"
+        [booleanList]="yesOrNoList$ | async"
+        [parentForm]="wrongBenefitsForm"
+        [assigneeIndex]="assigneeIndex"
+        [assignedRole]="assignedRole"
+        (navigate)="navigateToProfile($event)"
+        (navigateToTrasaction)="navigateToTracker($event)"
+        (isSameLength)="getClassViolations($event)"
+        [isReturn]="isReturn"
+        [isRaiseVioFoVcm]="isRaiseVioFoVcm"
+        [contributorsTier]="contributorsTier"
+        (viewPreviousViolations)="showPopupViolations($event)"
+        (contributorSaved)="contributorSaved($event)"
+        (navigateToViolation)="openViolationProfile($event)"
+      ></vol-contributor-details-dc>
+      <vol-penality-calculation-details-dc
+        [transactionDetails]="transactionDetails"
+        [violationClassList]="violationClassList"
+        [penaltyInfoDetails]="penaltyInfoDetails"
+        [penaltyArrayLen]="penaltyArrayLen"
+        [parentForm]="wrongBenefitsForm"
+        [assignedRole]="assignedRole"
+        [assigneeIndex]="assigneeIndex"
+        [assigneeId]="assigneeId"
+        [assigneeName]="assigneeName"
+        [isReturn]="isReturn"
+        [showVcAlert]="showVcAlert"
+        [allExcluded]="allExcluded"
+        [notAllExcluded]="notallExcluded"
+        (classValue)="getClassValue($event)"
+        [penaltyCalculationResponse]="penaltyCalculationResponse"
+        [autoTierClass]="autoTierClass"
+        [saveContributorButtonClicked]="saveContributorButtonClicked"
+        (excludeContributor)="navigateToExcludeContributorPage($event)"
+        (penalityDetails)="getPenaltyDetails($event)"
+        (isExcluded)="getViolationClassList($event)"
+      ></vol-penality-calculation-details-dc>
+    </div>
+    <!-- Action area -->
+    <div id="actionArea" *ngIf="!isButtonApprove">
+      <frm-action-area-dc
+        [canReject]="false"
+        [canReturn]="canReturn"
+        [canApprove]="!(billBatchInProgress && canReturn)"
+        [isReturn]="false"
+        (approveEvent)="showModal(approveTemplate, true)"
+        (cancelEvent)="showModal(cancelTemplate, false)"
+        (returnEvent)="showModal(returnTemplate, false)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<!------------------------  Modals ----------------------------->
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="wrongBenefitsForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="manageWorkflowTransaction(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorMemberForm"
+    [returnReasonList$]="returnReasonList$"
+    [heading]="'CORE.RETURN-REASON'"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="manageWorkflowTransaction(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'VIOLATIONS.INFO-CANCEL'" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

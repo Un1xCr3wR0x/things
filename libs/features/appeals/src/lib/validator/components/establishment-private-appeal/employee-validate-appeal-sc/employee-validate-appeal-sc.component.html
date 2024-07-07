@@ -1,0 +1,141 @@
+<!--
+  ~  Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <!-- <gosi-alert-dc [message]="'CORE.ERROR.MANDATORY-FIELDS' | translate" type="danger"></gosi-alert-dc> -->
+  <frm-main-content-dc [documents]="appealDocumentList ? appealDocumentList : []" [comments]="comments">
+    <!-- Heading Section -->
+    <div id="mainHeading">
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-main-heading-dc [header]="appealTransactionName"></gosi-main-heading-dc>
+        </div>
+        <div class="col-md-6">
+          <div class="float-right sub-item">
+            <div class="d-flex justify-content-end">
+              <div *ngIf="referenceNo" class="info-tag flex-column">
+                <div class="sub-item-label">
+                  {{ 'CORE.TRANSACTION-NUMBER' | translate }}
+                </div>
+                <div class="sub-item-value">{{ referenceNo }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-tag flex-column">
+      <div class="sub-item-label"></div>
+      <div class="sub-item-value"></div>
+    </div>
+    <div id="contentArea">
+      <!-------------  Transaction request Info ------------------>
+      <appeals-request-summary
+        [title]="appealTransactionName"
+        [transactionRefNo]="appealTransactionReferenceNo ? appealTransactionReferenceNo : null"
+        [identityNumber]="transactionReferenceNo"
+        [initiatedDate]="initiatedDate"
+        [assigneeName]="appealUserFullName ? appealUserFullName : null"
+        [ninNumber]="appealUserNIN ? appealUserNIN : null"
+        [email]="appealUserEmailAddress ? appealUserEmailAddress : null"
+      >
+      </appeals-request-summary>
+
+      <!-- Appeal Form -->
+      <frm-content-heading-dc [icon]="'briefcase'" [canEdit]="false" [heading]="'APPEALS.APPEAL_DETAILS' | translate">
+      </frm-content-heading-dc>
+      <ng-container *ngIf="assignedRole?.length && appealDetailNew">
+        <appeals-workflows
+          [assignedRole]="assignedRole"
+          [appealDetailNew]="appealDetailNew"
+          [appealDocumentList]="appealDocumentList"
+        ></appeals-workflows>
+      </ng-container>
+      <div id="actionArea">
+        <div class="d-flex w-100 justify-content-between actions">
+          <gosi-button-dc type="secondary" class="mb-2" id="Submit" (submit)="cancel()">
+            {{ 'APPEALS.CANCEL' | translate }}</gosi-button-dc
+          >
+
+          <div class="d-flex gap-2">
+            <gosi-button-dc
+              *ngIf="canAssignToSpecialist"
+              type="secondary"
+              id="return"
+              (submit)="onAssignToSpecialistClicked(AssignToSpecialist)"
+            >
+              {{ 'APPEALS.ASSIGN-TO-A-SPECIALIST' | translate }}</gosi-button-dc
+            >
+            <gosi-button-dc
+              *ngIf="assignedRole == roles.IS_reviewer_private || assignedRole == roles.IS_reviewer_public"
+              type="secondary"
+              id="return"
+              (submit)="showModal(ReturnToUserDialog)"
+            >
+              {{ 'APPEALS.RETURN-TO-USER' | translate }}</gosi-button-dc
+            >
+
+            <gosi-button-dc
+              *ngIf="canReturnToPrev"
+              type="secondary"
+              id="return"
+              (submit)="showModal(ReturnToUserDialog)"
+            >
+              {{ btnReturnText | translate }}
+            </gosi-button-dc>
+
+            <gosi-button-dc
+              *ngIf="
+                assignedRole == roles.Committee_secretary_public || assignedRole == roles.Committee_secretary_private
+              "
+              type="secondary"
+              id="return"
+              (submit)="showModal(ReturnToClerkDialog)"
+            >
+              {{ 'APPEALS.RETURN-TO-CLERK' | translate }}</gosi-button-dc
+            >
+
+            <gosi-button-dc type="primary" id="Submit" (submit)="submit()" class="mb-2">
+              {{ 'APPEALS.SUBMIT' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!--- ======================== Templates ========================= --->
+<ng-template #ReturnToUserDialog>
+  <return-to-user-dialog
+    class="allow-pointer-e"
+    [assignedRole]="assignedRole"
+    [returnToRole]="btnReturnText"
+    (closeModal)="hideModal()"
+    (confirm)="onReturnToUserConfirmed($event)"
+  >
+  </return-to-user-dialog>
+</ng-template>
+
+<ng-template #AssignToSpecialist>
+  <assign-to-specialist
+    *ngIf="appealSpecialistList"
+    [appealSpecialistList]="appealSpecialistList"
+    class="allow-pointer-e"
+    (closeModal)="hideModal()"
+    (confirm)="onAssignToSpecialistConfirmed($event)"
+  ></assign-to-specialist>
+</ng-template>
+
+<ng-template #ReturnToClerkDialog>
+  <return-to-clerk class="allow-pointer-e" (closeModal)="hideModal()" (confirm)="onReturnToClerkConfirmed($event)">
+  </return-to-clerk>
+</ng-template>
+
+<ng-template #SecretaryConfirmation>
+  <secretary-confirmation class="allow-pointer-e" (closeModal)="hideModal()" (confirm)="onSecretaryConfirmation()">
+  </secretary-confirmation>
+</ng-template>

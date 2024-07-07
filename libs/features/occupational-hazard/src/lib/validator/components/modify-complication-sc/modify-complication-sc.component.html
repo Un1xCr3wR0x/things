@@ -1,0 +1,240 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<!-- Common breadcrumb component -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <div id="mainHeading">
+    <frm-main-heading-dc
+      [heading]="'OCCUPATIONAL-HAZARD.COMPLICATION.MODIFY-COMPLICATION-TRANSACTION' | translate"
+      [subLabel]="'OCCUPATIONAL-HAZARD.SOCIAL-INSURANCE-NO' | translate"
+      [subValue]="socialInsuranceNo"
+    >
+    </frm-main-heading-dc>
+
+    <!-- Comment and Document Area-->
+    <frm-main-content-dc
+      [canEdit]="false"
+      [documents]="complicationDocumentList ? complicationDocumentList : []"
+      [autoValidationComments]="
+        transientComplicationDetails.autoValidationComments ? transientComplicationDetails.autoValidationComments : []
+      "
+      [comments]="comment ? comment : []"
+      (onEdit)="(false)"
+    >
+      <div id="contentArea">
+        <!--Contributor Details-->
+        <oh-engagement-details-dc
+          [establishment]="establishment"
+          [contributor]="contributor"
+          [registrationNo]="registrationNo"
+        >
+        </oh-engagement-details-dc>
+        <!-- Complication details View -->
+        <oh-complication-view-dc
+          [canEdit]="canEdit"
+          [idCode]="isdCode"
+          [complication]="complicationDetails"
+          (complicationSelected)="viewComplication()"
+          (injurySelected)="viewInjury()"
+          (onEdit)="navigateToComplicationPage()"
+          [modify]="true"
+        >
+        </oh-complication-view-dc>
+        <!--Modified Complication Details-->
+        <oh-modified-complication-details-dc [complication]="modifiedcomplicationDetails" [idCode]="isdCode">
+        </oh-modified-complication-details-dc>
+      </div>
+      <div id="actionArea">
+        <div class="row">
+          <div class="col-lg-12 form-action">
+            <div class="modify-complication">
+              <div class="btn-section float-right" *ngIf="canApprove">
+                <gosi-button-dc
+                  [id]="'approve'"
+                  [type]="'primary'"
+                  (click)="approveModifyTransaction(approveModifyComplicationTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.APPROVE' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canSubmit">
+                <gosi-button-dc
+                  [id]="'submit'"
+                  [type]="'primary'"
+                  name="approveModify"
+                  (approveEvent)="approveModifyComplication()"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+                >
+              </div>
+
+              <div class="btn-section float-right" *ngIf="canReject">
+                <gosi-button-dc
+                  [type]="'danger'"
+                  [id]="'reject'"
+                  name="rejectModify"
+                  (click)="rejectModifyTransaction(rejectModifyTemplate)"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.REJECT' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right" *ngIf="canReturn">
+                <gosi-button-dc
+                  [type]="'secondary'"
+                  id="return"
+                  name="returnModify"
+                  (submit)="showModal(modal, 'showReturnModifyCom')"
+                >
+                  {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+                >
+              </div>
+              <div class="btn-section float-right position-relative" *ngIf="validator1">
+                <gosi-button-dc [type]="'secondary'" [popover]="optionsModal" name="modifyMoreOptions" placement="top">
+                  {{ 'OCCUPATIONAL-HAZARD.MORE-OPTIONS' | translate }}
+                </gosi-button-dc>
+              </div>
+
+              <div class="btn-section float-left">
+                <gosi-button-dc [id]="'cancel'" [type]="'secondary'" (submit)="showCancelTemplate(cancelTemplate)">
+                  {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </frm-main-content-dc>
+  </div>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'OCCUPATIONAL-HAZARD.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!------------------------  Modals ----------------------------->
+<ng-template #modal>
+  <gosi-modal-dc [modalHeader]="headingTextModifyCom | translate">
+    <div class="row" modalContent>
+      <div *ngIf="noteRequestModifyCom">
+        <div *ngIf="!canEdit" class="form-group">
+          <i class="danger">{{ 'OCCUPATIONAL-HAZARD.INFO-VALIDATOR-RETURN-VALIDATOR' | translate }}</i>
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div class="col-lg-12" *ngIf="docAlert">
+          <gosi-alert-dc
+            message="OCCUPATIONAL-HAZARD.DOCUMENT-AVAILABLE"
+            type="warning"
+            [dismissible]="true"
+          ></gosi-alert-dc>
+        </div>
+        <div class="col-lg-12" *ngIf="commentAlert">
+          <gosi-alert-dc message="CORE.ERROR.MANDATORY-FIELDS" type="danger" [dismissible]="true"></gosi-alert-dc>
+        </div>
+      </div>
+      <div class="col-md-12" *ngIf="documentsOptionalModifyCom || returnTpa">
+        <gosi-input-multi-select-dropdown-dc
+          id="requestDocuments"
+          [label]="'OCCUPATIONAL-HAZARD.REQUEST-DOCUMENTS' | translate"
+          [control]="reportInjuryModal.get('document')"
+          [list]="documentListLov"
+          (selected)="receiveDocumentList($event)"
+        >
+        </gosi-input-multi-select-dropdown-dc>
+      </div>
+      <div class="col-lg-12">
+        <gosi-input-text-area-dc
+          [id]="'validatorComments'"
+          [label]="'OCCUPATIONAL-HAZARD.COMMENTS'"
+          [name]="'rejection'"
+          [maxLength]="maxLengthComments"
+          [control]="reportInjuryModal.get('comments')"
+        >
+        </gosi-input-text-area-dc>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-right" *ngIf="showConfirmReturnBtnModifyCom">
+        <gosi-button-dc
+          id="confirmReturnBtn"
+          [type]="'primary'"
+          class="action-button"
+          name="returnModify"
+          (submit)="returnModifyComplication()"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.RETURN' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-right" *ngIf="showConfirmSubmitBtnModifyCom">
+        <gosi-button-dc
+          id="confirmSubmitBtn"
+          type="danger"
+          class="action-button"
+          (submit)="requestTpaModifyComplication()"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.SUBMIT' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="btn-section float-left">
+        <gosi-button-dc [id]="'cancelApproveBtn'" [type]="'secondary'" name="cancelApprove" (submit)="hideModal()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+<!--Use Labels for the button-->
+<ng-template #optionsModal>
+  <button
+    type="button"
+    class="d-flex btn more-action-button btn-more-action text-left"
+    (click)="showModal(modal, 'showSubmitModifyCom')"
+  >
+    {{ 'OCCUPATIONAL-HAZARD.REQUEST-CLARIFICATION' | translate }}
+  </button>
+</ng-template>
+<ng-template #requestModifyComplicationTemplate>
+  <oh-request-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.REQUEST-INSPECTION'"
+    (cancelEvent)="hideModal()"
+    [warningMessage]="warningMsg | translate"
+    (submitEvent)="confirmInspection(null, actionName)"
+    (selectedInspect)="setInspectionMessage($event)"
+    [parentForm]="reportInjuryForm"
+    [inspectionList$]="inspectionList"
+  >
+  </oh-request-template-dc>
+  <ng-template #closedOHModify>
+    <gosi-alert-dc [message]="inspectionMsg" type="danger" [dismissible]="false"></gosi-alert-dc>
+  </ng-template>
+  <gosi-button-dc type="secondary" (submit)="hideModal()" class="row pb-3 align-self-center" id="cancelBtn">
+    {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}
+  </gosi-button-dc>
+</ng-template>
+<ng-template #approveModifyComplicationTemplate>
+  <frm-approve-template-dc
+    [heading]="'OCCUPATIONAL-HAZARD.CNF-APPROVE'"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove()"
+    [parentForm]="reportInjuryForm"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!----Reject template---->
+<ng-template #rejectModifyTemplate>
+  <frm-reject-template-dc
+    [transactionNumber]="transactionNumber"
+    [injuryRejectReasonList$]="injuryRejectReasonList$"
+    [warningMessage]="'OCCUPATIONAL-HAZARD.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+    [rejectReasonList$]="rejectReasonList"
+    (cancelEvent)="hideModal()"
+    [parentForm]="reportInjuryForm"
+    (rejectEvent)="rejectModifyComplication()"
+  >
+  </frm-reject-template-dc>
+</ng-template>

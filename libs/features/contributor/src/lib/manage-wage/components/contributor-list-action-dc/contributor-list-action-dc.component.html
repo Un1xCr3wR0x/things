@@ -1,0 +1,235 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="m-heading">
+  <div class="row">
+    <!-- Active contributor count , search, sort and filter section-->
+    <div class="col-sm-12">
+      <div class="d-flex flex-wrap filter-bar">
+        <div class="active-contributors">
+          <h4>
+            <span *ngIf="!isRouteCustom">{{ 'CONTRIBUTOR.WAGE.ACTIVE-CONTRIBUTORS' | translate }}</span>
+            <span *ngIf="isRouteCustom" class="contributor">{{
+              'CONTRIBUTOR.WAGE.CONTRIBUTOR-TILLTEN' | translate
+            }}</span>
+            <div class="count-info" *ngIf="!isRouteCustom">
+              ({{ contributorWageDetailsResponse.numberOfContributors || 0 }}
+              <span
+                *ngIf="
+                  !contributorWageDetailsResponse.numberOfContributors ||
+                  contributorWageDetailsResponse.numberOfContributors < 2
+                "
+              >
+                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTOR-ONE' | translate }})
+              </span>
+              <span
+                *ngIf="
+                  contributorWageDetailsResponse.numberOfContributors > 1 &&
+                  contributorWageDetailsResponse.numberOfContributors < 11
+                "
+              >
+                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTOR-TILLTEN' | translate }})
+              </span>
+              <span *ngIf="contributorWageDetailsResponse.numberOfContributors > 10">
+                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTOR-FROM-ELEVEN' | translate }})
+              </span>
+            </div>
+            <div class="count-info mt-1" *ngIf="isRouteCustom">
+              ({{ contributorWageDetailsResponse.numberOfContributors }})
+            </div>
+          </h4>
+        </div>
+        <div class="input-group search-input">
+          <input
+            type="text"
+            id="enterIdNumber"
+            class="form-control input-id"
+            gosiSpecialCharacters
+            [ngClass]="{ 'has-error': !searchContributorFormControl.valid }"
+            placeholder="{{ 'CONTRIBUTOR.WAGE.SEARCH-CONTRIBUTOR-BY-NAME-ID' | translate }}"
+            [formControl]="searchContributorFormControl"
+            maxlength="60"
+          />
+          <div class="input-group-append" (click)="onSearchContributor()">
+            <span class="btn btn-outline-secondary">
+              <fa-icon [icon]="['fas', 'search']"></fa-icon>
+            </span>
+          </div>
+        </div>
+        <!-- <div class="filter-section" *ngIf="isRouteCustom"> -->
+        <div class="filter-section">
+          <gosi-filter-dc
+            id="filter-area"
+            (reset)="handleFilterReset()"
+            (cancel)="cancelFilter()"
+            (apply)="onFilterContributor()"
+            #filter
+          >
+            <div modalContent class="filter-content">
+              <!-- Eng start date filter -->
+              <div class="date-range">
+                <gosi-input-daterange-dc
+                  id="dateRangePicker"
+                  [hideOptionalLabel]="true"
+                  [control]="filterForm.get('engDateRangePicker')"
+                  [label]="'CONTRIBUTOR.WAGE.ENGAGEMENT-START-DATE' | translate"
+                  [maxDate]="maximumDate"
+                ></gosi-input-daterange-dc>
+              </div>
+              <div class="date-range mt-3">
+                <gosi-input-daterange-dc
+                  id="dateRangePicker"
+                  [hideOptionalLabel]="true"
+                  [control]="filterForm.get('dateRangePicker')"
+                  [label]="'CONTRIBUTOR.WAGE.LAST-UPDATE-DATE' | translate"
+                  [maxDate]="maximumDate"
+                ></gosi-input-daterange-dc>
+              </div>
+              <!-- <div class="wage-range">
+                <gosi-range-slider-dc
+                  id="wageRangePicker"
+                  [label]="'CONTRIBUTOR.WAGE.TOTAL-WAGE-SAR'"
+                  [control]="filterForm.get('wageRangePicker')"
+                  ceil="100000"
+                  floor="100"
+                ></gosi-range-slider-dc>
+              </div> -->
+              <div class="nationality mt-3">
+                <gosi-input-multi-select-dropdown-dc
+                  id="nationality"
+                  [label]="'CONTRIBUTOR.NATIONALITY' | translate"
+                  [control]="filterForm.get('nationality')"
+                  [list]="nationalityList"
+                  [showReset]="selectedNationalityList.length > 0"
+                  (reset)="clearNationalityFiter()"
+                  [hideOptionalLabel]="true"
+                  [allowSearch]="true"
+                  [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                  (selected)="handleMultiSelection($event)"
+                ></gosi-input-multi-select-dropdown-dc>
+              </div>
+              <!-- occupation drop down -->
+              <div class="occupation mt-3">
+                <gosi-input-multi-select-dropdown-dc
+                  id="occupation"
+                  [label]="'CONTRIBUTOR.WAGE.OCCUPATION' | translate"
+                  [control]="filterForm.get('occupation')"
+                  [list]="occupationList"
+                  [showReset]="selectedOccupationList.length > 0"
+                  (reset)="clearOccupationFiter()"
+                  [hideOptionalLabel]="true"
+                  [allowSearch]="true"
+                  [searchPlaceholder]="'CONTRIBUTOR.SEARCH' | translate"
+                  (selected)="handleMultiOccupation($event)"
+                ></gosi-input-multi-select-dropdown-dc>
+              </div>
+              <div class="wage-range">
+                <gosi-range-slider-dc
+                  id="wageRangePicker"
+                  [label]="'CONTRIBUTOR.WAGE.TOTAL-WAGE-SAR'"
+                  [control]="filterForm.get('wage').get('wageRangePicker')"
+                  [ceil]="1000000"
+                  [floor]="0"
+                  (mouseUp)="checkForSliderChange(true)"
+                  (pointerup)="checkForSliderChange(true)"
+                ></gosi-range-slider-dc>
+                <div class="wage-boxes">
+                  <div class="wage-section">
+                    <span class="wage-labels">{{ 'CONTRIBUTOR.WAGE.MIN-WAGE' | translate }}</span>
+                    <gosi-input-number-dc
+                      [label]="'CONTRIBUTOR.WAGE.MIN-WAGE' | translate"
+                      id="minWage"
+                      [control]="filterForm.get('wage').get('minWage')"
+                      [maxLength]="7"
+                      [hideOptionalLabel]="true"
+                      [ignoreLabel]="true"
+                      (blur)="setWage(true)"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                  <div class="wage-section">
+                    <span class="wage-labels">{{ 'CONTRIBUTOR.WAGE.MAX-WAGE' | translate }}</span>
+                    <gosi-input-number-dc
+                      [label]="'CONTRIBUTOR.WAGE.MAX-WAGE' | translate"
+                      id="maxWage"
+                      [control]="filterForm.get('wage').get('maxWage')"
+                      [maxLength]="7"
+                      [validationChanged]="validationChanged"
+                      [hideOptionalLabel]="true"
+                      [ignoreLabel]="true"
+                      (keyUp)="setMaxWage()"
+                    >
+                    </gosi-input-number-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </gosi-filter-dc>
+        </div>
+        <div class="sort-dropdown">
+          <label>
+            {{ 'CONTRIBUTOR.WAGE.SORT-BY' | translate }}:
+            <select id="sortBy" (change)="onSortContributor()" [formControl]="sortContributorFormControl">
+              <option value="null">{{ 'CONTRIBUTOR.WAGE.SELECT' | translate }}</option>
+              <ng-container *ngFor="let item of sortParameters">
+                <option value="{{ item.value }}">{{ item.key | translate }}</option>
+              </ng-container>
+            </select>
+          </label>
+        </div>
+        <div class="sort-direction">
+          <button (click)="onSortDirectionChange()">
+            <fa-icon class="direction-icon" *ngIf="isDescending" icon="sort-amount-down"></fa-icon>
+            <fa-icon class="direction-icon" *ngIf="!isDescending" icon="sort-amount-up"></fa-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #navigateWithChangesTemplate>
+  <cnt-confirm-modal-dc>
+    <div card-header>
+      {{ 'CONTRIBUTOR.WAGE.MULTI-WAGE-NAVIGATE-ERROR' | translate }}
+    </div>
+    <div card-footer class="row">
+      <div class="btn-section">
+        <gosi-button-dc id="cancelBtn" type="secondary" (submit)="discardChanges()">
+          {{ 'CONTRIBUTOR.WAGE.DISCARD-CHANGES' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section">
+        <gosi-button-dc id="confirmBtn" type="primary" (submit)="stay()">
+          {{ 'CONTRIBUTOR.WAGE.STAY' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </cnt-confirm-modal-dc>
+</ng-template>
+
+<ng-template #navigateWithErrorTemplate>
+  <cnt-confirm-modal-dc>
+    <div card-header>
+      {{ 'CONTRIBUTOR.WAGE.MULTI-WAGE-SAVE-ERROR-HEADER' | translate }}
+    </div>
+    <div card-body>
+      {{ 'CONTRIBUTOR.WAGE.MULTI-WAGE-SAVE-ERROR-CONTENT' | translate }}
+    </div>
+    <div card-footer class="row">
+      <div class="btn-section">
+        <gosi-button-dc id="cancelBtn" type="primary" (submit)="stayOnPage.emit()">
+          {{ 'CONTRIBUTOR.WAGE.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section">
+        <gosi-button-dc id="confirmBtn" type="secondary" (submit)="revertChanges.emit()">
+          {{ 'CONTRIBUTOR.WAGE.CONTINUE' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+  </cnt-confirm-modal-dc>
+</ng-template>

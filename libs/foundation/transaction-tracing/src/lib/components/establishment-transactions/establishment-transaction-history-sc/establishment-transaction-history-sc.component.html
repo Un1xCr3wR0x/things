@@ -1,0 +1,153 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content">
+  <div class="establishment-txn-wrapper">
+    <div class="d-lg-flex justify-content-between flex-wrap">
+      <gosi-main-heading-dc header="{{ 'TRANSACTION-TRACING.TRANSACTIONS' | translate }}" (back)="onBack()">
+      </gosi-main-heading-dc>
+      <div class="d-flex align-items-start custom-flex">
+        <div class="search-header d-flex">
+          <gosi-search-dc
+            id="search-value"
+            (keyup)="onSearchEnable($event.target.value)"
+            gosiSpecialCharacters
+            (search)="searchEstablishmentTransaction($event)"
+            [placeholder]="'TRANSACTION-TRACING.TRANSACTION-ID-NAME' | translate"
+            class="w-100 search-area"
+          >
+          </gosi-search-dc>
+          <trn-transaction-filter-dc
+            [isEstablishment]="true"
+            (transactionDetailsFilter)="filterTransactionList($event)"
+          ></trn-transaction-filter-dc>
+        </div>
+        <div class="sort-section d-flex justify-content-end align-items-center">
+          <gosi-sort-dc
+            (direction)="directionToggle($event)"
+            (sortItemSelected)="onSortItemSelected($event)"
+            [list]="sortList"
+            [initialValue]="sortMode"
+          >
+          </gosi-sort-dc>
+        </div>
+      </div>
+    </div>
+    <div class="txn-table desktop-view">
+      <div class="row">
+        <div class="col-lg-12 table-class">
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>
+                  {{ 'TRANSACTION-TRACING.DESCRIPTION' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'TRANSACTION-TRACING.DATE' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'TRANSACTION-TRACING.TRANSACTION-NO' | translate | uppercase }}
+                </th>
+                <th>
+                  {{ 'TRANSACTION-TRACING.STATUS' | translate | uppercase }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="table-row"
+                *ngFor="
+                  let list of transactions
+                    | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalRecords };
+                  let i = index
+                "
+              >
+                <td>
+                  <div class="title-value">
+                    {{ list.title | bilingualText }}
+                  </div>
+                  <div class="description-value" dir="ltr">
+                    {{ list.description | bilingualText }}
+                  </div>
+                </td>
+                <td>
+                  <div class="date-value">{{ list.lastActionedDate.gregorian | gosiDate }}</div>
+                </td>
+                <td>
+                  <div class="txn-id">
+                    {{ list.transactionRefNo }}
+                  </div>
+                </td>
+                <td>
+                  <div class="task-status">{{ list.status | bilingualText }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-view pt-4">
+      <ng-container
+        *ngFor="
+          let list of transactions
+            | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalRecords };
+          let i = index
+        "
+      >
+        <div class="row search-view">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-6">
+                <span class="title">
+                  {{ list.title | bilingualText }}
+                </span>
+              </div>
+              <div class="col-md-6 spacing">
+                <span class="description">
+                  {{ list.description | bilingualText }}
+                </span>
+              </div>
+              <div class="col-md-6 spacing">
+                <span class="title">
+                  {{ 'TRANSACTION-TRACING.DATE' | translate | uppercase }}
+                </span>
+                <span class="refNo">
+                  {{ list.lastActionedDate.gregorian | gosiDate }}
+                </span>
+              </div>
+              <div class="col-md-6 spacing">
+                <span class="title">
+                  {{ 'TRANSACTION-TRACING.TRANSACTION' | translate | uppercase }}
+                </span>
+                <span class="refNo">
+                  {{ list.transactionRefNo }}
+                </span>
+              </div>
+              <div class="col-md-6 spacing">
+                <span class="title">
+                  {{ 'TRANSACTION-TRACING.STATUS' | translate | uppercase }}
+                </span>
+                <span class="refNo">
+                  {{ list.status | bilingualText }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <gosi-pagination-dc
+    #paginationComponent
+    *ngIf="totalRecords > itemsPerPage"
+    [totalSize]="totalRecords"
+    [itemsPerPage]="itemsPerPage"
+    [itemType]="'TRANSACTION-TRACING.TRANSACTIONS' | translate"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+  >
+  </gosi-pagination-dc>
+</div>

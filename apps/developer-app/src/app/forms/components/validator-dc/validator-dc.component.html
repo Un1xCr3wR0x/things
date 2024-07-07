@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="">
+  <!---------------Basid Details Heading Section------------------------>
+  <div id="mainHeading">
+    <frm-main-heading-dc [heading]="'ESTABLISHMENT.CHANGE-ESTABLISHMENT-DETAILS' | translate"> </frm-main-heading-dc>
+  </div>
+  <!----------->
+  <div id="contentArea">
+    <div class="content-item">
+      <frm-content-heading-dc
+        [icon]="'briefcase'"
+        [canEdit]="true"
+        (onEdit)="editEst()"
+        [heading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate"
+      ></frm-content-heading-dc>
+      <div class="row">
+        <div class="col-md-12">
+          <gosi-label-dc
+            [value]="establishment.registrationNo"
+            [isLink]="true"
+            (select)="editEst()"
+            label="ESTABLISHMENT.REGISTRATION-NO"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-label-dc [control]="establishment.name?.arabic" label="ESTABLISHMENT.ESTABLISHMENT-NAME-AR">
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-label-dc [control]="establishment.name?.english" label="ESTABLISHMENT.ESTABLISHMENT-NAME-EN">
+          </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="actionArea">
+    <frm-action-area-dc
+      [canReturn]="true"
+      (approveEvent)="approveTransaction(validatorForm, approveTemplate)"
+      (rejectEvent)="rejectTransaction(validatorForm, rejectTemplate)"
+      (returnEvent)="returnTransaction(validatorForm, returnTemplate)"
+      (cancelEvent)="showModal(cancelTemplate)"
+    >
+    </frm-action-area-dc>
+  </div>
+</frm-main-content-dc>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="ESTABLISHMENT.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'ESTABLISHMENT.REJECT.CHG-BASIC'"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="lovlist$"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'ESTABLISHMENT.RETURN.CHG-BASIC'"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="lovlist$"
+    [warningMessage]="'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    [isCommentsMandatory]="false"
+    (cancelEvent)="hideModal()"
+  ></frm-approve-template-dc>
+</ng-template>

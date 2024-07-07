@@ -1,0 +1,182 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row d-flex justify-content-between align-items-center">
+    <div class="col-md-6 col-lg-6 float-left">
+      <h4 class="main-heading">
+        {{ 'ESTABLISHMENT.COMPLETE-ESTABLISHMENT-DETAILS' | translate }}
+      </h4>
+    </div>
+    <div class="float-right" *ngIf="establishment.registrationNo">
+      <label>{{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }} : {{ establishment.registrationNo }}</label>
+    </div>
+  </div>
+  <div class="row d-flex justify-content-end px-4 claimpool" *ngIf="isGOL && isValidator">
+    <est-claim-assign-release-dc
+    [payload]="payload"
+    [isUnclaimed]="isUnclaimed"
+    [taskId]="taskId"
+    (assign)="assignClicked()"
+    (release)="releaseClicked()"
+    >
+    </est-claim-assign-release-dc>
+  </div>
+  <gosi-alert-sc></gosi-alert-sc>
+  <gosi-comments-dc
+    *ngIf="editEstablishment && currentTab !== totalTabs"
+    #commentSection
+    [comments]="comments$ | async"
+    [showRole]="false"
+  >
+  </gosi-comments-dc>
+  <gosi-progress-wizard-dc
+    *ngIf="currentTab >= 1 && currentTab !== totalTabs"
+    [wizardItems]="addProEstWizardItems"
+    (clickWizard)="selectWizard($event)"
+    #addProEstWizard
+  >
+  </gosi-progress-wizard-dc>
+  <div class="hide-tab est-proactive">
+    <tabset type="pills" #registerProactiveTabs>
+      <tab [active]="currentTab === 0">
+        <est-proactive-details-dc
+          [disableLicenseExpiryDate]="false"
+          [disableLicense]="false"
+          [disableLegalEntity]="disableLegalEntity"
+          [isLicenseMandatory]="isLicenseMandatory"
+          #proactiveEstForm
+          [showCrn]="isEstablishmentFromMci"
+          [establishment]="establishment"
+          [licenseIssuingAuthorityList]="licenseIssuingAuthorityList$ | async"
+          [legalEntityList]="legalEntityLovList$ | async"
+          [establishmentType]="establishmentBranchTypeList$ | async"
+          (cancel)="showCancel(cancelTemplate)"
+          (crnVerify)="verifyCRNNumber($event)"
+          (resetCrn)="toggleLegalEntity()"
+          (save)="saveCRNDetails($event)"
+          [showReset]="showReset"
+          [initialLegalEntity]="legalEntityFromFeed"
+          (verifyCrnError)="throwVerifyError()"
+          [verifiedCrn]="mciResponse"
+          [showSaveButton]="showSaveButton"
+        >
+        </est-proactive-details-dc>
+      </tab>
+      <tab [active]="currentTab === 1">
+        <est-establishment-details-form-dc
+          [gosiStartDates]="gosiStartDates"
+          #establishmentDetailsComp
+          [disableNameEnglish]="disableEstEngName"
+          [disableActivityType]="disableActivityType"
+          (cancel)="cancelForm()"
+          [addressTypeList]="addressTypeList$ | async"
+          [nationalityList]="nationalityList$ | async"
+          [cityList]="cityList$ | async"
+          [gccCountryList]="gccCountryList$ | async"
+          [activityTypeList]="activityTypeList$ | async"
+          [establishment]="establishment"
+          (submit)="saveEstablishment($event)"
+          (previous)="previousForm()"
+          (progress)="restrictProgressBar()"
+          [isSaved]="isSaved"
+        >
+        </est-establishment-details-form-dc>
+      </tab>
+      <tab [active]="currentTab === 2">
+        <est-payment-details-dc
+          #paymentDetailsComp
+          [establishment]="establishment"
+          [isInternational]="isInternational"
+          [bankNameList$]="bankNameList$"
+          [yesOrNoList]="yesOrNoList$ | async"
+          (next)="savePaymentDetails($event)"
+          (IBAN)="getBank($event)"
+          (cancel)="cancelForm()"
+          (keepDraft)="onKeepDraft()"
+          (previous)="previousForm()"
+          [isAccountSaved]="isAccountSaved"
+          (progress)="restrictProgressBar()"
+          [showLateFeeIndicator]="showLateFeeIndicator"
+          [disableLateFee]="true"
+          [isIbanMapped]="isIbanMapped"
+          (samaResponseEmitter)="validateSamaResponse($event)"
+          (samaFailureEmitter)="checkSamaFailure($event)"
+          [isActive]="isAccountActive"
+        ></est-payment-details-dc>
+      </tab>
+      <tab [active]="currentTab === 3 && isOwnerRequired">
+        <est-establishment-owners-dc
+          #ownerComponent
+          class="wrapper-est-owners-dc"
+          [gccEstablishment]="false"
+          [cityList$]="cityList$"
+          [gccCountryList$]="gccCountryList$"
+          [isIndividual]="isIndividual"
+          [isProActive]="true"
+          [persons]="establishmentOwner.persons"
+          [estOwners]="estOwner"
+          [nationalityList$]="nationalityList$"
+          [genderList$]="genderList$"
+          [editPersonDetails]="editPersonDetails"
+          [isOwnerSaved]="isOwnerSaved"
+          [verifyPersonStatus]="verifyPersonStatus"
+          (verify)="verifyOwner($event)"
+          (formInvalid)="triggerFormValidation()"
+          (ownerMismatch)="triggerOwnerMismatch()"
+          (ownerNotSaved)="triggerOwnerValidation()"
+          (ownerNotVerified)="showOwnerVerifyError()"
+          (submit)="saveOwner($event)"
+          (addOwner)="addOwner()"
+          (deleteOwner)="deleteOwner($event)"
+          [ownerDeleted$]="ownerDeleted$"
+          (cancel)="cancelForm()"
+          (keepDraft)="onKeepDraft()"
+          (previous)="previousForm()"
+          [molOwnerPersonId]="molOwnerPersonId"
+          (next)="checkOwnervalidation()"
+          (progress)="restrictProgressBar()"
+          [showOwnerAsAdmin]="false"
+          [isSubmit]="!showDocumentSection"
+          [legalEntity]="establishment?.legalEntity?.english"
+          [isEstMci]="isEstMci"
+          [establishment]="establishment"
+          [ownerCurrentTab]="currentTab"
+          (updateMciDetails)="updateMciDetails($event)"
+          [ownerCountIncludingEstablishmentAsOwner]="ownerCountIncludingEstablishmentAsOwner"
+        >
+        </est-establishment-owners-dc>
+      </tab>
+      <tab [active]="currentTab === totalTabs - 1">
+        <est-scan-documents-dc
+          #scanDocsComp
+          [registrationNumber]="establishment.registrationNo"
+          [isScan]="false"
+          [referenceNo]="referenceNo || establishment.transactionTracingId"
+          [documentList]="documentList$ | async"
+          (submit)="submitDocument($event)"
+          (cancelBtn)="cancelForm()"
+          (keepDraft)="onKeepDraft()"
+          (previous)="previousForm()"
+          (refresh)="refreshDocument($event)"
+          (delete)="deleteDocument($event)"
+          [establishment]="establishment"
+          [regEstablishment]="transactionId"
+        ></est-scan-documents-dc>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelForm()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

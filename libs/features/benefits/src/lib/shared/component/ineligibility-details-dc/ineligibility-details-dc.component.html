@@ -1,0 +1,91 @@
+<gosi-modal-dc
+  [modalHeader]="'BENEFITS.INELIGIBILITY-DETAILS' | translate"
+  [needCloseButton]="true"
+  (closeModal)="closeModal()"
+>
+  <div modalContent>
+    <div class="col-lg-12 p-4">
+      <span *ngIf="lang === 'en'">
+        <small>{{ 'BENEFITS.OF' | translate }}</small> </span
+      >&nbsp;<b>{{ name | nameToString: true }}</b> &nbsp;<small>({{ relationship | bilingualText }})</small>
+    </div>
+    <!-- <div class="row"> -->
+    <div *ngIf="isPension">
+      <div class="col-lg-12">{{ status | translate }} {{ 'BENEFITS.INELIGIBILITY-SUBHEADER' | translate }}</div>
+      <div class="row d-flex align-items-center">
+        <div class="col-lg-12 col-lg-12">
+          <table class="table table-borderless">
+            <thead>
+              <tr>
+                <th>{{ 'BENEFITS.INELIGIBILITY-PERIOD' | translate }}</th>
+
+                <th>{{ 'BENEFITS.REASON' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let event of details">
+                <tr *ngIf="!event.valid && event.message?.english" class="data-row">
+                  <td>
+                    {{ event?.eventStartDate | dateType }}
+
+                    <span *ngIf="lang === 'en'">
+                      <fa-icon icon="angle-right" class="icon-size" size="1x"></fa-icon>
+                    </span>
+                    <span *ngIf="lang === 'ar'">
+                      <fa-icon icon="angle-left" class="icon-size" size="1x"></fa-icon>
+                    </span>
+                    <span *ngIf="event.eventEndDate?.gregorian || event.eventEndDate?.hijiri; else onwards">
+                      {{
+                        event?.eventEndDate?.entryFormat === 'HIJIRA'
+                          ? (event?.eventEndDate?.hijiri | date: 'dd/MM/yyyy')
+                          : (event?.eventEndDate?.gregorian | date: 'dd/MM/yyyy')
+                      }}
+                    </span>
+                    <ng-template #onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+                  </td>
+                  <td>{{ event.message | bilingualText }}</td>
+                </tr>
+              </ng-container>
+
+              <ng-container *ngFor="let eligibility of ineligibility">
+                <ng-container *ngIf="heirPersonId === eligibility?.heirPersonId">
+                  <tr *ngFor="let period of eligibility.period" class="data-row">
+                    <ng-container *ngIf="period.reasons?.english">
+                      <td>
+                        {{ period.startDate | dateType }}
+
+                        <span>
+                          <fa-icon
+                            icon="{{ lang === 'en' ? 'angle-right' : 'angle-left' }}"
+                            class="icon-size"
+                            size="1x"
+                          ></fa-icon>
+                        </span>
+                        <span *ngIf="period.endDate?.gregorian || period.endDate?.hijiri; else onwards">
+                          {{ period.endDate | dateType }}
+                        </span>
+                        <ng-template #onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+                      </td>
+                      <td>{{ period.reasons | bilingualText }}</td>
+                    </ng-container>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!isPension">
+      <ng-container *ngFor="let event of details">
+        <div class="pt-4" *ngIf="!event.valid && event?.message?.english">
+          <span class="sub-heading">{{ 'BENEFITS.REASON-FOR-INELIGIBILITY' | translate }}</span>
+          <div class="row pl-3 pb-4">
+            <span>{{ event.message | bilingualText }}</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <!-- </div> -->
+  </div>
+</gosi-modal-dc>

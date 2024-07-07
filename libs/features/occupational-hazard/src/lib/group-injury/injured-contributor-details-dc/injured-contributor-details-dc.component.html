@@ -1,0 +1,221 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-card-dc [heading]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.INJURED-CONTRIBUTOR' | translate" type="secondary">
+
+  <div>
+    <gosi-alert-dc type="info" [message]="'OCCUPATIONAL-HAZARD.GROUP-INJURY.MINIMUM_TWO_CONTRIBUTORS_INFO' | translate" [dismissible]="false">
+    </gosi-alert-dc>
+  </div>
+  <div *ngIf="length && length>0">
+      <ng-container #mainContainer>
+        <div class="row col-lg-12">
+          <table class="table table-borderless">
+            <thead class="thead-light">
+              <tr>
+                <th>
+                  {{ 'OCCUPATIONAL-HAZARD.CONTRIBUTOR-NAME' | translate | titlecase }}
+                </th>
+                <th>
+                  {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-REASON' | translate | titlecase }}
+                </th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let item of contributorInjuryDetails; let i = index">
+                <tr class="table-row-not-expanded" *ngIf="!item.isDeleted">
+                  <td *ngIf="item.person" style="width: 35%">
+                    <span *ngIf="item?.person?.name?.english?.name !== null && lang === 'en'">
+                      {{ item.person.name.english.name }}
+                    </span>
+                    <span *ngIf="(item.person.name.english.name == undefined && lang === 'en') || lang === 'ar'"
+                      >{{ item.person.name.arabic.firstName }}
+                      {{ item.person.name.arabic.secondName ? item.person.name.arabic.secondName : '' }}
+                      {{ item.person.name.arabic.thirdName ? item.person.name.arabic.thirdName : '' }}
+                      {{ item.person.name.arabic.familyName }}
+                    </span>
+                    <div *ngIf="item.person.identity[0] !== null">
+                      <div *ngIf="item.person.identity[0].idType === 'NIN'">
+                        <span class="identity-heading"> ({{ 'BILLING.ID-NATIONAL' | translate }}: </span>
+                        <span> {{ item.person.identity[0].newNin }})</span>
+                      </div>
+                      <div *ngIf="item.person.identity[0].idType === 'PASSPORT'">
+                        <span class="identity-heading"> ({{ 'BILLING.PASSPORT' | translate }}: </span>
+                        <span>
+                          {{ item.person.identity[0].passportNo }})
+                        </span>
+                      </div>
+                      <div *ngIf="item.person.identity[0].idType === 'IQAMA'">
+                        <span class="identity-heading"> ({{ 'BILLING.IQAMA-NUMBER' | translate }}: </span>
+                        <span> {{ item.person.identity[0].iqamaNo }})</span>
+                      </div>
+                      <div *ngIf="item.person.identity[0].idType === 'BORDERNO'">
+                        <span class="identity-heading"> ({{ 'BILLING.BORDER-NUMBER' | translate }}: </span>
+                        <span> {{ item.person.identity[0].id }}) </span>
+                      </div>
+                      <div *ngIf="item.person.identity[0].idType === 'GCCID'">
+                        <span class="identity-heading"> ({{ 'BILLING.GCC-ID' | translate }}: </span>
+                        <span> {{ item.person.identity[0].id }}) </span>
+                      </div>
+  
+                    </div>
+                  </td>
+                  <td>
+                    {{ item?.injuryReason | bilingualText }}
+                  </td>
+                  <td (click)="expand(item)" >
+                    <a  [id]="'edit' + i" [ngClass]="[item.isInjuryReasonNull ? 'status-warning' : 'edit-block']">
+                      <fa-icon [icon]="['fas', 'pencil-alt']"></fa-icon>
+                    </a>                  
+                  </td>
+                  <td>
+                    <a class="delete-block" [id]="'delete' + i" (click)="showModal(deleteContributor)">
+                      <fa-icon [icon]="['far', 'trash-alt']"></fa-icon>
+                    </a>
+                  </td>
+                  <ng-template #deleteContributor>
+                    <gosi-confirm-modal-dc
+                      [message]="'OCCUPATIONAL-HAZARD.DISEASE.CONFIRM-DELETE' | translate"
+                      (onConfirm)="onDeleteContributor(item)"
+                      (onCancel)="decline()"
+                    ></gosi-confirm-modal-dc>
+                  </ng-template>
+                </tr>
+              
+                <tr id="expanded-row">
+                  <td *ngIf="item.isExpanded && showContributorEditMode" class="full-width-td white-bg" [attr.colspan]="5">
+                    <oh-add-contributor-injury-details-dc
+                    [injuredContributorList]="injuredContributorList"
+                    [contributorInjuryDetails]="contributorInjuryDetails"
+                    [contributorInjury]="contributorInjury"
+                    [employeeActivityAtInjuryTime]="employeeActivityAtInjuryTime"
+                    [contributorGroupInjuryForm]="contributorGroupInjuryForm"
+                    [isContributorFound]="isContributorFound"
+                    [injuryStatistics]="injuryStatistics"
+                    [showContributorEditMode]="showContributorEditMode"
+                    [showContributor]="showContributor"
+                    [isAppPrivate]="isAppPrivate"
+                    [socialInsuranceNo]="socialInsuranceNo"
+                    [person]="person"
+                    [isWorkflow]="isWorkflow"
+                    [booleanList]="booleanList"
+                    [cityList]="cityList"
+                    [workFlowType]="workFlowType"
+                    [injuryReasonList]="injuryReasonList"
+                    [isAddressPresent]="isAddressPresent"   
+                    [countryList]="countryList"
+                    [isValidator1]="isValidator1"
+                    [prohibitUpdate]="prohibitInspection"
+                    [processType]="processType"
+                    [emergencyContact]="emergencyContactNo"
+                    [taskid]="taskid"
+                    [payeeT]="payeeT"
+                    (resetMode)="resetContributorDetails($event)"
+                    (search)="search($event)"
+                  >
+                  </oh-add-contributor-injury-details-dc>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+      <div class="row map-block" *ngIf="!noResults">
+        <div class="col-lg-12">
+          <div class="d-flex justify-content-center">
+            <gosi-button-dc [outlineOnly]="true" type="secondary" size="md" (click)="addAnotherContrbutor()">
+              {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.ADD-ANOTHER-CONTRIBUTOR' | translate }}
+            </gosi-button-dc>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!showContributorTable">
+      <div *ngIf="noResults || length === 0" class="row">
+        <div class="col-lg-12" >  
+          <div class="no-results">
+            {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.NO-CONTRIBUTOR' | translate }}
+          </div>
+        </div>
+        <div class="container">
+          <div *ngIf="!showContributor && (noResults || length === 0)">
+            <div class="col-md-12 d-flex justify-content-center mt-4 mb-4">
+              <gosi-button-dc id="selectContributor" type="primary" (click)="showSelectContributor()">
+                {{ 'OCCUPATIONAL-HAZARD.GROUP-INJURY.ADD-CONTRIBUTOR' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showContributor" class="row">
+      <div class="col-lg-12">
+        <oh-add-contributor-injury-details-dc
+          [injuredContributorList]="injuredContributorList"
+          [contributorInjuryDetails]="contributorInjuryDetails"
+          [contributorInjury]="contributorInjury"
+          [employeeActivityAtInjuryTime]="employeeActivityAtInjuryTime"
+          [contributorGroupInjuryForm]="contributorGroupInjuryForm"
+          [isContributorFound]="isContributorFound"
+          [injuryStatistics]="injuryStatistics"
+          [showContributorEditMode]="showContributorEditMode"
+          [showContributor]="showContributor"
+          [isAppPrivate]="isAppPrivate"
+          [socialInsuranceNo]="socialInsuranceNo"
+          [person]="person"
+          [isWorkflow]="isWorkflow"
+          [booleanList]="booleanList"
+          [cityList]="cityList"
+          [workFlowType]="workFlowType"
+          [injuryReasonList]="injuryReasonList"
+          [isAddressPresent]="isAddressPresent"   
+          [countryList]="countryList"
+          [isValidator1]="isValidator1"
+          [prohibitUpdate]="prohibitInspection"
+          [processType]="processType"
+          [emergencyContact]="emergencyContactNo"
+          [isSaved]="isSaved"
+          [fail]="fail"
+          [taskid]="taskid"
+          [payeeT]="payeeT"
+          (resetMode)="resetContributorDetails($event)"
+          (search)="search($event)"
+          (savedContributor)="savecheck($event)"
+        >
+        </oh-add-contributor-injury-details-dc>
+      </div>
+    </div>
+    
+  </gosi-card-dc>
+  <div class="row">
+    <div class="col-lg-12 form-action">
+      <div class="personal-details">
+        <div class="float-right btn-section" *ngIf="!isMinimumContributorsPresent">
+          <gosi-button-dc (submit)="submitContributorDetails()" id="saveAndNext" disabled="true" [type]="'primary'">
+            {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="float-right btn-section" *ngIf="isMinimumContributorsPresent">
+          <gosi-button-dc (submit)="submitContributorDetails()" id="saveAndNext" [type]="'primary'">
+            {{ 'OCCUPATIONAL-HAZARD.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+          >
+        </div>
+        <div class="float-right btn-section">
+          <gosi-button-dc (submit)="previousSection()" id="previousContributor" [type]="'secondary'">
+            {{ 'OCCUPATIONAL-HAZARD.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+          >
+        </div>
+  
+        <div class="float-left btn-section">
+          <gosi-button-dc (submit)="showCancelTemplate()" id="cancel" [type]="'secondary'">
+            {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}</gosi-button-dc
+          >
+        </div>
+      </div>
+    </div>
+  </div>  

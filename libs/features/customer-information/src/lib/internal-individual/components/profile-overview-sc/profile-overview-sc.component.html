@@ -1,0 +1,318 @@
+<ng-container *ngIf="benefitRole">
+  <gosi-alert-dc message="CUSTOMER-INFORMATION.MSG_FOR_GUEST" type="info" [dismissible]="false" [noPadding]="true">
+  </gosi-alert-dc>
+</ng-container>
+<gosi-alert-sc></gosi-alert-sc>
+<gosi-alert-dc
+  [bilingualMessage]="pensionReformEligibility?.message"
+  type="info"
+  [dismissible]="false"
+  [noPadding]="true"
+  *ngIf="isPensionEligible"
+>
+  <a
+    actOnAlert
+    (click)="showModal(isPensionEligibileModal)"
+    id="view-ineligible"
+    class="alert-vic ml-3"
+    routerLinkActive="active"
+  >
+    <span><fa-icon [icon]="icon" size="lg"></fa-icon></span>
+  </a>
+</gosi-alert-dc>
+
+<!-- Identifier Cards -->
+<div class="row">
+  <div class="col-lg-12 header">
+    {{ 'CUSTOMER-INFORMATION.OVERVIEW' | translate }}
+  </div>
+  <div class="col-lg-6">
+    <!-- <cim-overview-details-dc [personDetails]="personDetailsModified"></cim-overview-details-dc> -->
+    <cim-main-content-dc></cim-main-content-dc>
+  </div>
+  <div *ngIf="engagementList" class="col-lg-6">
+    <gosi-card-dc [heading]="'CUSTOMER-INFORMATION.CONTRIBUTORS-OVERVIEW' | translate | titlecase">
+      <cim-contributions-chart-dc [contributionValues]="engagementList" [lang]="lang"></cim-contributions-chart-dc>
+    </gosi-card-dc>
+  </div>
+</div>
+<ng-container *ngIf="showBillSummary">
+  <div class="row">
+    <div class="col-lg-12 header">
+      {{ 'CUSTOMER-INFORMATION.BILL-SUMMARY' | translate }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <cim-bill-details-dc
+        [billBalanceDetails]="billDetails"
+        [showRefundVicBtn]="showRefundVicBtn"
+        (navigate)="navigateToBill()"
+        (navigateToRefund)="navigateToRefund()"
+        [personId]="personId"
+        [lang]="lang"
+      ></cim-bill-details-dc>
+      <!-- <cim-bill-details-dc [isBillNumber]="isBillNumber" [billNumber]="billNumber"
+        [totalCreditBalance]="totalCreditBalance" [billBalanceDetail]="billBalanceDetail" [unBillAmount]="unBillAmount"
+        [exchangeRate]="exchangeRate" [currencyType]="currencyType"></cim-bill-details-dc> -->
+    </div>
+  </div>
+</ng-container>
+
+<div class="row d-none">
+  <div class="col-lg-12 header">
+    {{ 'CUSTOMER-INFORMATION.CURRENTLY-ACTIVE' | translate }}
+  </div>
+</div>
+<ng-container *ngIf="isVic == 'no'">
+  <div class="row mt-4">
+    <div class="col-lg-12">
+      <dsb-engagement-details-dc
+        [lang]="lang"
+        [isAppProfile]="true"
+        [engagementDetails]="engagementDetails"
+        [showEngHistory]="overallEngagements?.length !== 0 ? true : false"
+        (navigate)="navigateToEngagement()"
+      >
+      </dsb-engagement-details-dc>
+    </div>
+  </div>
+</ng-container>
+<ng-container *ngIf="isVic == 'yes'">
+  <div class="row">
+    <div class="col-lg-12">
+      <dsb-vic-contribution-details-dc
+        [isAppProfile]="true"
+        [vicEngagementDetails]="vicEngagementDetails"
+        [vicCoverageDetails]="vicCoverageDetails"
+        [isPREligible]="isPREligible"
+        [lang]="lang"
+        (navigate)="navigateToEngagement()"
+      ></dsb-vic-contribution-details-dc>
+    </div>
+  </div>
+</ng-container>
+<div class="row">
+  <div class="col-lg-12">
+    <dsb-benefits-details-dc
+      [lang]="lang"
+      [isAppProfile]="true"
+      [systemRunDate]="systemRunDate"
+      [activeBenefitsList]="activeBenefitsList"
+    >
+    </dsb-benefits-details-dc>
+  </div>
+</div>
+<div *ngIf="!(guestRole || benefitRole)" class="row">
+  <div class="col-lg-12">
+    <dsb-oh-details-dc
+      [lang]="lang"
+      [isAppProfile]="true"
+      [engagementDetails]="engagementDetails"
+      [ohResponse]="ohResponse"
+      [identifier]="sin"
+      (navigate)="navigateToReportOH()"
+      [hideButtonForPpa]="hideButtonForPpa"
+    >
+    </dsb-oh-details-dc>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12 header">
+    {{ 'CUSTOMER-INFORMATION.ELIGIBLE-FOR' | translate }}
+  </div>
+</div>
+<div class="row">
+  <cim-eligibility-details-dc [lang]="lang" [isAppProfile]="true" [eligiblity]="benefitsEligibility">
+  </cim-eligibility-details-dc>
+</div>
+
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <cim-transaction-details-dc
+      [transactionDetails]="transactionDetails"
+      [totalRecords]="totalRecords"
+      (navigate)="navigateToList()"
+      (limit)="onSelectPage($event)"
+    >
+    </cim-transaction-details-dc>
+  </div>
+</div>
+
+<!-- <div class="row">
+  <div class="col-lg-12">
+    <cim-contributor-timeline-dc
+      [contributionTimline]="contributionTimline"
+      [currencyType]="currencyType"
+      (switchView)="switchBreakupView($event)"
+    ></cim-contributor-timeline-dc>
+  </div>
+</div> -->
+
+<ng-template #isPensionEligibileModal>
+  <gosi-modal-dc [maxHeight]="false">
+    <div class="pt-3 pb-3" modalContent>
+      <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+        <span class="times-icon" role="button" (click)="hideModal()">
+          <fa-icon icon="times" class="icon-font"></fa-icon>
+        </span>
+      </div>
+      <div class="d-flex col-12">
+        <div class="col-lg-12">
+          <gosi-alert-dc [bilingualMessage]="pensionReformEligibility?.message" type="info" [dismissible]="false">
+          </gosi-alert-dc>
+        </div>
+      </div>
+      <div class="d-flex col-12">
+        <div class="col-lg-3">
+          <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.AGE-IN-HIJRI' | translate"
+            ><h1>
+              <b> {{ pensionReformEligibility?.ageAsOnPensionReformDate }}</b>
+            </h1>
+          </gosi-card-dc>
+        </div>
+        <div class="col-lg-5">
+          <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.SERVICE-PEROID' | translate"  
+            ><div class="d-flex justify-content-between align-items-center">
+              <h1>
+                <b>{{ pensionReformEligibility?.servicePeriodInMonths }}</b>
+              </h1>
+              <div class="d-flex align-items-end">
+                <h6 class="ml-3" *ngIf="!pensionReformEligibility?.servicePeriodInMonths">
+                  {{ 'CUSTOMER-INFORMATION.NOVALID-ENGAGEMENTS' | translate }}
+                </h6>
+                <div class="ml-3">
+                  <fa-icon
+                    class="tooltip-icon"
+                    [icon]="['fas', 'info-circle']"
+                    [tooltip]="ServicePeriodCalculation"
+                  ></fa-icon>
+                </div>
+              </div>
+            </div>
+          </gosi-card-dc>
+        </div>
+        <div class="col-lg-4">
+          <gosi-card-dc type="secondary" [heading]="'CUSTOMER-INFORMATION.LIVE-STATUS' | translate">
+            <h1>
+              <b>
+                {{
+                  pensionReformEligibility?.personAlive
+                    ? ('CUSTOMER-INFORMATION.ALIVE' | translate)
+                    : ('CUSTOMER-INFORMATION.DEAD' | translate)
+                }}</b
+              >
+            </h1>
+          </gosi-card-dc>
+        </div>
+        <!-- <div class="col-lg-4">
+          <gosi-card-dc type="secondary"
+            ><b
+              >{{ 'CUSTOMER-INFORMATION.ENGMNT-STIL-EFF-DATE' | translate }} :{{
+                pensionReformEligibility?.havingValidEngagements
+                  ? ('CUSTOMER-INFORMATION.TRUE' | translate)
+                  : ('CUSTOMER-INFORMATION.FALSE' | translate)
+              }}</b
+            >
+          </gosi-card-dc>
+        </div> -->
+      </div>
+      <p class="col" [style.text-align]="lang === 'en' ? 'right' : 'left'">
+        <i>{{ 'CUSTOMER-INFORMATION.EFFECTIVE' | translate }}</i>
+      </p>
+      <div class="section"></div>
+
+      <div class="d-flex col-12">
+        <div class="col-lg-4">
+          <gosi-card-dc type="secondary" lessPadding="true" customHeight="true">
+            <span class="d-inline-flex align-items-center">
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible === 'Not Eligible'"
+                [icon]="['fas', 'check-circle']"
+                size="lg"
+                class="mr-2 text-success"
+              ></fa-icon>
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible !== 'Not Eligible'"
+                [icon]="['fas', 'times-circle']"
+                size="lg"
+                class="mr-2 text-danger"
+              ></fa-icon>
+              <h4 class="mb-0">{{ 'CUSTOMER-INFORMATION.IN-ELIGIBILITY-REASONS.TITLE' | translate }}</h4>
+            </span>
+            <p class="mt-3">{{ 'CUSTOMER-INFORMATION.IN-ELIGIBILITY-REASONS.SUB-TITLE' | translate }}</p>
+
+            <ul class="mt-3 pl-4">
+              <li>{{ 'CUSTOMER-INFORMATION.IN-ELIGIBILITY-REASONS.ACTIVE_MILITARY_CONDITION' | translate }}</li>
+              <li>{{ 'CUSTOMER-INFORMATION.IN-ELIGIBILITY-REASONS.AGE_CONDITION' | translate }}</li>
+              <li>{{ 'CUSTOMER-INFORMATION.IN-ELIGIBILITY-REASONS.SERVICE_PERIOD_VALIDITY' | translate }}</li>
+            </ul>
+          </gosi-card-dc>
+        </div>
+        <div class="col-lg-4">
+          <gosi-card-dc type="secondary" lessPadding="true" customHeight="true">
+            <span class="d-inline-flex align-items-center">
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible === 'Impacted'"
+                [icon]="['fas', 'check-circle']"
+                size="lg"
+                class="mr-2 text-success"
+              ></fa-icon>
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible !== 'Impacted'"
+                [icon]="['fas', 'times-circle']"
+                size="lg"
+                class="mr-2 text-danger"
+              ></fa-icon>
+              <h4 class="mb-0">{{ 'CUSTOMER-INFORMATION.IMPACTED-REASONS.TITLE' | translate }}</h4>
+            </span>
+            <p class="mt-3">{{ 'CUSTOMER-INFORMATION.IMPACTED-REASONS.SUB-TITLE' | translate }}</p>
+
+            <ul class="mt-3 pl-4">
+              <li>{{ 'CUSTOMER-INFORMATION.IMPACTED-REASONS.AGE_CONDITION' | translate }}</li>
+              <li>{{ 'CUSTOMER-INFORMATION.IMPACTED-REASONS.SERVICE_PERIOD_VALIDITY' | translate }}</li>
+            </ul>
+          </gosi-card-dc>
+        </div>
+
+        <div class="col-lg-4">
+          <gosi-card-dc type="secondary" lessPadding="true" customHeight="true">
+            <span class="d-inline-flex align-items-center">
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible === 'Eligible'"
+                [icon]="['fas', 'check-circle']"
+                size="lg"
+                class="mr-2 text-success"
+              ></fa-icon>
+              <fa-icon
+                *ngIf="pensionReformEligibility?.pensionReformEligible !== 'Eligible'"
+                [icon]="['fas', 'times-circle']"
+                size="lg"
+                class="mr-2 text-danger"
+              ></fa-icon>
+              <h4 class="mb-0">{{ 'CUSTOMER-INFORMATION.ELIGIBLE-REASONS.TITLE' | translate }}</h4>
+            </span>
+            <p class="mt-3">{{ 'CUSTOMER-INFORMATION.ELIGIBLE-REASONS.SUB-TITLE' | translate }}</p>
+
+            <ul class="mt-3 pl-4">
+              <li>{{ 'CUSTOMER-INFORMATION.ELIGIBLE-REASONS.AGE_CONDITION' | translate }}</li>
+              <li>{{ 'CUSTOMER-INFORMATION.ELIGIBLE-REASONS.SERVICE_PERIOD_VALIDITY' | translate }}</li>
+            </ul>
+          </gosi-card-dc>
+        </div>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #ServicePeriodCalculation>
+  <p>{{ 'CUSTOMER-INFORMATION.MINIMUM_PARTICIPANTS_TEMPLATE_INTRO' | translate }}</p>
+  <ul class="pl-4">
+    <li class="text-left">{{ 'CUSTOMER-INFORMATION.LUMPSUM_ENGAGEMENTS' | translate }}</li>
+    <li class="text-left">{{ 'CUSTOMER-INFORMATION.MUJAHIDEEN_ENGAGEMENT' | translate }}</li>
+    <li class="text-left">{{ 'CUSTOMER-INFORMATION.INACTIVE_MILITARY_ENGAGEMENTS' | translate }}</li>
+    <li class="text-left">{{ 'CUSTOMER-INFORMATION.EXCLUDED_PERIOD' | translate }}</li>
+    <li class="text-left">{{ 'CUSTOMER-INFORMATION.ENGAGEMENT_UNDER_MINIMUM_AGE' | translate }}</li>
+  </ul>
+</ng-template>

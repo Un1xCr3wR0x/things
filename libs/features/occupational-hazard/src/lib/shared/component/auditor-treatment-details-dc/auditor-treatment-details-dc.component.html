@@ -1,0 +1,147 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container>
+  <div
+    class="d-lg-flex justify-content-between flex-wrap claims-display"
+    *ngIf="(treatmentList && treatmentList?.services?.length > 0) || filterApplied"
+  >
+    <div class="row table-heading">
+      <div class="col">{{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICE-DETAILS' | translate }}</div>
+      <div class="float-right d-sm-block d-md-none pl-4 pr-4" *ngIf="maximumValue">
+        <oh-treatment-filiter-dc
+          [serviceTypeList]="serviceTypeList$ | async"
+          [maximumValue]="maximumValue"
+          [minimumValue]="minimumValue"
+          [treatmentList]="treatmentList"
+          (getTreatmentServiceDetails)="fetchTreatmentDetails($event)"
+        >
+        </oh-treatment-filiter-dc>
+      </div>
+    </div>
+    <div class="d-flex align-items-start custom_flex float-right" *ngIf="maximumValue">
+      <div class="search-filter d-sm-none d-md-block d-none">
+        <oh-treatment-filiter-dc
+          [serviceTypeList]="serviceTypeList$ | async"
+          [maximumValue]="maximumValue"
+          [minimumValue]="minimumValue"
+          [treatmentList]="treatmentList"
+          (getTreatmentServiceDetails)="fetchTreatmentDetails($event)"
+        >
+        </oh-treatment-filiter-dc>
+      </div>
+      <div class="sort-box d-flex justify-content-end align-items-center">
+        <div class="sort-label text-right">{{ 'TRANSACTION-TRACING.SORT-BY' | translate }}:</div>
+        <div class="sort-dropdown px-2">
+          <ng-select
+            [clearable]="false"
+            [searchable]="false"
+            id="sortBy"
+            [(ngModel)]="selectedOption"
+            (change)="sort()"
+          >
+            <ng-option value="TreatmentDate">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.TREATMENT-DATE' | translate }}</ng-option>
+            <ng-option value="Claimed">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.CLAIMED' | translate }}</ng-option>
+            <ng-option value="Discount">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.DISCOUNT' | translate }}</ng-option>
+            <ng-option value="Paid">{{ 'OCCUPATIONAL-HAZARD.CLAIMS.PAID' | translate }}</ng-option>
+          </ng-select>
+        </div>
+        <div class="sort-button d-flex justify-content-center align-items-center" (click)="changeSortDirection()">
+          <fa-icon class="direction-icon" *ngIf="isDescending" icon="sort-amount-down"></fa-icon>
+          <fa-icon class="direction-icon" *ngIf="!isDescending" icon="sort-amount-up"></fa-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="table-effect">
+    <div class="table-responsive">
+      <table class="table table-borderless">
+        <thead class="table-header">
+          <tr>
+            <th class="service-style" colspan="2">
+              {{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICE' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'OCCUPATIONAL-HAZARD.AUDITOR.UNITS' | translate | uppercase }}
+            </th>
+            <th>{{ 'OCCUPATIONAL-HAZARD.AUDITOR.UNIT-PRICE' | translate | uppercase }}</th>
+            <th>
+              {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.CLAIMED' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'OCCUPATIONAL-HAZARD.AUDITOR.DEDUCTION' | translate | uppercase }}
+            </th>
+            <th>
+              {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.DISCOUNT' | translate | uppercase }}
+            </th>
+            <th>{{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.VAT' | translate | uppercase }}</th>
+            <th>{{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.PAID' | translate | uppercase }}</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <ng-container *ngFor="let claim of treatmentList.services">
+            <tr class="border-bottom">
+              <td colspan="2">
+                <gosi-input-checkbox-dc
+                  id="serviceDescription"
+                  class="mt-4 input-check-class"
+                  [control]="treatmentForm.get('checkBoxFlag')"
+                  [label]="claim.serviceDescription | translate"
+                  (select)="selectService(claim, $event)"
+                  [disabled]="checkBoxDisabled"
+                >
+                </gosi-input-checkbox-dc>
+                <span class="descript"
+                  >{{ 'OCCUPATIONAL-HAZARD.AUDITOR.SERVICE' | translate }} # {{ claim.serviceId }}
+                </span>
+                <br /><span class="dcolor">{{ claim.treatmentDate | date: 'dd/MM/yyyy' }}</span>
+                <br />
+                <br /><span *ngIf="claim.disputedUnits">
+                  <span class="rejected-view m-1"
+                    >{{ 'OCCUPATIONAL-HAZARD.REJECTED' | translate }} {{ claim.disputedUnits }}/{{
+                      claim.noOfUnits
+                    }}</span
+                  >
+                  <fa-icon
+                    [icon]="['fas', 'info-circle']"
+                    [tooltip]="rejectionTemplate"
+                    class="pl-2 pr-2 info-circle"
+                  ></fa-icon>
+                </span>
+              </td>
+              <td>{{ claim.noOfUnits }}</td>
+              <td>{{ claim.unitPrice | number }}</td>
+              <td>{{ claim.claimedAmount | number }}</td>
+              <td>{{ claim.policyDeduction + claim.medicalDeduction | number }}</td>
+              <td>{{ claim.discount | number }}</td>
+              <td>{{ claim.vat | number }}</td>
+              <td>{{ claim.paidAmount | number }}</td>
+            </tr>
+            <ng-template #rejectionTemplate>
+              <ng-container>
+                <div>
+                  {{ 'OCCUPATIONAL-HAZARD.AUDITOR.REJECTION-REASON' | translate }}:
+                  <span *ngIf="lang === 'en'">{{ claim.rejectionReason.english | translate }}</span>
+                  <span *ngIf="lang === 'ar'">{{ claim.rejectionReason.arabic | translate }}</span>
+                </div>
+                <div *ngIf="claim.comments">{{ 'CORE.COMMENTS' | translate }}: {{ claim.comments }}</div>
+              </ng-container>
+            </ng-template>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div *ngIf="filterApplied && treatmentList?.services?.length === 0">
+    <div class="row">
+      <div class="col-lg-12">
+        <button class="filter-options">
+          {{ 'OCCUPATIONAL-HAZARD.NO-MATCH-RESULTS' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

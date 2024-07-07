@@ -1,0 +1,110 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div>
+    <div class="header">
+      {{ 'BILLING.REFUND-CREDIT-BALANCE' | translate }}
+    </div>
+  </div>
+  <ng-container *ngIf="!successFlag">
+    <gosi-alert-sc></gosi-alert-sc>
+    <div>
+      <blg-establishment-header-info-dc [establishmentDetails]="establishmentDetails">
+      </blg-establishment-header-info-dc>
+    </div>
+    <gosi-progress-wizard-dc
+      [wizardItems]="creditManagementWizardItems"
+      (clickWizard)="selectWizard($event)"
+      #creditManagementWizard
+    >
+    </gosi-progress-wizard-dc>
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="hide-tab">
+          <tabset class="pills">
+            <tab [active]="currentTab === 0">
+              <div class="row">
+                <div class="col-lg-12">
+                  <blg-refund-bank-mode-dc
+                    [transferModeList]="transferModeList$ | async"
+                    [parentForm]="creditRefundMainForm"
+                    [isAppPrivate]="isAppPrivate"
+                    (modeSelected)="getBankTranser($event)"
+                    [creditRefundDetails]="creditRefundDetails"
+                  ></blg-refund-bank-mode-dc>
+                  <ng-container *ngIf="isBankTransfer">
+                    <blg-bank-details-dc
+                      [establishmentDetails]="establishmentDetails"
+                      [ibanNumber]="ibanNumber"
+                      [bankName]="bankName"
+                      [bankNameFromApi]="bankNameFromApi"
+                      [lang]="lang"
+                      [fromPage]="'est'"
+                      [isAppPrivate]="isAppPrivate"
+                      (bankDetails)="newBankDetails($event)"
+                      (onIbanBlurred)="onGetBankName($event)"
+                    >
+                    </blg-bank-details-dc>
+                  </ng-container>
+                </div>
+                <div class="col-lg-12">
+                  <blg-credit-balance-details-dc
+                    [creditBalanceDetails]="creditBalanceDetails"
+                    (amountToBeRefunded)="setAmountToBeRefunded($event)"
+                    (save)="navigateToDocumentPage()"
+                    (cancel)="cancelAvailableCreditPage()"
+                    [inWorkflow]="inWorkflow"
+                    [amount]="amount"
+                    [fromPage]="'est'"
+                    [parentForm]="creditRefundMainForm"
+                    [creditRetainedList]="creditRetainedList$ | async"
+                    (creditRetained)="getCreditRetainedValue($event)"
+                    [isRefundCreditBalance]="isRefundCreditBalance"
+                    [creditRefundDetails]="creditRefundDetails"
+                    [isIbanDetails]="isIbanDetails"
+                  >
+                  </blg-credit-balance-details-dc>
+                </div>
+              </div>
+            </tab>
+            <tab [active]="currentTab === 1">
+              <blg-credit-refund-file-upload-dc
+                [documentList]="documentList"
+                [isScan]="isAppPrivate"
+                (previous)="previousFormDetails()"
+                (cancelBtn)="cancelCreditUpload()"
+                [uuid]="uuid"
+                [transactionId]="documentTransactionId"
+                [businessKey]="regNumber"
+                (doc)="refreshDocuments($event)"
+                (submit)="submitCreditRefundDetails()"
+                [parentForm]="creditRefundMainForm"
+                [referenceNo]="referenceNumber"
+              ></blg-credit-refund-file-upload-dc>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #refundConfirmView>
+  <div class="model-margin">
+    <blg-credit-balance-summary-dc
+      [establishmentDetails]="establishmentDetails"
+      [creditBalanceDetails]="creditBalanceDetails"
+      [refundbalance]="AmountToBeRefunded"
+      [isBankTransfer]="isBankTransfer"
+      [iban]="ibanNumber"
+      [fromPage]="'refundConfrimPage'"
+      (confirmDetails)="confirmRefundModal()"
+      (cancelModal)="cancelRefundModal()"
+    ></blg-credit-balance-summary-dc>
+  </div>
+</ng-template>

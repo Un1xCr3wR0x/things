@@ -1,0 +1,120 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="mr-auto heading" *ngIf="creditAdjustmentDetails.availableCount > 0">
+  {{ 'BILLING.CREDIT-ADJUSTMENT-DETIALS' | translate }}
+</div>
+<accordion>
+  <accordion-group class="accordion-group-class" heading="{{ 'BILLING.CREDIT-ADJUSTMENTS' | translate }}"*ngIf="creditAdjustmentDetails.availableCount > 0">
+    <span class="arrow-up-btn arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ creditAdjustmentTotal * exchangeRate | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+    </span>
+    <span class="arrow-down-btn arrow-color" accordion-heading>
+      <span
+        >({{ 'BILLING.TOTAL' | translate }}: {{ creditAdjustmentTotal * exchangeRate | number: '1.2-2' }}
+        {{ currencyType | bilingualText }} )</span
+      >
+      <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+    </span>
+    <ng-container>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="table-scroll table-responsive">
+            <table class="table table-borderless table-effect">
+              <thead class="table-header">
+                <tr>
+                  <th rowspan="2" id="deatils">
+                    {{ 'BILLING.ESTABLISHMENT-NAME' | translate | titlecase }}
+                  </th>
+                  <th rowspan="2" id="date">
+                    {{ 'BILLING.REGISTRATION-NUMBER' | translate | titlecase }}
+                  </th>
+                  <th rowspan="1" colspan="4" id="periods" class="alignment" *ngIf="establishmentType === 'GOSI'">
+                    {{ 'BILLING.COVERAGE' | translate | titlecase }}
+                    <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+                  </th>
+                  <th rowspan="1" colspan="2" id="periods" class="alignment" *ngIf="establishmentType === 'PPA'">
+                    {{ 'BILLING.COVERAGE' | translate | titlecase }}
+                    <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+                  <!-- </th> -->
+                  <th rowspan="2" id="date">
+                    {{ 'BILLING.TOTAL' | translate | titlecase }}
+                    <span class="currencyValue">({{ 'BILLING.SAR' | translate }}) </span>
+                  </th>
+                  <th></th>
+                </tr>
+                <tr>
+                  <th id="fromDate" class="alignment" *ngIf="establishmentType === 'GOSI'">{{ 'BILLING.ANNUITY' | translate | titlecase }}</th>
+                  <th id="fromDate" class="alignment" *ngIf="establishmentType === 'PPA'">{{ 'BILLING.PPA-ANNUITY' | translate | titlecase }}</th>
+                  <th id="fromDate" class="alignment">{{ 'BILLING.PPA-PENSION' | translate | titlecase }}</th>
+                  <th id="toDate" class="alignment" *ngIf="establishmentType === 'GOSI'">
+                    {{ 'BILLING.OCCUPATIONAL-HAZARD' | translate | titlecase }}
+                  </th>
+                  <th id="annuityValue" class="alignment" *ngIf="establishmentType === 'GOSI'">{{ 'BILLING.UI' | translate | titlecase }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container>
+                  <ng-container
+                    *ngFor="
+                      let item of creditAdjustmentDetails?.thirdPartyItemizedBillBreakDown
+                        | paginate
+                          : {
+                              id: 'paginationId',
+                              itemsPerPage: itemsPerPage,
+                              currentPage: pageDetails.currentPage,
+                              totalItems: creditAdjustmentDetails?.availableCount
+                            };
+                      let i = index
+                    "
+                  >
+                    <tr class="border-bottom view-link" (click)="getCreditDetails(item.registrationNo)">
+                      <td *ngIf="item.establishmentName.english">
+                        {{ item.establishmentName | bilingualText }}
+                      </td>
+                      <td *ngIf="item.establishmentName.english === null">
+                        {{ item.establishmentName.arabic }}
+                      </td>
+                      <td>{{ item.registrationNo }}</td>
+                      <td class="alignment" *ngIf="establishmentType === 'GOSI'">
+                        {{ item.thirdPartyContributionShare.establishmentShare.annuity | number: '1.2-2' }}
+                      </td>
+                      <td class="alignment" *ngIf="establishmentType === 'PPA'">
+                        {{ item.thirdPartyContributionShare.establishmentShare.ppaAnnuity | number: '1.2-2' }}
+                      </td>
+                      <td class="alignment">
+                        {{ item.thirdPartyContributionShare.establishmentShare.prAnnuity | number: '1.2-2' }}
+                      </td>
+                      <td class="alignment" *ngIf="establishmentType === 'GOSI'">
+                        {{ item.thirdPartyContributionShare.establishmentShare.oh | number: '1.2-2' }}
+                      </td>
+                      <td class="alignment" *ngIf="establishmentType === 'GOSI'">
+                        {{ item.thirdPartyContributionShare.establishmentShare.ui | number: '1.2-2' }}
+                      </td>
+                      <td>{{ item.thirdPartyContributionShare.total | number: '1.2-2' }}</td>
+                    </tr>
+                  </ng-container>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <gosi-pagination-dc
+      *ngIf="creditAdjustmentDetails?.availableCount > itemsPerPage"
+      [totalSize]="creditAdjustmentDetails?.availableCount"
+      [itemsPerPage]="itemsPerPage"
+      [pageDetails]="pageDetails"
+      (pageChange)="selectPage($event)"
+      paginationId="paginationId"
+    ></gosi-pagination-dc>
+  </accordion-group>
+</accordion>

@@ -1,0 +1,265 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div *ngIf="modalFlag" class="content">
+  <ng-container *ngIf="isSubmit && isAppPrivate">
+    <gosi-alert-sc></gosi-alert-sc>
+  </ng-container>
+  <ng-container *ngIf="!isEstRegistered">
+    <gosi-alert-sc></gosi-alert-sc>
+  </ng-container>
+  <ng-container *ngIf="!isSubmit || isAppPrivate">
+    <ng-container *ngIf="!searchResult || !csrFlag">
+      <div class="row heading-margin">
+        <a (click)="navigateBackToHome()" class="icon-seprator">
+          <fa-icon
+            class="back-icon"
+            [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']"
+            size="2x"
+          ></fa-icon>
+        </a>
+        <span class="header"> {{ 'BILLING.WAIVE-ESTABLISHMENT-LATE-FEES' | translate }}</span>
+      </div>
+      <ng-container *ngIf="isError">
+        <gosi-alert-sc></gosi-alert-sc>
+      </ng-container>
+      <gosi-card-dc type="secondary">
+        <blg-waiver-establishment-info-dc
+          [establishmentDetails]="establishmentDetails"
+          [wavierDetails]="wavierDetails"
+          [documents]="documents"
+          (doc)="refreshDocuments($event, false)"
+          [isScan]="isAppPrivate"
+          [parentForm]="wavierPenalityMainForm"
+          [gracePeriodFlag]="gracePeriodFlag"
+        >
+        </blg-waiver-establishment-info-dc>
+        <blg-waiver-account-details-dc
+          [isPpa]="isPpa"
+          [wavierDetails]="wavierDetails"
+          [parentForm]="wavierPenalityMainForm"
+          [previousInstallment]="previousInstallment"
+        ></blg-waiver-account-details-dc>
+        <blg-penalty-waiver-details-dc
+          [wavierDetails]="wavierDetails"
+          [parentForm]="wavierPenalityMainForm"
+          [isAppPrivate]="isAppPrivate"
+          [csrFlag]="csrFlag"
+          (gracePeriodsExtendend)="getGracePeriodExtended($event)"
+        ></blg-penalty-waiver-details-dc>
+
+        <blg-waiver-document-upload-dc
+          (doc)="refreshDocuments($event, true)"
+          [documents]="documents"
+          [isScan]="isAppPrivate"
+          [parentForm]="wavierPenalityMainForm"
+          [csrFlag]="csrFlag"
+          [isValidator]="isValidator"
+          [transactionId]="documentTransactionId"
+          [businessKey]="idNumber"
+          [referenceNumber]="referenceNumber"
+          [uuid]="uuid"
+        ></blg-waiver-document-upload-dc>
+
+        <ng-container *ngIf="!isAppPrivate">
+          <div class="position-style">
+            <blg-waiver-terms-condition-dc
+              [wavierDetails]="wavierDetails"
+              [parentForm]="wavierPenalityMainForm"
+            ></blg-waiver-terms-condition-dc>
+          </div>
+        </ng-container>
+      </gosi-card-dc>
+      <div class="row form-action">
+        <div class="col-lg-12">
+          <div class="float-right btn-section">
+            <div *ngIf="!isAppPrivate">
+              <gosi-button-dc
+                id="primaryButton"
+                type="primary"
+                (submit)="submitPenaltyWaiverDetails(termsConditionTemplate, 'md')"
+                [disabled]="disableSubmit"
+              >
+                {{ gracePeriodFlag ? ('BILLING.APPROVE' | translate) : ('BILLING.SUBMIT' | translate) }}
+              </gosi-button-dc>
+            </div>
+            <div *ngIf="isAppPrivate">
+              <gosi-button-dc
+                *ngIf="!disableSubmit"
+                id="primaryButton"
+                type="primary"
+                (submit)="submitPenaltyWaiverDetails()"
+              >
+                {{ gracePeriodFlag ? ('BILLING.APPROVE' | translate) : ('BILLING.SUBMIT' | translate) }}
+              </gosi-button-dc>
+              <gosi-button-dc
+                *ngIf="disableSubmit"
+                id="primaryButton"
+                type="primary"
+                (submit)="submitPenaltyWaiverDetails()"
+                [disabled]="disableSubmit"
+              >
+                {{ gracePeriodFlag ? ('BILLING.APPROVE' | translate) : ('BILLING.SUBMIT' | translate) }}
+              </gosi-button-dc>
+            </div>
+          </div>
+
+          <div class="float-left btn-section">
+            <gosi-button-dc id="cancel" type="secondary" (submit)="showModal(cancelTemplate, 'md')">
+              {{ 'BILLING.CANCEL' | translate }}</gosi-button-dc
+            >
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="isSubmit && !isAppPrivate">
+    <div class="header top-align">{{ 'BILLING.WAIVE-ESTABLISHMENT-LATE-FEES' | translate }}</div>
+    <div class="col-lg-12">
+      <gosi-alert-sc></gosi-alert-sc>
+    </div>
+    <blg-penality-summary-dc
+      [wavierDetails]="wavierDetails"
+      (navigateBack)="navigateBackToHome()"
+    ></blg-penality-summary-dc>
+  </ng-container>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'BILLING.INFO-CANCEL'" (onConfirm)="navigateBack()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #termsConditionTemplate>
+  <ng-container *ngIf="!isAppPrivate">
+    <blg-confirm-modal-dc>
+      <div card-body class="mt-3">
+        {{ 'BILLING.PLEASE-ACCEPT-TERMS-CONDITION' | translate }}
+      </div>
+      <div card-footer class="row pb-3 align-self-center">
+        <div class="btn-section">
+          <gosi-button-dc id="cancelBtn" type="secondary" (submit)="modalRef.hide()" size="sm">
+            {{ 'BILLING.OK' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </blg-confirm-modal-dc>
+  </ng-container>
+</ng-template>
+<ng-template #tranactionAllowed>
+  <ng-container>
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="confirmation-popup">
+          <div class="row">
+            <div class="confirm-heading col-lg-12">
+              {{ 'BILLING.NOT-ALLOWED-TRANSACTION' | translate }}
+            </div>
+          </div>
+          <div class="row confirm-reason">
+            {{ 'BILLING.TRANSACTION-NOT-PROCESSING-REASON' | translate }}
+          </div>
+          <div *ngIf="warningMessageListOne" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageOne"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListTwo" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageTwo"
+              type="warning"
+              [dismissible]="false"
+              class="successMessage"
+              noPadding="true"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListThree" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageThree"
+              type="warning"
+              class="successMessage"
+              [dismissible]="false"
+              noPadding="true"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListFour" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageFour"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListFive" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageFive"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListSix" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="'BILLING.INTALLMENT-ACTIVE-ERROR' | translate"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListEight" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageSeven"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+          <div *ngIf="warningMessageListTwelve" class="col-lg-12">
+            <gosi-alert-dc
+              [bilingualMessage]="warningMessageEight"
+              type="warning"
+              class="successMessage"
+              noPadding="true"
+              [dismissible]="false"
+            >
+            </gosi-alert-dc>
+          </div>
+        </div>
+      </div>
+      <div modalAction>
+        <div class="row">
+          <div class="form-action col-md-12">
+            <div class="btn-section float-right">
+              <gosi-button-dc id="cancel" type="secondary" [size]="'md'" (submit)="cancelPopup()">
+                {{ 'BILLING.CLOSE' | translate }}</gosi-button-dc
+              >
+            </div>
+            <div class="btn-section float-left">
+              <gosi-button-dc id="confirm" type="secondary" [size]="'md'" (submit)="navigateToMyTranscation()">
+                {{ 'BILLING.VIEW-TRANSACTION-HISTORY' | translate }}</gosi-button-dc
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </ng-container>
+</ng-template>

@@ -1,0 +1,166 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<div class="profile-wrapper">
+  <div>
+    <mb-doctor-profile-icon-dc [gender]="person?.sex?.english"></mb-doctor-profile-icon-dc>
+    <div class="pl-2 pr-2">
+      <div id="arabicName" class="row justify-content-center profile-name mt-4">
+        <div class="col">
+          <span>{{ person.name?.arabic.firstName }} </span>
+          <span>{{ person.name?.arabic.secondName }} </span>
+          <span>{{ person.name?.arabic.thirdName }} </span>
+          <span>{{ person.name?.arabic.familyName }}</span>
+        </div>
+      </div>
+      <!-- User / Contributor Name -->
+      <div id="englishName" class="row justify-content-center flex-nowrap profile-name">
+        <ng-container>
+          <div class="col">
+            {{ person.name.english.name }}
+          </div>
+        </ng-container>
+      </div>
+      <!-- Contributor Identifiers -->
+      <ng-container *ngIf="isAppPrivate">
+        <div class="mt-4">
+          <div id="sinNumberLabel" class="person-sin class-label">
+            <ng-container *ngIf="selectedPersonContract">
+              <fa-icon class="in-active" icon="user"></fa-icon>
+              <span>
+                {{ selectedPersonContract[0].contractType | bilingualText }}
+                <fa-icon class="in-active" icon="grip-lines-vertical"> </fa-icon>
+                {{ 'MEDICAL-BOARD.STATS' | translate }} :
+                <ng-container *ngIf="selectedPersonContract[0].status?.english === 'Active'">
+                  {{ 'MEDICAL-BOARD.ACTIVE' | translate }}
+                  <fa-icon class="icon-wrapper-check-circle" icon="check-circle"> </fa-icon>
+                </ng-container>
+                <ng-container *ngIf="selectedPersonContract[0].status?.english === 'Inactive'">
+                  {{ 'MEDICAL-BOARD.INACTIVE' | translate }}
+                  <fa-icon class="in-active" icon="times-circle"></fa-icon>
+                </ng-container>
+              </span>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+      <ng-container  *ngIf="isMBApp">
+        <div class="mt-4">
+          <div id="sinNumberLabel" class="person-sin class-label">
+            <ng-container *ngFor="let item of memberperson?.contracts; let i = index">
+              <ng-container *ngIf="i === 0">
+                <fa-icon class="in-active" icon="user"></fa-icon>
+                <span>
+                  {{ item.contractType | bilingualText }}
+                  <fa-icon class="in-active" icon="grip-lines-vertical"> </fa-icon>
+                  {{ 'MEDICAL-BOARD.STATS' | translate }} :
+                  <ng-container *ngIf="item.status?.english === 'Active'">
+                    {{ 'MEDICAL-BOARD.ACTIVE' | translate }}
+                    <fa-icon class="icon-wrapper-check-circle" icon="check-circle"> </fa-icon>
+                  </ng-container>
+                  <ng-container *ngIf="item.status?.english === 'Inactive'">
+                    {{ 'MEDICAL-BOARD.INACTIVE' | translate }}
+                    <fa-icon class="in-active" icon="times-circle"></fa-icon>
+                  </ng-container>
+                </span>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <!-- Identifier Cards -->
+  <div class="row profile-details gosi-scrollbar justify-content-center">
+    <div class="col-md-6 card-padding">
+      <mb-details-card-dc
+        [id]="'nationality'"
+        [icon]="'flag'"
+        [label]="'MEDICAL-BOARD.NATIONALITY'"
+        [identifier]="person.nationality | bilingualText"
+      >
+      </mb-details-card-dc>
+    </div>
+    <ng-container *ngFor="let item of person.identity">
+      <ng-container *ngIf="item && item !== null">
+        <div
+          class="col-md-6 card-padding"
+          *ngIf="item.idType !== null && [typeNin, typeGcc, typeIqama].indexOf(item.idType) !== -1"
+        >
+          <ng-container *ngIf="item.idType === typeNin">
+            <mb-details-card-dc
+              [id]="'ninNumber'"
+              [icon]="'address-card'"
+              [label]="'MEDICAL-BOARD.NATIONAL-IDENTIFICATION-NUMBER'"
+              [identifier]="item.newNin"
+            >
+            </mb-details-card-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeGcc">
+            <mb-details-card-dc
+              [id]="'gccNationalid'"
+              [customIcon]="'gcc-id'"
+              [label]="'MEDICAL-BOARD.GCC-ID'"
+              [identifier]="item.id"
+            >
+            </mb-details-card-dc>
+          </ng-container>
+          <ng-container *ngIf="item.idType === typeIqama">
+            <mb-details-card-dc
+              [id]="'iqamaNumber'"
+              [icon]="'address-card'"
+              [label]="'MEDICAL-BOARD.IQAMA-NUMBER'"
+              [identifier]="item.iqamaNo"
+            >
+            </mb-details-card-dc>
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="isAppPrivate">
+      <ng-container *ngFor="let item of memberperson?.contracts; let i = index">
+        <ng-container *ngIf="i === 0">
+          <div class="col-md-6 card-padding">
+            <mb-details-card-dc
+              [id]="'personSpec'"
+              [icon]="'user-md'"
+              [label]="'MEDICAL-BOARD.SPECIALIZATION'"
+              [identifier]="item.specialty"
+            >
+            </mb-details-card-dc>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+    <ng-container *ngIf="isMBApp">
+      <div class="col-md-6 card-padding">
+        <mb-details-card-dc
+          [id]="'personSpec'"
+          [icon]="'user-md'"
+          [label]="'MEDICAL-BOARD.SPECIALIZATION'"
+          [identifier]="contractDoctorDetails.memberDetails.specialty"
+        >
+        </mb-details-card-dc>
+      </div>
+    </ng-container>
+    <div class="col-md-6 card-padding">
+      <mb-details-card-dc
+        [id]="'personDOB'"
+        [icon]="'calendar-alt'"
+        [label]="'MEDICAL-BOARD.DATE-OF-BIRTH'"
+        [date]="person?.birthDate?.gregorian"
+      >
+      </mb-details-card-dc>
+    </div>
+    <div class="col-md-6 card-padding">
+      <mb-details-card-dc
+        [id]="'gender'"
+        [customIcon]="'gender'"
+        [label]="'MEDICAL-BOARD.GENDER'"
+        [identifier]="person.sex | bilingualText"
+      >
+      </mb-details-card-dc>
+    </div>
+  </div>
+</div>

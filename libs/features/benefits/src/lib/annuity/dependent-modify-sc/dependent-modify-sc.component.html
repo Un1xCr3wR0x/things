@@ -1,0 +1,211 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-card-dc type="secondary" heading="{{ heading | translate }}" headingSize="md">
+  <bnt-dependent-listing-dc
+    *ngIf="listOfDependents"
+    [benefitRequestId]="benefitRequestId"
+    [benefitStartDate]="benefitStartDate"
+    [annuityResponse]="annuityResponse"
+    [eligibilityStartDate]="eligibilityStartDate"
+    [tableHeadingAndParams]="tableHeadingAndParams"
+    [parentForm]="parentForm"
+    [isValidator]="isValidator"
+    [listOfValues]="listOfDependents"
+    [actionType]="actionType"
+    [systemRunDate]="systemRunDate"
+    [systemParameter]="systemParameter"
+    [annuityRelationShip$]="annuityRelationShip$"
+    [maritalStatus$]="maritalStatus$"
+    [heirStatus$]="heirStatus$"
+    [heirStatusArr]="heirStatusArr"
+    [isModifyPage]="true"
+    [reasonsList]="reasonsList$ | async"
+    [lang]="lang"
+    [sin]="sin"
+    [events]="events$ | async"
+    [addedEvent]="addedEvent"
+    [validateApiResponse]="validateApiResponse"
+    (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+    [dependentStatusResp]="dependentStatusResp"
+    [ageInNewLaw]="ageInNewLaw"
+    [genderList]="genderList$ | async"
+    [isDraft]="isDraft"
+    (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+    (delete)="delete($event)"
+    (update)="update($event)"
+    (dependentModifyReason)="validateDependentModifyReason($event)"
+    (statusDate)="updateStatusDateForDependent($event)"
+    (validate)="validate($event)"
+    (resetSearch)="resetSearch()"
+    (edit)="edit($event)"
+    (getEvents)="getEventsForModify($event)"
+    (getReasonForModification)="getReasonForModification($event)"
+    (showIneligibilityDetails)="showIneligibilityDetails(ineligibilityTemplate, $event)"
+  >
+  </bnt-dependent-listing-dc>
+
+  <div class="row" *ngIf="!addDependent && !actionType">
+    <div class="col-md-12 d-flex justify-content-center mt-4">
+      <gosi-button-dc [size]="'md'" [outlineOnly]="true" (click)="addAnotherDependent()">
+        {{ 'BENEFITS.ADD-ANOTHER-DEP' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!--add dependent-->
+<gosi-card-dc
+  *ngIf="addDependent"
+  type="secondary"
+  heading="{{ 'BENEFITS.ADD-DEPENDENT' | translate }}"
+  lessPadding="true"
+>
+  <div class="dependent-value">
+    <bnt-search-person-dc
+      *ngIf="!searchResult?.personId && !searchPersonData?.dob"
+      [systemRunDate]="systemRunDate"
+      [disableVerify]="disableVerify"
+      [nationalityList$]="nationalityList$"
+      (searchPerson)="searchDependent($event)"
+      [showCancel]="false"
+    ></bnt-search-person-dc>
+  </div>
+  <!-- comp to select relationship-->
+  <bnt-dependent-add-edit-dc
+    #addDependentChildComp
+    *ngIf="searchResult?.personId"
+    [isModifyPage]="true"
+    [update]="false"
+    [parentForm]="parentForm"
+    [eligibilityStartDate]="eligibilityStartDate"
+    [systemRunDate]="systemRunDate"
+    [lang]="lang"
+    [isValidator]="isValidator"
+    [maritalStatusList]="maritalStatus$ | async"
+    [dependentDetails]="searchResult"
+    [validateApiResponse]="validateApiResponse"
+    [systemParameter]="systemParameter"
+    [annuityRelationShipList]="annuityRelationShip$ | async"
+    [heirStatusList]="heirStatus$ | async"
+    [heirStatusArr]="heirStatusArr"
+    [benefitRequestId]="benefitRequestId"
+    [benefitStartDate]="benefitStartDate"
+    [ageInNewLaw]="ageInNewLaw"
+    [isDraft]="isDraft"
+    (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+    (cancelEdit)="resetSearch()"
+    (saveDependent)="update($event)"
+    (validateDependent)="validate($event)"
+    (reset)="resetSearch()"
+    [events]="events$ | async"
+    [addedEvent]="addedEvent"
+    (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+  ></bnt-dependent-add-edit-dc>
+  <bnt-dependent-add-dc
+    *ngIf="!searchResult?.personId && searchPersonData?.dob"
+    [isModifyPage]="true"
+    [update]="false"
+    [addedEvent]="addedEvent"
+    [contributorDetails]="personDetails"
+    [searchPersonData]="searchPersonData"
+    [dependentDetails]="searchPersonData"
+    [parentForm]="parentForm"
+    [requestDate]="requestDate"
+    [events]="events$ | async"
+    [isLumpsum]="isLumpsum"
+    [genderList]="genderList$ | async"
+    [lang]="lang"
+    [eligibilityStartDate]="eligibilityStartDate"
+    [benefitStartDate]="benefitStartDate"
+    [validateApiResponse]="validateApiResponse"
+    [systemRunDate]="systemRunDate"
+    [maritalStatusList]="maritalStatus$ | async"
+    [systemParameter]="systemParameter"
+    [annuityRelationShipList]="annuityRelationShip$ | async"
+    [heirStatusArr]="heirStatusArr"
+    [heirStatusList]="heirStatus$ | async"
+    [ageInNewLaw]="ageInNewLaw"
+    [calcHijiriAgeInMonths]="calcHijiriAgeInMonths"
+    (isThisAgeInNewLaw)="isThisAgeInNewLaw($event)"
+    (saveDependent)="update($event)"
+    (validateDependent)="validate($event)"
+    (reset)="resetSearch()"
+    (cancelEdit)="resetSearch()"
+    (addEvent)="addEventPopup(addEventPopupTemplate, $event)"
+    (getRelationshipListByGender)="getRelationshipListByGender($event)"
+  ></bnt-dependent-add-dc>
+</gosi-card-dc>
+
+<!-- *ngIf="!isContributorSaudi || isOverSeasContributor" -->
+<bnt-extend-annual-notification-dc
+  *ngIf="!actionType && (annuityResponse?.beneficiaryNationality?.english !== 'Saudi Arabia' || annuityResponse?.isOverseasBeneficiary)"
+  [parentForm]="parentForm"
+  [annuityResponse]="annuityResponse"
+  [benefitStartDate]="benefitStartDate"
+  [personDetails]="personDetails"
+  [isValidator]="isValidator"
+  [currentDate]="systemRunDate"
+  [requestDate]="parentForm?.get('requestDate')?.value"
+  (downloadPdf)="downloadPdf($event)"
+>
+</bnt-extend-annual-notification-dc>
+
+<div class="row form-action">
+  <div class="col-lg-12">
+    <div class="float-right btn-section">
+      <gosi-button-dc id="saveAndNextBtn" type="primary" (submit)="applyForBenefit()">
+        {{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+      >
+    </div>
+    <div class="float-left btn-section">
+      <gosi-button-dc id="cancelBtn" type="secondary" (submit)="cancelTransaction()">
+        {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+      >
+    </div>
+  </div>
+</div>
+<ng-template #confirmTemplate>
+  <gosi-confirm-modal-dc [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirm()" (onCancel)="decline()">
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #ineligibilityTemplate>
+  <bnt-ineligibility-details-dc
+    [lang]="lang"
+    [isDep]="true"
+    [isPension]="isPension"
+    [details]="
+      singleDepHeirDetails.validateApiResponse?.events
+        ? singleDepHeirDetails.validateApiResponse?.events
+        : singleDepHeirDetails?.eligibilityList
+    "
+    [name]="
+      singleDepHeirDetails.validateApiResponse?.name
+        ? singleDepHeirDetails.validateApiResponse?.name
+        : singleDepHeirDetails?.name
+    "
+    [heir]="singleDepHeirDetails"
+    [relationship]="
+      singleDepHeirDetails.validateApiResponse?.relationship
+        ? singleDepHeirDetails.validateApiResponse?.relationship
+        : singleDepHeirDetails?.relationship
+    "
+    (close)="closePopup()"
+  ></bnt-ineligibility-details-dc>
+</ng-template>
+<ng-template #addEventPopupTemplate>
+  <bnt-add-event-popup-dc
+    (addEventDetails)="addEvent($event)"
+    (closeAddEvent)="closePopup()"
+    [eventAddedFor]="eventAddedFor"
+    [lang]="lang"
+    [systemParameter]="systemParameter"
+    [systemRunDate]="systemRunDate"
+    [eventTypeList]="eventTypeList"
+    [isHeir]="false"
+    [isModifyPage]="true"
+    [requestDate]="parentForm?.get('requestDate')?.getRawValue()"
+  ></bnt-add-event-popup-dc>
+</ng-template>

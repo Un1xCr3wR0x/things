@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="!dashboardSearchService.isSummaryPage">
+  <div class="row">
+    <div class="col-md-12 section-head">
+      {{ 'ESTABLISHMENT.ESTABLISHMENTS' | translate }}
+    </div>
+  </div>
+  <div class="table-responsive">
+    <div class="row">
+      <div class="col-lg-12 table-establishment">
+        <table class="table table-condensed mx-0">
+          <thead>
+            <tr *ngIf="estCount !== 0; else noResult">
+              <th>
+                {{ 'DASHBOARD.ESTABLISHMENT-NAME' | translate }}
+              </th>
+              <th>
+                {{ 'BILLING.ESTABLISHMENT-STATUS' | translate }}
+              </th>
+              <th>
+                {{ 'TEAM-MANAGEMENT.ROLE' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="data-row"
+              *ngFor="
+                let item of establishments
+                  | paginate
+                    : {
+                        id: estPagination,
+                        itemsPerPage: itemsPerPage,
+                        currentPage: pageDetails.currentPage,
+                        totalItems: estCount
+                      }
+              "
+              (click)="navigateToEstablishment(item.registrationNo)"
+            >
+              <td style="width: 45%">
+                <div class="description-title">
+                  {{ item.name.arabic }} <br />
+                  {{ item.name.english }}
+                </div>
+                <div class="description-content" dir="ltr">
+                  {{ 'CUSTOMER-INFORMATION.REGISTRATION-NO' | translate }} : {{ item.registrationNo }}
+                </div>
+              </td>
+              <td class="task-status" style="width: 35%; font-size: 0.75rem">
+                <span>
+                  <gosi-status-badge-dc [label]="item.status" [type]="statusBadgeType(item)"></gosi-status-badge-dc>
+                </span>
+                <!-- <span>
+                {{ item.status | bilingualText | titlecase }}</span> -->
+              </td>
+              <td style="width: 20%">
+                <span class="d-block" *ngFor="let role of item.role"> {{ role | bilingualText | titlecase }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <ng-template #noResult>
+    <div class="mt-5 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'CUSTOMER-INFORMATION.NO-ACTIVE-EST' | translate }}</p>
+    </div>
+  </ng-template>
+  <gosi-pagination-dc
+    #paginationComponent
+    *ngIf="estCount > itemsPerPage && !isRecent"
+    [totalSize]="estCount"
+    [itemsPerPage]="itemsPerPage"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+    [paginationId]="estPagination"
+  >
+  </gosi-pagination-dc>
+</ng-container>
+
+<dsb-establishment-details-sc
+  [fromIndividualProfile]="true"
+  (navigate)="loadSearchPage()"
+  *ngIf="dashboardSearchService.isSummaryPage"
+>
+</dsb-establishment-details-sc>

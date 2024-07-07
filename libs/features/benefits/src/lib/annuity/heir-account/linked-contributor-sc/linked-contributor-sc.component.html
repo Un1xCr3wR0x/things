@@ -1,0 +1,92 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to li cense terms. -->
+<div class="content">
+  <div class="person-details">
+    <div class="custom-tabset">
+      <a class="custom-tab-heading active benefit-logo">
+        <img
+          src="assets\icons\svg\Benefits-gray.svg"
+          routerLinkActive="active"
+          class="icon-wrapper"
+          alt="benefit-logo"
+        />
+        <span>{{ 'BENEFITS.BENEFITS-DETAILS' | translate }}</span>
+      </a>
+      <a id="personalDetails" routerLinkActive="active" class="custom-tab-heading">
+        <fa-icon class="icon-wrapper" icon="user" size="lg"></fa-icon
+        ><span>{{ 'CUSTOMER-INFORMATION.PERSONAL-DETAILS' | translate }}</span>
+      </a>
+    </div>
+    <div class="noactiveBenefitImg">
+      <img class="product-icon" src="assets/icons/svg/No_ActiveBenefits.svg" alt="no-active-benefits" />
+      <span class="no-active-benefit-txt"> {{ 'BENEFITS.NO-ACTIVE-BENEFITS' | translate }} </span>
+    </div>
+
+    <div class="custom-tabs">
+      <gosi-alert-sc></gosi-alert-sc>
+
+      <ng-container *ngFor="let contributor of heirAccountProfile?.linkedContributorDetails">
+        <div class="d-flex py-3">
+          <span class="annuity-type">{{ contributor.eligibility.benefitType | bilingualText }}</span>
+          <div class="ml-auto">
+            <a class="view-link">{{ 'BENEFITS.VIEW-HISTORY' | translate }}</a>
+          </div>
+        </div>
+        <hr />
+        <div class="benefit-content">
+          <div *ngIf="contributor.eligibility.benefitType.english === typeHeirPension">
+            <span>{{ 'BENEFITS.HEIR_PENSION_TEXT' | translate }}</span>
+          </div>
+
+          <div *ngIf="contributor.eligibility.benefitType.english === typeHeirLumpsum">
+            <span>{{ 'BENEFITS.HEIR_LUMPSUM_TEXT' | translate }}</span>
+          </div>
+        </div>
+        <div class="contributor-box ml-1 mr-1 row">
+          <div class="col-md-9">
+            <span>{{ 'BENEFITS.CONTRIBUTOR' | translate }}</span> :
+            <span class="annuity-type">{{ contributor.name | bilingualText }}</span>
+            <div class="ml-auto py-2">
+              <gosi-button-dc
+                *ngIf="!contributor.eligibility.eligible"
+                (submit)="ShowEligibilityPopup(eligibilityCriteria, benefitInfo)"
+                [size]="'sm'"
+                [outlineOnly]="true"
+                type="secondary"
+              >
+                {{ 'BENEFITS.VIEW-ELIGIBILITY-CRITERIA' | translate }}
+              </gosi-button-dc>
+            </div>
+          </div>
+          <!-- (submit)="showModal(returnModalId(contributor.eligibility.benefitType.english))" -->
+          <div class="col-md-3">
+            <div *ngIf="contributor.eligibility.eligible">
+              <gosi-button-dc
+                class="apply-button"
+                id="apply"
+                [type]="'primary'"
+                (submit)="navigateToHeirBenefit(contributor)"
+              >
+                {{ 'BENEFITS.APPLY' | translate }}
+              </gosi-button-dc>
+            </div>
+            <div *ngIf="!contributor.eligibility.eligible" class="apply-button">
+              <fa-icon class="warning-icon mr-2" icon="exclamation-triangle"></fa-icon>
+              <span>{{ 'BENEFITS.NOT-ELIGIBLE' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="row d-flex my-3 justify-content-center">
+    <gosi-button-dc [size]="'lg'" [outlineOnly]="true" (submit)="navigateToLinkContributor()">
+      {{ 'BENEFITS.LINK-ANOTHER-CONTRIBUTOR' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>
+
+<ng-template #eligibilityCriteria>
+  <bnt-eligibility-criteria-dc (close)="hideModal()" [benefitInfo]="benefitInfo"> </bnt-eligibility-criteria-dc>
+</ng-template>

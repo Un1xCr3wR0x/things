@@ -1,0 +1,118 @@
+<frm-main-content-dc [documents]="[]" [comments]="transactionRefData">
+  <div id="mainHeading" class="main-heading">
+    <frm-main-heading-dc [heading]="lang === 'en' ? payload?.titleEnglish : payload?.titleArabic">
+    </frm-main-heading-dc>
+  </div>
+  <div id="contentArea">
+    <bnt-rejoining-details-sc
+      *ngIf="personId && requestId"
+      [personId]="personId"
+      [requestId]="requestId"
+      [referenceNo]="referenceNo"
+    ></bnt-rejoining-details-sc>
+  </div>
+</frm-main-content-dc>
+<!--Buttons-->
+<div id="actionArea">
+  <div class="row form-action">
+    <div class="col-lg-12">
+      <div class="action-request">
+        <div class="btn-section float-right">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            id="rejoinApprove"
+            type="primary"
+            (click)="showModal(approveRejoinTemplate)"
+          >
+            {{ 'BENEFITS.APPROVE' | translate }}
+          </gosi-button-dc>
+        </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'FC Approver'">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            type="secondary"
+            id="reemploymentReturn"
+            (submit)="showModal(returnTemplate)"
+          >
+            {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+          >
+          </ng-container>
+        </div>
+        <div class="btn-section float-right" *ngIf="payload?.assignedRole === 'Validator1'">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            id="rejoinCalc"
+            type="secondary"
+            (click)="showModal(reportCalcTemplate)"
+          >
+            {{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+        <!--<div
+          class="btn-section float-right mr-5"
+          *ngIf="payload?.assignedRole === 'Validator1' && benefitRecalculationDetails?.hasOverlappingEngagements"
+        >
+          <gosi-button-dc id="rejoinInspection" type="secondary" (click)="requestInspection(requestInspectionTemplate)">
+            {{ 'BENEFITS.REQUEST-INSPECTION' | translate }}
+          </gosi-button-dc>
+        </div>-->
+        <div class="btn-section float-left">
+          <ng-container *gosiShow="validatorAccess">
+          <gosi-button-dc
+            id="rejoinCancel"
+            type="secondary"
+            (click)="showCancelTemplate(cancelRejoinTemplate)"
+          >
+            {{ 'BENEFITS.CANCEL' | translate }}
+          </gosi-button-dc>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Approve Template-->
+<ng-template #approveRejoinTemplate>
+  <frm-approve-template-dc
+    heading="{{ 'PAYMENT.APPROVE' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (approveEvent)="approvePaymentBenefitInspection(retirementForm)"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!--Cancel Template-->
+<ng-template #cancelRejoinTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'BENEFITS.CONFIRM-CANCEL'"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="commonModalRef.hide()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<!-- Return Template -->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    heading="{{ 'BENEFITS.RETURN' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+    [warningMessage]="'BENEFITS.INFO-FC-RETURN-VALIDATOR'"
+    (cancelEvent)="commonModalRef.hide()"
+    [parentForm]="retirementForm"
+    (returnEvent)="confirmReturn(retirementForm)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!--Report Calculation Issue Template-->
+<ng-template #reportCalcTemplate>
+  <bnt-report-recalculation-template-dc
+    heading="{{ 'BENEFITS.REPORT-CALC-ISSUE' | translate }}"
+    [parentForm]="retirementForm"
+    (submitEvent)="raiseItsmTicket()"
+    (cancelEvent)="commonModalRef.hide()"
+    [isCommentsMandatory]="true"
+    [infoMessage]="'BENEFITS.INCORRECT-CALC-BENEFIT' | translate: { id: referenceNo }"
+  >
+  </bnt-report-recalculation-template-dc>
+</ng-template>

@@ -1,0 +1,145 @@
+<div class="row">
+  <div class="col-auto">
+    <a (click)="backNavigationToPage()">
+      <fa-icon class="back-icon" [icon]="['far', lang === 'ar' ? 'arrow-alt-circle-right' : 'arrow-alt-circle-left']">
+      </fa-icon>
+    </a>
+  </div>
+  <div class="col-md-11">
+    <gosi-card-dc type="secondary">
+      <div class="row" *ngIf="!isMofFlag">
+        <div  [ngClass]="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length > 0 ? 'col-lg-9' : 'col-lg-12'" class="col-md-4 col-sm-2">
+          <h5>  {{ 'BILLING.PAYMENT' | translate }}</h5>
+          <div class="row">
+            <div class="col-lg-4 col-md-4 col-sm-2" *ngIf="billHistoryDetails?.migratedBillUnPaidAmount > 0">
+              <div class="row header-value" style="width: 300px;">
+                {{ 'BILLING.OUTSTANDING-PENDING-BILL' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" container="body"
+                         [tooltip]="billOutstandingAmountToolTemplateValue" class="customClass"></fa-icon>
+              </div>
+              <div class="row value-font">
+                {{ billHistoryDetails?.migratedOutstandingAmount * exchangeRate | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-5 col-sm-2"
+                 *ngIf="billHistoryDetails?.migratedBillUnPaidAmount < 0 || billHistoryDetails?.migratedBillUnPaidAmount == 0">
+              <div class="row header-value">
+                {{ 'BILLING.LAST-FULLY-PAID-BILL' | translate }}
+              </div>
+              <div class="row value-font">
+                {{ billHistoryDetails?.fullyPaidMonth | bilingualText }}
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-2" *ngIf="billHistoryDetails?.migratedBillUnPaidAmount > 0">
+              <div class="row header-value">
+                {{ 'BILLING.PAID-AMOUNT' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" container="body" [tooltip]="billCreditAmountToolTemplateValue"
+                         class="customClass"></fa-icon>
+              </div>
+              <div class="row value-font">
+                {{ billHistoryDetails?.migratedBillPaidAmount * exchangeRate| number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-3"
+                 *ngIf="billHistoryDetails?.migratedBillUnPaidAmount < 0 || billHistoryDetails?.migratedBillUnPaidAmount == 0">
+              <div class="row header-value">
+                {{ 'BILLING.NO-OF-UNPAID' | translate }}
+                <fa-icon [icon]="['fas', 'info-circle']" container="body" [tooltip]="billAmountToolTemplateValue"
+                         class="customClass"></fa-icon>
+              </div>
+              <div class="row value-font">
+                {{ billHistoryDetails?.noOfMonthsSinceLastPaid }}
+              </div>
+            </div>
+
+
+            <div class="col-lg-3 col-md-4 col-sm-2" style="max-width: 20%;" *ngIf="billHistoryDetails?.migratedBillUnPaidAmount > 0">
+              <div class="row header-value">
+                {{ 'BILLING.UNPAID-AMOUNT' | translate }}
+                <fa-icon
+                  [icon]="['fas', 'info-circle']"
+                  container="body"
+                  [tooltip]="billUnpaidAmountTemplateValue"
+                  class="customClass"
+                ></fa-icon>
+              </div>
+              <div class="row value-font">
+                {{ billHistoryDetails?.migratedBillUnPaidAmount * exchangeRate | number: '1.2-2' }} {{ 'BILLING.SAR' | translate }}
+              </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-2" *ngIf="debtStartMonth && billHistoryDetails?.migratedBillUnPaidAmount > 0">
+              <div class="row header-value" style="width: 200px;">
+                {{ 'BILLING.DEBT-START-DATE' | translate }}
+                <fa-icon
+                  [icon]="['fas', 'info-circle']"
+                  container="body"
+                  [tooltip]="billDebtStartDateToolTemplateValue"
+                  class="customClass"
+                ></fa-icon>
+              </div>
+              <div class="row value-font">
+                {{ debtStartMonth | translate : debtStartDate }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3"  *ngIf="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length > 0"
+             [ngStyle] = "lang === 'en' ? {'border-left': '1px solid #8080805c'} : {'border-right': '1px solid #8080805c'}">
+          <div>
+            <div  style="flex: 1;"><h5>{{ 'BILLING.ADJUSTMENTS' | translate }}</h5></div>
+            <div></div>
+          </div>
+          <div class="adjustment-container">
+            <div class="row header-value" style="flex: 1;">{{ 'BILLING.ADJUSTMENT-INDICATOR' | translate }}</div>
+            <div class="header-value"  *ngIf="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length > 0" style="flex: 0 0 auto;">{{ 'BILLING.YES' | translate }}</div>
+            <div class="header-value" *ngIf="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length < 0" style="flex: 0 0 auto;">{{ 'BILLING.NO' | translate }}</div>
+          </div>
+          <div class="adjustment-container" *ngIf="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length > 0">
+            <div class="row header-value" style="flex: 1;">{{ 'BILLING.ADJUSTMENT-NUMBER-OF-ADJUSTMENTS' | translate }} </div>
+            <div class="header-value" style="flex: 0 0 auto;">{{miscAdjustmentResponse.adjustments.length}}</div>
+          </div>
+          <div class="adjustment-container" *ngIf="miscAdjustmentResponse && miscAdjustmentResponse.adjustments && miscAdjustmentResponse.adjustments.length > 0">
+            <div class="value-font" style="flex: 1;">  <a routerLink="adjustment-history" routerLinkActive="active">{{ 'BILLING.ADJUSTMENT-VIEW-HISTORY' | translate }} </a></div>
+          </div>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</div>
+<ng-template #billAmountToolTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column tool-tip-align">
+      <div>{{ 'BILLING.NO-OF-UNPAID-BILLS' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #billUnpaidAmountTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column tool-tip-align">
+      <div>{{ 'BILLING.UNPAID-AMOUNT-INFO-ICON' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #billCreditAmountToolTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column tool-tip-align">
+      <div>{{ 'BILLING.CREDIT-INFO-ICON' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #billDebtStartDateToolTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column tool-tip-align">
+      <div>{{ 'BILLING.DEBT-START-DATE-INFO-MESSAGE' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>
+<ng-template #billOutstandingAmountToolTemplateValue>
+  <ng-container>
+    <div class="d-flex flex-column tool-tip-align">
+      <div>{{ 'BILLING.OUTSTANDING-INFO-ICON' | translate }}</div>
+    </div>
+  </ng-container>
+</ng-template>

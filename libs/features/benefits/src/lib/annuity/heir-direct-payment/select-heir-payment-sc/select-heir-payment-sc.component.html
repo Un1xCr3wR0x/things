@@ -1,0 +1,61 @@
+<gosi-card-dc [type]="'secondary'">
+  <h2>{{'BENEFITS.SELECT-HEIR-TO-PAY-DIRECT-PAY' | translate}}</h2>
+  <table class="table table-borderless w-100" [ngClass]="!isSmallScreen ? 'overflow-auto w-100' : 'table-responsive'">
+    <thead class="thead-light">
+      <tr>
+        <th class="checkbox-width"></th>
+        <th>{{'BENEFITS.HEIR_NAME' | translate}}</th>
+        <th>{{'BENEFITS.RELATIONSHIP-WITH-CONTRI' | translate}}</th>
+        <th>{{'BENEFITS.HEIR-STATUS-CAP' | translate}}</th>
+        <th>{{'BENEFITS.HEIR-NET-PAYABLE-AMOUNT' | translate}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let heir of heirList?.heirs; let i = index">
+        <tr>
+          <td class="checkbox-width">
+            <gosi-input-checkbox-dc
+              id="checkBox"
+              name="checkBox"
+              [control]="directPaymentForm?.controls[i]?.get('checkBoxFlag')"
+            >
+            </gosi-input-checkbox-dc>
+          </td>
+          <td>{{ heir?.person?.name | nameToString: true }}
+          <div *ngIf="heirList?.heirs.length > 0" class="d-block nin-text">
+            <span>{{ checkIdentityLabel(i) | translate }} : {{ checkIdentity(i) }}</span>
+          </div></td>
+          <td>{{ heir?.relationship | bilingualText }}</td>
+          <td>{{ heir?.heirStatus | bilingualText }}</td>
+          <td>{{ heir?.netAmount | numToPositive | number: '1.2-2' }}</td>
+        </tr>
+        <tr *ngIf="directPaymentForm?.controls[i]?.get('checkBoxFlag')?.value">
+          <td class="full-width-td white-bg" [attr.colspan]="5">
+            <bnt-direct-payment-details-dc #directPaymentComponent
+              [isEditMode]="isEditMode"
+              [activeBenefit]="activeBenefit"
+              [heirDetails]="heir"
+              [parentForm]="directPaymentForm?.at(i)"
+              [payeeList]="payeeList"
+              [savedAddress]="heir?.contactDetail"
+              [listYesNo]="listYesNo$ | async"
+              [paymentMethodList]="paymentMethodList"
+              [bankAccountList]="heir?.bankDetails"
+              [valNonsaudiBankDetails]="heir?.valNonsaudiBankDetails"
+              [bankName]="heir?.bankName"
+              [attorneyDetailsWrapper]="heir?.attorneyDetailsWrapper"
+              [listOfGuardians]="heir?.guardianList"
+              [cityList$]="cityList$"
+              [countryList$]="countryList$"
+              [paymentIndex]="i"
+              (loadBankInfoForId)="getBankDetails($event, i)"
+              (getAuthPerson)="getAttorneyDetailsById($event, i)"
+              (getGuardian)="getAttorneyDetailsById($event, i)"
+              (getBankNameEvent)="getBankName($event, i)"
+            ></bnt-direct-payment-details-dc>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</gosi-card-dc>

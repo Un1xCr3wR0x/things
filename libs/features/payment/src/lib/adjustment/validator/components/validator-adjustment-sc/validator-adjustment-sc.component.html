@@ -1,0 +1,179 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [documents]="isDocuments ? documents : []" [comments]="comments">
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc [heading]="lang === 'en' ? payload?.titleEnglish : payload?.titleArabic">
+      </frm-main-heading-dc>
+    </div>
+    <ng-container *ngIf="adjustmentInfoMessageList && adjustmentInfoMessageList.length">
+      <gosi-alert-dc> </gosi-alert-dc>
+      <gosi-alert-dc [alert]="gosiEligibilityInfoMsg"> </gosi-alert-dc>
+      <!-- <div *ngFor="let warningMessage of adjustmentInfoMessageList">
+          <gosi-alert-dc [bilingualMessage]="warningMessage" type="warning" [dismissible]="false"> </gosi-alert-dc>
+        </div> -->
+    </ng-container>
+    <div id="contentArea">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12" *ngIf="personDetails">
+          <!--------------------------Contributor Details-------------------------------------->
+          <frm-content-heading-dc
+            icon="user"
+            [canEdit]="validatorCanEdit && activeAdjustments?.adjustments?.length > 0 && adjustments"
+            heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+            (onEdit)="navigateToEdit()"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <pmt-validator-adjustment-contributor-dc
+                [personDetails]="personDetails"
+                [lang]="lang"
+                (onContributorIdClicked)="viewContributorInfo()"
+              ></pmt-validator-adjustment-contributor-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--------------------------Adjustment Details-------------------------------------->
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="money-bill"
+            [canEdit]="false"
+            heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <pmt-validator-adjustment-modified-dc
+                [activeAdjustments]="activeAdjustments"
+                (onBenefitDetailsClick)="navigateToBenefitDetails($event)"
+                (onAdjustmentViewClick)="naviagteToAdjustmentView($event)"
+              ></pmt-validator-adjustment-modified-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--------------------------Payment Details-------------------------------------->
+      <div class="row custom-margin" *ngIf="adjustmentPaymentDetails && adjustmentPaymentDetails?.netAmount">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+          <frm-content-heading-dc
+            icon="money-bill"
+            [canEdit]="false"
+            heading="{{ 'ADJUSTMENT.PAYMENT-DETAILS' | translate }}"
+          >
+          </frm-content-heading-dc>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <pmt-validator-adjustment-payment-dc
+                [checkForm]="checkForm"
+                [adjustmentPaymentDetails]="adjustmentPaymentDetails"
+                [isAdustValidPaymenterror]="isAdustValidPaymenterror"
+                [disableDirectPayment]="payload?.assignedRole === 'FC Approver'"
+              ></pmt-validator-adjustment-payment-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </frm-main-content-dc>
+  <div id="actionArea">
+    <div class="row form-action">
+      <div class="col-lg-12">
+        <div class="action-requests">
+          <div class="btn-section float-right" *ngIf="canApprove">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="dApprove"
+              [disabled]="disableApprove"
+              type="primary"
+              (submit)="approveTransaction(approveTemplate)"
+              >{{ 'BENEFITS.APPROVE' | translate }}
+            </gosi-button-dc>
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReject">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="danger"
+              id="reject"
+              (submit)="rejectTransaction(rejectTemplate)"
+              >{{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-right" *ngIf="canReturn">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              type="secondary"
+              id="return"
+              (submit)="returnTransaction(returnTemplate)"
+            >
+              {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showCancelTemplate(cancelAdjustmentTemplate)"
+              >{{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-template #approveTemplate>
+    <frm-approve-template-dc
+      heading="{{ 'PAYMENT.APPROVE' | translate }} - {{
+        (isAddModify ? 'ADJUSTMENT.ADD-MODIFY-CANCEL' : 'ADJUSTMENT.ADD-ADJUSTMENT') | translate
+      }}"
+      [isCommentsMandatory]="approveComments"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (approveEvent)="confirmApprovePayment()"
+    >
+    </frm-approve-template-dc>
+  </ng-template>
+  <ng-template #cancelAdjustmentTemplate>
+    <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  <!----Reject template---->
+  <ng-template #rejectTemplate>
+    <frm-reject-template-dc
+      [rejectReasonList$]="rejectReasonList"
+      heading="{{ 'PAYMENT.REJECT' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+      [warningMessage]="rejectWarningMessage | translate: { transactionNo: transactionNumber }"
+      [parentForm]="form"
+      (cancelEvent)="hideModal()"
+      (rejectEvent)="confirmRejectPayment()"
+    >
+    </frm-reject-template-dc>
+  </ng-template>
+  <!----Return template---->
+  <ng-template #returnTemplate>
+    <frm-return-template-dc
+      [returnReasonList$]="returnReasonList"
+      heading="{{ 'PAYMENT.RETURN' | translate }} - {{ lang === 'en' ? payload?.titleEnglish : payload?.titleArabic }}"
+      [warningMessage]="
+        routerData.assignedRole === RoleConst.VALIDATOR_2
+          ? 'PAYMENT.INFO-VALIDATOR-RETURN-VALIDATOR'
+          : 'PAYMENT.INFO-FC-RETURN-VALIDATOR'
+      "
+      [parentForm]="form"
+      (returnEvent)="returnPayment()"
+      (cancelEvent)="hideModal()"
+    >
+    </frm-return-template-dc>
+  </ng-template>
+</div>

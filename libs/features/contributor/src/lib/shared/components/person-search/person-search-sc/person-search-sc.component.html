@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <ng-container *ngIf="showErrorrMessage">
+    <gosi-alert-dc
+      message="{{
+        isOutOfMarket
+          ? ('CONTRIBUTOR.OUT-OF-MARKET-REGISTERING-ERROR-MESSAGE' | translate)
+          : ('CONTRIBUTOR.MOL-ID-REGISTERING-ERROR-MESSAGE' | translate)
+      }}"
+      type="danger"
+      [dismissible]="false"
+    ></gosi-alert-dc>
+  </ng-container>
+ <!-- Notice message component-->
+ <div class = "alert-wrapper" *ngIf="registrationNo && isRegistered && !isPpa">
+  <gosi-alert-dc
+    message="CONTRIBUTOR.REGISTER-CONTRIBUTOR-HEADER-INFO-MESSAGE"
+    type="info"
+  ></gosi-alert-dc>
+</div>
+  <!-- Contributor type selection component -->
+  <cnt-contributor-type-dc
+    *ngIf="registrationNo && isRegistered"
+    [legalEntity]="legalEntity"
+    [contributorType]="contributorType"
+    [isGccCountry]="establishment?.gccEstablishment?.gccCountry"
+    (selectType)="onContributorTypeSelect($event)"
+    [ppaEstablishment]="ppaEstablishment"
+  ></cnt-contributor-type-dc>
+
+    <!-- Contributor type description component -->
+    <div *ngIf="registrationNo && isRegistered" class ="cnt-type-description">{{ showContributorDescription(contributorType) | translate }} </div>
+  
+  <!-- Load person search form dynamically based on contributor type -->
+  <ng-template gosiComponentHost></ng-template>
+
+  <ng-template #addDocInfoTemplate>
+    <gosi-modal-dc>
+      <div modalContent>
+        <div class="card no-color card-body" [ngClass]="currentLang === 'ar' ? 'info-section' : ''">
+          <div *ngIf="contributorService.getPerson.deathDate?.gregorian">
+            {{ 'CONTRIBUTOR.PERSON-DECEASED-INFO' | translate }}
+          </div>
+          <div *ngIf="!contributorService.getPerson.deathDate?.gregorian && contributorService.getPerson.govtEmp">
+            {{ 'CONTRIBUTOR.PERSON-GOV-EMP-INFO' | translate }}
+          </div>
+        </div>
+      </div>
+      <div modalAction>
+        <div class="row justify-content-center">
+          <gosi-button-dc type="primary" id="continue" (submit)="continueProcessSaudiDoc()">{{
+            'CONTRIBUTOR.CONTINUE' | translate
+          }}</gosi-button-dc>
+        </div>
+      </div>
+    </gosi-modal-dc>
+  </ng-template>
+</div>
+<ng-template #gosiOnlineInfoTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.GOSI-ONLINE-INFO"
+    (onConfirm)="continueProcessSaudiDoc()"
+    (onCancel)="reset()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #resetTemplate>
+  <gosi-confirm-modal-dc
+    [message]="'CONTRIBUTOR.INFO-RESET' | translate"
+    (onConfirm)="reset()"
+    (onCancel)="decline()"
+  ></gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #noAbsherAccountTemplate>
+  <cnt-confirm-modal-dc>
+    <div card-header class="absher-heading">{{ 'CONTRIBUTOR.NO-ABSHER-ACCOUNT-INFO' | translate }}</div>
+    <div card-footer>
+      <div class="row justify-content-center align-items-center">
+        <div class="btn-section pb-4">
+          <gosi-button-dc id="okButton" type="secondary" (submit)="decline()">
+            {{ 'CONTRIBUTOR.WAGE.OK' | translate }}
+          </gosi-button-dc>
+        </div>
+      </div>
+    </div>
+  </cnt-confirm-modal-dc>
+</ng-template>

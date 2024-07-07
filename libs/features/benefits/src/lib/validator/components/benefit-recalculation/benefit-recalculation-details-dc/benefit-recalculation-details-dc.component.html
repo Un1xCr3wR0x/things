@@ -1,0 +1,192 @@
+<gosi-card-dc type="secondary" [heading]="'BENEFITS.BENEFIT-DETAIL' | translate">
+  <div class="row" *ngIf="benefitType === 'Pension Benefit'">
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="PensionBenefitAmount"
+        label="{{ 'BENEFITS.PENSION-BENEFIT-AMOUNT' | translate }}"
+        [value]="benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.pensionAmount | number: '1.2-2'"
+      >
+      </gosi-label-dc>
+    </div>
+    <div class="col-lg-6">
+      <gosi-label-dc
+        id="averageMonthlyWage"
+        label="{{ 'BENEFITS.AMW' | translate }}"
+        value="{{ benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.amw | number: '1.2-2' }}{{ 'SAR' }}"
+      >
+      </gosi-label-dc>
+    </div>
+  </div>
+  <div *ngIf="benefitType === 'Lumpsum Benefit'">
+    <div class="card-body border rounded">
+      <div class="row mx-0 my-3">{{ 'BENEFITS.BENEFIT-AFTER-UPDATE' | translate }}</div>
+      <bnt-lumpsum-benefits-dc
+        [benefitRecalculationDetails]="benefitRecalculationDetails?.reCalculation?.afterRecalculation"
+      ></bnt-lumpsum-benefits-dc>
+    </div>
+    <div class="row mx-0 my-3">{{ 'Benefits.BENEFIT-BEFORE-UPDATE' | translate }}</div>
+    <bnt-lumpsum-benefits-dc
+      [benefitRecalculationDetails]="benefitRecalculationDetails?.reCalculation?.beforeRecalculation"
+    ></bnt-lumpsum-benefits-dc>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <span id="benefitInfoIcon"><fa-icon [icon]="['fas', 'info-circle']"></fa-icon></span>
+      {{ 'BENEFITS.BENEFIT_AMOUNT_INFO' | translate }}.
+    </div>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc type="secondary" [heading]="'BENEFITS.ADJUSTMENT-DETAILS' | translate">
+  <div *ngIf="benefitType === 'Pension Benefit'">
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="requiredAdditionalMonths"
+          label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-MONTH' | translate }}"
+          [value]="
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.additionalContributionMonths
+          "
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="requiredAdditionalAmount"
+          label="{{ 'BENEFITS.REQUIRED-CONTRIBUTION-AMT' | translate }}"
+          [value]="
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.additionalContributionAmount | number: '1.2-2'
+          "
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="lumpsumBenefitAmountReturn"
+          label="{{ 'BENEFITS.LUMPSUM-BENEFIT-AMOUNT-RETURNED' | translate }}"
+          [value]="benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.returnAmount"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="netAdjustmentAmount"
+          label="{{ 'BENEFITS.NET-ADJUSTMENT_AMOUNT' | translate }}"
+          [value]="
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.netAdjustmentAmount
+              | number: '1.2-2'
+          "
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="adjustmentAmountDeductionPlan"
+          label="{{ 'BENEFITS.ADJUSTMENT-AMOUNT-DEDUCTION-PLAN' | translate }}"
+          value="{{
+            'BENEFITS.PENSION-PERCENTAGE-MONTHLY'
+              | translate
+                : {
+                    percentage:
+                      benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails
+                        ?.additionalContribution?.deductionAmount || 0
+                  }
+          }}"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="deductionAmountToPay"
+          label="{{ 'BENEFITS.DEDUCTION-AMT' | translate }}"
+          value="{{
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.deductionPercent
+          }}{{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="expectedDeductionAmount"
+          label="Expected deduction amount payment period"
+          value="{{
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.startDate?.gregorian | date: 'dd/MM/yyyy'
+          }} {{ '->' }} {{
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.endDate?.gregorian | date: 'dd/MM/yyyy'
+          }} {{ '(' }}{{
+            monthDifference(
+              benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails
+                ?.additionalContribution?.startDate?.gregorian || 0,
+              benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails
+                ?.additionalContribution?.endDate?.gregorian || 0
+            )
+          }} {{ 'BENEFITS.MONTHS' | translate }}{{ ')' }}"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <gosi-label-dc
+          id="benefitAmountPaymentPeriod"
+          label="Benefit Amount during the deduction amount payment period"
+          value="{{
+            benefitRecalculationDetails?.newBenefitDetails?.lumpsumToPension?.adjustmentDetails?.additionalContribution
+              ?.recoveryPeriodMonths
+          }}{{ 'BENEFITS.SR' | translate }}{{ '/' }}{{ 'BENEFITS.MONTH' | translate }}"
+        >
+        </gosi-label-dc>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="benefitType === 'Lumpsum Benefit'">
+    <bnt-recalculate-adjustment-dc
+      [hidePayment]="true"
+      [benefitRecalculationDetails]="benefitRecalculationDetails"
+    ></bnt-recalculate-adjustment-dc>
+  </div>
+</gosi-card-dc>
+<gosi-card-dc type="secondary" [heading]="'BENEFITS.BANK-DETAILS' | translate">
+  <bnt-benefit-bank-dc [bankNameList]="bankNameList" (onIbanChanged)="passIban($event)"></bnt-benefit-bank-dc>
+</gosi-card-dc>
+<gosi-card-dc type="secondary">
+  <bnt-declaration-dc
+    [content]="'BENEFITS.ANNUITY-REQUEST-DECLARATION'"
+    [heading]="'BENEFITS.DECLARATION'"
+    [checkBoxLabel]="'BENEFITS.ACCEPT-DECLARATION'"
+    [parentForm]="benefitsForm"
+    (checkBoxClicked)="changeCheck($event)"
+  ></bnt-declaration-dc>
+</gosi-card-dc>
+<div class="row">
+  <div class="col-lg-4">
+    <gosi-button-dc id="paymentCancel" type="secondary" (submit)="onPaymentCancel()">{{
+      'BENEFITS.CANCEL' | translate
+    }}</gosi-button-dc>
+  </div>
+  <div class="col-lg-3"></div>
+  <div class="col-lg-5 text-right">
+    <div class="mx-3 d-inline-block">
+      <gosi-button-dc [id]="'previousSection'" type="secondary" (submit)="previousSection()">
+        {{ 'BENEFITS.PREVIOUS-SECTION' | translate }}</gosi-button-dc
+      >
+    </div>
+    <gosi-button-dc
+      id="paymentTypeSave"
+      type="primary"
+      [disabled]="!bankNameList?.value?.english"
+      (submit)="onSavePayment()"
+      >{{ 'BENEFITS.SAVE-AND-NEXT' | translate }}</gosi-button-dc
+    >
+  </div>
+</div>

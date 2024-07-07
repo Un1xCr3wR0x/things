@@ -1,0 +1,312 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+
+  -->
+
+  <gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+  <div class="content">
+    <div class="row">
+      
+    </div>
+  
+    <div class="row mx-3 heading-row">
+      <div class="main-heading">
+        {{ 'CONTRIBUTOR.ADD-CONTRIBUTOR' | translate }}
+      </div>
+      <span class="mx-2 custm"></span>
+      <!-- admin pool for admin edit -->
+      <span *ngIf="isGOL && isEditAdmin && activeTab != 3" class="d-flex">
+        <div class="claimBtn btn-section" *ngIf="isUnclaimed">
+          <gosi-button-dc type="primary" (click)="claimTask()">{{ 'CONTRIBUTOR.ASSIGN' | translate }}</gosi-button-dc>
+        </div>
+        <fa-icon class="icon-value" id="task.taskId" *ngIf="!isUnclaimed" icon="clock"></fa-icon>
+        <div class="head-value d-flex justify-content-end mt-3 ml-2" *ngIf="!isUnclaimed">
+          {{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}
+          <span class="ml-3" style="margin-top: -0.4rem">
+            <gosi-timer-dc [isStyle]="true" [min]="minDiff" [sec]="seconds"> </gosi-timer-dc>
+          </span>
+        </div>
+        <div class="releaseBtn btn-section ml-3" *ngIf="!isUnclaimed">
+          <gosi-button-dc type="primary" (click)="release()">{{ 'CONTRIBUTOR.RELEASE' | translate }}</gosi-button-dc>
+        </div>
+      </span>
+    </div>
+  <div class="row" *ngIf="activeTab < totalTabs && isComments">
+    <div class="col-12">
+      <gosi-comments-dc [comments]="transactionRefData"> </gosi-comments-dc>
+    </div>
+  </div>
+  <!-- Contributor details banner -->
+  <div class="row mt-4" *ngIf="activeTab < totalTabs">
+    <div class="col">
+      <cnt-contributor-banner-dc [contributor]="contributor"> </cnt-contributor-banner-dc>
+    </div>
+  </div>
+  <!-- Progress wizard icons section -->
+  <gosi-progress-wizard-dc
+    *ngIf="activeTab < totalTabs"
+    [wizardItems]="formWizardItems"
+    (clickWizard)="selectFormWizard($event)"
+    #progressWizardItems
+  >
+  </gosi-progress-wizard-dc>
+  <!-- Alert Component -->
+  <gosi-alert-sc></gosi-alert-sc>
+  <!-- Four tabs for four section-->
+  <div class="hide-tab">
+    <tabset type="pills" #registerContributorTabs>
+      <tab [active]="activeTab === 0">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- Load person details form dynamically based on contributor type -->
+            <ng-template gosiComponentHost></ng-template>
+          </div>
+        </div>
+      </tab>
+      <tab [active]="activeTab === 1">
+        <div class="row">
+          <div class="col-md-12" *ngIf="createEngagementView">
+            <!-- Engagement details section -->
+            <cnt-engagement-details-dc
+              [workTypeList$]="workTypeList$"
+              [contributorAbroad$]="yesOrNoList$"
+              [occupationList]="occupationList$ | async"
+              [leavingReasonLovList$]="leavingReasonList$"
+              [contributorType]="contributorType"
+              [inEditMode]="isEditAdmin || isValidatorEdit"
+              [isDraftAvailable]=" (this.draftAvailable && this.engagementId && this.isDraftNeeded)"
+              [systemParams]="systemParams"
+              [engagementDetails]="engagement"
+              [penaltyIndicator]="penaltyIndicator"
+              [backdatedContributor]="backdatingIndicator"
+              [isDocumentsRequired]="isDocumentsRequired"
+              [isGccEstablishment]="isGccEstablishment"
+              [isBeneficiary]="isBeneficiary"
+              [isPrivate]="isPrivate"
+              [person]="person"
+              [isSubmit]="!isPrivate && !isContractRequired && !isDocumentsRequired"
+              [isContractRequired]="isContractRequired"
+              [checkLegal]="checkLegal"
+              [disableTerminate]="disableTerminate"
+              [hijiriDateConst]="hijiriDateConst"
+              [checkPersonalDetailsSaved]="checkPersonalDetailsSaved"
+              (checkDocRequired)="checkDocumentsRequired($event)"
+              (previous)="navigateToPreviousTab()"
+              (save)="onSaveEngagementDetails($event)"
+              (cancel)="cancelAddedContributor()"
+              (reset)="cancelAddedContributor(false,$event)"
+              (showError)="showAlertError($event)"
+              [isApiTriggered]="isApiTriggered"
+              [backdatedEngValidatorRequired]="backdatedEngValidatorRequired"
+              [ppaEstablishment]="ppaEstablishment"
+              [jobClassDetails]="jobClassDetails"
+              [jobClassLov]="jobClassLov"
+              [(lovDataList)]="lovDataList"
+              (jobClassListChange)="jobClassValueChangeForPPA($event)"
+              (selectedClassIndex)="jobClassSelectedData($event)"
+              [jobRankLov]="jobRankLov"
+              (jobRankListChange)="jobRankListChangeForPPA($event)"
+              [jobGradeLov]="jobGradeLov"
+              [jobGradeApiResponse]="jobGradeApiResponse"
+              [isUnclaimed]="isUnclaimed"
+            ></cnt-engagement-details-dc>
+          </div>
+        </div>
+      </tab>
+      <!-- <tab [active]="activeTab === 2 && isContractRequired">
+        <div class="row">
+          <div class="col-md-12"> -->
+            <!-- add contract details details section -->
+            <!-- <cnt-contract-form-dc
+              *ngIf="engagement && contributorType"
+              [activeEngagement]="engagement"
+              [contributorType]="contributorType"
+              [isContributorAbroad]="engagement.engagementPeriod[0]?.contributorAbroad"
+              [cityList]="cityList$ | async"
+              [internationalCountryList]="internationalCountryList$ | async"
+              [bankNameList$]="bankNameList$"
+              [religionList]="religionList$ | async"
+              [bankAccount]="bankDetails"
+              [showPreviousButton]="true"
+              [contractAtDraft]="contractDetails"
+              [minStartDate]="minContractStartDate"
+              [parentForm]="parentForm"
+              [isEditMode]="isValidatorEdit"
+              [isBankDetailsPending]="isBankDetailsPending"
+              [checkPersonalDetailsSaved]="checkPersonalDetailsSaved"
+              (IBAN)="getBank($event)"
+              (saveContractClicked)="saveContractDetails($event)"
+              (cancel)="showCancelTemplate()"
+              (previousContractClicked)="navigateToPreviousTab()"
+              (showError)="showAlertError($event)"
+              [isApiTriggered]="isApiTriggered"
+            >
+            </cnt-contract-form-dc> -->
+          <!-- </div>
+        </div>
+      </tab> -->
+      <!-- <tab [active]="activeTab === 3 && isContractRequired">
+        <div class="row">
+          <div class="col-md-12" *ngIf="contractClauses"> -->
+            <!-- add contract clauses details details section -->
+            <!-- <cnt-add-contract-clauses-dc
+              [contractClausesList]="contractClauses.contractClause"
+              [transportationAllowance]="contractClauses.transportationAllowance"
+              [activeEngagement]="engagement"
+              [isEditMode]="isEditMode"
+              (save)="saveContractClauses($event)"
+              (previous)="navigateToPreviousTab()"
+              (cancel)="showCancelTemplate()"
+              (showError)="showAlertError($event)"
+              [isApiTriggered]="isApiTriggered"
+            ></cnt-add-contract-clauses-dc>
+          </div>
+        </div>
+      </tab> -->
+      <tab [active]="(activeTab === 2 && isContractRequired) || (activeTab === totalTabs - 1 && totalTabs === 3)">
+        <div class="row">
+          <div class="col-md-12">
+            <!-- document details section -->
+            <cnt-file-upload-dc
+              [engagementId]="documentUploadEngagementId"
+              [parentForm]="parentForm"
+              [documentList]="documents"
+              [inEditMode]="isEditAdmin || isValidatorEdit"
+              [isCommentRequired]="'true'"
+              [referenceNo]="referenceNo"
+              [isSubmit]="!isContractRequired"
+              (refresh)="refreshDocumentItem($event)"
+              (reset)="cancelFileUpload($event)"
+              (cancel)="cancelAddedContributor($event)"
+              (previous)="navigateToPreviousTab()"
+              (submit)="onSubmitDocuments(!isContractRequired)"
+              [isApiTriggered]="isApiTriggered"
+            ></cnt-file-upload-dc>
+          </div>
+        </div>
+      </tab>
+      <!-- <tab [active]="activeTab === totalTabs - 1 && isContractRequired">
+        <div *ngIf="!isValidatorEdit" class="d-flex justify-content-end mb-3">
+          <gosi-button-dc type="outline-secondary" [size]="'md'" id="printContract" (submit)="printContract()">
+            <fa-icon [icon]="['fas', 'print']"></fa-icon>
+            <span class="mr-2"></span>
+            {{ 'CONTRIBUTOR.PREVIEW-DETAILS.PRINT-CONTRACT-DETAILS' | translate }}
+          </gosi-button-dc>
+        </div>
+        <cnt-preview-dc
+          *ngIf="contractClauses && contractDetails"
+          [establishment]="establishment"
+          [personDetails]="contributorDetailsWrapper ? contributorDetailsWrapper : contributor"
+          [activeEngagement]="engagement"
+          [contractAtDraft]="contractDetails"
+          [contractClausesList]="contractClauses.contractClause"
+          [transportationAllowance]="contractClauses.transportationAllowance"
+          [bankInfo]="
+            isValidatorEdit
+              ? bankDetails
+              : parentForm.get('bankDetailsForm')
+              ? parentForm.getRawValue().bankDetailsForm
+              : bankDetails
+          "
+          [isPreviewEdit]="true"
+          [isRegistration]="true"
+          [canEditSecondParty]="parentForm.get('contactStatus.canEdit').value"
+          [isEditMode]="isValidatorEdit"
+          (onSecondPartyEdit)="navigateToTabByIndex(0)"
+          (onWageEdit)="navigateToTabByIndex(1)"
+          (onContractDetails)="navigateToTabByIndex(2)"
+          (onClausesEdit)="navigateToTabByIndex(3)"
+          (onSubmitClicked)="showConfirmationTemplate()"
+          (onPreviousClicked)="navigateToPreviousTab()"
+          (cancel)="showCancelTemplate()"
+          [isApiTriggered]="isApiTriggered"
+        >
+        </cnt-preview-dc>
+      </tab> -->
+      <tab [active]="activeTab === totalTabs">
+        <ng-container>
+          <div class="row">
+            <div class="col-md-12">
+              <!-- Feedback -->
+              <cnt-feedback-dc
+                *ngIf="feedbackMessageToDisplay"
+                [messageToDisplay]="feedbackMessageToDisplay"
+                [engagementDetails]="engagement"
+                [hideAddContributor]="isEditAdmin || isValidatorEdit"
+                (resetToFirst)="resetToFirstForm()"
+                [ppaEstablishment]="ppaEstablishment"
+              ></cnt-feedback-dc>
+            </div>
+          </div>
+        </ng-container>
+      </tab>
+    </tabset>
+  </div>
+</div>
+
+<ng-template #selectCoverageTemplate>
+  <gosi-modal-dc>
+    <div class="pt-4" modalContent>
+      <div class="row">
+        <div class="col-12" [innerHtml]="'CONTRIBUTOR.PERSON-BENEFICIARY-60-YEARS' | translate"></div>
+        <div class="col-12">
+          <gosi-input-radio-dc
+            id="coverageType"
+            [control]="coverageTypeForm"
+            [list]="coverageTypesLov"
+            [noMargin]="true"
+            [isVerticalAlign]="true"
+          ></gosi-input-radio-dc>
+          <gosi-alert-dc
+            class="pb-4"
+            message="CONTRIBUTOR.ANNUITY-COVERAGE-WARNING"
+            type="warning"
+            [dismissible]="false"
+            transparent="true"
+            [noPadding]="true"
+          ></gosi-alert-dc>
+        </div>
+      </div>
+    </div>
+    <div modalAction>
+      <div class="d-flex justify-content-between">
+        <gosi-button-dc type="secondary" id="cancel" (submit)="resetCoverageForm()">{{
+          'CONTRIBUTOR.CANCEL' | translate
+        }}</gosi-button-dc>
+        <gosi-button-dc type="primary" id="confirm" (submit)="checkConfirmation()">{{
+          'CONTRIBUTOR.CONTINUE' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </gosi-modal-dc>
+</ng-template>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    message="CONTRIBUTOR.CONFIRM-CANCEL"
+    (onConfirm)="cancelAddedContributor()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #draftTemplate>
+  <cnt-transaction-cancel-popup-dc
+    (keepDraftEvent)="cancelAddedContributor(false,true)"
+    (discardEvent)="cancelAddedContributor(false,false)"
+    (onCancel)="hideModal()"
+  ></cnt-transaction-cancel-popup-dc>
+</ng-template>
+
+<ng-template #draftRequiredTemplate>
+  <cnt-draft-required-popup-dc
+  [transactionRefNo]="transactionTraceId"
+  (keepDraftEvent)="showDraft()"
+  (discardEvent)="clearDraft()"
+  (onCancel)="cancelDraftRequired()"
+  >
+  </cnt-draft-required-popup-dc>
+</ng-template>
+

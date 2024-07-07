@@ -1,0 +1,147 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<ng-container
+  *ngIf="
+    adjustmentCalculationDetails &&
+    adjustmentCalculationDetails?.adjustmentDetails &&
+    adjustmentCalculationDetails?.adjustmentDetails.length
+  "
+>
+  <gosi-card-dc type="secondary" headingSize="md" [showCard]="showCard">
+    <div class="d-flex flex-row justify-content-between pb-3">
+      <div class="annuity-type">
+        {{ heading | translate }}
+      </div>
+      <div class="d-flex flex-row justify-content-end">
+        <gosi-button-dc
+          *ngIf="isRestartBenefit"
+          [size]="isSmallScreen ? 'sm' : 'md'"
+          class="calculation-button pr-2"
+          type="secondary"
+          [outlineOnly]="true"
+          (click)="showModal(calculationDetails)"
+        >
+          {{ 'BENEFITS.CONTRIBUTION-DETAILS' | translate }}
+        </gosi-button-dc>
+
+        <gosi-button-dc
+          *ngIf="isRestartBenefit"
+          [size]="isSmallScreen ? 'sm' : 'md'"
+          type="secondary"
+          [outlineOnly]="true"
+          (click)="showModal(moreDetails)"
+        >
+          {{ 'BENEFITS.CALCULTION-DETAILS' | translate }}
+        </gosi-button-dc>
+      </div>
+    </div>
+    <div class="adjustment-details col-md-12 row d-flex align-items-center w-100">
+      <!-- <div class="row d-flex align-items-center">
+        <div class="col-md-12"> -->
+      <div class="table-scroll table-responsive table-adjustmentDetails">
+        <table class="table table-borderless">
+          <thead class="table-header">
+            <tr>
+              <th>
+                {{ 'BENEFITS.BENEFIT-PERIOD' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.ADJUSTMENT-TYPE' | translate }}
+              </th>
+              <th>
+                {{ 'BENEFITS.ADJUSTMENT-REASON' | translate }}
+              </th>
+              <th class="amount">
+                {{ 'BENEFITS.AMOUNT-SAR' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let eachAdjustment of adjustmentCalculationDetails?.adjustmentDetails"
+              class="data-row border-bottom"
+            >
+              <!-- <td>
+                    <div *ngIf="eachAdjustment?.createdDate" class="d-block nin-text">
+                      {{ eachAdjustment?.createdDate | dateType }}
+                    </div>
+                  </td> -->
+              <td>
+                <ng-container *ngIf="showAdjustmentDate(eachAdjustment); else noPeriod">
+                  <span>
+                    {{ eachAdjustment?.adjustmentStartDate | dateType }}
+                  </span>
+                  <span *ngIf="lang === 'en'">
+                    <fa-icon icon="angle-right" class="icon-size" size="1x"></fa-icon>
+                  </span>
+                  <span *ngIf="lang === 'ar'">
+                    <fa-icon icon="angle-left" class="icon-size" size="1x"></fa-icon>
+                  </span>
+                  <span *ngIf="eachAdjustment?.adjustmentStopDate?.gregorian; else onwards">
+                    {{ eachAdjustment?.adjustmentStopDate | dateType }}
+                    <ng-container *ngIf="eachAdjustment?.noOfMonths || eachAdjustment?.noOfDays">
+                      (<span *ngIf="eachAdjustment?.noOfMonths">
+                        {{ eachAdjustment?.noOfMonths }} {{ 'BENEFITS.MONTHS' | translate }}</span
+                      >
+                      <span *ngIf="eachAdjustment?.noOfDays">
+                        {{ eachAdjustment?.noOfDays }} {{ 'BENEFITS.DAYS' | translate }}</span
+                      >)</ng-container
+                    >
+                  </span>
+                  <ng-template #onwards>{{ 'BENEFITS.ONWARDS' | translate }}</ng-template>
+                  <!-- <span>
+                        {{
+                          eachAdjustment?.adjustmentStopDate?.entryFormat === 'HIJIRA'
+                            ? (eachAdjustment?.adjustmentStopDate?.hijiri | date: 'dd/MM/yyyy')
+                            : (eachAdjustment?.adjustmentStopDate | dateType)
+                        }}
+                      </span> -->
+                </ng-container>
+                <ng-template #noPeriod> - </ng-template>
+              </td>
+              <td>
+                {{ eachAdjustment?.adjustmentType | bilingualText }}
+              </td>
+              <td>
+                {{ eachAdjustment?.adjustmentReason | bilingualText }}
+              </td>
+              <td class="amount">
+                {{ eachAdjustment?.adjustmentAmount | number: '1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="total-amount text-end">
+          {{ 'BENEFITS.TOTAL-ADJUSTMENT' | translate }} :
+          <span
+            [ngClass]="
+              adjustmentCalculationDetails?.totalAdjustmentAmount > 0
+                ? 'net-value-green'
+                : adjustmentCalculationDetails?.totalAdjustmentAmount == 0 ||
+                  !adjustmentCalculationDetails?.totalAdjustmentAmount
+                ? ''
+                : 'net-value-red'
+            "
+          >
+            {{ Math.abs(adjustmentCalculationDetails?.totalAdjustmentAmount) | number: '1.2-2' }}</span
+          >
+        </div>
+      </div>
+      <!-- </div>
+      </div> -->
+    </div>
+  </gosi-card-dc>
+</ng-container>
+<ng-template #calculationDetails>
+  <bnt-amw-view-dc [benefitDetails]="benefitCalculation" (close)="hideModal()"></bnt-amw-view-dc>
+</ng-template>
+<ng-template #moreDetails>
+  <bnt-annuity-calculation-details-dc
+    (close)="hideModal()"
+    [benefitCalculationDetails]="benefitCalculation"
+    [averageMonthlyWagePeriods]="benefitCalculation?.averageMonthlyWagePeriods"
+    [isLumpsum]="isLumpsum"
+    [lang]="lang"
+  ></bnt-annuity-calculation-details-dc>
+</ng-template>

@@ -1,0 +1,86 @@
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="row heading-section">
+    <div class="float-left mb-2 full-width">
+      <ng-container *ngIf="!hideIcon && !showDisease">
+        <a (click)="routeBack()">
+          <fa-icon *ngIf="lang === 'en'" class="route-back" icon="arrow-left"></fa-icon>
+          <fa-icon *ngIf="lang === 'ar'" class="route-back" icon="arrow-right"></fa-icon>
+        </a>
+        <span class="border-style"></span>
+      </ng-container>
+      <span [ngClass]="hideIcon ? 'hide-icon' : 'main-heading'" *ngIf="showInjury && !injuryTransfer">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate }}</span
+      >
+      <span [ngClass]="hideIcon ? 'hide-icon' : 'main-heading'" *ngIf="showInjury && injuryTransfer">
+        {{ 'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate }}</span
+      >
+      <span [ngClass]="hideIcon ? 'hide-icon' : 'main-heading'" *ngIf="showComplication">
+        {{ 'OCCUPATIONAL-HAZARD.COMPLICATION.SEC-COMPLICATION-DETAILS' | translate }}</span
+      >
+
+      <div class="diseasetable" *ngIf="showDisease">
+        <div class="diseaseheading">
+          <div id="mainHeading">
+            <gosi-main-heading-dc *ngIf="showDisease && !showTransferInjury"
+              header="{{ 'OCCUPATIONAL-HAZARD.DISEASE.OCCUPATIONAL-DISEASE-DETAILS' | translate }}"
+            ></gosi-main-heading-dc>
+            <gosi-main-heading-dc *ngIf="showTransferInjury"
+              header="{{ 'OCCUPATIONAL-HAZARD.DISEASE.TRANSFER-FROM-INJURY' | translate }}"
+            ></gosi-main-heading-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 float-right text-right mb-2 audit-assign" *ngIf="isAppPrivate">
+      <ng-container *ngIf="complicationDetails.auditStatus === 'Not Audited' || injury.auditStatus === 'Not Audited'">
+        <gosi-button-dc
+          (click)="approveModal(auditTemplate)"
+          id="assignAudit"
+          type="primary"
+          size="md"
+          *gosiShow="userRoles; regNo: establishment?.registrationNo"
+          [outlineOnly]="true"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.CLAIMS-VALIDATOR.MARK-AUDIT' | translate }}
+        </gosi-button-dc>
+      </ng-container>
+      <ng-container
+        *ngIf="complicationDetails.auditStatus === 'Audit in Progress' || injury.auditStatus === 'Audit in Progress'"
+      >
+        <fa-icon class="success-message mr-1 ml-1" icon="check-circle"> </fa-icon>
+        {{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.AUDITING-REQUEST' | translate }}
+      </ng-container>
+      <ng-container
+        *ngIf="complicationDetails.auditStatus === 'Audit Completed' || injury.auditStatus === 'Audit Completed'"
+      >
+        <fa-icon class="success-message mr-1 ml-1" icon="check-circle"> </fa-icon>
+        {{ 'OCCUPATIONAL-HAZARD.RECOVER-OH.AUDITED' | translate }}
+      </ng-container>
+    </div>
+  </div>
+  <div class="row tabset-wrapper">
+    <div
+      class="col-md-3 class-tab"
+      *ngFor="let tab of tabs; let i = index"
+      [ngClass]="selectedId === tab.id ? 'selected' : ''"
+      (click)="selectTab(tab.id)"
+    >
+      <span>
+        <div [ngClass]="selectedId === tab.id ? 'selected-tab' : 'tab-value'">
+          {{ tab.label | translate }}
+        </div>
+      </span>
+    </div>
+  </div>
+  <router-outlet></router-outlet>
+</div>
+<ng-template #auditTemplate>
+  <oh-audit-template-dc
+    (cancelEvent)="clear()"
+    [auditReasonList$]="auditReasonList$"
+    [parentForm]="auditForm"
+    (auditEvent)="assignForAudit()"
+    [audit]="true"
+  ></oh-audit-template-dc>
+</ng-template>

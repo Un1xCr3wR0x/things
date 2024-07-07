@@ -1,0 +1,8 @@
+export enum SystemParamsEnum {
+  orgRegInternational = 'PRIVATE_ESTABLISHMENT_START_DATE',
+  government = 'GOVERNMENT_ESTABLISHMENT_START_DATE',
+  semiGovernment = 'SEMI_GOVERNMENT_ESTABLISHMENT_START_DATE',
+  gccCountries1 = 'GCC_ESTABLISHMENT_START_DATE',
+  gccCountries2 = 'GCC_ESTABLISHMENT_START_DATE_FOR_QATAR_UAE',
+  billBatchIndicator = 'BILL_BATCH_INDICATOR'
+}

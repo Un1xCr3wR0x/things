@@ -1,0 +1,161 @@
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+
+<div *ngIf="adjustmentsDetails" class="content">
+  <div class="row no-gutters mb-4">
+    <div class="col-auto pr-3 border-right align-self-center back-button">
+      <a (click)="routeBack()">
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'ar'"
+          [icon]="['far', 'arrow-alt-circle-right']"
+          size="2x"
+        ></fa-icon>
+        <fa-icon
+          class="align-self-center backarrow-icon"
+          *ngIf="lang === 'en'"
+          [icon]="['far', 'arrow-alt-circle-left']"
+          size="2x"
+        ></fa-icon>
+      </a>
+    </div>
+    <div class="col-auto mr-auto custom-heading header">
+      {{ 'ADJUSTMENT.PAY-ADJUSTMENTS' | translate }}
+    </div>
+  </div>
+  <gosi-progress-wizard-dc (clickWizard)="selectedWizard($event)" [wizardItems]="adjustmentWizards" #adjustmentWizard>
+  </gosi-progress-wizard-dc>
+  <div class="col-md-12">
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="row no-gutters">
+    <div class="col-md-12 pt-4">
+      <gosi-card-dc type="secondary" lessPadding="true" heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}">
+        <div class="row">
+          <div class="col-md-7">
+            <gosi-currency-label-dc
+              id="amountReceived"
+              label="{{ 'ADJUSTMENT.TOTAL-DEBIT-ADJUSTMENT-BALANCE' | translate }}"
+              [currencyTo]="
+                adjustmentsDetails?.netAdjustmentAmount
+                  ? adjustmentsDetails?.netAdjustmentAmount
+                  : (0 | number: '1.2-2')
+              "
+              [countryCodeFrom]="'BILLING.SAR' | translate"
+            ></gosi-currency-label-dc>
+          </div>
+          <div class="col-md-5">
+            <gosi-input-currency-dc
+              [label]="'ADJUSTMENT.TOTAL_AMOUNT_TO_BE_PAID' | translate"
+              [control]="adjDtlsForm?.get('totalAmountToBePaid')"
+              id="totalAmountToBePaid"
+              [separatorLimit]="separatorLimit"
+              [hidePlaceholder]="true"
+              (keyUp)="onTotalAmountEntered()"
+            >
+            </gosi-input-currency-dc>
+          </div>
+        </div>
+        <div class="row no-gutters d-grid">
+          <div class="adjustment-details col-md-12">
+            <div class="row d-flex align-items-center">
+              <div class="col-md-12">
+                <div class="table-scroll table-responsive table-adjustmentDetails">
+                  <table class="table table-borderless">
+                    <thead class="table-header">
+                      <tr>
+                        <th>
+                          {{ 'PAYMENT.BENEFIT-TYPE' | translate }}
+                        </th>
+                        <th>
+                          {{ 'PAYMENT.BENEFIT-START-DATE' | translate }}
+                        </th>
+                        <th>
+                          {{ 'ADJUSTMENT.ADJUSTMENT-AMOUNT-LBL' | translate }}
+                        </th>
+                        <th>
+                          {{ 'ADJUSTMENT.ADJUSTMENT-BALANCE-SAR' | translate }}
+                        </th>
+                        <th>
+                          {{ 'PAYMENT.AMOUNT-TO-BE-PAID-SAR' | translate }}
+                        </th>
+                        <th>
+                          {{ 'PAYMENT.BAL_AMOUNT_AFTER_STTLMNT' | translate }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        *ngFor="let eachAdjustment of adjustmentsDetails?.adjustments; let i = index"
+                        class="data-row border-bottom"
+                      >
+                        <td class="w-25">
+                          {{ eachAdjustment?.benefitType | bilingualText }}
+                        </td>
+                        <td class="w-15">
+                          <div class="d-block nin-text">
+                            {{ eachAdjustment?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy' }}
+                          </div>
+                        </td>
+                        <td class="w-15">
+                          {{ eachAdjustment?.adjustmentAmount | numToPositive | number: '1.0-2' }}
+                        </td>
+                        <td class="w-15">
+                          {{ eachAdjustment?.adjustmentBalance | numToPositive | number: '1.0-2' }}
+                        </td>
+                        <td class="w-15">
+                          <!-- [control]="amountToBePaid?.controls[i]" -->
+                          <gosi-input-currency-dc
+                            [ignoreLabel]="true"
+                            [control]="amountToBePaid?.controls[i].get('adjustmentAmount')"
+                            id="amountToBePaid"
+                            [separatorLimit]="separatorLimit"
+                            [hidePlaceholder]="true"
+                            (keyUp)="onAmountToBePaid()"
+                          >
+                          </gosi-input-currency-dc>
+                        </td>
+                        <td class="w-15">
+                          <ng-container
+                            *ngIf="!isNaN(parseFloat(amountToBePaid?.controls[i].get('adjustmentAmount').value))"
+                            >{{
+                              (eachAdjustment?.adjustmentBalance -
+                                parseFloat(amountToBePaid?.controls[i].get('adjustmentAmount').value)
+                                | number: '1.2-2') || 0
+                            }}</ng-container
+                          >
+                          <ng-container
+                            *ngIf="isNaN(parseFloat(amountToBePaid?.controls[i].get('adjustmentAmount').value))"
+                            >{{ eachAdjustment?.adjustmentBalance - 0 | number: '1.2-2' }}</ng-container
+                          >
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </gosi-card-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 mt-4">
+      <div class="float-right btn-section">
+        <gosi-button-dc id="save" type="primary" [disabled]="!adjDtlsForm?.valid" (click)="navigateToPaymentMethod()">{{
+          'BILLING.SAVE-AND-NEXT' | translate
+        }}</gosi-button-dc>
+      </div>
+      <div class="float-left btn-section">
+        <gosi-button-dc id="cancelButton" type="secondary" (submit)="popUp(cancelTemplate)">{{
+          'PAYMENT.CANCEL' | translate
+        }}</gosi-button-dc>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc message="BENEFITS.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="decline()">
+    </gosi-confirm-modal-dc>
+  </ng-template>
+</div>

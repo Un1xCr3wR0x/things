@@ -1,0 +1,1084 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div *ngIf="!isAppPublic">
+  <div class="tab-content">
+    <div id="todoList">
+      <div class="table-responsive d-block">
+        <div class="row">
+          <div class="col-lg-12" [ngClass]="[isWorkList ? 'pt-4' : '']">
+            <div [ngClass]="[isWorkList ? 'tab-heading' : '']" class="row">
+              <div *ngIf="isWorkList" class="col-lg-4 d-flex align-items-center">
+                <div id="heading">
+                  <span class="count-label">{{ 'INBOX.TRANSACTION-COUNT' | translate }}</span>
+                  <ng-container *ngIf="unViewed !== 0">
+                    <span class="count px-1">{{ unViewed }}</span>
+                  </ng-container>
+                </div>
+              </div>
+              <div class="col search-filter">
+                <ibx-inbox-search-filter-dc
+                  (searchValue)="onSearch($event, '')"
+                  (showError)="showError()"
+                  (statusFilter)="onFilter($event)"
+                  (sort)="onSort($event)"
+                  [sortList]="sortList"
+                  [sortItem]="sortItem"
+                  [isWorkList]="isWorkList"
+                  [selectedFilterStatus]="selectedFilterStatus"
+                  [searchParam]="searchParam"
+                  [clearSearch]="clearSearch"
+                  (olaSlaFilterOutput)="onSlaOlaFilter($event)"
+                  (transactionFilter)="onTransactionFilter($event)"
+                  (roleFilter)="onRoleFilter($event)"
+                ></ibx-inbox-search-filter-dc>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12 table-worklist desktop-screen">
+            <table class="table table-condensed">
+              <thead>
+                <tr>
+                  <th id="inbox_transaction" *ngIf="!isWorkList">
+                    {{ 'INBOX.REQUEST-NUMBER' | translate | uppercase }}
+                  </th>
+                  <th id="inbox_date" *ngIf="!isWorkList">
+                    {{ 'INBOX.ASSIGNED-DATE' | translate | uppercase }}
+                  </th>
+                  <th *ngIf="isWorkList" id="inbox_priority">
+                    {{ 'INBOX.PRIORITY' | translate | uppercase }}
+                  </th>
+
+                  <th>
+                    {{ 'INBOX.DESCRIPTION' | translate | uppercase }}
+                  </th>
+                  <th id="inbox_date" *ngIf="isWorkList">
+                    {{ 'INBOX.CREATED-DATE' | translate | uppercase }}
+                  </th>
+                  <th id="inbox_date" *ngIf="isWorkList">
+                    {{ 'INBOX.LAST-UPDATE' | translate | uppercase }}
+                  </th>
+                  <th *ngIf="isWorkList">
+                    {{ 'INBOX.FROM' | translate | uppercase }}
+                  </th>
+                  <th id="inbox_transaction" *ngIf="isWorkList">
+                    {{ 'INBOX.TRANSACTION-NUMBER' | translate | uppercase }}
+                  </th>
+
+                  <th *ngIf="isWorkList">
+                    {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+                  </th>
+                  <th *ngIf="!isWorkList">
+                    {{ 'INBOX.DUE-DATE' | translate | uppercase }}
+                  </th>
+
+                  <th *ngIf="isWorkList" id="inbox_status">
+                    {{ 'INBOX.STATUS' | translate | uppercase }}
+                  </th>
+
+                  <th style="display: none">
+                    {{ 'INBOX.COMMENTS' | translate | uppercase }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody *ngIf="bpmTaskResponse">
+                <tr class="data-row" *ngFor="
+                  let task of bpmTaskResponse.tasks
+                    | paginate
+                      : {
+                          id: transUpdate,
+                          itemsPerPage: itemsPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: unViewed
+                        };
+                  let i = index
+                " (click)="navigateToView(task)">
+                  <td *ngIf="!isWorkList">
+                    <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{ task.transactionId }}</a>
+                  </td>
+                  <td *ngIf="!isWorkList">
+                    <div>
+                      {{ task.assignedDate | gosiDate }}
+                    </div>
+                    <div class="description-content" dir="ltr">
+                      {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList" [ngClass]="
+                      task.priority === 1 ? 'high' : task.priority === 3 ? 'medium' : task.priority === 5 ? 'low' : ''
+                    ">
+                    {{ 'INBOX.' + task.priority | uppercase | translate }}
+                  </td>
+
+                <td>
+                  <div class="row">
+                    <div class="col">
+                  <div class="triangle-icon" *ngIf="task?.isReopened === true"><fa-icon class="warning-icon mr-2" icon="exclamation-triangle"></fa-icon></div>
+                      <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                        {{ 'INBOX.INSPECTION' | translate }}</span
+                      >
+                      <div *ngIf="lang === 'en'" class="description-title">
+                        {{ task.titleEnglish }}
+                      </div>
+                      <div *ngIf="lang === 'ar'" class="description-title">
+                        {{ task.titleArabic }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col" *ngIf="appToken !== 'INDIVIDUAL_APP'">
+                      <div *ngIf="task?.descriptionEnglish != null && lang === 'en'" class="description-content">
+                        {{ task.descriptionEnglish }}
+                      </div>
+                      <div *ngIf="task?.descriptionArabic != null && lang === 'ar'" class="description-content">
+                        {{ task.descriptionArabic }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                  <td *ngIf="isWorkList">
+                    <div>
+                      {{ task.compositeCreatedTime | gosiDate }}
+                    </div>
+                    <div class="description-content" dir="ltr">
+                      {{ task.compositeCreatedTime | date: 'hh:mm a ':'UTC+3' }}
+                    </div>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <div>
+                      {{ task.assignedDate | gosiDate }}
+                    </div>
+                    <div class="description-content" dir="ltr">
+                      {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList">
+                    <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedBy">
+                      {{ 'INBOX.SYSTEM' | translate }}
+                    </ng-container>
+                    <ng-template #updatedBy>
+                      {{ task.updatedBy }}
+                    </ng-template>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{ task.transactionId }}</a>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <gosi-ola-task-dc [assignedDate]="task.assignedDate" [olaAvailable]="task.olaAvailable" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                      [dueDate]="task.olaDueDate">
+                    </gosi-ola-task-dc>
+                  </td>
+
+                  <td *ngIf="!isWorkList" class="task-status">
+                    <div *ngIf="task.dueDate !== null">
+                      <span id="taskStatus{{ i }}" [ngClass]="
+                          task.dateTime === '0'
+                            ? 'task-highlight-assigned'
+                            : task.dateTime === '1'
+                            ? task.state === 'RETURN'
+                            : task.dateTime === '2'
+                            ? 'task-highlight-withdrawn'
+                            : ''
+                        "><span *ngIf="task.timeTasks">{{ task.timeTasks }}</span>
+                      </span>
+                    </div>
+                    <div *ngIf="!task.dueDate">
+                      {{ 'INBOX.NOT-AVAILABLE' | translate }}
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList" class="task-status">
+                    <span id="taskStatus{{ i }}" [ngClass]="
+                      task.state === 'REASSIGNED'
+                        ? 'task-highlight-reassigned'
+                        : task.state === 'ASSIGNED'
+                        ? 'task-highlight-assigned'
+                        : task.state === 'RETURN'
+                        ? 'task-highlight-returned'
+                        : task.state === 'COMPLETED'
+                        ? 'task-highlight-completed'
+                        : task.state === 'WITHDRAWN'
+                        ? 'task-highlight-withdrawn'
+                        : ''
+                    "
+                    ><span *ngIf="task.state === 'ASSIGNED' && task?.isReopened != true"> {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                    <span *ngIf="task.state === 'REASSIGNED'"> {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                    <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                    <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                    <span *ngIf="task?.isReopened === true"> {{ 'INBOX.REOPENED' | translate | uppercase }}</span>
+                    <span *ngIf="task.state === 'WITHDRAWN'">
+                      {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span
+                    ></span
+                  >
+                </td>
+                <td style="display: none">
+                  <gosi-comment-table-dc [comments]="comment"> </gosi-comment-table-dc>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="bpmTaskResponse?.tasks.length == 0">
+            <gosi-no-result-dc></gosi-no-result-dc>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Mobile View Started -->
+  <div class="mobile-screen mb-4" *ngIf="bpmTaskResponse && bpmTaskResponse.tasks">
+    <ng-container *ngFor="
+        let task of bpmTaskResponse.tasks
+          | paginate
+            : {
+                id: transUpdate,
+                itemsPerPage: itemsPerPage,
+                currentPage: pageDetails.currentPage,
+                totalItems: unViewed
+              };
+        let i = index
+      ">
+      <div class="wrapper" (click)="navigateToView(task)">
+        <div [ngClass]="
+            task.priority === 1 && isWorkList
+              ? 'high'
+              : task.priority === 3 && isWorkList
+              ? 'medium'
+              : task.priority === 5 && isWorkList
+              ? 'low'
+              : ''
+          " class="priority"></div>
+        <div class="mobile-wrapper">
+          <div class="main-detail d-flex justify-content-between">
+            <div class="d-flex flex-column">
+              <span class="title">
+                <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                  {{ 'INBOX.INSPECTION' | translate}}</span>
+                <ng-container *ngIf="lang === 'en'">
+                  {{ task.titleEnglish }}
+                </ng-container>
+                <ng-container *ngIf="lang === 'ar'">
+                  {{ task.titleArabic }}
+                </ng-container>
+              </span>
+              <span class="description" *ngIf="appToken !== 'INDIVIDUAL_APP'">
+                <ng-container *ngIf="task?.descriptionEnglish != null && lang === 'en'">
+                  {{ task.descriptionEnglish }}
+                </ng-container>
+                <ng-container *ngIf="task?.descriptionArabic != null && lang === 'ar'">
+                  {{ task.descriptionArabic }}
+                </ng-container>
+              </span>
+            </div>
+            <div>
+              <span *ngIf="isWorkList" [ngClass]="
+                  task.state === 'ASSIGNED'
+                    ? 'task-highlight-assigned'
+                    : task.state === 'REASSIGNED'
+                    ? 'task-highlight-reassigned'
+                    : task.state === 'WITHDRAWN'
+                    ? 'task-highlight-withdrawn'
+                    : task.state === 'COMPLETED'
+                    ? 'task-highlight-completed'
+                    : task.state === 'RETURN'
+                    ? 'task-highlight-returned'
+                    : ''
+                "><span *ngIf="task.state === 'ASSIGNED'"> {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                <span *ngIf="task.state === 'REASSIGNED'"> {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                <span *ngIf="task.state === 'WITHDRAWN'"> {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span></span>
+            </div>
+          </div>
+          <div class="d-flex flex-column">
+            <span class="label" *ngIf="isWorkList">
+              {{ 'INBOX.PRIORITY' | translate | uppercase }}
+              <span class="label-value px-1"> {{ 'INBOX.' + task.priority | uppercase | translate }}</span></span>
+            <span class="label">
+              {{
+                isWorkList
+                  ? ('INBOX.TRANSACTION-NUMBER' | translate | uppercase)
+                  : ('INBOX.REQUEST-NUMBER' | translate | uppercase)
+              }}
+              <span class="label-value px-1"> {{ task.transactionId }}</span></span>
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.CREATED-DATE' | translate | uppercase }}
+                <span class="label-value px-1">
+                  {{ task.compositeCreatedTime | gosiDate }}
+                  <span class="label-sub-value" dir="ltr">
+                    {{ task.compositeCreatedTime | date: 'hh:mm a ':'UTC+3' }}</span></span></span>
+            <span class="label">
+              {{ 'INBOX.LAST-UPDATE' | translate | uppercase }}
+              <span class="label-value px-1">
+                {{ task.assignedDate | gosiDate }}
+                <span class="label-sub-value" dir="ltr">
+                  {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}</span></span></span>
+            <span class="label" *ngIf="isWorkList">
+              {{ 'INBOX.FROM' | translate | uppercase }}
+              <span class="label-value from px-1">
+                <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedByTemplate">
+                  {{ 'INBOX.SYSTEM' | translate }}
+                </ng-container>
+                <ng-template #updatedByTemplate>
+                  {{ task.updatedBy }}
+                </ng-template>
+              </span></span>
+            <span class="label" *ngIf="isWorkList">
+              {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+              <span class="label-value">
+                <gosi-ola-task-dc [assignedDate]="task.assignedDate" [dueDate]="task.olaDueDate" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                  [olaAvailable]="task.olaAvailable">
+                </gosi-ola-task-dc>
+              </span>
+            </span>
+            <span class="label" *ngIf="!isWorkList">
+              {{ 'INBOX.DUE-DATE' | translate | uppercase }}
+              <span *ngIf="!task.dueDate" class="px-1 label-value">
+                {{ 'INBOX.NOT-AVAILABLE' | translate }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <div class="mobile-screen mb-4" *ngIf="bpmTaskResponse?.tasks.length == 0">
+    <gosi-no-result-dc></gosi-no-result-dc>
+  </div>
+  <!-- Mobile View Ended -->
+  <gosi-pagination-dc #componentChild
+    *ngIf="unViewed > 10 && bpmTaskResponse && bpmTaskResponse.tasks && bpmTaskResponse.tasks.length > 0"
+    [totalSize]="unViewed" [itemsPerPage]="itemsPerPage" [pageDetails]="pageDetails" (pageChange)="selectPage($event)"
+    id="transUpdate">
+  </gosi-pagination-dc>
+</div>
+
+<div *ngIf="isAppPublic && !isLoading">
+  <!-- Beginning of claim pool enhancements -->
+  <!-- <label class="d-flex"><strong>{{'INBOX.ASSIGNED-TRANSACTIONS' | translate}}</strong></label>
+  <div *ngIf="claimedTransactions" >
+  <div class="container-fluied unclaimedTxnBox" *ngFor="let task of claimedTransactions">
+    <div class="row mx-3 heading-row">
+        <div class="col" style="text-align: justify;">
+          <label style="margin-bottom: 1px;" *ngIf="lang === 'en'"><a style="color: #333333" (click)="navigateToView(task)" class="view-link"><strong>{{task.titleEnglish}}</strong></a></label>
+          <label style="margin-bottom: 1px;" *ngIf="lang === 'ar'"><a style="color: #333333" (click)="navigateToView(task)" class="view-link"><strong>{{task.titleArabic}}</strong></a></label>
+          <label class="description-content "  *ngIf="task?.descriptionEnglish != null && lang === 'en'">{{task.descriptionEnglish}}</label>
+            <label class="description-content "  *ngIf="task?.descriptionArabic != null && lang === 'ar'">{{task.descriptionArabic}}</label>
+        </div>
+        <div class="col">
+            <div class="head-value d-flex ml-2 justify-content-end" >
+              <fa-icon class="icon-value" id="task.taskId" icon="clock"></fa-icon>
+              <label class="reset-label">{{ 'CONTRIBUTOR.AUTO-RELEASE' | translate | uppercase }}</label>
+              <span class="ml-3" style="margin-top: 7px; display: block;">
+                <gosi-timer-dc  id="task.taskId" [isStyle]="true" [min]="task.minDiff" [sec]="task.seconds"> </gosi-timer-dc>
+              </span>
+                <div>
+                  <inbox-dropdown-dc
+                    [list]="actionDropDown"
+                    (selectedItem)="navigateTo($event, task)"
+                    class="float-right actionDropdown code-value resetButton">
+                    <fa-icon class="text-value" id="task.taskId" icon="ellipsis-v"></fa-icon>
+                  </inbox-dropdown-dc>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="claimedTransactions.length == 0">
+  <div class="emptyUnclaimedTxnBox">{{'INBOX.EMPTY-CLAIMED-TRANSACTIONS' | translate}}</div>
+</div>
+</div>
+
+  <label style="margin-top: 30px;" class="d-flex"><strong>{{'INBOX.ALL-TRANSACTIONS' | translate}}</strong></label> -->
+  <!-- End of claim pool enhancements -->
+
+  <div class="row tabset-wrapper" *ngIf="tabs.length > 1">
+    <div class="col-md-3 class-tab" *ngFor="let tab of tabs; let i = index"
+      [ngClass]="selectedId === tab.id ? 'selected' : ''" (click)="selectTab(tab.id)">
+      <span>
+        <div [ngClass]="selectedId === tab.id ? 'selected-tab' : 'tab-value'" class="secondMenu">
+          <fa-icon class="icon-wrapper" [icon]="tab.icon" size="lg"></fa-icon>
+          {{ 'INBOX.' + tab.label | translate }} <span class="plr-5"> {{ tab.count }} </span>
+        </div>
+      </span>
+    </div>
+  </div>
+  <div *ngIf="unclaimed" class="pt-4">
+    <div class="tab-content">
+      <div id="todoList">
+        <div class="table-responsive d-block">
+          <div class="row">
+            <div class="col-lg-12" [ngClass]="[isWorkList ? 'pt-4' : '']">
+              <div [ngClass]="[isWorkList ? 'tab-heading' : '']" class="row">
+                <div *ngIf="isWorkList" class="col-lg-4 d-flex align-items-center">
+                  <div id="heading">
+                    <span class="count-label">{{ 'INBOX.TRANSACTION-COUNT' | translate }}</span>
+                    <ng-container *ngIf="unViewed !== 0">
+                      <span class="count px-1">{{ unViewed }}</span>
+                    </ng-container>
+                  </div>
+                </div>
+                <div class="col search-filter">
+                  <ibx-inbox-search-filter-dc
+                    id="unclaimed"
+                    (searchValue)="onSearch($event, 'unclaimed')"
+                    (statusFilter)="onFilter($event)"
+                    (sortUnclaimed)="onSortUncliamed($event)"
+                    [sortList]="sortList"
+                    [sortItem]="sortItem"
+                    [isWorkList]="isWorkList"
+                    [selectedFilterStatus]="selectedFilterStatus"
+                    [searchParam]="searchParam"
+                    [clearSearch]="clearSearch"
+                  ></ibx-inbox-search-filter-dc>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12 table-worklist desktop-screen">
+            <table class="table table-condensed">
+              <thead>
+                <tr>
+                  <th id="inbox_transaction" *ngIf="!isWorkList" style="width: 23%">
+                    {{ 'INBOX.TRANSACTION-ID' | translate }}
+                  </th>
+                  <th id="inbox_date" *ngIf="!isWorkList" style="width: 23%">
+                    {{ 'INBOX.ASSIGNED-DATE' | translate }}
+                  </th>
+                  <th *ngIf="isWorkList" id="inbox_priority">
+                    {{ 'INBOX.PRIORITY' | translate | uppercase }}
+                  </th>
+
+                  <th style="width: 33%">
+                    {{ 'INBOX.DESCRIPTION' | translate | uppercase }}
+                  </th>
+
+                  <th id="inbox_date" *ngIf="isWorkList">
+                    {{ 'INBOX.DATE' | translate | uppercase }}
+                  </th>
+                  <th *ngIf="isWorkList">
+                    {{ 'INBOX.FROM' | translate | uppercase }}
+                  </th>
+                  <th id="inbox_transaction" *ngIf="isWorkList">
+                    {{ 'INBOX.TRANSACTION-NUMBER' | translate | uppercase }}
+                  </th>
+
+                  <th *ngIf="isWorkList">
+                    {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+                  </th>
+                  <th *ngIf="!isWorkList" style="width: 20%">
+                    {{ 'INBOX.DUE-DATE' | translate }}
+                  </th>
+
+                  <th *ngIf="isWorkList" id="inbox_status">
+                    {{ 'INBOX.STATUS' | translate | uppercase }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody *ngIf="bpmTaskResponseUnclaimed">
+                <tr class="data-row" *ngFor="
+                    let task of bpmTaskResponseUnclaimed.tasks
+                      | paginate
+                        : {
+                            id: transUpdate,
+                            itemsPerPage: itemsPerPage,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: UnclaimedCount
+                          };
+                    let i = index
+                  " (click)="navigateToView(task)">
+                  <td *ngIf="!isWorkList" style="width: 23%">
+                    <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{ task.transactionId }}</a>
+                  </td>
+                  <td *ngIf="!isWorkList" style="width: 23%">
+                    <div>
+                      {{ task.assignedDate | gosiDate }}
+                    </div>
+                    <div class="description-content" dir="ltr">
+                      {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList" [ngClass]="
+                      task.priority === 1 ? 'high' : task.priority === 3 ? 'medium' : task.priority === 5 ? 'low' : ''
+                    ">
+                    {{ 'INBOX.' + task.priority | uppercase | translate }}
+                  </td>
+
+                  <td style="width: 33%">
+                    <div class="row">
+                      <div class="col">
+                        <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                          {{ 'INBOX.INSPECTION' | translate }}</span>
+                        <div *ngIf="lang === 'en'" class="description-title">
+                          {{ task.titleEnglish }}
+                        </div>
+                        <div *ngIf="lang === 'ar'" class="description-title">
+                          {{ task.titleArabic }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        <div *ngIf="task?.descriptionEnglish != null && lang === 'en'" class="description-content">
+                          {{ task.descriptionEnglish }}
+                        </div>
+                        <div *ngIf="task?.descriptionArabic != null && lang === 'ar'" class="description-content">
+                          {{ task.descriptionArabic }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList">
+                    <div>
+                      {{ task.assignedDate | gosiDate }}
+                    </div>
+                    <div class="description-content" dir="ltr">
+                      {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                    </div>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedBy">
+                      {{ 'INBOX.SYSTEM' | translate }}
+                    </ng-container>
+                    <ng-template #updatedBy>
+                      {{ task.updatedBy }}
+                    </ng-template>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{ task.transactionId }}</a>
+                  </td>
+                  <td *ngIf="isWorkList">
+                    <gosi-ola-task-dc [assignedDate]="task.assignedDate" [olaAvailable]="task.olaAvailable" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                      [dueDate]="task.olaDueDate">
+                    </gosi-ola-task-dc>
+                  </td>
+
+                  <td *ngIf="!isWorkList" class="task-status" style="width: 20%">
+                    <div *ngIf="task.dueDate !== null">
+                      <span id="taskStatus{{ i }}" [ngClass]="
+                          task.dateTime === '0'
+                            ? 'task-highlight-assigned'
+                            : task.dateTime === '1'
+                            ? task.state === 'RETURN'
+                            : task.dateTime === '2'
+                            ? 'task-highlight-withdrawn'
+                            : ''
+                        "><span *ngIf="task.timeTasks">{{ task.timeTasks }}</span>
+                      </span>
+                    </div>
+                    <div *ngIf="!task.dueDate">
+                      {{ 'INBOX.NOT-AVAILABLE' | translate }}
+                    </div>
+                  </td>
+
+                  <td *ngIf="isWorkList" class="task-status">
+                    <span id="taskStatus{{ i }}" [ngClass]="
+                        task.state === 'REASSIGNED'
+                          ? 'task-highlight-reassigned'
+                          : task.state === 'ASSIGNED'
+                          ? 'task-highlight-assigned'
+                          : task.state === 'RETURN'
+                          ? 'task-highlight-returned'
+                          : task.state === 'COMPLETED'
+                          ? 'task-highlight-completed'
+                          : task.state === 'WITHDRAWN'
+                          ? 'task-highlight-withdrawn'
+                          : ''
+                      "><span *ngIf="task.state === 'ASSIGNED'"> {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                      <span *ngIf="task.state === 'REASSIGNED'"> {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                      <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                      <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                      <span *ngIf="task.state === 'WITHDRAWN'">
+                        {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="bpmTaskResponseUnclaimed?.tasks.length == 0">
+              <gosi-no-result-dc></gosi-no-result-dc>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-screen mb-4" *ngIf="bpmTaskResponseUnclaimed && bpmTaskResponseUnclaimed.tasks">
+      <ng-container *ngFor="
+          let task of bpmTaskResponseUnclaimed.tasks
+            | paginate
+              : {
+                  id: transUpdate,
+                  itemsPerPage: itemsPerPage,
+                  currentPage: pageDetails.currentPage,
+                  totalItems: UnclaimedCount
+                };
+          let i = index
+        ">
+        <div class="wrapper" (click)="navigateToView(task)">
+          <div [ngClass]="
+              task.priority === 1 && isWorkList
+                ? 'high'
+                : task.priority === 3 && isWorkList
+                ? 'medium'
+                : task.priority === 5 && isWorkList
+                ? 'low'
+                : ''
+            " class="priority"></div>
+          <div class="mobile-wrapper">
+            <div class="main-detail d-flex justify-content-between">
+              <div class="d-flex flex-column">
+                <span class="title">
+                  <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                    {{ 'INBOX.INSPECTION' | translate}}</span>
+                  <ng-container *ngIf="lang === 'en'">
+                    {{ task.titleEnglish }}
+                  </ng-container>
+                  <ng-container *ngIf="lang === 'ar'">
+                    {{ task.titleArabic }}
+                  </ng-container>
+                </span>
+                <span class="description">
+                  <ng-container *ngIf="task?.descriptionEnglish != null && lang === 'en'">
+                    {{ task.descriptionEnglish }}
+                  </ng-container>
+                  <ng-container *ngIf="task?.descriptionArabic != null && lang === 'ar'">
+                    {{ task.descriptionArabic }}
+                  </ng-container>
+                </span>
+              </div>
+              <div>
+                <span *ngIf="isWorkList" [ngClass]="
+                    task.state === 'ASSIGNED'
+                      ? 'task-highlight-assigned'
+                      : task.state === 'REASSIGNED'
+                      ? 'task-highlight-reassigned'
+                      : task.state === 'WITHDRAWN'
+                      ? 'task-highlight-withdrawn'
+                      : task.state === 'COMPLETED'
+                      ? 'task-highlight-completed'
+                      : task.state === 'RETURN'
+                      ? 'task-highlight-returned'
+                      : ''
+                  "><span *ngIf="task.state === 'ASSIGNED'"> {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'REASSIGNED'"> {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'WITHDRAWN'">
+                    {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span></span>
+              </div>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.PRIORITY' | translate | uppercase }}
+                <span class="label-value px-1"> {{ 'INBOX.' + task.priority | uppercase | translate }}</span></span>
+              <span class="label">
+                {{
+                  isWorkList
+                    ? ('INBOX.TRANSACTION-NUMBER' | translate | uppercase)
+                    : ('INBOX.TRANSACTION-ID' | translate)
+                }}
+                <span class="label-value px-1"> {{ task.transactionId }}</span></span>
+              <span class="label">
+                {{ 'INBOX.ASSIGNED-DATE' | translate }}
+                <span class="label-value px-1">
+                  {{ task.assignedDate | gosiDate }}
+                  <span class="label-sub-value" dir="ltr">
+                    {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}</span></span></span>
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.FROM' | translate | uppercase }}
+                <span class="label-value from px-1">
+                  <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedByTemplate">
+                    {{ 'INBOX.SYSTEM' | translate }}
+                  </ng-container>
+                  <ng-template #updatedByTemplate>
+                    {{ task.updatedBy }}
+                  </ng-template>
+                </span></span>
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+                <span class="label-value">
+                  <gosi-ola-task-dc [assignedDate]="task.assignedDate" [dueDate]="task.olaDueDate" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                    [olaAvailable]="task.olaAvailable">
+                  </gosi-ola-task-dc>
+                </span>
+              </span>
+              <span class="label" *ngIf="!isWorkList">
+                {{ 'INBOX.DUE-DATE' | translate }}
+                <span *ngIf="!task.dueDate" class="px-1 label-value">
+                  {{ 'INBOX.NOT-AVAILABLE' | translate }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="mobile-screen mb-4" *ngIf="bpmTaskResponse?.tasks.length == 0">
+      <gosi-no-result-dc></gosi-no-result-dc>
+    </div>
+    <!-- Mobile View Ended -->
+    <gosi-pagination-dc #componentChild
+      *ngIf="UnclaimedCount > 10 && bpmTaskResponse && bpmTaskResponse.tasks && bpmTaskResponse.tasks.length > 0"
+      [totalSize]="UnclaimedCount" [itemsPerPage]="itemsPerPage" [pageDetails]="pageDetails" (pageChange)="selectPage($event)"
+      id="transUpdate">
+    </gosi-pagination-dc>
+  </div>
+
+  <div *ngIf="claimed" class="pt-4">
+    <div class="tab-content">
+      <div id="todoList">
+        <div class="table-responsive d-block">
+          <div class="row">
+            <div class="col-lg-12" [ngClass]="[isWorkList ? 'pt-4' : '']">
+              <div [ngClass]="[isWorkList ? 'tab-heading' : '']" class="row">
+                <div *ngIf="isWorkList" class="col-lg-4 d-flex align-items-center">
+                  <div id="heading">
+                    <span class="count-label">{{ 'INBOX.TRANSACTION-COUNT' | translate }}</span>
+                    <ng-container *ngIf="unViewed !== 0">
+                      <span class="count px-1">{{ unViewed }}</span>
+                    </ng-container>
+                  </div>
+                </div>
+                <div class="col search-filter">
+                  <ibx-inbox-search-filter-dc
+                    id="claimed"
+                    (searchValue)="onSearch($event, 'claimed')"
+                    (statusFilter)="onFilter($event)"
+                    (sort)="onSort($event)"
+                    [sortList]="sortList"
+                    [sortItem]="sortItem"
+                    [isWorkList]="isWorkList"
+                    [selectedFilterStatus]="selectedFilterStatus"
+                    [searchParam]="searchParam"
+                    [clearSearch]="clearSearch"
+                  ></ibx-inbox-search-filter-dc>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 table-worklist desktop-screen">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th id="inbox_transaction" *ngIf="!isWorkList" style="width: 23%">
+                      {{ 'INBOX.TRANSACTION-ID' | translate }}
+                    </th>
+                    <th id="inbox_date" *ngIf="!isWorkList" style="width: 23%">
+                      {{ 'INBOX.ASSIGNED-DATE' | translate }}
+                    </th>
+                    <th *ngIf="isWorkList" id="inbox_priority">
+                      {{ 'INBOX.PRIORITY' | translate | uppercase }}
+                    </th>
+
+                    <th style="width: 32%">
+                      {{ 'INBOX.DESCRIPTION' | translate | uppercase }}
+                    </th>
+
+                    <th id="inbox_date" *ngIf="isWorkList">
+                      {{ 'INBOX.DATE' | translate | uppercase }}
+                    </th>
+                    <th *ngIf="isWorkList">
+                      {{ 'INBOX.FROM' | translate | uppercase }}
+                    </th>
+                    <th id="inbox_transaction" *ngIf="isWorkList">
+                      {{ 'INBOX.TRANSACTION-NUMBER' | translate | uppercase }}
+                    </th>
+
+                    <th *ngIf="isWorkList">
+                      {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+                    </th>
+                    <th *ngIf="!isWorkList" style="width: 22%">
+                      {{ 'INBOX.DUE-DATE' | translate }}
+                    </th>
+                    <th></th>
+
+                    <th *ngIf="isWorkList" id="inbox_status">
+                      {{ 'INBOX.STATUS' | translate | uppercase }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody *ngIf="bpmTaskResponse">
+                  <tr class="data-row" *ngFor="
+                      let task of bpmTaskResponse.tasks
+                        | paginate
+                          : {
+                              id: transUpdate,
+                              itemsPerPage: itemsPerPage,
+                              currentPage: pageDetails.currentPage,
+                              totalItems: claimedCount
+                            };
+                      let i = index
+                    ">
+                    <td (click)="navigateToView(task)" *ngIf="!isWorkList" style="width: 23%">
+                      <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{
+                        task.transactionId
+                      }}</a>
+                    </td>
+                    <td (click)="navigateToView(task)" *ngIf="!isWorkList" style="width: 23%">
+                      <div>
+                        {{ task.assignedDate | gosiDate }}
+                      </div>
+                      <div class="description-content" dir="ltr">
+                        {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                      </div>
+                    </td>
+
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList" [ngClass]="
+                        task.priority === 1 ? 'high' : task.priority === 3 ? 'medium' : task.priority === 5 ? 'low' : ''
+                      ">
+                      {{ 'INBOX.' + task.priority | uppercase | translate }}
+                    </td>
+
+                    <td (click)="navigateToView(task)" style="width: 32%">
+                      <div class="row">
+                        <div class="col">
+                          <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                            {{ 'INBOX.INSPECTION' | translate }}</span>
+                          <div *ngIf="lang === 'en'" class="description-title">
+                            {{ task.titleEnglish }}
+                          </div>
+                          <div *ngIf="lang === 'ar'" class="description-title">
+                            {{ task.titleArabic }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <div *ngIf="task?.descriptionEnglish != null && lang === 'en'" class="description-content">
+                            {{ task.descriptionEnglish }}
+                          </div>
+                          <div *ngIf="task?.descriptionArabic != null && lang === 'ar'" class="description-content">
+                            {{ task.descriptionArabic }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList">
+                      <div>
+                        {{ task.assignedDate | gosiDate }}
+                      </div>
+                      <div class="description-content" dir="ltr">
+                        {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}
+                      </div>
+                    </td>
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList">
+                      <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedBy">
+                        {{ 'INBOX.SYSTEM' | translate }}
+                      </ng-container>
+                      <ng-template #updatedBy>
+                        {{ task.updatedBy }}
+                      </ng-template>
+                    </td>
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList">
+                      <a *ngIf="task.transactionId" id="viewDetails{{ i }}" class="view-link">{{
+                        task.transactionId
+                      }}</a>
+                    </td>
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList">
+                      <gosi-ola-task-dc [assignedDate]="task.assignedDate" [olaAvailable]="task.olaAvailable" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                        [dueDate]="task.olaDueDate">
+                      </gosi-ola-task-dc>
+                    </td>
+
+                    <td (click)="navigateToView(task)" *ngIf="!isWorkList" class="task-status" style="width: 22%">
+                      <div *ngIf="task.dueDate !== null">
+                        <span id="taskStatus{{ i }}" [ngClass]="
+                            task.dateTime === '0'
+                              ? 'task-highlight-assigned'
+                              : task.dateTime === '1'
+                              ? task.state === 'RETURN'
+                              : task.dateTime === '2'
+                              ? 'task-highlight-withdrawn'
+                              : ''
+                          "><span *ngIf="task.timeTasks">{{ task.timeTasks }}</span>
+                        </span>
+                      </div>
+                      <div *ngIf="!task.dueDate">
+                        {{ 'INBOX.NOT-AVAILABLE' | translate }}
+                      </div>
+                    </td>
+                    <td>
+                      <div *ngIf="task.subState === 'ACQUIRED'">
+                        <inbox-dropdown-dc [list]="actionDropDown" (selectedItem)="navigateTo($event, task)"
+                          class="float-right actionDropdown code-value">
+                          <fa-icon class="text-value" id="task.taskId" icon="ellipsis-v"></fa-icon>
+                        </inbox-dropdown-dc>
+                      </div>
+                    </td>
+                    <td (click)="navigateToView(task)" *ngIf="isWorkList" class="task-status">
+                      <span id="taskStatus{{ i }}" [ngClass]="
+                          task.state === 'REASSIGNED'
+                            ? 'task-highlight-reassigned'
+                            : task.state === 'ASSIGNED'
+                            ? 'task-highlight-assigned'
+                            : task.state === 'RETURN'
+                            ? 'task-highlight-returned'
+                            : task.state === 'COMPLETED'
+                            ? 'task-highlight-completed'
+                            : task.state === 'WITHDRAWN'
+                            ? 'task-highlight-withdrawn'
+                            : ''
+                        "><span *ngIf="task.state === 'ASSIGNED'">
+                          {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                        <span *ngIf="task.state === 'REASSIGNED'">
+                          {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                        <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                        <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                        <span *ngIf="task.state === 'WITHDRAWN'">
+                          {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="bpmTaskResponse?.tasks.length == 0">
+                <gosi-no-result-dc></gosi-no-result-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile View Started -->
+    <div class="mobile-screen mb-4" *ngIf="bpmTaskResponse && bpmTaskResponse.tasks">
+      <ng-container *ngFor="
+          let task of bpmTaskResponse.tasks
+            | paginate
+              : {
+                  id: transUpdate,
+                  itemsPerPage: itemsPerPage,
+                  currentPage: pageDetails.currentPage,
+                  totalItems: claimedCount
+                };
+          let i = index
+        ">
+        <div class="wrapper" (click)="navigateToView(task)">
+          <div [ngClass]="
+              task.priority === 1 && isWorkList
+                ? 'high'
+                : task.priority === 3 && isWorkList
+                ? 'medium'
+                : task.priority === 5 && isWorkList
+                ? 'low'
+                : ''
+            " class="priority"></div>
+          <div class="mobile-wrapper">
+            <div class="main-detail d-flex justify-content-between">
+              <div class="d-flex flex-column">
+                <span class="title">
+                  <span *ngIf="task?.resourceType === 'Violate engagement'" class="e-inspection-highlight">
+                    {{ 'INBOX.INSPECTION' | translate }}</span>
+                  <ng-container *ngIf="lang === 'en'">
+                    {{ task.titleEnglish }}
+                  </ng-container>
+                  <ng-container *ngIf="lang === 'ar'">
+                    {{ task.titleArabic }}
+                  </ng-container>
+                </span>
+                <span class="description">
+                  <ng-container *ngIf="task?.descriptionEnglish != null && lang === 'en'">
+                    {{ task.descriptionEnglish }}
+                  </ng-container>
+                  <ng-container *ngIf="task?.descriptionArabic != null && lang === 'ar'">
+                    {{ task.descriptionArabic }}
+                  </ng-container>
+                </span>
+              </div>
+              <div>
+                <span *ngIf="isWorkList" [ngClass]="
+                    task.state === 'ASSIGNED'
+                      ? 'task-highlight-assigned'
+                      : task.state === 'REASSIGNED'
+                      ? 'task-highlight-reassigned'
+                      : task.state === 'WITHDRAWN'
+                      ? 'task-highlight-withdrawn'
+                      : task.state === 'COMPLETED'
+                      ? 'task-highlight-completed'
+                      : task.state === 'RETURN'
+                      ? 'task-highlight-returned'
+                      : ''
+                  "><span *ngIf="task.state === 'ASSIGNED'"> {{ 'INBOX.ASSIGNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'REASSIGNED'"> {{ 'INBOX.REASSIGNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'COMPLETED'"> {{ 'INBOX.COMPLETED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'RETURN'"> {{ 'INBOX.RETURNED' | translate | uppercase }}</span>
+                  <span *ngIf="task.state === 'WITHDRAWN'">
+                    {{ 'INBOX.WITHDRAWN' | translate | uppercase }}</span></span>
+              </div>
+            </div>
+            <div class="d-flex flex-column">
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.PRIORITY' | translate | uppercase }}
+                <span class="label-value px-1"> {{ 'INBOX.' + task.priority | uppercase | translate }}</span></span>
+              <span class="label">
+                {{
+                  isWorkList
+                    ? ('INBOX.TRANSACTION-NUMBER' | translate | uppercase)
+                    : ('INBOX.TRANSACTION-ID' | translate)
+                }}
+                <span class="label-value px-1"> {{ task.transactionId }}</span></span>
+              <span class="label">
+                {{ 'INBOX.ASSIGNED-DATE' | translate }}
+                <span class="label-value px-1">
+                  {{ task.assignedDate | gosiDate }}
+                  <span class="label-sub-value" dir="ltr">
+                    {{ task.assignedDate | date: 'hh:mm a ':'UTC+3' }}</span></span>
+                <span>
+                <div *ngIf="task.subState === 'ACQUIRED'">
+                  <inbox-dropdown-dc [list]="actionDropDown" (selectedItem)="navigateTo($event, task)"
+                    class="float-right actionDropdown code-value">
+                    <fa-icon class="text-value" id="task.taskId" icon="ellipsis-v"></fa-icon>
+                  </inbox-dropdown-dc>
+                </div>
+                </span>
+              </span>
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.FROM' | translate | uppercase }}
+                <span class="label-value from px-1">
+                  <ng-container *ngIf="task.state === 'ASSIGNED' || task.state === 'RETURN'; else updatedByTemplate">
+                    {{ 'INBOX.SYSTEM' | translate }}
+                  </ng-container>
+                  <ng-template #updatedByTemplate>
+                    {{ task.updatedBy }}
+                  </ng-template>
+                </span></span>
+              <span class="label" *ngIf="isWorkList">
+                {{ 'INBOX.OLA-SLASH-SLA' | translate | uppercase }}
+                <span class="label-value">
+                  <gosi-ola-task-dc [assignedDate]="task.assignedDate" [dueDate]="task.olaDueDate" [transactionCreationDate]="task.transactionCreationDate" [transactionDueDate]="task.slaDueDate" [slaAvailable]="task.slaAvailable"
+                    [olaAvailable]="task.olaAvailable">
+                  </gosi-ola-task-dc>
+                </span>
+              </span>
+              <span class="label" *ngIf="!isWorkList">
+                {{ 'INBOX.DUE-DATE' | translate }}
+                <span *ngIf="!task.dueDate" class="px-1 label-value">
+                  {{ 'INBOX.NOT-AVAILABLE' | translate }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="mobile-screen mb-4" *ngIf="bpmTaskResponse?.tasks.length == 0">
+      <gosi-no-result-dc></gosi-no-result-dc>
+    </div>
+    <!-- Mobile View Ended -->
+    <gosi-pagination-dc #componentChild
+      *ngIf="claimedCount > 10 && bpmTaskResponse && bpmTaskResponse.tasks && bpmTaskResponse.tasks.length > 0"
+      [totalSize]="claimedCount" [itemsPerPage]="itemsPerPage" [pageDetails]="pageDetails" (pageChange)="selectPage($event)"
+      id="transUpdate">
+    </gosi-pagination-dc>
+  </div>
+</div>

@@ -1,0 +1,1803 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<!-- <span class="row badge" *ngIf="isAppProfile">
+  <fa-icon class="icon" icon="briefcase"></fa-icon> {{ 'DASHBOARD.ENGAGEMENTS' | translate | uppercase }}
+</span> -->
+<span class="row badge" [ngClass]="isAppProfile ? 'mx-0' : ''" *ngIf="isAdded">
+  <img src="assets/images/contributions.svg" alt="Contributions" class="icon" />
+  <span class="head-value">{{ 'DASHBOARD.ACTIVE-CONTRIBUTIONS' | translate | uppercase }} </span>
+  <!-- <span *ngIf="!isAppProfile" class="head-value">{{ 'DASHBOARD.CONTRIBUTIONS' | translate | uppercase }} </span> -->
+</span>
+<ng-container *ngIf="engagementDetails?.length === 0">
+  <div *ngIf="!isAppProfile">
+    <div class="row header pt-2" [ngClass]="isAppProfile ? 'pb-2' : 'pb-3'">
+      <div class="col-lg-12">
+        {{ 'DASHBOARD.NO-ACTIVE-ENGAGEMENTS' | translate }}
+      </div>
+    </div>
+    <div class="row" *ngIf="showEngHistory">
+      <div class="col-lg-12 mb-3">
+        <gosi-button-dc
+          [outlineOnly]="true"
+          [isTransparent]="true"
+          type="primary"
+          size="md"
+          class="btn-class"
+          (click)="navigateToEngagement()"
+        >
+          <span class="history-value">
+            {{ 'DASHBOARD.ENGAGEMENT-HISTORY' | translate }}
+          </span>
+        </gosi-button-dc>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="isAppProfile">
+    <gosi-card-dc type="primary">
+      <div class="row header">
+        <div class="col-lg-12">
+          {{ 'DASHBOARD.NO-ACTIVE-ENGAGEMENTS' | translate }}
+        </div>
+      </div>
+      <div class="row" *ngIf="showEngHistory">
+        <div class="col-lg-12 mt-3">
+          <gosi-button-dc
+            [outlineOnly]="true"
+            [isTransparent]="true"
+            type="primary"
+            size="md"
+            class="btn-class"
+            (click)="navigateToEngagement()"
+          >
+            <span class="history-value">
+              {{ 'DASHBOARD.ENGAGEMENT-HISTORY' | translate }}
+            </span>
+          </gosi-button-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+  </div>
+</ng-container>
+<ng-container *ngIf="engagementDetails?.length >= 1">
+  <!-- <div class="row d-block" *ngIf="!isAppIndividual">
+    <dsb-card-slider-dc (onLeftClick)="onLeftClick()" (onRightClick)="onRightClick()" [showLeft]="showLeft"
+      [showRight]="showRight" [lang]="lang">
+      <ng-container *ngFor="let engagement of engagementDetails; let i = index">
+        <div [ngClass]="{
+            'col-lg-12 ml-3 mr-3': !isAppProfile && engagementDetails?.length === 1,
+            'col-lg-12': isAppProfile && engagementDetails?.length === 1,
+            'd-flex multiple-card': engagementDetails?.length !== 1
+          }" *ngIf="
+            (!mobileView && (i === currentIndex || i === currentIndex + 1 || (!isAppProfile && i === currentIndex + 2))) ||
+            (mobileView && i === currentIndex)
+          ">
+          <gosi-card-dc type="primary" [noBorder]="!isAppProfile && engagementDetails?.length === 1" [ngClass]="[
+              engagementDetails?.length > 2
+                ? 'card-value'
+                : engagementDetails?.length === 2
+                ? 'name-value'
+                : 'slide-value'
+            ]" [noPadding]="!isAppProfile && engagementDetails?.length === 1" (click)="navigateToEngagement()"
+            [negativeMobileMargin]="'false'">
+            <div class="row">
+              <div [ngClass]="[engagementDetails?.length === 1 ? 'col-lg-auto col-sm-6' : 'col-lg-12']" class="pb-2">
+                <div class="flex flex-column" [ngClass]="[engagementDetails?.length === 1 ? 'single-value' : '']">
+                  <ng-template #excludedTemplate>
+                    <ng-container
+                      *ngTemplateOutlet="excludedTemplateInfo; context: { est: engagement?.establishmentName }">
+                    </ng-container>
+                  </ng-template>
+                  <div *ngIf="!mobileView" class="response-header head-padding"
+                    [ngStyle]="{'-webkit-box-orient':(engagementDetails?.length == '1'  &&  (engagement?.establishmentName.length < 24) && !isAppProfile) || (engagementDetails?.length == '1'  &&isAppProfile)? 'vertical' : 'unset' }"
+                    [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                    placement="top">
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement.establishmentName?.arabic
+                        : (engagement.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+                  <div *ngIf="mobileView" class="mob-response-header head-padding"
+                    [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                    placement="top">
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement.establishmentName?.arabic
+                        : (engagement.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+
+                  <ng-template #excludedTemplateInfo let-contributorName="est">
+                    <div class="d-flex flex-column">
+                      {{
+                        contributorName.english === null ? contributorName.arabic : (contributorName | bilingualText)
+                      }}
+                    </div>
+                  </ng-template>
+                  <div class="no-value" *ngIf="engagement?.establishmentName === null">
+                    {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+                  </div>
+                  <div class="text-value">
+                    <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.FROM' | translate }}</ng-container>
+                    <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.ACTIVE-ENGAGEMENT-FROM' | translate }}
+                    </ng-container>
+                    {{ engagement?.joiningDate?.gregorian | gosiDate }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-sm-6">
+                <div class="icon-value" [ngClass]="[engagementDetails?.length === 1 ? 'mr-0' : 'mr-1']">
+                  <div class="pt-2">
+                    <span class="con-label">
+                      {{ 'DASHBOARD.COVERAGE' | translate | uppercase }}
+                    </span>
+                  </div>
+                  <div class="col-lg-4">
+                    <div class="d-flex">
+                      <div class="d-flex">
+                        <ng-container *ngFor="let coverageItem of engagement?.coverageDetails?.coverages">
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === annuity && coverageItem?.coverage !== 0">
+                            <ng-template #annuityMessage>
+                              <ng-container *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                ">
+                              </ng-container>
+                            </ng-template>
+                            <img src="assets/icons/annuity-square.svg" placement="top" class="image-annuity"
+                              [tooltip]="displayIcon ? annuityMessage : null" alt="annuity" (click)="imageClicked()" />
+                          </ng-container>
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === ui && coverageItem?.coverage !== 0">
+                            <ng-template #uiMessage>
+                              <ng-container *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                ">
+                              </ng-container>
+                            </ng-template>
+                            <img src="assets/icons/saned-square.svg" alt="Unemployment insurance" class="image-ui"
+                              placement="top" [tooltip]="displayIcon ? uiMessage : null" (click)="imageClicked()" />
+                          </ng-container>
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === oh && coverageItem?.coverage !== 0">
+                            <ng-template #ohMessage>
+                              <ng-container *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                ">
+                              </ng-container>
+                            </ng-template>
+                            <img src="assets/icons/OH-square.svg" alt="Occupational Hazard" placement="top"
+                              class="image-oh" [tooltip]="displayIcon ? ohMessage : null" (click)="imageClicked()" />
+                          </ng-container>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex" *ngIf="engagementDetails?.length > 1">
+              <div class="d-flex flex-column align-text add-value" [ngClass]="!isAppProfile ? 'wage-borders' : ''" [ngClass]="isAppProfile ? w-auto : ''">
+                <div class="text-grayed margin-align">
+                  <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                  <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                </div>
+                <div class="wage-value wage-margin" *ngIf="engagement?.coverageDetails?.monthlyContributoryWage">
+                  {{ engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2' }}
+                  {{ 'DASHBOARD.SAR' | translate }}
+                </div>
+              </div>
+              <div class="col-lg-6 d-flex flex-column pt-4 add-value" *ngIf="isAdded && !isAppProfile">
+                <div class="text-grayed margin-active">{{ 'DASHBOARD.ACTIVE-CONTRIBUTIONS' | translate }}</div>
+                <div *ngIf="!mobileView">
+                  <div class="wage-value text-center word-break" *ngIf="engagement?.engagementDuration">
+                    {{
+                      'DASHBOARD.NO-OF-MONTHS'
+                        | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                    }},
+                    {{
+                      'DASHBOARD.NO-OF-DAYS'
+                        | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                    }}
+                  </div>
+                </div>
+                <div *ngIf="mobileView">
+                  <div class="wage-value text-center word-break days-margin days-margin-ipad"
+                    *ngIf="engagement?.engagementDuration">
+                    {{
+                        'DASHBOARD.NO-OF-MONTHS'
+                          | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                      }},
+
+                  </div>
+                  <div class="wage-value text-center word-break days-margin month-margin"
+                    *ngIf="engagement?.engagementDuration">
+                    {{
+                        'DASHBOARD.NO-OF-DAYS'
+                          | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                      }}
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" *ngIf="engagementDetails?.length === 1">
+              <div class="col-auto align-text add-value" [ngClass]="!isAppProfile ? 'wage-borders' : ''" [ngClass]="isAppProfile ? w-auto : ''">
+                <div class="text-grayed w-auto">
+                  <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                  <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                </div>
+                <div class="wage-value " *ngIf="engagement?.coverageDetails?.monthlyContributoryWage">
+                  {{ engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2' }}
+                  {{ 'DASHBOARD.SAR' | translate }}
+                </div>
+              </div>
+              <div class="col-2 pt-4 add-value single-card" *ngIf="isAdded && !isAppProfile">
+                <div class="text-grayed text-center">{{ 'DASHBOARD.CONTRIBUTION-DURATION' | translate }}</div>
+                <div *ngIf="!mobileView">
+                  <div class="wage-value text-center word-break" *ngIf="engagement?.engagementDuration">
+                    {{
+                    'DASHBOARD.NO-OF-MONTHS'
+                      | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                  }},
+                    {{
+                    'DASHBOARD.NO-OF-DAYS'
+                      | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                  }}
+                  </div>
+                </div>
+                <div *ngIf="mobileView">
+                  <div class="wage-value text-center word-break days-margin days-margin-ipad"
+                    *ngIf="engagement?.engagementDuration">
+                    {{
+                      'DASHBOARD.NO-OF-MONTHS'
+                        | translate: { months: engagement?.engagementDuration?.noOfMonths | numToPositive }
+                    }},
+
+                  </div>
+                  <div class="wage-value text-center word-break days-margin month-margin"
+                    *ngIf="engagement?.engagementDuration">
+                    {{
+                      'DASHBOARD.NO-OF-DAYS'
+                        | translate: { days: engagement?.engagementDuration?.noOfDays | numToPositive }
+                    }}
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" *ngIf="isAdded && !isAppProfile">
+              <div class="col-lg-12">
+                <span class="breakup-value" (click)="showModal(WageBrkup, 'lg')">{{
+                  'DASHBOARD.VIEW-WAGE-BREAKUP' | translate
+                }}</span>
+              </div>
+            </div>
+            <ng-template #WageBrkup>
+              <div class="custom-modal">
+                <gosi-modal-dc>
+                  <div class="row" modalContent>
+                    <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+                      <span class="times-icon" (click)="hideModal()">
+                        <fa-icon icon="times"></fa-icon>
+                      </span>
+                    </div>
+                    <div class="col-lg-12">
+                      <div class="header-part">
+                        <div class="modal-headers">{{ 'DASHBOARD.WAGE-BREAKUP' | translate }}</div>
+                      </div>
+                    </div>
+                    <div class="col-lg-12 header-value pt-4">
+                      <div class="d-flex flex-column">
+                        <div class="est-name">
+                          {{
+                            engagement?.establishmentName?.english === null
+                              ? engagement.establishmentName?.arabic
+                              : (engagement.establishmentName | bilingualText | titlecase)
+                          }}
+                        </div>
+                        <div class="text-value">
+                          <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.FROM' | translate }}</ng-container>
+                          <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.FROM' | translate }}
+                          </ng-container>
+                          {{ engagement?.joiningDate?.gregorian | gosiDate }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-12">
+                      <div *ngIf="!mobileView" class="desktop-table">
+                        <div class="row">
+                          <div class="col-md-11 pt-3">
+                            <span class="heading-style"> {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}</span>
+                            <div class="row mt-4">
+                              <table class="table table-borderless" style="border: #e4e4e4 solid 0.1rem !important;">
+                                <thead class="header">
+                                  <tr>
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.BASIC' | translate }}</th>
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.HOUSING' | translate }}
+                                    </th>
+
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+                                    <th class="custom-font" style="width: 16.6%;font-weight: bold;">
+                                      {{ 'CONTRIBUTOR.TOTAL' | translate }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody class="value-font">
+                                  <ng-container>
+                                    <tr>
+                                      <td>{{ engagement?.engagementPeriod[0]?.occupation | bilingualText }}</td>
+                                      <td>{{ engagement?.engagementPeriod[0]?.wage?.basicWage | number: '1.2-2' }}</td>
+                                      <td>
+                                        {{ engagement?.engagementPeriod[0]?.wage?.housingBenefit | number: '1.2-2' }}
+                                      </td>
+                                      <td>{{ engagement?.engagementPeriod[0]?.wage?.commission | number: '1.2-2' }}</td>
+                                      <td>
+                                        {{ engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2' }}
+                                      </td>
+                                      <td>
+                                        {{
+                                         (engagement?.engagementPeriod[0]?.wage?.basicWage +
+                                            engagement?.engagementPeriod[0]?.wage?.commission +
+                                            engagement?.engagementPeriod[0]?.wage?.housingBenefit +
+                                            engagement?.engagementPeriod[0]?.wage?.otherAllowance)
+                                            | number: '1.2-2' }}
+                                      </td>
+                                    </tr>
+                                  </ng-container>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="d-flex flex-row info-section">
+                          <div class="sar-style">{{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}</div>
+                        </div>
+                        <div class="d-flex justify-content-start total-section"
+                          *ngIf="engagement?.engagementPeriod[0]?.wage?.contributoryWage">
+                          <div class="flex-container d-flex flex-column">
+                            <div>
+                              <div class="con-label-value label-value"
+                                [ngClass]="lang == 'en' ? 'border-right-wage' : 'border-left-wage'">
+                                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+                              </div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                              <div class="contributory-wage d-inline-flex p-2 bd-highlight">
+                                {{ engagement?.engagementPeriod[0]?.wage?.contributoryWage | number: '.2-2' }}
+                                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="margin-wage">
+                            <div class="d-flex flex-column">
+                              <span class="con-label-value wage-size">
+                                {{ 'CONTRIBUTOR.CONTRIBUTION-BREAKDOWN' | translate }}
+                              </span>
+                              <div>
+                                <div class="d-flex justify-content-start mobile-coverage-section">
+                                  <ng-container *ngFor="let cov of engagement?.coverageDetails?.coverages">
+                                    <div class="icon-wrappers d-flex"
+                                      *ngIf="cov.coverageType.english === annuity && cov.coverage !== 0  && cov.establishmentPercentage !== 0">
+                                      <ng-template #annuityMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/annuity.svg" alt="annuity" class="image-annuitys" />
+                                      <ng-container *ngIf="cov.coverageType.english === annuity && cov.coverage !== 0">
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}
+                                              ({{cov.contributorPercentage}}%)</span>
+                                            <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === annuity ? annuityMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                          </div>
+                                          <div class="mid-label">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                    <div class="icon-wrappers d-flex"
+                                      *ngIf="cov.coverageType.english === oh && cov.coverage !== 0 && cov.establishmentPercentage !== 0">
+                                      <ng-template #ohMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/OH.svg" alt="Occupational Hazard" class="image-ohs" />
+                                      <ng-container
+                                        *ngIf="cov.coverageType.english === oh && cov.coverage !== 0 && cov.establishmentPercentage !== 0">
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}
+                                              ({{cov.contributorPercentage}}%)</span>
+                                            <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === oh ? ohMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                          </div>
+                                          <div class="mid-label title-label-data">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                    <div class="icon-wrappers d-flex"
+                                      *ngIf="cov.coverageType.english === ui && cov.coverage !== 0">
+                                      <ng-template #uiMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/UI.svg" alt="Unemployment insurance" class="image-uis" />
+                                      <ng-container *ngIf="cov.coverageType.english === ui && cov.coverage !== 0">
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}
+                                              ({{cov.contributorPercentage}}%)</span>
+                                            <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === ui ? uiMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                          </div>
+                                          <div class="mid-label">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div *ngIf="mobileView" class="mobile-view-table">
+                        <div class="row">
+                          <div class="col-md-11 pt-3">
+                            <span class="heading-style"> {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}</span>
+                            <div class="row mt-4">
+                              <table class="table table-borderless">
+                                <tbody class="heading-style-mobile">
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OCCUPATION' | translate }}</td>
+                                    <td class="value-back" style="width: 50%;">
+                                      {{ engagement?.engagementPeriod[0]?.occupation | bilingualText }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.BASIC' | translate }}</td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.basicWage | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%;font-weight: bold">
+                                      {{ 'CONTRIBUTOR.HOUSING' | translate }}</td>
+                                    <td class="value-back" style="width: 50%;">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.housingBenefit | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%;font-weight: bold">
+                                      {{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</td>
+                                    <td class="value-back" style="width: 50%;">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.commission | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%;font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</td>
+                                    <td class="value-back" style="width: 50%;">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%;font-weight: bold">
+                                      {{ 'CONTRIBUTOR.TOTAL' | translate }}</td>
+                                    <td class="value-back" style="width: 50%;">
+                                      {{
+                                               ( engagement?.engagementPeriod[0]?.wage?.basicWage +
+                                                  engagement?.engagementPeriod[0]?.wage?.commission +
+                                                  engagement?.engagementPeriod[0]?.wage?.housingBenefit +
+                                                  engagement?.engagementPeriod[0]?.wage?.otherAllowance)
+                                                  | number: '1.2-2'
+                                              }}
+                                    </td>
+                                  </tr>
+
+
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="d-flex flex-row info-section">
+                          <div class="sar-style">{{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}</div>
+                        </div>
+
+
+
+                        <div class="d-flex justify-content-start total-section mt-4"
+                          *ngIf="engagement?.engagementPeriod[0]?.wage?.contributoryWage">
+                          <div class="flex-container d-flex flex-column">
+                            <div>
+                              <div class="con-label-value label-value">
+                                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+                              </div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                              <div class="contributory-wage d-inline-flex p-2 bd-highlight">
+                                {{ engagement?.engagementPeriod[0]?.wage?.contributoryWage | number: '.2-2' }}
+                                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="d-flex flex-column">
+                            <div>
+                              <span class="con-label-value">
+                                {{ 'CONTRIBUTOR.CONTRIBUTION-BREAKDOWN' | translate }}
+                              </span>
+                            </div>
+                            <div class="d-flex justify-content-start mobile-coverage-section">
+                              <ng-container *ngFor="let cov of engagement?.coverageDetails?.coverages">
+                                <div class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === annuity && cov.coverage !== 0 && cov.establishmentPercentage !== 0">
+                                  <ng-template #annuityMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/annuity.svg" alt="annuity" class="image-annuitys" />
+                                  <ng-container *ngIf="cov.coverageType.english === annuity">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}
+                                          ({{cov.contributorPercentage}}%)</span>
+                                        <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === annuity ? annuityMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.contributorShare | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                                <div class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === oh && cov.coverage !== 0 && cov.establishmentPercentage !== 0">
+                                  <ng-template #ohMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/OH.svg" alt="Occupational Hazard" class="image-ohs" />
+                                  <ng-container *ngIf="cov.coverageType.english === oh">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}
+                                          ({{cov.contributorPercentage}}%)</span>
+                                        <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === oh ? ohMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.contributorShare | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                                <div class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === ui && cov.coverage !== 0 && cov.establishmentPercentage !== 0">
+                                  <ng-template #uiMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/UI.svg" alt="Unemployment insurance" class="image-uis" />
+                                  <ng-container *ngIf="cov.coverageType.english === ui">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}
+                                          ({{cov.contributorPercentage}}%)</span>
+                                        <fa-icon class="tooltip-icon" [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === ui ? uiMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.contributorShare | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                              </ng-container>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </gosi-modal-dc>
+              </div>
+            </ng-template>
+          </gosi-card-dc>
+        </div>
+      </ng-container>
+    </dsb-card-slider-dc>
+  </div> -->
+  <div>
+    <dsb-card-carousel-dc
+      [lang]="lang"
+      (onLeftClick)="onCarouselLeftClick()"
+      (onRightClick)="onCarouselRightClick()"
+      [showCarouselLeft]="showCarouselLeft"
+      [showCarouselRight]="showCarouselRight"
+    >
+      <ng-container *ngFor="let engagement of engagementDetailsCarouselList; let i = index">
+        <div class="d-flex flex-row carousel-tray">
+          <gosi-card-dc
+            type="primary"
+            [noBorder]="!isAppProfile && engagementDetails?.length === 1"
+            [ngClass]="[engagementDetails?.length > 1 ? 'card-sizing' : 'slide-value']"
+            [noPadding]="!isAppProfile && engagementDetails?.length === 1"
+            (click)="navigateToEngagement()"
+            [isShow]="showCarouselLeft"
+            [negativeMobileMargin]="'false'"
+          >
+            <div class="row">
+              <div [ngClass]="[engagementDetails?.length === 1 ? 'col-lg-auto col-sm-6' : 'col-lg-12']" class="pb-2">
+                <div class="flex flex-column" [ngClass]="[engagementDetails?.length === 1 ? 'single-value' : '']">
+                  <ng-template #excludedTemplate>
+                    <ng-container
+                      *ngTemplateOutlet="excludedTemplateInfo; context: { est: engagement?.establishmentName }"
+                    >
+                    </ng-container>
+                  </ng-template>
+                  <div
+                    *ngIf="!mobileView"
+                    class="head-padding"
+                    [ngClass]="[
+                      engagementDetails?.length === 1 ? 'name-width' : '',
+                      engagementDetails?.length === 1 ? 'single-response-header' : 'response-header'
+                    ]"
+                    [ngStyle]="{
+                      '-webkit-box-orient':
+                        engagementDetails?.length == '1' && engagement?.establishmentName?.length < 25
+                          ? 'unset'
+                          : 'vertical'
+                    }"
+                    [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                    placement="top"
+                  >
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement?.establishmentName?.arabic
+                        : (engagement?.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+                  <div
+                    *ngIf="mobileView"
+                    class="mob-response-header head-padding"
+                    [tooltip]="isTooltipNeeded(engagement?.establishmentName) === 1 ? excludedTemplate : ''"
+                    placement="top"
+                  >
+                    {{
+                      engagement?.establishmentName?.english === null
+                        ? engagement?.establishmentName?.arabic
+                        : (engagement?.establishmentName | bilingualText | titlecase)
+                    }}
+                  </div>
+
+                  <ng-template #excludedTemplateInfo let-contributorName="est">
+                    <div class="d-flex flex-column">
+                      {{
+                        contributorName?.english === null ? contributorName?.arabic : (contributorName | bilingualText)
+                      }}
+                    </div>
+                  </ng-template>
+                  <div class="no-value" *ngIf="engagement?.establishmentName === null">
+                    {{ 'DASHBOARD.NOT-AVAILABLE' | translate }}
+                  </div>
+                  <div class="text-value">
+                    <ng-container *ngIf="engagementDetails?.length === 1">{{
+                      'DASHBOARD.FROM' | translate
+                    }}</ng-container>
+                    <ng-container *ngIf="engagementDetails?.length > 1"
+                      >{{ 'DASHBOARD.ACTIVE' | translate }} {{ 'DASHBOARD.FROM' | translate }}</ng-container
+                    >
+                    <!-- <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.FROM' | translate }}</ng-container> -->
+                    <!-- <ng-container *ngIf="isAppProfile && engagementDetails?.length > 1">{{ 'DASHBOARD.ACTIVE-ENGAGEMENT-FROM' | translate }}
+                    </ng-container> -->
+                    {{ engagement?.joiningDate | dateType }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-2 col-sm-6">
+                <div class="icon-value" [ngClass]="[engagementDetails?.length === 1 ? 'mr-0' : 'mr-1']">
+                  <div class="pt-2">
+                    <span class="con-label">
+                      {{ 'DASHBOARD.COVERAGE' | translate | uppercase }}
+                    </span>
+                  </div>
+                  <div class="col-lg-4">
+                    <div class="d-flex">
+                      <div class="d-flex oh-single-tooltip">
+                        <ng-container *ngFor="let coverageItem of engagement?.coverageDetails?.coverages">
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === annuity && coverageItem?.coverage !== 0"
+                          >
+                            <ng-template #annuityMessage>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                "
+                              >
+                              </ng-container>
+                            </ng-template>
+                            <img
+                              src="assets/icons/annuity-square.svg"
+                              placement="top"
+                              class="image-annuity"
+                              [tooltip]="displayIcon ? annuityMessage : null"
+                              alt="annuity"
+                              (click)="imageClicked()"
+                            />
+                          </ng-container>
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === ui && coverageItem?.coverage !== 0"
+                          >
+                            <ng-template #uiMessage>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                "
+                              >
+                              </ng-container>
+                            </ng-template>
+                            <img
+                              src="assets/icons/saned-square.svg"
+                              alt="Unemployment insurance"
+                              class="image-ui"
+                              placement="top"
+                              [tooltip]="displayIcon ? uiMessage : null"
+                              (click)="imageClicked()"
+                            />
+                          </ng-container>
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === oh && coverageItem?.coverage !== 0"
+                          >
+                            <ng-template #ohMessage>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                "
+                              >
+                              </ng-container>
+                            </ng-template>
+                            <img
+                              src="assets/icons/OH-square.svg"
+                              alt="Occupational Hazard"
+                              placement="top"
+                              class="image-oh"
+                              [tooltip]="displayIcon ? ohMessage : null"
+                              (click)="imageClicked()"
+                            />
+                          </ng-container>
+                          <ng-container
+                            *ngIf="
+                              coverageItem?.coverageType?.english === pensionReformAnnuity &&
+                              coverageItem?.coverage !== 0
+                            "
+                          >
+                            <ng-template #pensionReformAnnuityMessage>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                "
+                              >
+                              </ng-container>
+                            </ng-template>
+                            <img
+                              src="assets/icons/pension-reform.svg"
+                              alt="Pension Reform"
+                              placement="top"
+                              class="image-oh"
+                              [tooltip]="displayIcon ? pensionReformAnnuityMessage : null"
+                              (click)="imageClicked()"
+                            />
+                          </ng-container>
+                          <!-- PPA -->
+                          <ng-container
+                            *ngIf="coverageItem?.coverageType?.english === ppa && coverageItem?.coverage !== 0"
+                          >
+                            <ng-template #ppaMessage>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  tolTemplate;
+                                  context: { coverage: coverageItem, coverageDetail: engagement?.coverageDetails }
+                                "
+                              >
+                              </ng-container>
+                            </ng-template>
+                            <img
+                              src="assets/icons/ppa-annuity.svg"
+                              alt="PPA Annuity"
+                              placement="top"
+                              class="image-oh"
+                              [tooltip]="displayIcon ? ppaMessage : null"
+                              (click)="imageClicked()"
+                            />
+                          </ng-container>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex" *ngIf="engagementDetails?.length > 1">
+              <div class="d-flex flex-column align-text add-value" [ngClass]="!isAppProfile ? 'wage-borders' : ''">
+                <div class="text-grayed margin-align">
+                  <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                  <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                </div>
+                <div class="wage-value wage-margin" style="margin-right: 0.5rem">
+                  {{
+                    engagement?.ppaIndicator &&
+                    (engagement?.coverageDetails?.monthlyContributoryWage === 0 ||
+                      engagement?.coverageDetails?.monthlyContributoryWage === null)
+                      ? '-'
+                      : (engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2')
+                  }}
+                  {{
+                    engagement?.coverageDetails?.monthlyContributoryWage === 0 ||
+                    engagement?.coverageDetails?.monthlyContributoryWage === null
+                      ? ''
+                      : ('DASHBOARD.SAR' | translate)
+                  }}
+                </div>
+              </div>
+              <!-- <div class="d-flex flex-column multiborder-value add-value">
+              </div> -->
+              <div class="col-lg-6 d-flex flex-column pt-4 add-value" *ngIf="isAdded && !isAppProfile">
+                <div class="text-grayed margin-active">{{ 'DASHBOARD.ACTIVE-CONTRIBUTIONS' | translate }}</div>
+                <div *ngIf="!mobileView">
+                  <div class="wage-value text-center word-break" *ngIf="engagement?.engagementDuration">
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths === 0 &&
+                        engagement?.engagementDuration?.noOfDays === 0
+                      "
+                      >{{ engagement?.engagementDuration?.noOfMonths }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }},
+                      {{ engagement?.engagementDuration?.noOfDays }}
+                      {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+                    </ng-container>
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfMonths !== 0
+                      "
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfMonths === 1 ||
+                              engagement?.engagementDuration?.noOfMonths === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfMonths }}</ng-container
+                      >
+
+                      {{
+                        engagement?.engagementDuration?.noOfMonths === 1
+                          ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                          : engagement?.engagementDuration?.noOfMonths === 2
+                          ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                          : engagement?.engagementDuration?.noOfMonths > 2 &&
+                            engagement?.engagementDuration?.noOfMonths < 11
+                          ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+                      }}
+                      <span
+                        *ngIf="
+                          engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0
+                        "
+                        >,</span
+                      >
+                    </ng-container>
+                    <ng-container
+                      *ngIf="engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0"
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfDays === 1 ||
+                              engagement?.engagementDuration?.noOfDays === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfDays | numToPositive }}
+                      </ng-container>
+
+                      {{
+                        engagement?.engagementDuration?.noOfDays === 1
+                          ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                          : engagement?.engagementDuration?.noOfDays === 2
+                          ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                          : engagement?.engagementDuration?.noOfDays > 2 &&
+                            engagement?.engagementDuration?.noOfDays < 11
+                          ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                      }}
+                    </ng-container>
+                  </div>
+                </div>
+                <div *ngIf="mobileView">
+                  <div
+                    class="wage-value text-center word-break days-margin days-margin-ipad"
+                    *ngIf="engagement?.engagementDuration"
+                  >
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths === 0 &&
+                        engagement?.engagementDuration?.noOfDays === 0
+                      "
+                      >{{ engagement?.engagementDuration?.noOfMonths }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }},
+                      {{ engagement?.engagementDuration?.noOfDays }}
+                      {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+                    </ng-container>
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfMonths !== 0
+                      "
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfMonths === 1 ||
+                              engagement?.engagementDuration?.noOfMonths === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfMonths }}</ng-container
+                      >
+                      {{
+                        engagement?.engagementDuration?.noOfMonths === 1
+                          ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                          : engagement?.engagementDuration?.noOfMonths === 2
+                          ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                          : engagement?.engagementDuration?.noOfMonths > 2 &&
+                            engagement?.engagementDuration?.noOfMonths < 11
+                          ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+                      }}
+                      <span
+                        *ngIf="
+                          engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0
+                        "
+                        >,</span
+                      >
+                    </ng-container>
+                  </div>
+                  <div
+                    class="wage-value text-center word-break days-margin month-margin"
+                    *ngIf="engagement?.engagementDuration"
+                  >
+                    <ng-container
+                      *ngIf="engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0"
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfDays === 1 ||
+                              engagement?.engagementDuration?.noOfDays === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfDays | numToPositive }}
+                      </ng-container>
+                      {{
+                        engagement?.engagementDuration?.noOfDays === 1
+                          ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                          : engagement?.engagementDuration?.noOfDays === 2
+                          ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                          : engagement?.engagementDuration?.noOfDays > 2 &&
+                            engagement?.engagementDuration?.noOfDays < 11
+                          ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                      }}
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <!-- <gosi-dropdown-dc *ngIf="engagementDetails?.length > 1 && isAdded" [list]="actionDropDown"
+                class="float-right dropdown-value" (selectedItem)="actionType.emit($event)" minWidthInRem="21.42rem">
+                <fa-icon class="text-value" icon="ellipsis-v"></fa-icon>
+              </gosi-dropdown-dc> -->
+            </div>
+            <div class="row" *ngIf="engagementDetails?.length === 1">
+              <div class="col-auto align-text add-value" [ngClass]="!isAppProfile ? 'wage-borders' : ''">
+                <div class="text-grayed" [ngClass]="mobilewidth ? '' : 'single-width'">
+                  <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                  <ng-container *ngIf="isAppProfile">{{ 'DASHBOARD.CONTRIBUTORY-WAGE' | translate }}</ng-container>
+                </div>
+                <div class="wage-value">
+                  {{
+                    engagement?.ppaIndicator &&
+                    (engagement?.coverageDetails?.monthlyContributoryWage === 0 ||
+                      engagement?.coverageDetails?.monthlyContributoryWage === null)
+                      ? '-'
+                      : (engagement?.coverageDetails?.monthlyContributoryWage | number: '1.2-2')
+                  }}
+                  {{
+                    engagement?.coverageDetails?.monthlyContributoryWage === 0 ||
+                    engagement?.coverageDetails?.monthlyContributoryWage === null
+                      ? ''
+                      : ('DASHBOARD.SAR' | translate)
+                  }}
+                </div>
+              </div>
+              <!-- <div class="col-auto border-value">
+              </div> -->
+              <div class="col-2 pt-4 add-value single-card" *ngIf="isAdded && !isAppProfile">
+                <div class="text-grayed" [ngClass]="mobilewidth ? '' : 'single-width'">
+                  {{ 'DASHBOARD.CONTRIBUTION-DURATION' | translate }}
+                </div>
+                <div *ngIf="!mobileView">
+                  <div
+                    class="wage-value word-break"
+                    *ngIf="engagement?.engagementDuration"
+                    [ngClass]="engagementDetails?.length > 1 ? 'text-center' : ''"
+                  >
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths === 0 &&
+                        engagement?.engagementDuration?.noOfDays === 0
+                      "
+                      >{{ engagement?.engagementDuration?.noOfMonths }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }},
+                      {{ engagement?.engagementDuration?.noOfDays }}
+                      {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+                    </ng-container>
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfMonths !== 0
+                      "
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfMonths === 1 ||
+                              engagement?.engagementDuration?.noOfMonths === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfMonths }}</ng-container
+                      >
+                      {{
+                        engagement?.engagementDuration?.noOfMonths === 1
+                          ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                          : engagement?.engagementDuration?.noOfMonths === 2
+                          ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                          : engagement?.engagementDuration?.noOfMonths > 2 &&
+                            engagement?.engagementDuration?.noOfMonths < 11
+                          ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+                      }}
+                      <span
+                        *ngIf="
+                          engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0
+                        "
+                        >,</span
+                      >
+                    </ng-container>
+                    <ng-container
+                      *ngIf="engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0"
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfDays === 1 ||
+                              engagement?.engagementDuration?.noOfDays === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfDays | numToPositive }}
+                      </ng-container>
+                      {{
+                        engagement?.engagementDuration?.noOfDays === 1
+                          ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                          : engagement?.engagementDuration?.noOfDays === 2
+                          ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                          : engagement?.engagementDuration?.noOfDays > 2 &&
+                            engagement?.engagementDuration?.noOfDays < 11
+                          ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                      }}
+                    </ng-container>
+                  </div>
+                </div>
+                <div *ngIf="mobileView">
+                  <div
+                    class="wage-value text-center word-break days-margin-single"
+                    *ngIf="engagement?.engagementDuration"
+                  >
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths === 0 &&
+                        engagement?.engagementDuration?.noOfDays === 0
+                      "
+                      >{{ engagement?.engagementDuration?.noOfMonths }} {{ 'CONTRIBUTOR.WAGE.MONTH' | translate }},
+                      {{ engagement?.engagementDuration?.noOfDays }}
+                      {{ 'CONTRIBUTOR.WAGE.DAY' | translate }}
+                    </ng-container>
+                    <ng-container
+                      *ngIf="
+                        engagement?.engagementDuration?.noOfMonths && engagement?.engagementDuration?.noOfMonths !== 0
+                      "
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfMonths === 1 ||
+                              engagement?.engagementDuration?.noOfMonths === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfMonths }}</ng-container
+                      >
+                      {{
+                        engagement?.engagementDuration?.noOfMonths === 1
+                          ? ('CONTRIBUTOR.WAGE.MONTH' | translate)
+                          : engagement?.engagementDuration?.noOfMonths === 2
+                          ? ('CONTRIBUTOR.WAGE.MONTHS' | translate)
+                          : engagement?.engagementDuration?.noOfMonths > 2 &&
+                            engagement?.engagementDuration?.noOfMonths < 11
+                          ? ('CONTRIBUTOR.WAGE.MONTHS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.MONTHS-11' | translate)
+                      }}
+                      <span
+                        *ngIf="
+                          engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0
+                        "
+                        >,</span
+                      >
+                    </ng-container>
+                  </div>
+                  <div
+                    class="wage-value text-center word-break month-margin-single"
+                    *ngIf="engagement?.engagementDuration"
+                  >
+                    <ng-container
+                      *ngIf="engagement?.engagementDuration?.noOfDays && engagement?.engagementDuration?.noOfDays !== 0"
+                    >
+                      <ng-container
+                        *ngIf="
+                          !(
+                            lang === 'ar' &&
+                            (engagement?.engagementDuration?.noOfDays === 1 ||
+                              engagement?.engagementDuration?.noOfDays === 2)
+                          )
+                        "
+                      >
+                        {{ engagement?.engagementDuration?.noOfDays | numToPositive }}
+                      </ng-container>
+                      {{
+                        engagement?.engagementDuration?.noOfDays === 1
+                          ? ('CONTRIBUTOR.WAGE.DAY' | translate)
+                          : engagement?.engagementDuration?.noOfDays === 2
+                          ? ('CONTRIBUTOR.WAGE.DAYS' | translate)
+                          : engagement?.engagementDuration?.noOfDays > 2 &&
+                            engagement?.engagementDuration?.noOfDays < 11
+                          ? ('CONTRIBUTOR.WAGE.DAYS-3-10' | translate)
+                          : ('CONTRIBUTOR.WAGE.DAYS-11' | translate)
+                      }}
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <!-- <gosi-dropdown-dc *ngIf="engagementDetails?.length > 1 && isAdded" [list]="actionDropDown"
+                class="float-right dropdown-value" (selectedItem)="actionType.emit($event)" minWidthInRem="21.42rem">
+                <fa-icon class="text-value" icon="ellipsis-v"></fa-icon>
+              </gosi-dropdown-dc> -->
+            </div>
+            <div class="row" *ngIf="isAdded && !isAppProfile">
+              <div class="col-lg-12">
+                <span class="breakup-value" (click)="showModal(WageBrkup, 'lg')">{{
+                  'DASHBOARD.VIEW-WAGE-BREAKUP' | translate
+                }}</span>
+              </div>
+            </div>
+            <ng-template #WageBrkup>
+              <div class="custom-modal">
+                <gosi-modal-dc
+                  [modalHeader]="'DASHBOARD.WAGE-BREAKUP' | translate"
+                  [needCloseButton]="true"
+                  (closeModal)="hideModal()"
+                >
+                  <div class="row" modalContent>
+                    <!-- <div class="col-lg-12 d-flex justify-content-end icon-wrapper">
+                      <fa-icon icon="times" (click)="hideModal()" class="times-icon"></fa-icon>
+                    </div>
+                    <div class="col-lg-12">
+                      <div class="header-part"> -->
+                    <!-- <div class="col-lg-10"> -->
+                    <!-- <div class="modal-headers">{{ 'DASHBOARD.WAGE-BREAKUP' | translate }}</div> -->
+                    <!-- </div> -->
+                    <!-- </div>
+                    </div> -->
+                    <div class="col-lg-12 header-value">
+                      <div class="d-flex flex-column">
+                        <div class="est-name">
+                          {{
+                            engagement?.establishmentName?.english === null
+                              ? engagement.establishmentName?.arabic
+                              : (engagement.establishmentName | bilingualText | titlecase)
+                          }}
+                        </div>
+                        <div class="text-value">
+                          <!-- <ng-container *ngIf="!isAppProfile">{{ 'DASHBOARD.FROM' | translate }}</ng-container>
+                          <ng-container *ngIf="isAppProfile"
+                            > -->
+                          <!-- ACTIVE-ENGAGEMENT-FROM is required for individualApp also -->
+                          {{ 'DASHBOARD.ACTIVE-ENGAGEMENT-FROM' | translate }}
+                          <!-- </ng-container> -->
+                          {{ engagement?.joiningDate | dateType }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-12">
+                      <div *ngIf="!mobileView" class="desktop-table">
+                        <div class="row">
+                          <div class="col-md-11 pt-3">
+                            <span class="heading-style"> {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}</span>
+                            <div class="row mt-4">
+                              <table
+                                class="table table-borderless table-scroll"
+                                style="border: #e4e4e4 solid 0.1rem !important"
+                              >
+                                <thead class="header">
+                                  <tr>
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OCCUPATION' | translate }}
+                                    </th>
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}
+                                    </th>
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.HOUSING' | translate }}
+                                    </th>
+
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.COMMISSIONS' | translate }}
+                                    </th>
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}
+                                    </th>
+                                    <th class="custom-font" style="width: 16.6%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.TOTAL' | translate }}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody class="value-font">
+                                  <ng-container>
+                                    <tr>
+                                      <td>{{ engagement?.engagementPeriod[0]?.occupation | bilingualText }}</td>
+                                      <td>{{ engagement?.engagementPeriod[0]?.wage?.basicWage | number: '1.2-2' }}</td>
+                                      <td>
+                                        {{ engagement?.engagementPeriod[0]?.wage?.housingBenefit | number: '1.2-2' }}
+                                      </td>
+                                      <td>{{ engagement?.engagementPeriod[0]?.wage?.commission | number: '1.2-2' }}</td>
+                                      <td>
+                                        {{ engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2' }}
+                                      </td>
+                                      <td>
+                                        {{
+                                          engagement?.engagementPeriod[0]?.wage?.basicWage +
+                                            engagement?.engagementPeriod[0]?.wage?.commission +
+                                            engagement?.engagementPeriod[0]?.wage?.housingBenefit +
+                                            engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2'
+                                        }}
+                                      </td>
+                                    </tr>
+                                  </ng-container>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="d-flex flex-row info-section">
+                          <!-- <div class="last-updated">
+                                      {{ 'CONTRIBUTOR.WAGE.LAST-UPDATED' | translate
+                                      }}{{ engagement?.engagementPeriod[0]?.lastUpdatedDate?.gregorian | gosiDate }}
+                                    </div>  -->
+                          <div class="sar-style">{{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}</div>
+                        </div>
+                        <div
+                          class="d-flex justify-content-start total-section"
+                          *ngIf="engagement?.engagementPeriod[0]?.wage?.contributoryWage"
+                        >
+                          <div class="flex-container d-flex flex-column">
+                            <div>
+                              <div
+                                class="con-label-value"
+                                [ngClass]="[
+                                  lang == 'en' ? 'border-right-wage' : 'border-left-wage',
+                                  lang == 'en' ? 'label-value' : 'label-values'
+                                ]"
+                              >
+                                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+                              </div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                              <div class="contributory-wage d-inline-flex p-2 bd-highlight">
+                                {{ engagement?.engagementPeriod[0]?.wage?.contributoryWage | number: '.2-2' }}
+                                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="margin-wage">
+                            <div class="d-flex flex-column">
+                              <span
+                                class="con-label-value wage-size"
+                                [ngClass]="lang == 'en' ? 'wage-size' : 'wage-size-custom'"
+                              >
+                                {{ 'CONTRIBUTOR.CONTRIBUTION-BREAKDOWN' | translate }}
+                              </span>
+                              <div>
+                                <div class="d-flex justify-content-start mobile-coverage-section">
+                                  <ng-container *ngFor="let cov of engagement?.coverageDetails?.coverages">
+                                    <div
+                                      class="icon-wrappers d-flex"
+                                      *ngIf="
+                                        cov.coverageType.english === annuity &&
+                                        cov.coverage !== 0 &&
+                                        cov.establishmentPercentage !== 0
+                                      "
+                                    >
+                                      <ng-template #annuityMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/annuity.svg" alt="annuity" class="image-annuitys" />
+                                      <ng-container
+                                        *ngIf="
+                                          cov.coverageType.english === annuity &&
+                                          cov.coverage !== 0 &&
+                                          cov.establishmentPercentage !== 0
+                                        "
+                                      >
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}
+                                              ({{ cov.contributorPercentage }}%)</span
+                                            >
+                                            <fa-icon
+                                              class="tooltip-icon"
+                                              [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === annuity ? annuityMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"
+                                            ></fa-icon>
+                                          </div>
+                                          <div class="mid-label">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                    <div
+                                      class="icon-wrappers d-flex"
+                                      *ngIf="
+                                        cov.coverageType.english === oh &&
+                                        cov.coverage !== 0 &&
+                                        cov.establishmentPercentage !== 0
+                                      "
+                                    >
+                                      <ng-template #ohMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/OH.svg" alt="Occupational Hazard" class="image-ohs" />
+                                      <ng-container
+                                        *ngIf="
+                                          cov.coverageType.english === oh &&
+                                          cov.coverage !== 0 &&
+                                          cov.establishmentPercentage !== 0
+                                        "
+                                      >
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}
+                                              ({{ cov.contributorPercentage }}%)</span
+                                            >
+                                            <fa-icon
+                                              class="tooltip-icon"
+                                              [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === oh ? ohMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"
+                                            ></fa-icon>
+                                          </div>
+                                          <div class="mid-label title-label-data">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                    <div
+                                      class="icon-wrappers d-flex"
+                                      *ngIf="cov.coverageType.english === ui && cov.coverage !== 0"
+                                    >
+                                      <ng-template #uiMessage>
+                                        <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                        </ng-container>
+                                      </ng-template>
+                                      <img src="assets/icons/UI.svg" alt="Unemployment insurance" class="image-uis" />
+                                      <ng-container
+                                        *ngIf="
+                                          cov.coverageType.english === ui &&
+                                          cov.coverage !== 0 &&
+                                          cov.establishmentPercentage !== 0
+                                        "
+                                      >
+                                        <div class="pr-2 pl-2">
+                                          <div>
+                                            <span class="small-label title-label">
+                                              {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}
+                                              ({{ cov.contributorPercentage }}%)</span
+                                            >
+                                            <fa-icon
+                                              class="tooltip-icon"
+                                              [icon]="['fas', 'info-circle']"
+                                              [tooltip]="cov.coverageType.english === ui ? uiMessage : null"
+                                              [placement]="lang === 'en' ? 'top' : 'top'"
+                                            ></fa-icon>
+                                          </div>
+                                          <div class="mid-label">
+                                            {{ cov.contributorShare | number: '1.2-2' }}
+                                            {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                          </div>
+                                        </div>
+                                      </ng-container>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div *ngIf="mobileView" class="mobile-view-table">
+                        <div class="row">
+                          <div class="col-md-11 pt-3">
+                            <span class="heading-style"> {{ 'CONTRIBUTOR.WAGE-BREAKDOWN' | translate }}</span>
+                            <div class="row mt-4">
+                              <table class="table table-bordered table-scroll">
+                                <!-- <thead class="heading-style-mobile">
+                          <tr>
+                            <th style="width: 16.6%">{{ 'CONTRIBUTOR.OCCUPATION' | translate }}</th>
+                            <th style="width: 16.6%">{{ 'CONTRIBUTOR.BASIC' | translate }}</th>
+                            <th style="width: 16.6%">
+                              {{ 'CONTRIBUTOR.HOUSING' | translate }}
+                            </th>
+
+                            <th style="width: 16.6%">{{ 'CONTRIBUTOR.COMMISSIONS' | translate }}</th>
+                            <th style="width: 16.6%">{{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}</th>
+                            <th style="width: 16.6%">{{ 'CONTRIBUTOR.TOTAL' | translate }}</th>
+                          </tr>
+                        </thead> -->
+                                <tbody class="heading-style-mobile">
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OCCUPATION' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.occupation | bilingualText }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.BASIC-WAGE' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.basicWage | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.HOUSING' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.housingBenefit | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.COMMISSIONS' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.commission | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.OTHER-ALLOWANCE' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{ engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2' }}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="head-back" style="width: 50%; font-weight: bold">
+                                      {{ 'CONTRIBUTOR.TOTAL' | translate }}
+                                    </td>
+                                    <td class="value-back" style="width: 50%">
+                                      {{
+                                        engagement?.engagementPeriod[0]?.wage?.basicWage +
+                                          engagement?.engagementPeriod[0]?.wage?.commission +
+                                          engagement?.engagementPeriod[0]?.wage?.housingBenefit +
+                                          engagement?.engagementPeriod[0]?.wage?.otherAllowance | number: '1.2-2'
+                                      }}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="d-flex flex-row info-section">
+                          <!-- <div class="last-updated">
+                                {{ 'CONTRIBUTOR.WAGE.LAST-UPDATED' | translate
+                                }}{{ engagement?.engagementPeriod[0]?.lastUpdatedDate?.gregorian | gosiDate }}
+                              </div>  -->
+                          <div class="sar-style">{{ 'CONTRIBUTOR.WAGE.ALL-VALUES-IN-SAR' | translate }}</div>
+                        </div>
+
+                        <div
+                          class="d-flex justify-content-start total-section mt-4"
+                          *ngIf="engagement?.engagementPeriod[0]?.wage?.contributoryWage"
+                        >
+                          <div class="flex-container d-flex flex-column">
+                            <div>
+                              <div class="con-label-value label-value">
+                                {{ 'CONTRIBUTOR.WAGE.CONTRIBUTORY-WAGE' | translate }}
+                              </div>
+                            </div>
+                            <div class="d-flex justify-content-start">
+                              <div class="contributory-wage d-inline-flex p-2 bd-highlight">
+                                {{ engagement?.engagementPeriod[0]?.wage?.contributoryWage | number: '.2-2' }}
+                                {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="d-flex flex-column">
+                            <div>
+                              <span class="con-label-value">
+                                {{ 'CONTRIBUTOR.CONTRIBUTION-BREAKDOWN' | translate }}
+                              </span>
+                            </div>
+                            <div class="d-flex justify-content-start mobile-coverage-section">
+                              <ng-container *ngFor="let cov of engagement?.coverageDetails?.coverages">
+                                <div
+                                  class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === annuity && cov.coverage !== 0"
+                                >
+                                  <ng-template #annuityMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/annuity.svg" alt="annuity" class="image-annuitys" />
+                                  <ng-container *ngIf="cov.coverageType.english === annuity">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.ANNUITY-CAP' | translate }}
+                                          ({{ cov.contributorPercentage }}%)</span
+                                        >
+                                        <fa-icon
+                                          class="tooltip-icon"
+                                          [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === annuity ? annuityMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"
+                                        ></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.contributorShare | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                                <div
+                                  class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === oh && cov.coverage !== 0"
+                                >
+                                  <ng-template #ohMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/OH.svg" alt="Occupational Hazard" class="image-ohs" />
+                                  <ng-container *ngIf="cov.coverageType.english === oh">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.OCCUPATIONAL-HAZARD-CAP' | translate }}
+                                          ({{ cov.contributorPercentage }}%)</span
+                                        >
+                                        <fa-icon
+                                          class="tooltip-icon"
+                                          [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === oh ? ohMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"
+                                        ></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.contributorShare | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                                <div
+                                  class="icon-wrappers d-flex"
+                                  *ngIf="cov.coverageType.english === ui && cov.coverage !== 0"
+                                >
+                                  <ng-template #uiMessage>
+                                    <ng-container *ngTemplateOutlet="tolTemplate; context: { coverage: cov }">
+                                    </ng-container>
+                                  </ng-template>
+                                  <img src="assets/icons/UI.svg" alt="Unemployment insurance" class="image-uis" />
+                                  <ng-container *ngIf="cov.coverageType.english === ui">
+                                    <div class="pr-2 pl-2">
+                                      <div>
+                                        <span class="small-label">
+                                          {{ 'CONTRIBUTOR.WAGE.UNEMPLOYMENT-INS-CAP' | translate }}
+                                          ({{ cov.contributorPercentage }}%)</span
+                                        >
+                                        <fa-icon
+                                          class="tooltip-icon"
+                                          [icon]="['fas', 'info-circle']"
+                                          [tooltip]="cov.coverageType.english === ui ? uiMessage : null"
+                                          [placement]="lang === 'en' ? 'top' : 'top'"
+                                        ></fa-icon>
+                                      </div>
+                                      <div class="mid-label">
+                                        {{ cov.coverage | number: '1.2-2' }}
+                                        {{ 'CONTRIBUTOR.WAGE.SAR' | translate }}
+                                      </div>
+                                    </div>
+                                  </ng-container>
+                                </div>
+                              </ng-container>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </gosi-modal-dc>
+              </div>
+            </ng-template>
+          </gosi-card-dc>
+        </div>
+      </ng-container>
+    </dsb-card-carousel-dc>
+  </div>
+</ng-container>
+<ng-template #tolTemplate let-coverage="coverage" let-coverageDetail="coverageDetail">
+  <div
+    *ngIf="
+      !coverage?.contributorShare &&
+      (coverage?.coverageType.english == 'PPA Annuity' || coverage?.coverageType.english == 'Pension Reform Annuity')
+    "
+  >
+    <span *ngIf="coverage?.coverageType.english == 'PPA Annuity'"> {{ 'DASHBOARD.PPA-ANNUITY' | translate }}</span>
+    <span *ngIf="coverage?.coverageType.english == 'Pension Reform Annuity'">
+      {{ 'DASHBOARD.PENSION-REFORM-ANNUITY' | translate }}</span
+    >
+  </div>
+  <div
+    class="tooltip-custom custom-direction"
+    *ngIf="
+      !(
+        !coverage?.contributorShare &&
+        (coverage?.coverageType.english == 'PPA Annuity' || coverage?.coverageType.english == 'Pension Reform Annuity')
+      )
+    "
+  >
+    <div class="tooltip-header" [ngStyle]="{ 'text-align': lang == 'en' ? 'left' : 'right' }">
+      {{ 'DASHBOARD.CONTRIBUTION-BREAKUP' | translate }}: {{ coverage?.coverageType | bilingualText }}
+    </div>
+    <div class="tooltip-body">
+      <div [ngStyle]="{ 'text-align': lang == 'en' ? 'left' : 'right' }">
+        <div
+          *ngIf="
+            coverage?.coverageType.english == 'Annuity' ||
+            coverage?.coverageType.english == 'PPA Annuity' ||
+            coverage?.coverageType.english == 'Pension Reform Annuity'
+          "
+        >
+          {{ 'CONTRIBUTOR.ANNUITY-DESCRIPTION' | translate }}
+        </div>
+        <div *ngIf="coverage?.coverageType.english == 'Occupational Hazard'">
+          {{ 'CONTRIBUTOR.OH-DESCRIPTION' | translate }}
+        </div>
+        <div *ngIf="coverage?.coverageType.english == 'Unemployment Insurance'">
+          {{ 'CONTRIBUTOR.UI-DESCRIPTION' | translate }}
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="share-header">
+          {{
+            isTotalShare
+              ? ('DASHBOARD.TOTAL-CONTRIBUTOR-SHARE' | translate)
+              : ('DASHBOARD.CONTRIBUTOR-SHARE' | translate)
+          }}
+        </div>
+        <div class="sar-value">
+          {{ coverage?.contributorShare | number: '.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+        <div class="percent" *ngIf="!coverageDetail?.endDate?.gregorian">
+          <span *ngIf="coverage?.coverageType.english != 'Occupational Hazard'">
+            {{ coverage.contributorPercentage }}{{ 'CONTRIBUTOR.WAGE.OF-CONTRIBUTORY-WAGE' | translate }}
+          </span>
+          <span *ngIf="coverage?.coverageType.english == 'Occupational Hazard'"
+            >(2% {{ 'CONTRIBUTOR.FULLY-PAID' | translate }})</span
+          >
+        </div>
+      </div>
+      <div>
+        <!-- <div class="share-header ar-tooltip-textalign">
+          {{ isTotalShare ? ('DASHBOARD.TOTAL-EMPLOYER-SHARE' | translate) : ('DASHBOARD.EMPLOYER-SHARE' | translate) }}
+        </div>
+        <div class="sar-value ar-tooltip-textalign">
+          {{ coverage.establishmentShare | number: '.2-2' }}
+          {{ 'DASHBOARD.SAR' | translate }}
+        </div>
+        <div class="percent ar-tooltip-textalign" *ngIf="!coverageDetail?.endDate?.gregorian">
+          {{ coverage.establishmentPercentage }}{{ 'DASHBOARD.OF-CONTRIBUTORY-WAGE' | translate }}
+        </div> -->
+      </div>
+    </div>
+  </div>
+</ng-template>

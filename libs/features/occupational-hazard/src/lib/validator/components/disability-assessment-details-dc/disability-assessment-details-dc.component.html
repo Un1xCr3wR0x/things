@@ -1,0 +1,163 @@
+<div class="row">
+  <div class="col-md-12">
+    <ng-container>
+      <frm-content-heading-dc
+        icon="notes-medical"
+        heading="OCCUPATIONAL-HAZARD.DISABILITY-ASSESSMENT"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+    </ng-container>
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-input-radio-dc
+          id="yesOrNo"
+          [list]="yesOrNoList"
+          [label]="'OCCUPATIONAL-HAZARD.REQUIRE-ATTENDANCE-PARTICIPANT ? ' | translate"
+          [control]="attendenceForm.get('isParticipantAttendanceRequired')"
+          (select)="selectYesOrNo()"
+        ></gosi-input-radio-dc>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="custom-header">
+          <h4 class="custom-heading">
+            {{ 'OCCUPATIONAL-HAZARD.SPECIALITIES' | translate }}
+          </h4>
+          <div class="action-btn ml-auto" id="id">
+            <div class="d-flex flex-row-reverse">
+              <div class="btn-section">
+                <gosi-button-dc
+                  type="secondary"
+                  size="xl"
+                  id="addUnavailableData"
+                  (click)="specialtyModal(addSpecialtyModal)"
+                >
+                  {{ 'MEDICAL-BOARD.ADD' | translate }}
+                </gosi-button-dc>
+              </div>
+            </div>
+          </div>
+        </div>
+        <table class="table table-borderless">
+          <!-- *ngIf="selectedMembers?.length !== 0 || membersList.length !== 0; else noValueTemplate" -->
+          <thead class="thead-light">
+            <tr>
+              <ng-container>
+                <th>
+                  {{ 'OCCUPATIONAL-HAZARD.SPECIALITY' | translate }}
+                </th>
+                <th></th>
+                <th>
+                  {{ 'OCCUPATIONAL-HAZARD.SUBSPECIALITES' | translate }}
+                </th>
+              </ng-container>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of specialtyArray; let i = index">
+              <tr class="border-bottom">
+                <td style="width: 5%">
+                  <span *ngIf="item?.specialty">
+                    {{ item?.specialty | bilingualText }}
+                  </span>
+                </td>
+                <td *ngIf="lang === 'en'">
+                  <span *ngIf="item.isMainSpecialty" class="main-highlight">
+                    {{ 'Main' }}
+                  </span>
+                </td>
+                <td *ngIf="lang === 'ar'">
+                  <span *ngIf="item.isMainSpecialty" class="main-highlight">
+                    {{ 'رئيسي' }}
+                  </span>
+                </td>
+                <td>
+                  <!-- <span *ngIf="item?.subSpecialty">
+                    <span class="comma" *ngFor="let options of item?.subSpecialty; let j = index">
+                      {{ options | bilingualText }}
+                    </span></span
+                  > -->
+                  <span *ngIf="item?.subSpecialty">
+                    <span class="comma" *ngFor="let apiSubSpeciality of item?.subSpecialty">
+                      {{ apiSubSpeciality | bilingualText }}
+                    </span>
+                  </span>
+                </td>
+                <td style="width: 5%">
+                  <a [id]="'delete' + i" class="delete-icon" (click)="onDeleteField(i)">
+                    <fa-icon size="lg" [icon]="['far', 'trash-alt']"></fa-icon>
+                  </a>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add Speciality POP-UP -->
+<ng-template #addSpecialtyModal>
+  <!-- <ng-container *ngFor="let control of specialtyForm.controls; let i = index"> -->
+  <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.ADD-SPECIALTY' | translate">
+    <div class="row" modalContent>
+      <div class="col-lg-12">
+        <div class="row message-style">
+          <div class="col-lg-12">
+            <gosi-input-select-dc
+              id="specialtyList"
+              [label]="'OCCUPATIONAL-HAZARD.SPECIALTY' | translate"
+              [list]="specialtyList"
+              [control]="specialtyForm.get('specialty')"
+              [hideOptionalLabel]="true"
+              (selectLov)="selectedSpecialty($event)"
+              (changeEvent)="onChange($event)"
+              (clear)="clear()"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row message-style">
+          <div class="col-lg-12">
+            <gosi-input-multi-select-dropdown-dc
+              id="ShowSubSpecialtyList"
+              [label]="'OCCUPATIONAL-HAZARD.SUB-SPECIALTIES' | translate"
+              [list]="list"
+              (selected)="onSelectedSubspecialty($event)"
+              [selectedValues]="subSpec"
+              [control]="specialtyForm.get('subSpecialty')"
+            ></gosi-input-multi-select-dropdown-dc>
+          </div>
+        </div>
+        <div class="row message-style">
+          <div class="col-lg-12">
+            <gosi-input-checkbox-dc
+              id="mainSpecialty"
+              [label]="'OCCUPATIONAL-HAZARD.MAIN-SPECIALTY' | translate"
+              [control]="specialtyForm.get('mainSpecialty')"
+            ></gosi-input-checkbox-dc>
+          </div>
+        </div>
+        <div class="row" style="min-height: 110px"></div>
+      </div>
+    </div>
+    <div class="col-lg-12" modalAction>
+      <div class="btn-section float-left">
+        <gosi-button-dc name="cancelSubmit" type="secondary" (submit)="cancel()">
+          {{ 'OCCUPATIONAL-HAZARD.CANCEL' | translate }}
+        </gosi-button-dc>
+      </div>
+      <div class="btn-section float-right">
+        <gosi-button-dc name="savenext" type="primary" [disabled]="isDisabled ? true : false" (submit)="save()">
+          {{ 'OCCUPATIONAL-HAZARD.CONFIRM' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div></gosi-modal-dc
+  >
+
+  <!-- </ng-container> -->
+</ng-template>

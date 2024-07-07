@@ -1,0 +1,263 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+ <div>
+  <div *ngIf="fromPage === 'contributorAllocation'">
+    <blg-contributor-allocation-summary-dc
+      [contributorAllocationSummary]="contributorAllocationSummary"
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+    >
+    </blg-contributor-allocation-summary-dc>
+  </div>
+  <div
+    *ngIf="fromPage === 'allocationBill' || fromPage === 'contributorAllocation' || fromPage === 'vicAllocationBill'"
+  >
+    <div class="alloc-subheading">
+      {{ 'BILLING.ALLOCATION-OF-CREDITS' | translate }}
+    </div>
+    <div class="table-responsive">
+      <table class="table tbl-credit">
+        <thead class="thead-light">
+          <tr>
+            <th rowspan="3"></th>
+            <th rowspan="3">
+              {{ 'BILLING.DEBIT-AMOUNT' | translate }}
+              <span class="currency-note"> ({{ currentCurrencyLable | translate }}) </span>
+            </th>
+            <th rowspan="3">
+              {{ 'BILLING.ALLOCATED-AMOUNT' | translate }}
+              <span class="currency-note"> ({{ currentCurrencyLable | translate }}) </span>
+            </th>
+            <th rowspan="3">
+              {{ 'BILLING.BALANCE-AFTER-ALLOCATION' | translate }}
+              <span class="currency-note"> ({{ currentCurrencyLable | translate }})</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody *ngIf="creditSummary !== undefined">
+          <ng-container *ngFor="let item of creditSummary">
+            <ng-container  *ngIf="item.type.english !== 'Cancelled Payments'">
+              <tr>
+                <td>
+                  <div>
+                    <b> {{ item.type | bilingualText }}</b>
+                  </div>
+                  <div class="sub-heading-padding">{{ 'BILLING.AMT-FROM-PREV-BILL' | translate }}</div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.debitAmount * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.allocatedAmount * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.balance * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="sub-heading-padding">{{ 'BILLING.ADJUSTMENT-DURING-MONTH' | translate }}</div>
+                </td>
+                <td>
+                  {{ item.adjustmentForCurrent.debitAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.adjustmentForCurrent.allocatedAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.adjustmentForCurrent.balance * exchangeRate | number: '1.2-2' }}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="sub-heading-padding">{{ 'BILLING.CURRENT-MONTH-DUES' | translate }}</div>
+                </td>
+                <td>
+                  {{ item.currentMonthDues.debitAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.currentMonthDues.allocatedAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.currentMonthDues.balance * exchangeRate | number: '1.2-2' }}
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <div class="sub-heading-padding">
+                    <b> {{ item.type | bilingualText }} {{ 'BILLING.AT-CLOSING' | translate }} </b>
+                  </div>
+                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                  <b>
+                    {{
+                      (item.amountFromPreviousBill.balance +
+                        item.adjustmentForCurrent.balance +
+                        item.currentMonthDues.balance) *
+                        exchangeRate | number: '1.2-2'
+                    }}
+                  </b>
+                </td>
+              </tr>
+            </ng-container >
+          </ng-container>
+          <tr *ngIf="fromPage !== 'vicAllocationBill' && !isContributor">
+            <td>
+              <div>
+                <b> {{ 'BILLING.OTHER-ACTIVITIES-DURING THE-MONTH' | translate }}</b>
+              </div>
+              <div class="sub-heading-padding">
+                {{ 'BILLING.CREDIT-TRANSFERRED-TO-EST' | translate }}
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{ allocationDetails.creditToAnotherEst.debitAmount * exchangeRate | number: '1.2-2' }}
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{ allocationDetails.creditToAnotherEst.allocatedAmount * exchangeRate | number: '1.2-2' }}
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{
+                  (allocationDetails.creditToAnotherEst.debitAmount -
+                    allocationDetails.creditToAnotherEst.allocatedAmount) *
+                    exchangeRate | number: '1.2-2'
+                }}
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="fromPage === 'vicAllocationBill'">
+            <td>
+              <div>
+                <b> {{ 'BILLING.OTHER-ACTIVITIES-DURING THE-MONTH' | translate }}</b>
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{ allocationDetails.creditRefund.debitAmount * exchangeRate | number: '1.2-2' }}
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{ allocationDetails.creditRefund.allocatedAmount * exchangeRate | number: '1.2-2' }}
+              </div>
+            </td>
+            <td>
+              <div class="previousbill-padding">
+                {{
+                  (allocationDetails.creditRefund.debitAmount - allocationDetails.creditRefund.allocatedAmount) *
+                    exchangeRate | number: '1.2-2'
+                }}
+              </div>
+            </td>
+          </tr>
+          <!-- Cancled Payments -->
+          <ng-container *ngFor="let item of creditSummary">
+            <ng-container *ngIf="item.type.english === 'Cancelled Payments'">
+              <tr>
+                <td>
+                  <div>
+                    <b> {{ item.type | bilingualText }}</b>
+                  </div>
+                  <div class="sub-heading-padding">{{ 'BILLING.AMT-FROM-PREV-BILL' | translate }}</div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.debitAmount * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.allocatedAmount * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+                <td>
+                  <div class="previousbill-padding">
+                    {{ item.amountFromPreviousBill.balance * exchangeRate | number: '1.2-2' }}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="sub-heading-padding">{{ 'BILLING.CURRENT-MONTH-DUES' | translate }}</div>
+                </td>
+                <td>
+                  {{ item.currentMonthDues.debitAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.currentMonthDues.allocatedAmount * exchangeRate | number: '1.2-2' }}
+                </td>
+                <td>
+                  {{ item.currentMonthDues.balance * exchangeRate | number: '1.2-2' }}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="sub-heading-padding">
+                    <b> {{ item.type | bilingualText }} {{ 'BILLING.AT-CLOSING' | translate }} </b>
+                  </div>
+                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                  <b>
+                    {{
+                    (item.amountFromPreviousBill.balance +
+                      item.currentMonthDues.balance) *
+                    exchangeRate | number: '1.2-2'
+                    }}
+                  </b>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+          <!-- End of Cancled Payments -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div *ngIf="fromPage === 'allocationSummarySc'">
+    <div class="alloc-subheading">
+      {{ 'BILLING.ALLOCATION-SUMMARY' | translate }}
+    </div>
+    <blg-allocation-summary-dc
+      [creditSummaryValue]="creditSummary"
+      [allocationCreditTotal]="allocationCreditTotal"
+      [allocationDetails]="allocationDetails"
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+    ></blg-allocation-summary-dc>
+  </div>
+  <div *ngIf="fromPage === 'allocationLatefeeSc' && allocationDetails !== undefined">
+    <div class="alloc-subheading">
+      {{ 'BILLING.ALLOCATION-CONTRIBUTION-SUMMARY' | translate }}
+    </div>
+    <blg-allocation-contribution-summary-dc
+      [creditSummaryValue]="creditSummary"
+      [currentCurrency]="currentCurrency"
+      [exchangeRate]="exchangeRate"
+      [mofEstablishment]="allocationDetails.mofEstablishment"
+    ></blg-allocation-contribution-summary-dc>
+  </div>
+  <div *ngIf="fromPage === 'contributorAllocation'">
+    <gosi-button-dc id="confirmBtn" class="float-right" type="secondary" size="md" (submit)="closeConfirm()"
+      >{{ 'BILLING.CLOSE' | translate }}
+    </gosi-button-dc>
+  </div>
+</div>

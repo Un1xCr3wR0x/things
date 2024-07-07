@@ -1,0 +1,80 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents" [canEdit]="canEdit" (onEdit)="navigateToEdit()">
+    <div id="mainHeading">
+      <frm-main-heading-dc
+        [heading]="'CONTRIBUTOR.TRANSFER-CON.TRANSFER-ALL-CONTRIBUTORS' | translate"
+        [transactionRefNo]="referenceNo"
+        [formSubmissionDate]="transferAllDetails?.transferDate?.gregorian"
+      >
+      </frm-main-heading-dc>
+    </div>
+
+    <div id="contentArea" *ngIf="transferAllDetails && contributorDetails">
+      <!-- Transfer ALL details. -->
+      <cnt-view-transfer-all-details-dc
+        [canEdit]="canEdit"
+        [transferAllDetails]="transferAllDetails"
+        [contributorDetails]="contributorDetails"
+        (editEvent)="navigateToEdit()"
+      ></cnt-view-transfer-all-details-dc>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        [isReturn]="false"
+        [disableApprove]="isBillBatch"
+        (approveEvent)="showModal(approveTemplate)"
+        (rejectEvent)="showModal(rejectTemplate)"
+        (returnEvent)="showModal(returnTemplate)"
+        (cancelEvent)="navigateToInbox()"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!-- Modals -->
+
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="validatorForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="transferAllWorkflowEvent(0)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.TRANSFER-CON.REJECT-TRANSFER-ALL-CONTRIBUTOR'"
+    warningMessage="CONTRIBUTOR.INFO-VALIDATOR-REJECTION"
+    [transactionNumber]="referenceNo"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="hideModal()"
+    (rejectEvent)="transferAllWorkflowEvent(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="'CONTRIBUTOR.TRANSFER-CON.RETURN-TRANSFER-ALL-CONTRIBUTOR'"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="hideModal()"
+    (returnEvent)="transferAllWorkflowEvent(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>

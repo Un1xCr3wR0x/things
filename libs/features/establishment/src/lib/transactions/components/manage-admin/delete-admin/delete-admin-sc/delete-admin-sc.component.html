@@ -1,0 +1,193 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="transaction?.transactionId === tnxId">
+  <!-- establishment details -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ESTABLISHMENT-DETAILS' | translate }}">
+        <div class="desktop-view">
+          <div class="table-penalty">
+            <table class="table-borderless w-100" id="penalty-table">
+              <thead class="thead-light">
+                <tr class="table-row">
+                  <th style="width: 40%" class="table-head" id="establishment-name">
+                    {{ 'ESTABLISHMENT.ESTABLISHMENT-ARABIC' | translate }}
+                  </th>
+                  <th style="width: 15%" class="table-head" id="registration-number">
+                    {{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }}
+                  </th>
+                  <th style="width: 45%" class="table-head" id="admin-previous-role">
+                    {{ 'ESTABLISHMENT.ADMIN-PREVIOUS-ROLE' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="tbody-body">
+                <ng-container
+                  *ngFor="
+                    let admin of admins
+                      | paginate
+                        : {
+                            id: 'paginationId',
+                            itemsPerPage: itemPerPage,
+                            currentPage: pageDetails.currentPage,
+                            totalItems: noOfRecords
+                          };
+                    let i = index
+                  "
+                >
+                  <tr class="content border-bottom">
+                    <td class="table-body">
+                      <div id="establishmentName">
+                        <span class="value">{{ admin?.person?.establishmentName?.arabic }}</span>
+                      </div>
+                    </td>
+
+                    <td class="table-body">
+                      <div id="reg-no">
+                        <span class="value">{{ admin?.person?.registrationNo }}</span>
+                      </div>
+                    </td>
+
+                    <td class="table-body">
+                      <ng-container *ngFor="let role of admin.roles">
+                        <span class="role-admins role-border">
+                          {{ role | bilingualText }}
+                        </span>
+                      </ng-container>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+            <div *ngIf="noOfRecords > itemPerPage">
+              <div class="border-bottom p-3">
+                <ng-container>
+                  <gosi-pagination-dc
+                    [totalSize]="noOfRecords"
+                    [itemsPerPage]="itemPerPage"
+                    [pageDetails]="pageDetails"
+                    (pageChange)="selectPage($event)"
+                    paginationId="paginationId"
+                  ></gosi-pagination-dc>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- New Admin Section -->
+  <div class="row">
+    <div class="col-md-12">
+      <est-transactions-accordion-dc heading="{{ 'ESTABLISHMENT.ADMIN-DETAILS' | translate }}">
+        <div class="col-md12" *ngIf="oldAdmin">
+          <div class="sub-content-item">
+            <div class="row pt-4">
+              <div id="ArabicName" class="col-sm-6" *ngIf="oldAdmin.person">
+                <gosi-label-dc id="ArabicName" [value]="getAdminName(oldAdmin)" label="ESTABLISHMENT.NAME-IN-ARABIC">
+                </gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="oldAdmin.person.name.english">
+                <gosi-label-dc
+                  id="EnglishName"
+                  [control]="oldAdmin.person.name.english.name"
+                  label="ESTABLISHMENT.NAME-IN-ENGLISH"
+                >
+                </gosi-label-dc>
+              </div>
+            </div>
+            <div class="row pt-3">
+              <div class="col-sm-12 col-lg-6">
+                <gosi-label-dc
+                  id="nationality"
+                  [control]="oldAdmin.person.nationality"
+                  label="ESTABLISHMENT.NATIONALITY"
+                >
+                </gosi-label-dc>
+              </div>
+              <ng-container *ngIf="!checkNull(oldAdmin.person.identity) && getIdentifierType(oldAdmin)">
+                <ng-container *ngFor="let item of oldAdmin.person.identity">
+                  <div class="col-sm-12 col-lg-6" *ngIf="saudiNationality">
+                    <gosi-label-dc id="nin" [control]="item.newNin" label="ESTABLISHMENT.NIN"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.id">
+                    <gosi-label-dc id="nationalId" [control]="item.id" label="ESTABLISHMENT.GCC-ID"> </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="(gccNationality || others) && item.iqamaNo">
+                    <gosi-label-dc id="iqama" [control]="item.iqamaNo" label="ESTABLISHMENT.IQAMA-NUMBER">
+                    </gosi-label-dc>
+                  </div>
+                  <div class="col-sm-12 col-lg-6" *ngIf="gccNationality && item.passportNo">
+                    <gosi-label-dc id="passportNumber" [control]="item.passportNo" label="ESTABLISHMENT.PASSPORT-NO">
+                    </gosi-label-dc>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <gosi-label-dc id="Gender" [control]="oldAdmin.person.sex" label="ESTABLISHMENT.GENDER"></gosi-label-dc>
+              </div>
+              <div class="col-sm-6" *ngIf="oldAdmin.person.birthDate">
+                <gosi-label-dc
+                  [date]="true"
+                  id="birthDate"
+                  [control]="oldAdmin.person.birthDate.gregorian"
+                  label="ESTABLISHMENT.BIRTH-DATE"
+                ></gosi-label-dc>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="oldAdmin.person.contactDetail">
+            <div class="col-sm-12 col-md-12">
+              {{ 'ESTABLISHMENT.CONTACT-DETAILS' | translate }}
+            </div>
+            <div class="col-sm-12 col-lg-6 pt-3">
+              <gosi-label-dc
+                id="TelephoneNumber"
+                [control]="oldAdmin.person.contactDetail.telephoneNo?.primary"
+                label="ESTABLISHMENT.TELEPHONE-NUMBER"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="Extension"
+                [control]="oldAdmin.person.contactDetail.telephoneNo?.extensionPrimary"
+                label="ESTABLISHMENT.EXTENSION"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="MobileNo"
+                [control]="oldAdmin.person.contactDetail.mobileNo?.primary"
+                label="ESTABLISHMENT.MOBILE-NUMBER"
+                ><span id="prefixValue">{{ getISDCodePrefix() }}</span>
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <gosi-label-dc
+                id="EmailId"
+                [control]="oldAdmin.person.contactDetail?.emailId?.primary"
+                label="ESTABLISHMENT.EMAIL-ID"
+              >
+              </gosi-label-dc>
+            </div>
+          </div>
+        </div>
+      </est-transactions-accordion-dc>
+    </div>
+  </div>
+
+  <!-- Documents section -->
+  <div class="row" *ngIf="documentList?.length > 0">
+    <div class="col-md-12">
+      <gosi-document-list-view-dc [documents]="documentList" [isAccordionView]="true"> </gosi-document-list-view-dc>
+    </div>
+  </div>
+</ng-container>

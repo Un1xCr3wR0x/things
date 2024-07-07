@@ -1,0 +1,115 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="row">
+  <div class="col-md-12">
+    <ng-container *ngIf="!isReassessment">
+      <frm-content-heading-dc icon="notes-medical" heading="MEDICAL-BOARD.DISABILITY-ASSESSMENT" [canEdit]="false">
+      </frm-content-heading-dc>
+    </ng-container>
+    <ng-container *ngIf="isReassessment">
+      <frm-content-heading-dc icon="notes-medical" heading="MEDICAL-BOARD.DISABILITY-REASSESSMENT" [canEdit]="false">
+      </frm-content-heading-dc>
+    </ng-container>
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-label-dc
+          [value]="participantAttendence | bilingualText"
+          label="MEDICAL-BOARD.REQUIRE-ATTENDANCE-PARTICIPANT ? "
+        ></gosi-label-dc>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="custom-header">
+          <h4 class="custom-heading">
+            {{ 'MEDICAL-BOARD.SPECIALITIES' | translate }}
+          </h4>
+        </div>
+        <table class="table table-borderless">
+          <!-- *ngIf="selectedMembers?.length !== 0 || membersList.length !== 0; else noValueTemplate" -->
+          <thead class="thead-light">
+            <tr>
+              <ng-container>
+                <th>
+                  {{ 'MEDICAL-BOARD.SPECIALITY' | translate }}
+                </th>
+                <th></th>
+                <th>
+                  {{ 'MEDICAL-BOARD.SUBSPECIALITES' | translate }}
+                </th>
+              </ng-container>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of disabilityDetails?.specialtyList; let i = index">
+              <tr class="border-bottom">
+                <td style="width: 5%">
+                  {{ item?.specialty | bilingualText }}
+                </td>
+                <td *ngIf="lang === 'en'">
+                  <span *ngIf="item.isMainSpecialty" class="main-highlight">
+                    {{ 'Main' }}
+                  </span>
+                </td>
+                <td *ngIf="lang === 'ar'">
+                  <span *ngIf="item.isMainSpecialty" class="main-highlight">
+                    {{ 'رئيسي' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="comma" *ngFor="let options of item?.subSpecialty; let j = index">
+                    {{ options | bilingualText }}
+                  </span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <br />
+    <div *ngIf="!isScheduleReminder" class="row">
+      <div class="col-sm-6 col-md-6 col-lg-6"  *ngIf="!isNoReturn">
+        <gosi-label-dc
+          [value]="vdYesOrNo | bilingualText"
+          label="MEDICAL-BOARD.REQUIRE-VISITING-DOCTOR"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isNoReturn">
+      <gosi-input-radio-dc
+      id="requireVisitingDoctor"
+      [label]="'MEDICAL-BOARD.REQUIRE-VISITING-DOCTOR' | translate"
+      [list]="yesOrNoList"
+      [control]="visitingDoctorForm.get('visitingDoctor')"
+      (select)="selectVd($event)"
+    ></gosi-input-radio-dc>
+  </div>
+      <div class="col-sm-6 col-md-6 col-lg-6"  *ngIf="isVdRequired">
+        <gosi-label-dc
+          [value]="
+            disabilityDetails?.vdDetails?.vdReason?.english === 'Other'
+              ? visitingReason
+              : (disabilityDetails?.vdDetails?.vdReason | bilingualText)
+          "
+          label="MEDICAL-BOARD.REASON-FOR-VISITING-DOCTOR"
+        ></gosi-label-dc>
+      </div>
+      <div class="col-sm-6 col-md-6 col-lg-6"  *ngIf="isVdRequired">
+        <span class="speciality">{{ 'MEDICAL-BOARD.SPECIALITIES-OF-VISITING-DOCTOR' | translate }}</span>
+        <div>
+          <span *ngFor="let item of disabilityDetails?.vdDetails?.vdSpecialties; let first = first">
+            <ng-container *ngIf="!first">,</ng-container>{{ item | bilingualText }}
+          </span>
+        </div>
+      </div>
+      <!-- <div class="col-sm-6 col-md-6 col-lg-6">
+        <gosi-label-dc [value]="" label="MEDICAL-BOARD.SPECIALITIES-OF-VISITING-DOCTOR"></gosi-label-dc>
+      </div> -->
+    </div>
+  </div>
+</div>
+<br />

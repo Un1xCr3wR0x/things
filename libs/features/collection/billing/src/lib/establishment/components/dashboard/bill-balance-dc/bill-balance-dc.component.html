@@ -1,0 +1,348 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+ 
+<div class="content">
+   <div *ngIf="isMofFlag">
+    <div class="add-margin-top">
+      <blg-ppa-mof-establishment-tabset-dc
+      [billBalanceDetails]="billBalanceDetails"
+      [tabDetails]="tabDetails"
+      [currencyType]="currencyType"
+      [tabDetails]="tabDetails"
+      (tabSelected)="goToNewTabs($event)"
+      [exchangeRate]="exchangeRate"
+      [selectedTab]="selectedTabName"
+      >
+      </blg-ppa-mof-establishment-tabset-dc>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 date">
+      {{ 'BILLING.AS-ON' | translate }}
+      {{ currentMonth | translate: currentDate }}
+    </div>
+  </div>
+  <div class="row">
+    <ng-container *ngIf="!isBillNumber">
+      <div class="col-lg-5">
+        <div class="row mt-3" *ngIf="!creditBalance">
+          <div class="col-lg-6 col-view-6 amount-label">
+            {{ 'BILLING.BILL-AMOUNT' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplates"></fa-icon>
+          </div>
+          <div class="col-lg-6 col-view-6 amount danger font-weight-bold" id="billAmountValue">
+            {{ isBillNumber ? 0.0 : (billBalanceDetails.balanceDue * exchangeRate | number: '1.2-2') }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="creditBalance">
+          <div class="col-lg-6 col-view-6 amount-label">
+            {{ 'BILLING.CREDIT-FROM-LAST-BILL' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplates"></fa-icon>
+          </div>
+          <div class="col-lg-6 col-view-6 amount primary font-weight-bold" id="lastbillAmountValue">
+            {{ lastBillAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-lg-6 col-view-6 amount-label">
+            {{ 'BILLING.RECEIPTS-AND-CREDITS' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="receiptCreditToolTemplates"></fa-icon>
+          </div>
+          <div class="col-lg-6 col-view-6 amount primary" id="creditBalanceAvailableValue">
+            {{ isBillNumber ? 0.0 : (billBalanceDetails.paidAmount * exchangeRate | number: '1.2-2') }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row separator"></div>
+        <!--------------------------------------installment details persent---------------------------------------------------------->
+        <div class="row mt-3" *ngIf="showMinimumRequired">
+          <div class="col-lg-4 col-view-6 amount-label">
+            {{ 'BILLING.UNPAID-BALANCE' | translate }}
+          </div>
+          <div class="col-lg-6 col-view-6 amount danger font-weight-bold" id="unpaidBalanceValue" *ngIf="isMofFlag">
+            {{ unPaidAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div class="col-lg-8 col-view-6 sum-amount amount-value font-weight-bold" id="unpaidBalanceValue" *ngIf="!isMofFlag">
+          {{ unPaidAmount * exchangeRate | number: '1.2-2' }}
+          {{ currencyType | bilingualText }}
+        </div>
+        </div>
+        <!--------------------------------------installment details persent---------------------------------------------------------->
+        <ng-container *ngIf="!isMofFlag">
+          <div *ngIf="billBalanceDetails?.creditBalanceTransferredOrRefunded !== 0" class="row mt-3">
+            <div class="col-lg-6 col-view-6 amount-label">
+              {{ 'BILLING.CREDIT-BALANCE-TRANSFER-REFUND' | translate }}
+            </div>
+            <div class="col-lg-6 col-view-6 amount danger" id="creditBalanceAvailableValue">
+              {{ billBalanceDetails?.creditBalanceTransferredOrRefunded * exchangeRate | number: '1.2-2' }}
+              {{ currencyType | bilingualText }}
+            </div>
+          </div>
+        </ng-container>
+        <div class="row mt-3" *ngIf="!excessPaidFlag && unPaidAmount !== 0 && !isBillNumber && !showMinimumRequired">
+          <div class="col-lg-4 col-view-6 sum-label">
+            {{ 'BILLING.UNPAID-BALANCE' | translate }}
+          </div>
+
+          <div class="col-lg-8 col-view-6 sum-amount amount-value danger font-weight-bold" id="unpaidBalanceValue"*ngIf="isMofFlag">
+            {{ unPaidAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div class="col-lg-8 col-view-6 amount danger font-weight-bold" id="unpaidBalanceValue" *ngIf="!isMofFlag">
+            {{ unPaidAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <!---------------------------------Minimum Required----------------------------------------->
+        <div class="row mt-3" *ngIf="showMinimumRequired">
+          <div class="col-lg-4 col-view-6 sum-label">
+            {{ 'BILLING.MINIMUM-REQUIRED' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="billAmountToolTemplates"></fa-icon>
+          </div>
+
+          <div class="col-lg-8 col-view-6 paid-amount amount-value" id="unpaidBalanceValue">
+            {{ billBalanceDetails?.minimumPaymentRequiredForMonth * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <!---------------------------------Minimum Required----------------------------------------->
+        <div class="row mt-3" *ngIf="unPaidAmount === 0 && !isBillNumber && !showMinimumRequired">
+          <div class="col-lg-4 col-view-6 sum-label">
+            {{ 'BILLING.UNPAID-BALANCE' | translate }}
+          </div>
+          <div class="col-lg-8 col-view-6 paid-amount amount-value" id="unpaidBalanceValue" *ngIf="!isMofFlag">
+            {{ isBillNumber ? 0.0 : (unPaidAmount * exchangeRate | number: '1.2-2') }}
+            {{ currencyType | bilingualText }}
+          </div>
+          <div class="col-lg-6 col-view-6 amount danger font-weight-bold" id="unpaidBalanceValue"*ngIf="isMofFlag">
+            {{ isBillNumber ? 0.0 : (unPaidAmount * exchangeRate | number: '1.2-2') }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3" *ngIf="isBillNumber && !showMinimumRequired">
+          <div class="col-lg-4 col-view-6 sum-label">
+            {{ 'BILLING.UNPAID-BALANCE' | translate }}
+          </div>
+
+          <div class="col-lg-8 col-view-6 paid-amount amount-value" id="unpaidBalanceValue">
+            {{ 0.0 }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <ng-container *ngIf="unPaidAmount !== 0 && !isBillNumber && !showMinimumRequired">
+          <div
+            class="row mt-3"
+            *ngIf="
+              (excessPaidFlag && creditBalance) ||
+              (billBalanceDetails.paidAmount > billBalanceDetails.balanceDue &&
+                billBalanceDetails.paidAmount !== 0 &&
+                excessPaidFlag)
+            "
+          >
+            <div class="col-lg-4 col-view-6 sum-label">
+              {{ 'BILLING.CREDIT-BALANCE' | translate }}
+            </div>
+            <div class="col-lg-8 col-view-6 excess-amount amount-value" id="creditAmount">
+              {{ creditAmount * exchangeRate | number: '1.2-2' }}
+              {{ currencyType | bilingualText }}
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="isBillNumber">
+      <div class="col-lg-5">
+        <div class="row mt-3">
+          <div class="col-lg-4 col-view-6 sum-label">
+            {{ 'BILLING.CREDIT-BALANCE-SAR' | translate }}
+            <fa-icon [icon]="['fas', 'info-circle']" [tooltip]="receiptCreditToolTemplates"></fa-icon>
+          </div>
+
+          <div class="col-lg-8 col-view-6 credit-value" id="unpaidBalanceValue">
+            {{ totalCreditBalance | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <div
+      class="due-date-padding pay-btm-pd single-line mt-3"
+      [ngClass]="{
+        'col-lg-4': unBillAmount?.violations > 0 || unBillAmount?.rejectedOh > 0
+        || unBillAmount.cancelledReceiptAmount > 0,
+        'col-lg-7  pay':
+          (unBillAmount?.violations === 0 && unBillAmount?.rejectedOh === 0
+          && unBillAmount?.cancelledReceiptAmount === 0) ||
+          (unBillAmount?.violations === undefined && unBillAmount?.rejectedOh === undefined
+           && unBillAmount?.cancelledReceiptAmount === undefined)
+      }"
+    >
+      <div class="row">
+        <div class="col-lg-7">
+          <blg-due-date-widget-dc
+            [startDate]="billBalanceDetails.dueDate.gregorian"
+            [isMofFlag]="isMofFlag"
+            [isGccCountry]="isGccCountry"
+          ></blg-due-date-widget-dc>
+        </div>
+        <div class="col-lg-5 mt-5" *ngIf="!tempHide">
+          <div
+            class="pay-button"
+            [ngClass]="{
+              'col-lg-2':
+                unBillAmount?.violations > 0 ||
+                unBillAmount?.rejectedOh > 0 ||
+                unBillAmount?.cancelledReceiptAmount > 0 ||
+                unBillAmount?.violations === undefined ||
+                unBillAmount?.rejectedOh === undefined ||
+                unBillAmount?.cancelledReceiptAmount === undefined,
+              pay:
+                (unBillAmount?.violations === 0 && unBillAmount?.rejectedOh === 0
+                && unBillAmount?.cancelledReceiptAmount === 0) ||
+                (unBillAmount?.violations === undefined && unBillAmount?.rejectedOh === undefined
+                && unBillAmount?.cancelledReceiptAmount === undefined)
+            }"
+            *ngIf="!excessPaidFlag && unPaidAmount !== 0"
+          >
+            <span *ngIf="isGccCountry">
+              <gosi-button-dc id="pay" type="primary" isFullWidth="true" class="custom-width">
+                {{ 'BILLING.PAY' | translate }}
+              </gosi-button-dc>
+            </span>
+
+            <span *ngIf="!isGccCountry">
+              <gosi-button-dc
+                id="pay"
+                type="primary"
+                isFullWidth="true"
+                class="custom-width"
+                (submit)="showModal(payBtnPopup, 'md')"
+              >
+                {{ 'BILLING.PAY' | translate }}
+              </gosi-button-dc>
+            </span>
+          </div>
+
+          <div
+            class="pay-button pay-margin"
+            *ngIf="excessPaidFlag || unPaidAmount === 0"
+            [ngClass]="{
+              'col-lg-4': unBillAmount?.violations > 0 || unBillAmount?.rejectedOh > 0
+              || unBillAmount?.cancelledReceiptAmount > 0,
+              'col-lg-7  pay':
+                (unBillAmount?.violations === 0 && unBillAmount?.rejectedOh === 0 && unBillAmount?.cancelledReceiptAmount === 0) ||
+                (unBillAmount?.violations === undefined && unBillAmount?.rejectedOh === undefined
+                && unBillAmount?.cancelledReceiptAmount === undefined)
+            }"
+          >
+            <span *ngIf="isGccCountry">
+              <gosi-button-dc id="pay" type="primary" isFullWidth="true" class="custom-width">
+                {{ 'BILLING.PAY' | translate }}
+              </gosi-button-dc>
+            </span>
+
+            <span *ngIf="!isGccCountry">
+              <gosi-button-dc
+                id="pay"
+                type="primary"
+                isFullWidth="true"
+                class="custom-width"
+                (submit)="showModal(payBtnPopup, 'md')"
+              >
+                {{ 'BILLING.PAY' | translate }}
+              </gosi-button-dc>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="unBillAmount?.violations > 0 || unBillAmount?.rejectedOh > 0
+      || unBillAmount?.cancelledReceiptAmount > 0">
+      <div class="col-lg-3 amount-border border-left">
+        <div id="billedAmount" class="row mt-3">
+          <div class="col-lg-8 amount-label font-weight-bold">
+            {{ 'BILLING.UN-BILLED-AMOUNTS' | translate }}
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div id="violation" class="col-lg-7 amount-label">
+            {{ 'BILLING.VIOLATIONS' | translate }}
+          </div>
+          <div id="viloation" class="col-lg-5 amount danger" id="violationAmount">
+            {{ unBillAmount.violations * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div id="rejectedAmount" class="row mt-3">
+          <div class="col-lg-7 amount-label">
+            {{ 'BILLING.REJECTED-OH-CLAIMS' | translate }}
+          </div>
+          <div class="col-lg-5 amount danger" id="ohvalue">
+            {{ unBillAmount.rejectedOh * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div id="cancelledPayments" class="col-lg-7 amount-label">
+            {{ 'BILLING.CANCELLED-PAYMENTS' | translate }}
+          </div>
+          <div id="cancelledPayments" class="col-lg-5 amount danger">
+            {{ unBillAmount.cancelledReceiptAmount * exchangeRate | number: '1.2-2' }}
+            {{ currencyType | bilingualText }}
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+<ng-template #billAmountToolTemplates>
+  <ng-container *ngIf="billBalanceDetails?.installmentAmount; else noInstallment">
+    <div id="amountInfo" class="d-flex flex-column">
+      <div>
+        {{ 'BILLING.MINIMUM-PAYMENT-REQUIRED' | translate }} =
+        {{ billBalanceDetails?.minimumPaymentRequired * exchangeRate | number: '1.2-2' }}
+      </div>
+      <div>
+        {{ 'BILLING.RECEIPTS-AND-CREDITS' | translate }} =
+        {{ isBillNumber ? 0.0 : (billBalanceDetails.paidAmount * exchangeRate | number: '1.2-2') }}
+      </div>
+      <div *ngIf="billBalanceDetails?.minimumPaymentRequiredForMonth !== 0">
+        {{ 'BILLING.MINIMUM-REQUIRED' | translate }} =
+        {{ billBalanceDetails?.minimumPaymentRequiredForMonth * exchangeRate | number: '1.2-2' }}
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #noInstallment>
+    <div>{{ 'BILLING.BILL-AMOUNT-INFO' | translate }}{{ previousMonth | translate: previousDate }}</div>
+  </ng-template>
+</ng-template>
+<ng-template #receiptCreditToolTemplates>
+  <ng-container>
+    <div id="creditInfo" class="sm">
+      {{ 'BILLING.RECEIPTS-CREDIT-INFO' | translate }}{{ creditMonth | translate: creditDate }}
+    </div>
+  </ng-container>
+</ng-template>
+
+<!-- Modals -->
+<ng-template #payBtnPopup>
+  <div id="payBtn" class="model-margin">
+    <div class="model-aligns">{{ 'BILLING.MAKE-PAYMENT-VIA' | translate }}</div>
+    <div>1. {{ 'BILLING.ONLINE-BANKING' | translate }}</div>
+    <div>2. {{ 'BILLING.TELEPHONE-BANKING' | translate }}</div>
+    <div>3. {{ 'BILLING.ATM' | translate }}</div>
+    <div class="model-aligns">{{ 'BILLING.VIST-URL' | translate }}</div>
+    <div>
+      <gosi-button-dc id="confirmBtns" class="float-right" type="secondary" size="md" (submit)="confirmCancel()">
+        {{ 'BILLING.CLOSE' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</ng-template>

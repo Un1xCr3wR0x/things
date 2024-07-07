@@ -1,0 +1,212 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<div class="d-block d-md-none">
+  <div class="d-flex mb-4" *ngIf="transactions?.tasks?.length > 0">
+    <div
+      tooltip="{{
+        selectedTransactions?.length >= 10 && !selectAllControl.value
+          ? ('TEAM-MANAGEMENT.DISABLED-TOOLTIP' | translate)
+          : ('TEAM-MANAGEMENT.SELECT-ALL-TOOLTIP' | translate)
+      }}"
+      placement="bottom"
+      [containerClass]="[lang === 'ar' ? ' tooltip-wrapper  tooltip-wrapper-ar' : 'tooltip-wrapper']"
+      container="body"
+    >
+      <gosi-input-checkbox-dc
+        [noMargin]="true"
+        [noSpacing]="true"
+        (select)="onSelectAll()"
+        [control]="selectAllControl"
+        [disabled]="selectedTransactions?.length >= 10 && !selectAllControl.value"
+        [showToolTipOnDisabled]="selectedTransactions?.length >= 10 && !selectAllControl.value"
+      ></gosi-input-checkbox-dc>
+    </div>
+    <span class="select-all">{{ 'TEAM-MANAGEMENT.SELECT-ALL' | translate }} </span>
+  </div>
+
+  <div
+    class="txn-item"
+    *ngFor="
+      let transaction of transactions?.tasks
+        | paginate: { itemsPerPage: itemsPerPage, currentPage: pageDetails.currentPage, totalItems: unViewed };
+      let i = index
+    "
+  >
+    <tm-team-transactions-item-dc
+      [transaction]="transaction"
+      [control]="form.at(i)"
+      (transactionSelect)="selectTransactionsItem($event, i)"
+      (sortEvent)="sortTransactions($event)"
+      [sortItem]="sortItem"
+      [disabled]="checkIsDisabled(transaction)"
+      [isOnHoldMenu]="isOnHoldMenu"
+      (navigate)="navigateToTransaction($event)"
+    >
+    </tm-team-transactions-item-dc>
+  </div>
+</div>
+<div class="d-none d-md-block">
+  <gosi-table-dc>
+    <ng-container modalContent>
+      <table class="table table-condensed" aria-describedby="title">
+        <thead>
+          <tr>
+            <th class="pb-0" *ngIf="transactions?.tasks?.length > 0" style="width: 2%">
+              <gosi-input-checkbox-dc
+                tooltip="{{
+                  selectedTransactions?.length >= 10 && !selectAllControl.value
+                    ? ('TEAM-MANAGEMENT.DISABLED-TOOLTIP' | translate)
+                    : ('TEAM-MANAGEMENT.SELECT-ALL-TOOLTIP' | translate)
+                }}"
+                placement="bottom"
+                [containerClass]="[lang === 'ar' ? ' tooltip-wrapper  tooltip-wrapper-ar' : 'tooltip-wrapper']"
+                container="body"
+                [noSpacing]="true"
+                (select)="onSelectAll()"
+                #pop="bs-tooltip"
+                [control]="selectAllControl"
+                [disabled]="selectedTransactions?.length >= 10 && !selectAllControl.value"
+                [showToolTipOnDisabled]="selectedTransactions?.length >= 10 && !selectAllControl.value"
+              ></gosi-input-checkbox-dc>
+            </th>
+            <th style="width: 12%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.PRIORITY' | translate }}
+            </th>
+            <th style="width: 20%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.DESCRIPTION' | translate }}
+            </th>
+            <th style="width: 12%" class="table-head">{{ 'TEAM-MANAGEMENT.TRANSACTION-NO' | translate }}</th>
+            <th style="width: 12%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.DATE' | translate }}
+            </th>
+            <th style="width: 12%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.CREATED-DATE' | translate }}
+            </th>
+            <th style="width: 12%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.ASSIGNEE' | translate }}
+            </th>
+            <th style="width: 18%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.OLA' | translate }}
+            </th>
+            <th style="width: 12%" class="table-head">
+              {{ 'TEAM-MANAGEMENT.STATUS' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="data-row"
+            *ngFor="let transaction of transactions?.tasks; let i = index"
+            (click)="navigateToTransaction(transaction)"
+          >
+            <td class="row-cell" style="width: 2%">
+              <div
+                tooltip="{{ checkIsDisabled(transaction) ? ('TEAM-MANAGEMENT.DISABLED-TOOLTIP' | translate) : null }}"
+                placement="bottom"
+                [containerClass]="[lang === 'ar' ? ' tooltip-wrapper  tooltip-wrapper-ar' : 'tooltip-wrapper']"
+                container="body"
+              >
+                <gosi-input-checkbox-dc
+                  (click)="onCheckboxClick()"
+                  [noSpacing]="true"
+                  [control]="form.at(i)"
+                  (select)="selectTransactions(form.at(i).value, transaction, i)"
+                  [disabled]="checkIsDisabled(transaction)"
+                  [showToolTipOnDisabled]="checkIsDisabled(transaction)"
+                ></gosi-input-checkbox-dc>
+              </div>
+            </td>
+            <td
+              class="row-cell"
+              [ngClass]="
+                transaction.priority === 1
+                  ? 'high'
+                  : transaction.priority === 3
+                  ? 'medium'
+                  : transaction.priority === 5
+                  ? 'low'
+                  : ''
+              "
+              style="width: 12%"
+            >
+              <div class="txn-priority">
+                {{ 'TEAM-MANAGEMENT.' + transaction.priority | translate | uppercase }}
+              </div>
+            </td>
+            <td class="row-cell" style="width: 20%">
+              <div class="txn-title">
+                {{ lang === 'en' ? transaction.titleEnglish : transaction.titleArabic }}
+              </div>
+              <div class="txn-desc">
+                {{ lang === 'en' ? transaction.descriptionEnglish : transaction.descriptionArabic }}
+              </div>
+            </td>
+            <td class="row-cell" style="width: 12%">
+              <div class="txn-id">
+                {{
+                  transaction.transactionId ? transaction.transactionId : ('TEAM-MANAGEMENT.NOT-AVAILABLE' | translate)
+                }}
+              </div>
+            </td>
+            <td class="row-cell" style="width: 12%">
+              <div class="txn-datetime">
+                <div class="date">
+                  {{ (isOnHoldMenu ? transaction.updatedDate : transaction.assignedDate) | gosiDate }}
+                </div>
+                <div dir="ltr" class="time">
+                  {{ (isOnHoldMenu ? transaction.updatedDate : transaction.assignedDate) | date: 'hh:mm a':'UTC+3' }}
+                </div>
+              </div>
+            </td>
+            <td class="row-cell" style="width: 12%">
+              <div class="txn-datetime">
+                <div class="date">
+                  {{ transaction?.compositeCreatedTime | gosiDate }}
+                </div>
+                <div dir="ltr" class="time">
+                  {{ transaction?.compositeCreatedTime | date: 'hh:mm a':'UTC+3' }}
+                </div>
+              </div>
+            </td>
+            <td class="row-cell" style="width: 12%">
+              <div class="txn-assignee">
+                {{ transaction.assigneeId | bilingualText }}
+              </div>
+            </td>
+            <td class="row-cell" style="width: 18%">
+              <gosi-ola-task-dc
+                [assignedDate]="transaction.assignedDate"
+                [olaAvailable]="transaction.olaAvailable"
+                [dueDate]="transaction.olaDueDate"
+                [transactionCreationDate]="transaction?.transactionCreationDate" [transactionDueDate]="transaction?.slaDueDate" [slaAvailable]="transaction?.slaAvailable"
+              ></gosi-ola-task-dc>
+            </td>
+            <td class="row-cell" style="width: 12%">
+              <div>
+                <gosi-status-badge-dc
+                  [label]="getState(transaction.state) | translate"
+                  [type]="statusBadgeType(transaction)"
+                ></gosi-status-badge-dc>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </gosi-table-dc>
+</div>
+<div class="pagination d-flex justify-content-center mt-4">
+  <gosi-pagination-dc
+    *ngIf="unViewed > 10 && transactions && transactions.tasks && transactions.tasks.length > 0"
+    [totalSize]="unViewed"
+    [itemsPerPage]="itemsPerPage"
+    [itemType]="'TEAM-MANAGEMENT.TRANSACTIONS' | translate"
+    [pageDetails]="pageDetails"
+    (pageChange)="selectPage($event)"
+  >
+  </gosi-pagination-dc>
+</div>

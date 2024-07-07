@@ -1,0 +1,143 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+
+<div class="content">
+  <frm-main-content-dc
+    (onEdit)="navigateToCsrView(2)"
+    [documents]="getCombinedDocuments(documentsByteArray, documents)"
+    [comments]="comments"
+  >
+    <div id="mainHeading" class="main-heading">
+      <frm-main-heading-dc
+        [heading]="violationDetails?.violationType?.english === 'Modify Engagement' ? (violationDetails?.violationSubType | bilingualText) : (violationDetails?.violationType | bilingualText)"
+        [badge]="roleId === 'kashef' ? ('CONTRIBUTOR.COMPLIANCE.KASHEF' | translate) : ('CONTRIBUTOR.COMPLIANCE.E-INSPECTION' | translate)"
+        [subLabel]="'CONTRIBUTOR.SOCIAL-INSURANCE-NO' | translate"
+        [subValue]="socialInsuranceNo"
+        [formSubmissionDate]="formSubmissionDate"
+        [transactionRefNo]="referenceNo"
+      >
+      </frm-main-heading-dc>
+    </div>
+    <div id="entityDetails"></div>
+    <div id="contentArea">
+      <div class="content-item">
+        <!-- Personal details -->
+        <cnt-validator-personal-view-dc
+          *ngIf="contributor"
+          [contributor]="contributor"
+          [cancelEngamentView]="true"
+          [conType]="contributorType"
+          (onPersonalEditClicked)="isModifyWage ? navigateToWageModifyEngagement() : navigateToModifyEngagement()"
+          [canEdit]="canEdit"
+        >
+        </cnt-validator-personal-view-dc>
+      </div>
+      <frm-content-heading-dc
+        *ngIf="violationDetails?.violationType?.english === 'Cancel Engagement'"
+        icon="briefcase"
+        heading="CONTRIBUTOR.COMPLIANCE.CANCEL-ENGAGEMENT"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+      <frm-content-heading-dc
+        *ngIf="violationDetails?.violationType?.english != 'Cancel Engagement'"
+        icon="briefcase"
+        heading="CONTRIBUTOR.ENGAGEMENT-DETAILS"
+        [canEdit]="false"
+      >
+      </frm-content-heading-dc>
+      <cnt-establishment-details-dc
+        *ngIf="establishment && registrationNo"
+        [establishmentDetails]="establishment"
+        [registrationNumber]="registrationNo"
+        [isContract]="true"
+        [isValidator]="true"
+      ></cnt-establishment-details-dc>
+      <cnt-engagement-view-dc
+        *ngIf="engagementDetails"
+        [isValidator]="true"
+        [violationDetails]="violationDetails"
+        [engagement]="engagementDetails"
+        [isModifyWage]="isModifyWage"
+        [applicableFrom]="violationDetails?.wage?.requestedWage?.startDate"
+      >
+      </cnt-engagement-view-dc>
+      <ng-container *ngIf="isModifyWage">
+        <cnt-e-inspection-wage-table-violation-dc
+          [violationDetails]="violationDetails"
+          [isValidator]="true"
+          [routerDataToken]="routerDataToken"
+        ></cnt-e-inspection-wage-table-violation-dc>
+      </ng-container>
+      <!-- Joining Date/ Leaving Date Modify View -->
+      <cnt-modify-details-table-dc
+        *ngIf="violationDetails?.violationType?.english != 'Cancel Engagement' && !isModifyWage"
+        [engagement]="engagementDetails"
+        [violationDetails]="violationDetails"
+        [routerDataToken]="routerDataToken"
+      >
+      </cnt-modify-details-table-dc>
+    </div>
+
+    <!-- Action area -->
+    <div id="actionArea" *ngIf="violationDetails">
+      <cnt-validator-action-area-dc
+        [showReject]="canReject"
+        [showReturn]="canReturn"
+        [showApprove]="canApprove"
+        [showRequestInspection]="showInspectDocument && !establishment?.ppaEstablishment"
+        [isReInspection]="isReInspection"
+        (returnEvent)="showModal(returnTemplate)"
+        (requestInspection)="requestInspection()"
+        (cancelEvent)="confirmCancel()"
+        (approveEvent)="handleEInspectionActions(0)"
+        (rejectEvent)="showModal(rejectTemplate)"
+      ></cnt-validator-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<!------------------------  Modals ----------------------------->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="validatorForm"
+    [heading]="
+      violationDetails?.violationType?.english === 'Cancel Engagement'
+        ? 'CONTRIBUTOR.COMPLIANCE.RETURN-CANCEL-ENGAGEMENT'
+        : violationDetails?.violationType?.english === 'Terminate Engagement'
+        ? 'CONTRIBUTOR.COMPLIANCE.RETURN-TERMINATE-ENGAGEMENT'
+        : 'CONTRIBUTOR.COMPLIANCE.RETURN-MODIFY-ENGAGEMENT'
+    "
+    [warningMessage]="
+      routerDataToken.assignedRole === 'Validator1'
+        ? 'CONTRIBUTOR.INFO-VALIDATOR-RETURN'
+        : 'CONTRIBUTOR.INFO-VALIDATOR-RETURN-VALIDATOR'
+    "
+    [returnReasonList$]="returnReasonList$"
+    (cancelEvent)="decline()"
+    (returnEvent)="handleEInspectionActions(2)"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="validatorForm"
+    [heading]="
+      violationDetails?.violationType?.english === 'Cancel Engagement'
+        ? 'CONTRIBUTOR.COMPLIANCE.REJECT-CANCEL-ENGAGEMENT'
+        : violationDetails?.violationType?.english === 'Terminate Engagement'
+        ? 'CONTRIBUTOR.COMPLIANCE.REJECT-TERMINATE-ENGAGEMENT'
+        : 'CONTRIBUTOR.COMPLIANCE.REJECT-MODIFY-ENGAGEMENT'
+    "
+    [warningMessage]="'CONTRIBUTOR.INFO-VALIDATOR-REJECTION'"
+    [rejectReasonList$]="rejectReasonList$"
+    (cancelEvent)="decline()"
+    (rejectEvent)="handleEInspectionActions(1)"
+  >
+  </frm-reject-template-dc>
+</ng-template>

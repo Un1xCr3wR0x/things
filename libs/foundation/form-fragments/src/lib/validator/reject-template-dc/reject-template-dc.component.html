@@ -1,0 +1,128 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-modal-dc [modalHeader]="heading">
+  <div class="row content" modalContent>
+    <div class="col-lg-12">
+      <gosi-alert-dc
+        *ngIf="warningMessage"
+        [message]="warningMessage"
+        [messageParam]="{ transactionNo: transactionNumber }"
+        [dismissible]="false"
+        [type]="type"
+      ></gosi-alert-dc>
+      <div class="row">
+        <div class="col-lg-12">
+          <gosi-input-select-dc
+            *ngIf="multiValues === false"
+            (select)="commentMandatory($event)"
+            id="rejectionReason"
+            [label]="'CORE.REJECT-REASON' | translate"
+            [control]="rejectionReason"
+            [list]="rejectReasonList$ | async"
+          >
+          </gosi-input-select-dc>
+          <gosi-input-multi-select-dropdown-dc
+            *ngIf="multiValues === true"
+            name="rejectionReason"
+            [label]="'CORE.REJECT-REASON' | translate"
+            id="rejectionReason"
+            [list]="rejectReasonList$ | async"
+            [control]="rejectionReason"
+            (selected)="commentMandatory($event)"
+            [hideOptionalLabel]="true"
+          >
+          </gosi-input-multi-select-dropdown-dc>
+        </div>
+      </div>
+      <div class="row select-margin" *ngIf="isRejectInjury && !allowanceFlag && !repatriation">
+        <div class="col-lg-12">
+          <gosi-input-checkbox-dc
+            id="flag"
+            name="flag"
+            [control]="injuryRejectFlag"
+            (select)="commentMandatory($event)"
+            [label]="
+              isComplication ? 'OCCUPATIONAL-HAZARD.INJURY.REJECT-COMP-FLAG' : 'OCCUPATIONAL-HAZARD.INJURY.REJECT-FLAG'
+            "
+          >
+          </gosi-input-checkbox-dc>
+        </div>
+      </div>
+      <div
+        *ngIf="
+          parentForm.get('rejectionReason').get('english').value ===
+            'The complication is rejected because the injury is rejected' && isComplication === true
+        "
+      >
+        <div class="row">
+          <div class="col-lg-12">
+            <gosi-input-select-dc
+              id="injuryRejectionReason"
+              [label]="'OCCUPATIONAL-HAZARD.REJECT-REASON-INJURY' | translate"
+              [control]="injuryRejectionReason"
+              [list]="injuryRejectReasonList$ | async"
+            >
+            </gosi-input-select-dc>
+          </div>
+        </div>
+        <div class="row" *ngIf="isRejectInjury">
+          <div class="col-lg-12">
+            <gosi-input-checkbox-dc
+              id="parentInjuryflag"
+              name="parentInjuryflag"
+              [control]="parentInjuryRejectFlag"
+              [label]="'OCCUPATIONAL-HAZARD.INJURY.REJECT-FLAG' | translate"
+              (select)="commentMandatory($event)"
+            >
+            </gosi-input-checkbox-dc>
+          </div>
+        </div>
+      </div>
+
+      <div class="row comments-margin">
+        <div class="col-lg-12">
+          <gosi-input-text-area-dc
+            id="validatorComments"
+            gosiDelimiterMask
+            [label]="'CORE.COMMENTS' | translate"
+            [name]="'rejectComments'"
+            [control]="comments"
+            [maxLength]="commentsMaxlength"
+          >
+          </gosi-input-text-area-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-12 pl-0 pr-2" modalAction>
+    <div class="cancel-btn">
+      <gosi-button-dc id="cancelRejectionBtn" type="secondary" (submit)="cancelEventDetails()">
+        {{ 'CORE.CANCEL' | translate }}
+      </gosi-button-dc>
+    </div>
+    <div class="submit-btn">
+      <gosi-button-dc id="confirmRejectionBtn" type="danger" (submit)="rejectTransaction()">
+        {{ 'CORE.REJECT' | translate }}
+      </gosi-button-dc>
+    </div>
+  </div>
+</gosi-modal-dc>
+<ng-template #errorTemplate>
+  <gosi-modal-dc [modalHeader]="modalHeader | translate">
+    <div modalContent>
+      <gosi-alert-dc
+        [message]="errorMessage"
+        type="warning"
+        [dismissible]="dismissible"
+        [messageParam]="{ status: statusEst }"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="clearModal()">
+        {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>

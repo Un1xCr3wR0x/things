@@ -1,0 +1,204 @@
+<div class="table-padding">
+  <div class="row heading-section">
+    <div class="col-auto mr-auto heading">
+      {{ 'BILLING.BILL-HISTORY' | translate | titlecase }}
+      <span class="total-count">({{ billHistoryDetails?.totalNoOfRecords }} {{ 'BILLING.BILLS' | translate }})</span>
+    </div>
+    <div class="menu d-flex">
+      <div class="search">
+        <gosi-search-dc
+          [placeholder]="'BILLING.SEARCH' | translate"
+          (search)="onSearchAmount($event)"
+          (keyup)="onSearchAmount($event.target.value)"
+          [tooltip]="billSearchToolTemplate"
+          gosiNumberMask
+        >
+        </gosi-search-dc>
+      </div>
+      <div class="filter">
+        <blg-bill-history-filter-dc
+          [yesOrNoList]="yesOrNoList"
+          [billPaymentStatus]="billPaymentStatus"
+          (filterValues)="filterValues($event)"
+        ></blg-bill-history-filter-dc>
+      </div>
+    </div>
+  </div>
+  <div class="row" *ngIf="billHistoryDetails?.bills?.length > 0; else noResult">
+    <div class="col-lg-12">
+      <div class="table-responsive">
+        <div class="table-worklist custom-scrollbar">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>
+                  {{ 'BILLING.BILL-MONTH' | translate }}
+                </th>
+                <th>
+                  {{ 'BILLING.BILL-AMOUNT-SAR' | translate }}
+                  <span class="currencySize">({{ currentCurrencyLable | translate }})</span>
+                </th>
+
+                <th *ngIf="!hideColumn">
+                  {{ 'BILLING.MINIMUM-PAYMENT-REQUIRED' | translate }}
+                </th>
+
+                <th *ngIf="!hideColumn">
+                  {{ 'BILLING.INSTALLMENT-COMPLEANCE-INDICATOR' | translate }}
+                </th>
+
+                <th>
+                  {{ 'BILLING.CREDIT-BALANCE-SAR' | translate }}
+                  <span class="currencySize">({{ currentCurrencyLable | translate }})</span>
+                </th>
+
+                <th>
+                  {{ 'BILLING.ADJUSTMENT-INDICATOR' | translate }}
+                </th>
+
+                <th>
+                  {{ 'BILLING.REJECTED-OH-INDICATOR' | translate }}
+                </th>
+                <th>
+                  {{ 'BILLING.VIOLATION-INDIACTOR' | translate }}
+                </th>
+                <th>
+                  {{ 'BILLING.PAYMENT-STATUS' | translate }}
+                </th>
+                <th>
+                  {{ 'BILLING.PAYMENT-DATE' | translate }}
+                </th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="data-row"
+                *ngFor="
+                  let tasks of billHistoryDetails?.bills
+                    | paginate
+                      : {
+                          id: 'bill-history',
+                          itemsPerPage: itemsPerPage,
+                          currentPage: pageDetails.currentPage,
+                          totalItems: billHistoryDetails?.totalNoOfRecords
+                        };
+                  let i = index
+                "
+              >
+                <td>{{ tasks.billPeriod | bilingualText }}</td>
+                <td>{{ tasks.totalAmount * exchangeRate | number: '1.2-2' }}</td>
+                <td *ngIf="!hideColumn">{{ tasks.requiredMinPayment | number: '1.2-2' }}</td>
+                <td *ngIf="!hideColumn">{{ tasks.installmentComplianceInd | bilingualText }}</td>
+                <td>{{ tasks.creditBalance * exchangeRate | number: '1.2-2' }}</td>
+                <td>{{ tasks.adjustmentInd | bilingualText }}</td>
+                <td>{{ tasks.rejectedOhInd | bilingualText }}</td>
+                <td>{{ tasks.violationInd | bilingualText }}</td>
+                <td class="task-status" *ngIf="tasks.totalAmount > 0">
+                  <gosi-status-badge-dc
+                    [label]="tasks.paymentStatus"
+                    type="{{
+                      tasks.paymentStatus.english === 'Paid | Late'
+                        ? 'info'
+                        : tasks.paymentStatus.english === 'Partially Paid | Late'
+                        ? 'warning'
+                        : tasks.paymentStatus.english === 'Paid'
+                        ? 'success'
+                        : tasks.paymentStatus.english === 'Unpaid'
+                        ? 'danger'
+                        : tasks.paymentStatus.english === 'Partially Paid'
+                        ? 'warning'
+                        : ''
+                    }}"
+                  ></gosi-status-badge-dc>
+                </td>
+                <td class="task-status" *ngIf="tasks.totalAmount === 0">
+                  <gosi-status-badge-dc
+                    [label]="'BILLING.NO-PAYMENT-REQUIRED' | translate"
+                    [type]="'success'"
+                  ></gosi-status-badge-dc>
+                </td>
+                <td>
+                  <div *ngIf="tasks?.settlementDate?.english !== null && tasks?.totalAmount > 0">
+                    {{ tasks.settlementDate | bilingualText }}
+                  </div>
+                  <div class="text-center" *ngIf="tasks.settlementDate?.english === null || tasks?.totalAmount === 0">
+                    -
+                  </div>
+                </td>
+                <td class="kebab-menu">
+                  <div class="btn-group" dropdown container="body" placement="placement">
+                    <a id="button-basic" dropdownToggle aria-controls="dropdown-container">
+                      <div class="kebab-icon"></div>
+                    </a>
+                    <ul
+                      id="dropdown-container"
+                      *dropdownMenu
+                      class="dropdown-menu"
+                      [ngClass]="lang === 'en' ? 'dropdown-menu-right' : ''"
+                      role="menu"
+                      aria-labelledby="button-container"
+                    >
+                      <li role="menuitem" id="billSummary">
+                        <a class="dropdown-item" (click)="routeToBillSummary(i)">{{
+                          'BILLING.VIEW-BILL-SUMMARY' | translate
+                        }}</a>
+                      </li>
+                      <li role="menuitem" id="detailedBill" *ngIf="!tasks.migratedBill">
+                        <a class="dropdown-item" (click)="routeToDetailedBill(i)">{{
+                          'BILLING.VIEW-DETAILED-BILLS' | translate
+                        }}</a>
+                      </li>
+                      <li role="menuitem" id="allocation" *ngIf="tasks.allocationInd">
+                        <a class="dropdown-item" (click)="routeToAllocation(i)">{{
+                          'BILLING.VIEW-ALLOCATION' | translate
+                        }}</a>
+                      </li>
+                      <li role="menuitem" id="downloadBillSummary" style="display: none">
+                        <a class="dropdown-item">{{ 'BILLING.DOWNLOD-BILL-SUMMARY' | translate }}</a>
+                      </li>
+                      <li role="menuitem" id="downloadDetailedBill" style="display: none">
+                        <a class="dropdown-item">{{ 'BILLING.DOWNLOAD-DETAILED-BILL' | translate }}</a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <gosi-pagination-dc
+            *ngIf="billHistoryDetails?.totalNoOfRecords > itemsPerPage"
+            [totalSize]="billHistoryDetails?.totalNoOfRecords"
+            [itemsPerPage]="itemsPerPage"
+            [pageDetails]="pageDetails"
+            (pageChange)="selectPage($event)"
+            paginationId="bill-history"
+          ></gosi-pagination-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noResult>
+    <div class="mt-5 text-center">
+      <img src="assets/images/search-error.svg" alt="search-error" />
+      <br />
+      <p class="text-muted">{{ 'BILLING.NO-DATA' | translate | titlecase }}</p>
+    </div>
+  </ng-template>
+
+  <ng-template #billAmountToolTemplate>
+    <ng-container>
+      <div class="d-flex flex-column">
+        <div>{{ 'BILLING.NO-OF-ESTABLISHMENTS-WITH-ACTIVE-CONTRIBUTORS' | translate }}</div>
+      </div>
+    </ng-container>
+  </ng-template>
+  <ng-template #billSearchToolTemplate>
+    <ng-container>
+      <div class="d-flex flex-column">
+        <div>{{ 'BILLING.SEARCH-TOOLTIP' | translate }}</div>
+      </div>
+    </ng-container>
+  </ng-template>
+</div>

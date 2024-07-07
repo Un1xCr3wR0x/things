@@ -1,0 +1,331 @@
+<!-- Copyright GOSI. All Rights Reserved.
+      This software is the proprietary information of GOSI.
+      Use is subject to license terms. -->
+
+<div class="injury">
+  <ng-container *ngIf="injury">
+    <gosi-alert-sc></gosi-alert-sc>
+    <!-- Injury summary section -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <gosi-card-dc class="card-section">
+          <div class="heading">
+            {{ 'OCCUPATIONAL-HAZARD.INJURY.INJURY-SUMMARY' | translate }}
+          </div>
+          <oh-injury-summary-dc
+            [injuryDetails]="injury"
+            (reject)="rejectInjury()"
+            [establishment]="establishment"
+            (modify)="modifyInjuryTransaction()"
+            (reopen)="reopenInjuryTransaction()"
+            (repatriation)="repatriationTransaction()"
+            [repatriationButton]="repatriationButton"
+          ></oh-injury-summary-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <div class="row" *ngIf="assessment && medicalAssessment">
+      <div class="col-md-12">
+        <gosi-card-dc
+          type="secondary"
+          [heading]="'OCCUPATIONAL-HAZARD.MEDICALBOARD-ASSESSMENT' | translate"
+          headingSize="md"
+        >
+          <gosi-ui-medicalboard-assessment-schedule-dc
+            *ngIf="assessment"
+            [assessmentDetails]="assessment"
+            (show)="showModalAccept($event)"
+            (cancelassessment)="hideassessmentModal()"
+            [temp]="att"
+            (confirmassessment)="confirmInvitation($event)"
+            (showreschedule)="showreschedule($event)"
+            [heading]="'OCCUPATIONAL-HAZARD.RESCHEDULE-ASSESSMENT'"
+            [previousDisabilityDetails]="previousDisabilityDetails"
+          ></gosi-ui-medicalboard-assessment-schedule-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <ng-template #att>
+      <gosi-ui-medicalboard-reschedule-dc
+        [heading]="'OCCUPATIONAL-HAZARD.RESCHEDULE-ASSESSMENT'"
+        (showrescheduleModal)="showModalReschedule($event)"
+        (finalconfirmReschedule)="confirmrescheduleInvitation()"
+        (finalCancelreschedule)="finalCancelreschedule()"
+        [locationList]="fieldOfficeList$ | async"
+        [minDateValue]="minimumDate"
+        [sessionnumber]="sessionnumber"
+        (locationListModified)="onLocationListModified($event)"
+        [invitenumber]="invitenumber"
+        [maxDateValue]="maxDate"
+        [availableArray]="availableArray"
+        [unavailableArray]="unavailableArray"
+        (locationChange)="getLocation($event)"
+        (dateChange)="onDateChange($event)"
+        (eventChange)="onEventChange($event)"
+        [parentForm]="parentForm"
+        [sessionTimeList]="sessionTimeList"
+        [isDisabled]="isDisabled"
+        (setTime)="BindAssessmentTime($event)"
+        [fullyFilled]="fullyFilled"
+        [noSessions]="noSessions"
+        [onHold]="onHold"
+        [virtual]="virtual"
+        [noSessionscalendar]="noSessionscalendar"
+        [assessmentDetailsreschedule]="assessment"
+        (onCancelreschedule)="hiderescheduleModal()"
+      >
+      </gosi-ui-medicalboard-reschedule-dc>
+    </ng-template>
+    <div class="row" *ngIf="previousDisabilityDetails?.data[0]">
+      <div class="col-md-12">
+        <gosi-card-dc
+          type="secondary"
+          [heading]="'OCCUPATIONAL-HAZARD.DISABILITY-ASSESSMENT' | translate"
+          headingSize="md"
+        >
+        <div *ngIf ="infoNeeded">
+          <gosi-alert-dc [message]="'OCCUPATIONAL-HAZARD.ASSESSMENT-PUBLISH MESSAGE'" type="info">
+            <div actOnAlert>
+              {{ 'OCCUPATIONAL-HAZARD.ASSESSMENT-PUBLISH-BENEFIT-MESSAGE' | translate }}
+            </div>
+          </gosi-alert-dc>
+        </div>
+          <gosi-ui-appeal-assessments-timeline-dc
+            [previousDisabilityDetails]="previousDisabilityDetails"
+            (onNavigate)="navigateToApppeal($event)"
+            (selected)="navigateToEarlyReassessment($event)"
+            (navigateToAppealInfo)="navigateToAppealHistory($event)"
+            (onAssessmentIdClicked)="viewAssessmentById($event)"
+            (clickPaymentId)="viewPaymentReqId($event)"
+            (onAccept)="viewAcceptModal($event)"
+            [isContributor]="isContributor"
+            [isMbo]="isMbo"
+            [isHoDoctor]="isHoDoctor"
+            [mbAllowanceDto]="mbAllowanceDto"
+            [isAppPublic]="isAppPublic"
+            [injuryId]="injury?.injuryId"
+            [isCSR]="isCSR"
+          ></gosi-ui-appeal-assessments-timeline-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+    <!-- Establishment details section -->
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-card-dc
+          type="secondary"
+          [heading]="'OCCUPATIONAL-HAZARD.CONTRIBUTOR-DETAILS' | translate"
+          headingSize="md"
+          icon="building"
+          *ngIf="appToken !== 'INDIVIDUAL_APP'"
+        >
+          <oh-establishment-dtls-dc [establishment]="establishment" [contributor]="contributor">
+          </oh-establishment-dtls-dc>
+        </gosi-card-dc>
+        <gosi-card-dc
+          type="secondary"
+          [heading]="'OCCUPATIONAL-HAZARD.ESTABLISHMENT-DETAILS' | translate"
+          headingSize="md"
+          icon="building"
+          *ngIf="appToken === 'INDIVIDUAL_APP'"
+        >
+          <oh-establishment-dtls-dc [engagementDetails]="engagementDto" [contributor]="contributor">
+          </oh-establishment-dtls-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+
+    <!-- Injury details section -->
+    <div class="row">
+      <div class="col-md-12">
+        <gosi-card-dc
+          type="secondary"
+          [heading]="'OCCUPATIONAL-HAZARD.INJURY.SEC-INJURY-DETAILS' | translate"
+          headingSize="md"
+          icon="user-injured"
+        >
+          <oh-injury-detail-dc [injuryDetails]="injury" [idCode]="idCode"></oh-injury-detail-dc>
+        </gosi-card-dc>
+      </div>
+    </div>
+
+    <!-- Documents section -->
+    <div class="row" *ngIf="appToken !== 'INDIVIDUAL_APP'">
+      <div class="col-md-12">
+        <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #confirmSubmit>
+    <!-- <gosi-confirm-modal-dc
+      [message]="'OCCUPATIONAL-HAZARD.CONTINUE-WITH-ENTITLEMENT-INFO'"
+      (onConfirm)="continueAccept()"
+      (onCancel)="decline()"
+    >
+    </gosi-confirm-modal-dc> -->
+
+    <gosi-alert-dc
+      style="padding-left: 30px; padding-right: 30px"
+      message="{{ 'OCCUPATIONAL-HAZARD.CONTINUE-WITH-ENTITLEMENT-INFO' | translate }}"
+      type="info"
+      [dismissible]="false"
+    ></gosi-alert-dc>
+    <gosi-alert-dc
+      *ngIf="successOTPMessage?.english"
+      style="padding-left: 30px; padding-right: 30px"
+      [bilingualMessage]="successOTPMessage"
+      [dismissible]="true"
+      type="success"
+    ></gosi-alert-dc>
+    <gosi-alert-dc
+      *ngIf="authenticatedOtp"
+      style="padding-left: 30px; padding-right: 30px"
+      [dismissible]="true"
+      [bilingualMessage]="otpValidated"
+      type="warning"
+    ></gosi-alert-dc>
+    <ng-container *ngIf="isMbo || isCSR">
+      <gosi-card-dc type="secondary" class="col-md-12" style="padding-left: 20px; padding-right: 30px">
+        <gosi-modal-dc [modalHeader]="'OCCUPATIONAL-HAZARD.AUTHENTICATE-CUSTOMER' | translate">
+          <div class="col-md-12" style="min-height: 160px" modalContent>
+            <div clas="row">
+              <gosi-input-radio-dc
+                id="authenticationMethod"
+                [label]="'OCCUPATIONAL-HAZARD.AUTHENTICATION-METHOD' | translate"
+                [control]="radioFormControl.get('authMethod')"
+                (select)="selectRadio($event)"
+                [list]="authenticationList"
+              >
+              </gosi-input-radio-dc>
+            </div>
+            <div class="row" *ngIf="showOtpFlag">
+              <div class="col-lg-12 mt-4">
+                <gosi-alert-dc type="info" [message]="showOtpErrorMsg" [dismissible]="false"> </gosi-alert-dc>
+              </div>
+            </div>
+            <ng-container class="row">
+              <div class="col-md-12" *ngIf="showOTPField">
+                <div class="row">
+                  <gosi-button-dc id="genarate" type="primary" (click)="generateOTP()" size="sm">{{
+                    'OCCUPATIONAL-HAZARD.GENERATE-OTP' | translate
+                  }}</gosi-button-dc>
+                </div>
+              </div>
+              <div class="row" *ngIf="giveOTPData">
+                <gosi-card-dc type="secondary">
+                  <div class="row">
+                    <h6>{{ 'OCCUPATIONAL-HAZARD.OTP-DETAILS' | translate }}</h6>
+                  </div>
+                  <div class="row">
+                    <gosi-input-otp-dc
+                      [componentId]="'otpValue'"
+                      (timerStopped)="hasRetriesExceeded()"
+                      [isValid]="isValidOTP"
+                      [otpLength]="4"
+                      [disabledOTP]="disabledOTP"
+                      [control]="otpForm.get('otp')"
+                    >
+                    </gosi-input-otp-dc>
+                  </div>
+                  <div class="d-flex mt-3">
+                    <span class="mr-1"></span>
+                    <div class="d-inline-block" *ngIf="!isResend">
+                      <fa-icon [icon]="['fas', 'stopwatch']"></fa-icon>
+                    </div>
+                    <span class="mr-2"></span>
+                    <div class="d-flex timer-wrapper" *ngIf="!isResend">
+                      {{ 'CONTRIBUTOR.CONTRACT-AUTH.WILL-SEND-OTP' | translate }}
+                      <hr />
+                      <gosi-timer-dc (timerStopped)="isResend = true" [min]="minutes"> </gosi-timer-dc>
+                      {{ 'CONTRIBUTOR.CONTRACT-AUTH.SECOND' | translate }}
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-end link-padding col-sm-2 justify-content-center" *ngIf="true">
+                    <div *ngIf="isResend" class="regen-otp">
+                      <a
+                        *ngIf="noOfIncorrectOtp !== noOfResend"
+                        id="resendOtp"
+                        class="resend-otp custom-wrap"
+                        (click)="reSendOtp()"
+                      >
+                        {{ 'CONTRIBUTOR.CONTRACT-AUTH.REGENERATEOTP' | translate }}
+                      </a>
+                    </div>
+                  </div>
+                </gosi-card-dc>
+              </div>
+
+              <div class="col-lg-12 form-action" *ngIf="giveOTPData">
+                <div class="d-flex justify-content-center">
+                  <gosi-button-dc id="verify" type="primary" (submit)="verifyOTP()">
+                    {{ 'MEDICAL-BOARD.VERIFY' | translate }}
+                  </gosi-button-dc>
+                </div>
+              </div>
+              <div class="row" *ngIf="showDocumentField">
+                <div class="col-md-12">
+                  <div class="row">
+                    <h5 style="padding-left: 20px">{{ 'OCCUPATIONAL-HAZARD.AUTHENTICATION-DOCUMENTS' | translate }}</h5>
+                  </div>
+                  <gosi-card-dc class="card-section">
+                    <gosi-ui-document-upload-dc
+                      [businessKey]="acceptDisbId"
+                      [documentList]="documentScanList"
+                      (documentFormDetails)="showFormValidation()"
+                      (refresh)="refreshDocument($event)"
+                      [parentForm]="parentForm"
+                      [showHeaders]="false"
+                    >
+                    </gosi-ui-document-upload-dc>
+                  </gosi-card-dc>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </gosi-modal-dc>
+      </gosi-card-dc>
+    </ng-container>
+    <div modalAction style="min-height: 70px; padding-left: 40px; padding-right: 40px">
+      <div class="col-auto form-action-btn">
+        <gosi-button-dc
+          [ngClass]="isSmallScreen ? '' : 'float-left'"
+          id="cancelButton"
+          [isFullWidth]="isSmallScreen"
+          type="secondary"
+          (click)="decline()"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.NO' | translate }}</gosi-button-dc
+        >
+      </div>
+      <div class="ml-auto col-auto form-action-btn">
+        <gosi-button-dc
+          [ngClass]="!isSmallScreen ? 'float-right' : ''"
+          id="saveAndNext"
+          type="primary"
+          [isFullWidth]="isSmallScreen"
+          (submit)="checkOtpDocValidation()"
+        >
+          {{ 'OCCUPATIONAL-HAZARD.YES' | translate }}</gosi-button-dc
+        >
+      </div>
+    </div>
+  </ng-template>
+</div>
+<ng-template #errorTemplate>
+  <gosi-modal-dc [modalHeader]="modalHeader | translate">
+    <div modalContent>
+      <gosi-alert-dc
+        [message]="errorMessage"
+        type="warning"
+        [dismissible]="dismissible"
+        [messageParam]="{ status: statusEst }"
+      >
+      </gosi-alert-dc>
+    </div>
+    <div class="d-flex justify-content-center" modalAction>
+      <gosi-button-dc type="secondary" id="close" (submit)="clearModal()">
+        {{ 'OCCUPATIONAL-HAZARD.CLOSE' | translate }}</gosi-button-dc
+      >
+    </div>
+  </gosi-modal-dc>
+</ng-template>

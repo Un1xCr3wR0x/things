@@ -1,0 +1,107 @@
+<div class="content">
+  <div class="custom-header">
+    <div class="row no-gutters p-2 violation-details">
+      <div class="col-auto">
+        <a class="back-button">
+          <fa-icon class="fa-icon" (click)="navigateBack()" *ngIf="lang === 'en'"
+                   icon="arrow-left"></fa-icon>
+          <fa-icon class="fa-icon" (click)="navigateBack()" *ngIf="lang === 'ar'"
+                   icon="arrow-right"></fa-icon>
+        </a>
+      </div>
+      <div class="col-auto heading">
+        {{ 'VIOLATIONS.VIOLATION-APPEAL' | translate | titlecase }}
+      </div>
+    </div>
+    <gosi-alert-dc *ngIf="fileMandatory" (closed)="fileMandatory = false" [message]="'CORE.ERROR.UPLOAD-MANDATORY-DOCUMENTS' | translate" type="danger" [noPadding]="true"></gosi-alert-dc>
+    <gosi-alert-dc *ngIf="inputMandatory" (closed)="inputMandatory = false" [message]="'CORE.ERROR.MANDATORY-FIELDS' | translate" type="danger" [noPadding]="true"></gosi-alert-dc>
+    <gosi-alert-dc *ngIf="noSelectContributor" (closed)="noSelectContributor = false"  [message]="'VIOLATIONS.SELECT-CONTRIBUTORS' | translate" type="danger" [noPadding]="true"></gosi-alert-dc>
+<!--    <gosi-alert-dc *ngIf="sendSuccess" type="danger" [message]="'VIOLATIONS.APPEAL-SUBMIT-ACCESS' | translate" type="danger" [noPadding]="true"></gosi-alert-dc>-->
+    <gosi-alert-sc></gosi-alert-sc>
+  </div>
+  <div class="card-container">
+    <gosi-card-dc type="primary" headingSize="md" [noPadding]="false" [lessPadding]="true">
+      <ng-container>
+        <div class="row">
+          <div class="col-4">
+            <gosi-label-dc [label]="'VIOLATIONS.VIOLATION-TYPE' | translate"
+              [value]="transactionDetails?.violationType | bilingualText"></gosi-label-dc>
+          </div>
+          <div class="col-4">
+            <gosi-label-dc [label]="'VIOLATIONS.VIOLATION-NUMBER' | translate"
+                           [value]="transactionDetails?.violationId">
+            </gosi-label-dc>
+          </div>
+          <div class="col-4">
+            <gosi-currency-label-dc id="amountReceived" [label]="'VIOLATIONS.PENALTY-AMOUNT' | translate"
+              [currencyTo]="transactionDetails?.penaltyAmount" [countryCodeTo]="'VIOLATIONS.SAR-VALUE' | translate"></gosi-currency-label-dc>
+          </div>
+        </div>
+      </ng-container>
+    </gosi-card-dc>
+  </div>
+  <gosi-progress-wizard-dc
+    *ngIf="appealContributors.length"
+    (clickWizard)="selectWizards($event)"
+    [wizardItems]="wizardItems"
+    #violationWizard
+  ></gosi-progress-wizard-dc>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="currentTab === 0">
+            <vol-violation-appeal-contributor-selection-dc
+              [contributorsList]="filterContributors"
+              (selectedContributors)="chooseContributors($event)"
+              [contributorIds]="selectedContributorsIdList"
+              [noOfRecords]="noOfRecords"
+              (pageChange)="selectPage($event)"
+              [itemsPerPage]="itemsPerPage"
+              [currentPage]="currentPage"
+              [pageDetails]="pageDetails"
+              [isSelectedAll]="isSelectedAll"
+              (selectAllContributors)="selectAllContributors($event)"
+              (searchContributor)="search($event)"
+              (nextPage)="onNextStep()"
+            ></vol-violation-appeal-contributor-selection-dc>
+          </tab>
+          <tab [active]="currentTab === 1">
+            <vol-violation-appeal-contributor-details-dc
+              [formsContributor]="formsContributor"
+              [contributorList]="(currentTab == 1) ? chosenContributor : []"
+              [selectedContributors]="selectedContributors"
+              (submitForm)="onSubmitAppeal()"
+              [uuid]="uuid"
+              (changeRow)="changeViwCard($event)"
+              (previous)="previousStep()"
+              (cancel)="cancelModal(cancelTemplate)"
+              [documentsValid]="(currentTab == 1) ? isDocumentsValid : []"
+              [isSubmit]="isSubmit"
+              [transactionId]="this.typeAppealOnViolationTxn.transactionId"
+            ></vol-violation-appeal-contributor-details-dc>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc [message]="'VIOLATIONS.QUIT' | translate"
+                         (onConfirm)="cancel()"
+                         (onCancel)="onReturnBackToPreviousPage()"></gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #declaration>
+  <vol-declaration-appeal-modal-dc (onConfirm)="confirmDeclaration($event)"
+                                   [listOfRequired]="declareDocuments"
+                                   [declareText]="declareText | bilingualText"
+                                   [violationType]="transactionDetails?.violationType | bilingualText"
+                                   (onCancel)="cancel()"></vol-declaration-appeal-modal-dc>
+</ng-template>
+<ng-template #appeal>
+  <vol-appeal-modal-dc (actionUserAppeal)="doModifyAppeal($event)"
+                       (closeModal)="onHideModal()"></vol-appeal-modal-dc>
+</ng-template>

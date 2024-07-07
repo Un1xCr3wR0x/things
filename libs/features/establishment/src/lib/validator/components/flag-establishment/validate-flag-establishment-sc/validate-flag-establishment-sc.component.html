@@ -1,0 +1,105 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading" *ngIf="!isModify">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.ADD-FLAG' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="mainHeading" *ngIf="isModify">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.MODIFY-FLAG' | translate"> </frm-main-heading-dc>
+    </div>
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishment"
+          [estHeading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS'"
+        ></est-establishment-content-dc>
+      </div>
+      <div class="sub-content-item" *ngIf="isModify">
+        <est-add-flag-details-dc
+          [flagDetails]="modifiedFlagDetails"
+          [isModify]="isModify"
+          [isJustificationModified]="isJustificationModified"
+          [isEndDateModified]="isEndDateModified"
+        ></est-add-flag-details-dc>
+      </div>
+      <div class="sub-content-item" *ngIf="!isModify">
+        <est-add-flag-details-dc
+          [flagDetails]="flagDetails"
+          [isModify]="isModify"
+          [isJustificationModified]="isJustificationModified"
+          [isEndDateModified]="isEndDateModified"
+        ></est-add-flag-details-dc>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea" *ngIf="canApprove">
+      <frm-action-area-dc
+        [canReturn]="true"
+        (approveEvent)="approveTransaction(flagEstForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(flagEstForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(flagEstForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+    <div id="actionArea" *ngIf="!canApprove">
+      <frm-action-area-dc
+        [canReturn]="true"
+        (approveEvent)="restrictApproveTransaction()"
+        (rejectEvent)="rejectTransaction(flagEstForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(flagEstForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="flagEstForm"
+    [heading]="heading"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(flagEstForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="flagEstForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(flagEstForm)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="flagEstForm"
+    [heading]="returnHeading"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(flagEstForm)"
+    [warningMessage]="'ESTABLISHMENT.RETURN-TO-LCMUSER-TRANSACTION-INFO'"
+  >
+  </frm-return-template-dc>
+</ng-template>

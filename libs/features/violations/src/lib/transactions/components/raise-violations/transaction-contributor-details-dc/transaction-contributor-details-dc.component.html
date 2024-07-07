@@ -1,0 +1,646 @@
+<ng-container *ngIf="violationData && violationData?.contributors && violationData?.contributors.length > 0">
+  <accordion *ngFor="let person of violationData?.contributors; let personIndex = index">
+    <accordion-group
+      class="accordion-group-class"
+      (isOpenChange)="selectPanel($event, personIndex + 1)"
+      [isOpen]="accordionPanel === personIndex + 1"
+    >
+      <div accordion-heading>
+        <span class="name-value">
+          {{
+            person.contributorName.english === null
+              ? person.contributorName.arabic
+              : (person.contributorName | bilingualText)
+          }}
+        </span>
+        <ng-container *ngIf="showSinTemplate(person.identity) === 1; else sinTemplate">
+          <div *ngFor="let identity of person?.identity">
+            <ng-container *ngIf="showSinTemplate(person.identity) === 1; else sinTemplate">
+              <div *ngIf="identity?.idType === 'NIN'">
+                <div class="identity-value">
+                  {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }} : {{ identity?.newNin }}
+                </div>
+              </div>
+              <div *ngIf="identity?.idType === 'IQAMA'">
+                <div class="identity-value">{{ 'VIOLATIONS.IQAMA-NUMBER' | translate }} : {{ identity?.iqamaNo }}</div>
+              </div>
+              <div *ngIf="identity?.idType === 'GCCID'">
+                <div class="identity-value">{{ 'VIOLATIONS.GCCID' | translate }} : {{ identity?.id }}</div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+        <ng-template #sinTemplate>
+          <div class="identity-value">
+            {{ 'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate }} : {{ person?.socialInsuranceNo }}
+          </div>
+        </ng-template>
+      </div>
+      <span class="arrow-up-period arrow-color" accordion-heading>
+        <span>
+          <fa-icon class="icon-margin" icon="angle-up" size="lg"></fa-icon>
+        </span>
+      </span>
+      <span class="arrow-down-period arrow-color" accordion-heading>
+        <span>
+          <fa-icon class="icon-margin" icon="angle-down" size="lg"></fa-icon>
+        </span>
+      </span>
+      <ng-container>
+        <div class="row form-label">
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <ng-container *ngIf="showSinTemplate(person.identity) === 1; else isSinTemplate">
+              <div *ngFor="let identity of person?.identity">
+                <ng-container *ngIf="showSinTemplate(person.identity) === 1; else isSinTemplate">
+                  <div *ngIf="identity?.idType === 'NIN'">
+                    <div class="identity-heading no-wrap title-label id-number">
+                      {{ 'VIOLATIONS.NATIONAL-ID-NUMBER' | translate }}
+                    </div>
+                    <a class="link-clr id-number" (click)="navigateToProfile(personIndex)"> {{ identity?.newNin }} </a>
+                  </div>
+                  <div *ngIf="identity?.idType === 'IQAMA'">
+                    <div class="identity-heading no-wrap title-label id-number">
+                      {{ 'VIOLATIONS.IQAMA-NUMBER' | translate }}
+                    </div>
+                    <a class="link-clr" (click)="navigateToProfile(personIndex)"> {{ identity?.iqamaNo }} </a>
+                  </div>
+                  <div *ngIf="identity?.idType === 'GCCID'">
+                    <div class="identity-heading no-wrap title-label id-number">
+                      {{ 'VIOLATIONS.GCCID' | translate }}
+                    </div>
+                    <a class="link-clr" (click)="navigateToProfile(personIndex)">
+                      {{ identity?.id }}
+                    </a>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+            <ng-template #isSinTemplate>
+              <gosi-label-dc
+                [label]="'VIOLATIONS.SOCIAL-INSURANCE-NO' | translate"
+                [value]="person?.socialInsuranceNo"
+                isLink="true"
+                (select)="navigateToProfile(personIndex)"
+              ></gosi-label-dc>
+            </ng-template>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="identity-heading title-label">{{ 'VIOLATIONS.DOB' | translate }}</div>
+            <div>
+              <span>{{ person.dateOfBirth | dateType | formatDate }}</span>
+              <span>({{ 'VIOLATIONS.AGE' | translate }}:{{ getPersonAge(personIndex) }})</span>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-4 form-label">
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="person.contributorName.english && !person.contributorName.arabic"
+          >
+            <gosi-label-dc
+              id="contributorNameEnglish"
+              [label]="'VIOLATIONS.CONTRIBUTOR-NAME' | translate"
+              [value]="person.contributorName.english"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="person.contributorName.arabic">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.CONTRIBUTOR-NAME-ARABIC' | translate"
+              [value]="person.contributorName.arabic"
+            ></gosi-label-dc>
+          </div>
+          <!-- only in case of system triggered violations -->
+          <ng-container *ngIf="!isReportViolationTransaction">
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isIncorrectWage || isIncorrectReason || isaddEngagement">
+              <gosi-label-dc
+                [label]="
+                  (isIncorrectWage
+                    ? 'VIOLATIONS.TRANSACTION-ID'
+                    : isIncorrectReason
+                    ? 'VIOLATIONS.TRANSACTION-ID'
+                    : 'VIOLATIONS.TRANSACTION-ID'
+                  ) | translate
+                "
+                [value]="person?.engagementInfo[0]?.changeTerminationReasonTransaction"
+                isLink="true"
+                (select)="navigateToTnxTracker(personIndex, 0)"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isaddEngagement">
+              <gosi-label-dc
+                [label]="'VIOLATIONS.JOINING-DATE' | translate"
+                [value]="person?.engagementInfo[0]?.joiningDate | dateType | formatDate"
+              >
+              </gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isaddEngagement || isIncorrectReason">
+              <gosi-label-dc
+                [label]="'VIOLATIONS.TERMINATION-DATE' | translate"
+                [value]="person?.engagementInfo[0]?.terminationDate | dateType | formatDate"
+              >
+              </gosi-label-dc>
+            </div>
+            <!-- request submission date for IW, ANE,IRT -->
+            <div
+              class="col-sm-6 col-md-6 col-lg-6"
+              *ngIf="
+                (isIncorrectWage || isaddEngagement || isIncorrectReason) &&
+                person?.engagementInfo[0]?.requestSubmissionDate
+              "
+            >
+              <gosi-label-dc
+                [label]="'VIOLATIONS.REQUEST-SUBMISSION-DATE' | translate"
+                [date]="true"
+                value="{{ person?.engagementInfo[0]?.requestSubmissionDate | dateType | formatDate }}"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isIncorrectWage">
+              <gosi-label-dc
+                [label]="'VIOLATIONS.WAGE-CORRECTED' | translate"
+                [control]="
+                  person?.engagementInfo[0]?.isWageCorrected
+                    ? ('VIOLATIONS.YES' | translate)
+                    : ('VIOLATIONS.NO' | translate)
+                "
+              >
+              </gosi-label-dc>
+            </div>
+            <div
+              class="col-sm-6 col-md-6 col-lg-6"
+              *ngIf="!isCancelEngagement && person?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears"
+            >
+              <gosi-label-dc
+                [label]="'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate"
+                [value]="person?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears | bilingualText"
+              ></gosi-label-dc>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="violationData?.penaltyInfo.length > 0">
+              <gosi-label-dc
+                [label]="'VIOLATIONS.COMPENSATED' | translate"
+                [value]="
+                  (getIsContributorBenefited(person?.contributorId) ? 'VIOLATIONS.YES' : 'VIOLATIONS.NO') | translate
+                "
+              ></gosi-label-dc>
+            </div>
+          </ng-container>
+          <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="isReportViolationTransaction">
+            <gosi-label-dc
+              [label]="'VIOLATIONS.COMPENSATED' | translate"
+              [value]="isWrongBenefits ? ('VIOLATIONS.YES' | translate) : (person?.compensated | bilingualText)"
+            ></gosi-label-dc>
+          </div>
+        </div>
+        <!-- table for IRT,IW,MDT,MJD only in case of system triggered violations-->
+        <div class="termination-table" *ngIf="!isReportViolationTransaction">
+          <table class="table" *ngIf="isIncorrectReason">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-TREMINATION-RSN' | translate }}</td>
+                <td class="termination-head">
+                  {{ person?.engagementInfo[0]?.oldTerminationReason | bilingualText }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.CURRENT-TREMINATION-RSN' | translate }}</td>
+                <td class="termination-tail">
+                  {{ person?.engagementInfo[0]?.updatedTerminationReason | bilingualText }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isIncorrectWage">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-WAGE' | translate }}</td>
+                <td class="termination-head">
+                  {{ person?.engagementInfo[0]?.oldWage | number: '1.2-2' }}
+                  {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-WAGE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ person?.engagementInfo[0]?.updatedWage | number: '1.2-2' }}
+                  {{ 'VIOLATIONS.CURRENCY' | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isModifyTerminationDate">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-TERMINATION-DATE' | translate }}</td>
+                <td class="termination-head">
+                  {{
+                    person?.engagementInfo[0]?.oldTerminationDate?.gregorian
+                      ? (person?.engagementInfo[0]?.oldTerminationDate | dateType | formatDate)
+                      : ('VIOLATIONS.NOT-APPLICABLE' | translate)
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-TERMINATION-DATE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ person?.engagementInfo[0]?.updatedTerminationDate | dateType | formatDate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" *ngIf="isModifyJoiningDate">
+            <thead class="thead-light"></thead>
+            <tbody>
+              <tr>
+                <td>{{ 'VIOLATIONS.OLD-JOINING-DATE' | translate }}</td>
+                <td class="termination-head">
+                  {{ person?.engagementInfo[0]?.oldJoiningDate | dateType | formatDate }}
+                </td>
+              </tr>
+              <tr>
+                <td>{{ 'VIOLATIONS.UPDATED-JOINING-DATE' | translate }}</td>
+                <td class="termination-tail">
+                  {{ person?.engagementInfo[0]?.updatedJoiningDate | dateType | formatDate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- cancelled engagement section heading -->
+        <div class="row" *ngIf="isCancelEngagement && person?.engagementInfo.length > 0">
+          <div class="col-md-12 mb-3 contribution-details">
+            {{ 'VIOLATIONS.CANCEL-ENGAGEMENT-DETAILS' | translate }}
+          </div>
+        </div>
+        <!-- engagement section heading for violations other than CE -->
+        <div
+          class="row"
+          *ngIf="!isCancelEngagement && person?.engagementInfo.length > 0 && isReportViolationTransaction"
+        >
+          <div class="col-md-12 mb-3 contribution-details">
+            {{ 'VIOLATIONS.ENGAGEMENT-DETAILS' | translate }}
+          </div>
+        </div>
+        <!-- engagement section for violation types other than other violation -->
+        <ng-container
+          *ngIf="!isViolatingProvision && !isWrongBenefits && (isReportViolationTransaction || isCancelEngagement)"
+        >
+          <accordion *ngFor="let personEngagement of person?.engagementInfo">
+            <accordion-group class="accordion-group-class-inner" [isOpen]="true" [isDisabled]="true">
+              <div accordion-heading>
+                <!-- cancel engagment period for system triggered -->
+                <span
+                  class="name-value"
+                  *ngIf="!isReportViolationTransaction && (isCancelEngagement || isModifyTerminationDate)"
+                >
+                  {{ personEngagement?.contributionInfo?.startDate | dateType | formatDate }}
+                  <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                  <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                  {{ personEngagement?.contributionInfo?.endDate | dateType | formatDate }}
+                </span>
+                <!--  engagament period for report violation -->
+                <span class="name-value" *ngIf="isReportViolationTransaction">
+                  {{ personEngagement?.joiningDate | dateType | formatDate }}
+                  <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                  <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                  <ng-container
+                    *ngIf="
+                      personEngagement?.terminationDate?.gregorian || personEngagement?.terminationDate?.hijiri;
+                      else onwards
+                    "
+                  >
+                    {{ personEngagement?.terminationDate | dateType | formatDate }}
+                  </ng-container>
+                  <ng-template #onwards> {{ 'VIOLATIONS.ONWARDS' | translate }} </ng-template>
+                </span>
+                <ng-container>
+                  <div
+                    class="engagement-duration"
+                    *ngIf="personEngagement?.engagementPeriodMonth || personEngagement?.engagementPeriodDays"
+                  >
+                    <!-- duration -->
+                    (
+                    <span
+                      *ngIf="personEngagement?.engagementPeriodMonth && personEngagement?.engagementPeriodMonth !== 0"
+                    >
+                      <span>
+                        {{ personEngagement?.engagementPeriodMonth }}
+                      </span>
+
+                      {{
+                        personEngagement?.engagementPeriodMonth >= 3 && personEngagement?.engagementPeriodMonth <= 10
+                          ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                          : personEngagement?.engagementPeriodMonth === 1
+                          ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                          : personEngagement?.engagementPeriodMonth === 2
+                          ? ('VIOLATIONS.MONTHS' | translate | titlecase)
+                          : ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                      }}
+                    </span>
+                    <!-- after displaying month if there is days comma will be displayed -->
+                    <span *ngIf="personEngagement?.engagementPeriodMonth && personEngagement?.engagementPeriodDays">
+                      ,</span
+                    >
+                    <span
+                      *ngIf="personEngagement?.engagementPeriodDays && personEngagement?.engagementPeriodDays !== 0"
+                    >
+                      <span *ngIf="personEngagement?.engagementPeriodDays">
+                        {{ personEngagement?.engagementPeriodDays }}
+                      </span>
+
+                      {{
+                        personEngagement?.engagementPeriodDays === 2
+                          ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                          : personEngagement?.engagementPeriodDays === 1
+                          ? ('VIOLATIONS.DAY' | translate | titlecase)
+                          : personEngagement?.engagementPeriodDays > 2 && personEngagement?.engagementPeriodDays < 11
+                          ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                          : ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                      }}
+                    </span>
+                    )
+                  </div>
+                </ng-container>
+              </div>
+              <span class="contri-amount arrow-color" *ngIf="isCancelEngagement" accordion-heading>
+                <span class="ml-2 mr-2">
+                  <span class="exclude-value">
+                    {{ 'VIOLATIONS.CONTRIBUTION' | translate }} :
+                    <span *ngIf="isReportViolationTransaction" class="contribution-amount">
+                      {{ personEngagement?.contributionAmount | number: '1.2-2' }}
+                      {{ 'VIOLATIONS.CURRENCY' | translate }}
+                    </span>
+                    <!-- in case of system triggered -->
+                    <span *ngIf="!isReportViolationTransaction" class="contribution-amount">
+                      {{ personEngagement?.contributionInfo?.contributionAmount | number: '1.2-2' }}
+                      {{ 'VIOLATIONS.CURRENCY' | translate }}
+                    </span>
+                    <!-- contribution amount -->
+                  </span>
+                </span>
+              </span>
+              <ng-container>
+                <!-- content -->
+                <div class="row form-label">
+                  <ng-container *ngIf="isReportViolationTransaction">
+                    <!-- eng content for CE -->
+                    <ng-container *ngIf="isCancelEngagement">
+                      <div class="col-sm-12 col-md-6 col-lg-6">
+                        <gosi-label-dc
+                          [label]="'VIOLATIONS.IS-THE-FULL-ENGAGEMENT-CANCELLED' | translate"
+                          [control]="personEngagement?.isEngagementFullyCanceled"
+                        ></gosi-label-dc>
+                      </div>
+                      <div class="col-sm-12 col-md-6 col-lg-6">
+                        <div class="title-label">{{ 'VIOLATIONS.CANCELLED-PERIOD' | translate }}</div>
+                        <div>
+                          <span class="cancel-name-value">
+                            {{ personEngagement?.cancelledDurationStartDate | dateType | formatDate }}
+                            <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                            <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                            {{ personEngagement?.cancelledDurationEndDate | dateType | formatDate }}
+                          </span>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <!--  IN CASE OF IRT -->
+                    <ng-container *ngIf="isIncorrectReason">
+                      <div class="col-sm-12 col-md-6 col-lg-6">
+                        <gosi-label-dc
+                          [label]="'VIOLATIONS.LEAVING-REASON' | translate"
+                          [control]="personEngagement?.terminationReason"
+                        ></gosi-label-dc>
+                      </div>
+                      <div class="col-sm-12 col-md-6 col-lg-6">
+                        <gosi-label-dc
+                          [label]="'VIOLATIONS.IS-REASON-EFFECTED-BENEFIT' | translate"
+                          [control]="personEngagement?.isBenefitsEffected"
+                        ></gosi-label-dc>
+                      </div>
+                    </ng-container>
+                    <!-- IN CASE OF ADD NEW -->
+                    <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isaddEngagement">
+                      <gosi-label-dc
+                        [label]="'VIOLATIONS.IS-ENG-ADDED-BACKDATED' | translate"
+                        [control]="personEngagement?.isBackdated"
+                      ></gosi-label-dc>
+                    </div>
+                  </ng-container>
+                  <!-- system trigger -->
+                  <ng-container *ngIf="!isReportViolationTransaction">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                      <gosi-label-dc
+                        [label]="'VIOLATIONS.TRANSACTION-ID' | translate"
+                        [value]="personEngagement?.changeTerminationReasonTransaction"
+                        isLink="true"
+                        (select)="navigateToTnxTracker(personIndex, 0)"
+                      ></gosi-label-dc>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="personEngagement?.requestSubmissionDate">
+                      <gosi-label-dc
+                        [label]="'VIOLATIONS.REQUEST-SUBMISSION-DATE' | translate"
+                        [date]="true"
+                        value="{{ personEngagement?.requestSubmissionDate | dateType | formatDate }}"
+                      ></gosi-label-dc>
+                    </div>
+                  </ng-container>
+                  <!-- include violation happended five years ago in case of VCM transaction -->
+                  <div class="col-sm-6 col-md-6 col-lg-6" *ngIf="transactionId === foVcmTxn">
+                    <gosi-label-dc
+                      [label]="'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate"
+                      [value]="personEngagement?.isViolationHappenedBeforeFiveYears | bilingualText | titlecase"
+                    ></gosi-label-dc>
+                  </div>
+                </div>
+              </ng-container>
+            </accordion-group>
+          </accordion>
+        </ng-container>
+        <!-- engagement section for other violation-->
+        <div class="row mb-2 eng-list" *ngIf="isViolatingProvision || isWrongBenefits">
+          <div class="col-sm-12 col-md-12 col-lg-12 mb-2"></div>
+          <table class="table othervio">
+            <thead class="thead multiple-header">
+              <tr>
+                <th id="eng-period">{{ 'VIOLATIONS.ENGAGEMENT-PERIOD' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-bottom" *ngFor="let engagement of person?.engagementInfo">
+                <td class="table-othervio">
+                  <span class="name-value">
+                    {{ engagement?.joiningDate | dateType | formatDate }}
+                    <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                    <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                    <ng-container
+                      *ngIf="
+                        engagement?.terminationDate?.gregorian || engagement?.terminationDate?.hijiri;
+                        else onwards
+                      "
+                    >
+                      {{ engagement?.terminationDate | dateType | formatDate }}
+                    </ng-container>
+                  </span>
+                  <ng-container>
+                    <div
+                      class="engagement-duration"
+                      *ngIf="engagement?.engagementPeriodMonth || engagement?.engagementPeriodDays"
+                    >
+                      <!-- duration -->
+                      (
+                      <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodMonth !== 0">
+                        <span>
+                          {{ engagement?.engagementPeriodMonth }}
+                        </span>
+
+                        {{
+                          engagement?.engagementPeriodMonth >= 3 && engagement?.engagementPeriodMonth <= 10
+                            ? ('VIOLATIONS.MONTHS-3-10' | translate | titlecase)
+                            : engagement?.engagementPeriodMonth === 1
+                            ? ('VIOLATIONS.MONTH' | translate | titlecase)
+                            : engagement?.engagementPeriodMonth === 2
+                            ? ('VIOLATIONS.MONTHS' | translate | titlecase)
+                            : ('VIOLATIONS.MONTHS-11' | translate | titlecase)
+                        }}
+                      </span>
+                      <!-- after displaying month if there is days comma will be displayed -->
+                      <span *ngIf="engagement?.engagementPeriodMonth && engagement?.engagementPeriodDays"> ,</span>
+                      <span *ngIf="engagement?.engagementPeriodDays && engagement?.engagementPeriodDays !== 0">
+                        <span *ngIf="engagement?.engagementPeriodDays">
+                          {{ engagement?.engagementPeriodDays }}
+                        </span>
+
+                        {{
+                          engagement?.engagementPeriodDays === 2
+                            ? ('VIOLATIONS.DAYS' | translate | titlecase)
+                            : engagement?.engagementPeriodDays === 1
+                            ? ('VIOLATIONS.DAY' | translate | titlecase)
+                            : engagement?.engagementPeriodDays > 2 && engagement?.engagementPeriodDays < 11
+                            ? ('VIOLATIONS.DAYS-3-10' | translate | titlecase)
+                            : ('VIOLATIONS.DAYS-11' | translate | titlecase)
+                        }}
+                      </span>
+                      )
+                    </div>
+                    <ng-template #onwards> {{ 'VIOLATIONS.ONWARDS' | translate }} </ng-template>
+                  </ng-container>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Benefit details section -->
+        <div class="row mt-2 mb-2" *ngIf="isWrongBenefits && person?.benefitInfo[0]">
+          <div class="col-sm-12 col-md-12 col-lg-12 mt-2 mb-1 benefit-label">
+            <span class="identity-heading benefit-heading">{{ 'VIOLATIONS.BENEFIT-DETAILS' | translate }}</span>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <table class="table-benefit">
+              <thead class="thead multiple-header">
+                <tr class="heading">
+                  <th id="benefit-type" class="heading-values">
+                    {{ 'VIOLATIONS.BENEFIT-TYPE' | translate }}
+                  </th>
+                  <th id="benefit-amount" class="heading-values">
+                    {{ 'VIOLATIONS.BENEFIT-AMOUNT' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="tbody">
+                <tr class="border-bottom" *ngFor="let benefit of person?.benefitInfo">
+                  <td class="benefit-value">
+                    <div class="row ml-2 mr-2 benefit-type-period">
+                      <div class="benefit-type-section">{{ benefit?.benefitType | bilingualText }}</div>
+                      <div class="benefit-period-section">
+                        {{ benefit?.firstPaymentDate?.gregorian | gosiDate }}
+                        <fa-icon class="value-clrs" *ngIf="lang === 'en'" icon="arrow-right"></fa-icon>
+                        <fa-icon class="value-clrs" *ngIf="lang === 'ar'" icon="arrow-left"></fa-icon>
+                        {{ benefit?.lastBenefitDate?.gregorian | gosiDate }} ({{ benefit?.benefitDuration }}
+                        {{ 
+                          benefit?.benefitDuration === 1
+                            ? ('VIOLATIONS.BENEFIT-MONTH' | translate )
+                            : benefit?.benefitDuration === 2
+                            ? ('VIOLATIONS.BENEFIT-MONTHS-2' | translate )
+                            : (benefit?.benefitDuration > 2 && benefit?.benefitDuration < 11) 
+                            ? ('VIOLATIONS.BENEFIT-MONTHS-3-10' | translate )
+                            : ('VIOLATIONS.BENEFIT-MONTHS-11' | translate ) 
+                         }})
+                      </div>
+                    </div>
+                  </td>
+                  <td class="amount-currency">
+                    <span> {{ benefit?.benefitAmount | number: '1.2-2' }} </span>
+                    <span class="benefit-currency-label">
+                      <span>{{ 'VIOLATIONS.CURRENCY' | translate }}</span>
+                      <span>{{
+                        checkIfLumpsum(benefit?.benefitType.english) ? '' : ('VIOLATIONS.PER-MONTH' | translate)
+                      }}</span>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-12 mt-4 total-benefit-amount">
+            <div class="row mb-4 mt-2">
+              <div class="col-sm-12 col-md-12 col-lg-12 benefit-amount-label">
+                {{ 'VIOLATIONS.TOTAL-BENEFIT-AMOUNT' | translate }}
+              </div>
+              <div class="col-sm-12 col-md-12 col-lg-12 benefit-amount-value">
+                <span>{{ person?.totalBenefitAmount | number: '1.2-2' }}</span>
+                <span class="benefit-currency">{{ 'VIOLATIONS.CURRENCY' | translate }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="row">
+          violation happened before 5 years
+          <div
+            class="col-sm-6 col-md-6 col-lg-6"
+            *ngIf="
+              isReportViolationTransaction  &&
+              person?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears
+              && transactionId === foVcmTxn
+            "
+          >
+            <gosi-label-dc
+              [label]="'VIOLATIONS.VIOLATION-HAPPENED-BEFORE-5-YEARS' | translate"
+              [value]="person?.engagementInfo[0]?.isViolationHappenedBeforeFiveYears | bilingualText"
+            ></gosi-label-dc>
+          </div>
+        </div> -->
+
+        <div class="row">
+          <div
+            class="col-lg-12"
+            *ngIf="
+              checkForPersonExcluded(person?.contributorId) === 1 &&
+              transactionId === foVcmTxn &&
+              isTransactionCompleted
+            "
+          >
+            <div class="exclusion-value">
+              <img
+                [ngClass]="lang === 'en' ? 'mr-3' : 'ml-3'"
+                src="assets/icons/excluded-icon.svg"
+                alt="excluded-icon"
+              />
+              <span>{{ 'VIOLATIONS.CONTRIBUTOR-EXCLUDED' | translate }} </span>
+              <ng-container *ngFor="let details of violationData?.penaltyInfo; let j = index">
+                <ng-container *ngFor="let penalty of details.excludedContributors; let h = index">
+                  <span *ngIf="penalty.contributorId === person.contributorId">
+                    {{ details.decisionBy | titlecase }}
+                    <span *ngIf="isCommaRequired(person?.contributorId, j + 1) === 1">, </span>
+                  </span>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </accordion-group>
+  </accordion>
+</ng-container>

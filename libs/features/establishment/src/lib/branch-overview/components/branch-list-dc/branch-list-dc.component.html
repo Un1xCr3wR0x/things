@@ -1,0 +1,136 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<ng-container *ngIf="establishmentbranchList.length > 0">
+  <div class="d-flex flex-wrap mt-5">
+    <div class="col-md-4" *ngFor="let item of establishmentbranchList">
+      <div class="card size-s">
+        <div class="card-heading" [ngClass]="item.status.english === 'CLOSED' ? 'card-closed-bg' : ''">
+          <a
+            class="etablishment workList-title d-flex justify-content-between"
+            *ngIf="item.status.english !== establishmentStatus.opening"
+            [routerLink]="['/dashboard/', item.registrationNumber]"
+          >
+            {{
+              item.establishmentName.english == null
+                ? item.establishmentName.arabic
+                : (item.establishmentName | bilingualText | titlecase)
+            }}
+            <fa-layers *ngIf="item.establishmentType.english === establishmentStatus.main">
+              <fa-icon
+                [icon]="['fas', 'bookmark']"
+                class="bookmark-main"
+                size="1x"
+                transform="rotate-{{ rotatedeg }} down-2"
+              ></fa-icon>
+              <fa-layers-text
+                content="{{ 'ESTABLISHMENT.MAIN' | translate | uppercase }}"
+                class="text-light bookmark-text"
+                transform="shrink-6 {{ textdir }}-9 down-3"
+              ></fa-layers-text>
+            </fa-layers>
+          </a>
+          <span class="workList-title" *ngIf="item.status.english === establishmentStatus.opening"
+            >{{
+              item.establishmentName.english == null
+                ? item.establishmentName.arabic
+                : (item.establishmentName | bilingualText | titlecase)
+            }}
+          </span>
+
+          <h6>
+            {{ 'ESTABLISHMENT.REGISTRATION-NO' | translate }}:
+            {{ item.registrationNumber }}
+          </h6>
+          <br />
+          <div class="d-flex flex-wrap align-items-center justify-content-start">
+            <div class="col-md-3">
+              <fa-layers class="icons">
+                <fa-icon class="icon-bill-bg" [icon]="['fas', 'circle']"></fa-icon>
+                <fa-icon class="icon-bill" [icon]="['fas', 'file-invoice-dollar']"></fa-icon>
+              </fa-layers>
+            </div>
+            <div class="col-md-5 pl-0">
+              <div class="count" id="countOfInProgress">
+                {{ 'ESTABLISHMENT.BILL-AMOUNT' | translate | uppercase }}
+              </div>
+              <div class="status">ESTABLISHMENT.SAR {{ item.billAmount | number }}</div>
+            </div>
+            <div class="col-md-4">
+              <div
+                class="alert text-center"
+                [ngClass]="item.status.english === 'Opening in progress' ? ' alert-danger' : 'alert-primary'"
+              >
+                <span *ngIf="item.status.english !== 'Opening in progress'">{{
+                  item.billStatus | uppercase | translate | uppercase
+                }}</span>
+                <span *ngIf="item.status.english === 'Opening in progress'">{{
+                  'ESTABLISHMENT.UNPAID' | uppercase | translate | uppercase
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <br />
+          <div class="d-flex flex-wrap">
+            <div class="col-md-3">
+              <fa-layers class="icons">
+                <fa-icon class="icon-award-bg" [icon]="['fas', 'circle']"></fa-icon>
+                <fa-icon class="icon-award" [icon]="['fas', 'award']"></fa-icon>
+              </fa-layers>
+            </div>
+            <div class="col-md-5 pl-0">
+              <div class="count" id="countOfInProgress">
+                {{ 'ESTABLISHMENT.GOSI-CERTIFICATE' | translate | uppercase }}
+              </div>
+              <div class="status">
+                {{
+                  item.certificateStatus
+                    ? ('ESTABLISHMENT.ELIGIBLE' | translate)
+                    : ('ESTABLISHMENT.NOT-ELIGIBLE' | translate)
+                }}
+              </div>
+            </div>
+            <div class="col-md-4 text-center">
+              <fa-icon
+                class="success-message"
+                [border]="false"
+                *ngIf="item.certificateStatus"
+                [icon]="['far', 'check-circle']"
+              >
+              </fa-icon>
+              <fa-icon class="failure-message" [border]="false" *ngIf="!item.certificateStatus" [icon]="['fas', 'ban']">
+              </fa-icon>
+            </div>
+          </div>
+        </div>
+        <div
+          class="row d-flex justify-content-between m-1 border-top card-footer-section"
+          [ngClass]="item.status.english === 'CLOSED' ? 'card-closed-bg' : ''"
+        >
+          <div>
+            <p class="p-2 m-3">
+              <small class="row text-left">{{ 'ESTABLISHMENT.LOCATION' | translate | uppercase }}</small>
+              <small class="row"
+                ><strong>{{ item.location | bilingualText | titlecase }}</strong></small
+              >
+            </p>
+          </div>
+          <div>
+            <p class="p-2 m-3">
+              <small class="row text-left">{{ 'ESTABLISHMENT.STATUS' | translate | uppercase }}</small>
+              <small class="row"
+                ><strong>{{
+                  item.status.english === 'ESTABLISHMENT.REGISTERED'
+                    ? ('ESTABLISHMENT.ACTIVE' | translate)
+                    : (item.status | bilingualText | titlecase)
+                }}</strong></small
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

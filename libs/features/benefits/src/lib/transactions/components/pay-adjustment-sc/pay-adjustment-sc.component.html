@@ -1,0 +1,268 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+
+<gosi-card-dc type="secondary">
+  <!--------------------------Contributor Details-------------------------------------->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <frm-content-heading-dc
+          icon="user"
+          [canEdit]="false"
+          heading="{{ 'ADJUSTMENT.CONTRIBUTOR-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="contributorNIN"
+            label="{{ 'ADJUSTMENT.NATIONAL-IDENTIFICATION-NUMBER' | translate }}"
+            [value]="authorizedPersonId?.id"
+            [isLink]="true"
+            (click)="viewContributorDetails()"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="dob"
+            value="{{ adjustmentRepayDetails?.contributor?.dateOfBirth?.gregorian | date: 'dd/MM/yyyy' }} ({{
+              'ADJUSTMENT.AGE' | translate
+            }}:{{ adjustmentRepayDetails?.contributor?.age }})"
+            label="ADJUSTMENT.DATE-OF-BIRTH"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="dobHijiri"
+            [control]="'BENEFITS.AGE' | translate: { age: adjustmentRepayDetails?.contributor?.hijiriAge }"
+            label="BENEFITS.DATE-OF-BIRTH-HIJIRI"
+          >
+            <span id="prefixValue">{{
+              adjustmentRepayDetails?.contributor?.dateOfBirth?.hijiri | date: 'dd/MM/yyyy'
+            }}</span>
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="contributorName"
+            label="{{ 'ADJUSTMENT.CONTRIBUTOR-NAME' | translate }}"
+            [value]="adjustmentRepayDetails?.contributor?.name?.english"
+          >
+          </gosi-label-dc>
+        </div>
+
+        <div class="col-md-4">
+          <gosi-label-dc
+            id="contributorName"
+            label="{{ 'ADJUSTMENT.CONTRIBUTOR-NAME-AR' | translate }}"
+            [value]="adjustmentRepayDetails?.contributor?.name?.arabic"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--------------------------Adjustment Details-------------------------------------->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <frm-content-heading-dc
+          icon="Benefits"
+          isSvg="true"
+          [canEdit]="false"
+          heading="{{ 'ADJUSTMENT.ADJUSTMENT-DETAILS' | translate }}"
+        >
+        </frm-content-heading-dc>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <gosi-label-dc
+            id="totalDebitAdjustmentBalance"
+            label="{{ 'ADJUSTMENT.TOTAL-DEBIT-ADJUSTMENT-BALANCE' | translate }}"
+            value="{{ adjustmentRepayDetails?.totalBalanceAmount || 0 | number: '1.0-2' }} {{
+              'ADJUSTMENT.SAR' | translate
+            }}"
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-label-dc
+            id="amountPaid"
+            label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+            [value]="adjustmentRepayDetails?.totalPaidAmount || 0 | number: '1.0-2'"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <accordion class="pay-accordion w-100">
+            <ng-container *ngFor="let items of adjustmentRepayDetails?.repayItems; let i = index">
+              <accordion-group class="wrapper-accordion-group" [isOpen]="true">
+                <div *ngIf="lang === 'en'" accordion-heading class="float-left font-weight-normal">
+                  {{ items?.benefitType.english }}
+                </div>
+                <div *ngIf="lang === 'ar'" accordion-heading class="float-left font-weight-normal">
+                  {{ items?.benefitType.arabic }}
+                </div>
+                <div class="header-wrapper ml-auto" accordion-heading>
+                  <span class="paid-amount font-weight-normal"
+                    >{{ 'ADJUSTMENT.PAID' | translate }} : {{ items?.paidAmount || 0 | number: '1.0-2' }}
+                    {{ 'ADJUSTMENT.SAR' | translate }}</span
+                  >
+                  <span class="arrow-up arrow-color">
+                    <fa-icon icon="angle-up" size="lg"></fa-icon>
+                  </span>
+                  <span class="arrow-down arrow-color">
+                    <fa-icon icon="angle-down" size="lg"></fa-icon>
+                  </span>
+                </div>
+                <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="ADJUSTMENT.ADJUSTMENT-ID"
+                        [isLink]="true"
+                        [value]="items?.adjustmentId"
+                        (click)="navigateToAdjustment(items?.adjustmentId)"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="ADJUSTMENT.BENEFIT-START-DATE"
+                        value="{{ items?.benefitRequestDate?.gregorian | date: 'dd/MM/yyyy' }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="ADJUSTMENT.ADJUSTMENT-AMOUNT"
+                        value="{{ items?.adjustmentAmount || 0 | number: '1.0-2' }} {{ 'ADJUSTMENT.SAR' | translate }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="ADJUSTMENT.AMOUNT-PAID"
+                        value="{{ items?.paidAmount || 0 | number: '1.0-2' }} {{ 'ADJUSTMENT.SAR' | translate }}"
+                      ></gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="ADJUSTMENT.BAL-AMT-AFTER-SETTLEMENT"
+                        value="{{ items?.balanceAmount || 0 | number: '1.0-2' }} {{ 'ADJUSTMENT.SAR' | translate }}"
+                      ></gosi-label-dc>
+                    </div>
+                  </div>
+                </div>
+              </accordion-group>
+            </ng-container>
+          </accordion>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!------------------PAYMENT DETAILS------------------------->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <frm-content-heading-dc
+          icon="money-bill-alt"
+          heading="{{ 'ADJUSTMENT.PAYMENT-DETAILS' | translate }}"
+          [canEdit]="false"
+        >
+        </frm-content-heading-dc>
+      </div>
+      <ng-container *ngIf="!isSadad">
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="receiptMode"
+              label="{{ 'ADJUSTMENT.RECEIPT-MODE' | translate }}"
+              [value]="
+                lang === 'en'
+                  ? adjustmentRepayDetails?.repaymentDetails?.receiptMode?.english
+                  : adjustmentRepayDetails?.repaymentDetails?.receiptMode?.arabic
+              "
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="transactionDate"
+              label="{{ 'ADJUSTMENT.TRANSACTION-DATE' | translate }}"
+              value="{{ adjustmentRepayDetails?.repaymentDetails?.transactionDate?.gregorian | date: 'dd/MM/yyyy' }}"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="referenceNumber"
+              label="{{ 'ADJUSTMENT.PAYMENT-REFERENCE-NUMBER' | translate }}"
+              [value]="adjustmentRepayDetails?.repaymentDetails?.paymentReferenceNo"
+            >
+            </gosi-label-dc>
+          </div>
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="amountPaid"
+              label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+              value="{{ adjustmentRepayDetails?.repaymentDetails?.amountTransferred || 0 | number: '1.0-2' }} {{
+                'ADJUSTMENT.SAR' | translate
+              }}"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <gosi-label-dc
+              id="additionalPaymentDetails"
+              label="{{ 'ADJUSTMENT.ADDITIONAL-PAYMENT-DETAILS' | translate }}"
+              [value]="adjustmentRepayDetails?.repaymentDetails?.additionalPaymentDetails"
+            >
+            </gosi-label-dc>
+          </div>
+        </div>
+      </ng-container>
+      <div class="row" *ngIf="isSadad">
+        <div class="col-md-6">
+          <gosi-label-dc
+            id="receiptMode"
+            label="{{ 'ADJUSTMENT.RECEIPT-MODE' | translate }}"
+            [value]="
+              lang === 'en'
+                ? adjustmentRepayDetails?.repaymentDetails?.paymentMethod?.english
+                : adjustmentRepayDetails?.repaymentDetails?.paymentMethod?.arabic
+            "
+          >
+          </gosi-label-dc>
+        </div>
+        <div class="col-md-6">
+          <gosi-label-dc
+            id="amountPaid"
+            label="{{ 'ADJUSTMENT.AMOUNT-PAID' | translate }}"
+            value="{{ adjustmentRepayDetails?.repaymentDetails?.amountTransferred || 0 | number: '1.0-2' }} {{
+              'ADJUSTMENT.SAR' | translate
+            }}"
+          >
+          </gosi-label-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<!--Documents Details-->
+<div class="row">
+  <div class="col-md-12">
+    <gosi-document-list-view-dc [documents]="documents"></gosi-document-list-view-dc>
+  </div>
+</div>

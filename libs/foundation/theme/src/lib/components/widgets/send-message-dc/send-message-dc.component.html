@@ -1,0 +1,400 @@
+<div class="row">
+  <div class="col-md-12 text-right">
+    <fa-icon [icon]="['far', 'times-circle']" (click)="closeWindow()" class="header-icon fa-2x text-muted close">
+    </fa-icon>
+  </div>
+</div>
+
+<div class="d-flex mt-2">
+  <div
+    *gosiShow="sendSMSRole"
+    class="col-3 p-2 pointer text-center"
+    [ngClass]="sendMsg ? 'active' : ''"
+    (click)="sendMsg = true; manageMsg = false; freeText = false; addMode = false; editMode = false; deleteMode = false"
+  >
+    {{ 'FEATURE360.SEND-A-MESSAGE' | translate }}
+  </div>
+
+  <div
+    *gosiShow="smsManagementRole"
+    class="col-3 p-2 pointer text-center"
+    [ngClass]="manageMsg || editMode || addMode || deleteMode ? 'active' : ''"
+    (click)="
+      resetManageMsgValues();
+      sendMsg = false;
+      manageMsg = true;
+      freeText = false;
+      editMode = false;
+      addMode = false;
+      deleteMode = false
+    "
+  >
+    {{ 'FEATURE360.MANAGE-MESSAGES' | translate }}
+  </div>
+
+  <div
+    *gosiShow="freeTextSMSRole"
+    class="col-3 p-2 pointer text-center"
+    [ngClass]="freeText ? 'active' : ''"
+    (click)="
+      sendMsg = false;
+      manageMsg = false;
+      freeText = true;
+      editMode = false;
+      addMode = false;
+      deleteMode = false;
+      sendMessageForm.reset()
+    "
+  >
+    {{ 'FEATURE360.SMS-FREE-TEXT' | translate }}
+  </div>
+</div>
+
+<div class="m-3 mb-5" *ngIf="!lastRequestIsSent && sendMsg">
+  <div [formGroup]="sendMessageForm" class="row m-2">
+    <div class="col-md-12">{{ 'FEATURE360.RECEIVER' | translate }}:</div>
+    <div class="col-md-12 h-40">
+      <input
+        type="text"
+        maxlength="14"
+        class="form-control bg-light"
+        [formControl]="sendMessageForm.get('mobileNumber')"
+        onkeypress="(event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))"
+      />
+      <div
+        *ngIf="
+          sendMessageForm.get('mobileNumber').invalid &&
+          (sendMessageForm.get('mobileNumber').dirty || sendMessageForm.get('mobileNumber').touched)
+        "
+        class="error-alert"
+      >
+        <div *ngIf="sendMessageForm.get('mobileNumber').hasError('pattern')">
+          {{ 'FEATURE360.ERROR-START-PHONE-NUMBER' | translate }}
+        </div>
+        <div
+          *ngIf="
+            sendMessageForm.get('mobileNumber').hasError('minlength') &&
+            !sendMessageForm.get('mobileNumber').hasError('pattern')
+          "
+        >
+          {{ 'FEATURE360.ERROR-LIMIT-DIGITS' | translate }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.SOURCE-TYPE' | translate }}:</div>
+    <div class="col-md-12">
+      <select #systemSource (change)="selectSystemSource(systemSource.value)" class="form-control bg-light">
+        <option selected disabled>{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</option>
+        <option value="Escalation">Escalation</option>
+	      <option value="GOSI">GOSI</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Medical Board">Medical Board</option>
+        <option value="NEW">NEW</option>
+        <option value="PPA">PPA</option>
+      </select>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.SERVICE-TYPE' | translate }}:</div>
+    <div class="col-md-12">
+      <ng-select #typeSelection (change)="selectChangeHandler($event)" class="bg-light">
+        <ng-option selected disabled>{{ 'FEATURE360.CHOOSE-TYPE' | translate }}:</ng-option>
+        <ng-option [value]="type" *ngFor="let type of responseTypes">
+          {{ type.GROUPTYPE }}
+        </ng-option>
+      </ng-select>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-12">
+      <textarea
+        disabled
+        class="form-control"
+        rows="3"
+        [ngClass]="sendMessageForm.valid ? '' : 'has-error'"
+        [formControl]="sendMessageForm.get('message')"
+      ></textarea>
+    </div>
+    <div class="col-md-12 mt-4">
+      <button
+        [disabled]="sendMessageForm.invalid && !(noRequest | async)"
+        type="button"
+        class="btn btn-success"
+        (click)="sendTypeSMS('sendSMS')"
+      >
+        {{ 'FEATURE360.SEND' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="m-3 mb-5" *ngIf="manageMsg">
+  <div class="row m-2">
+    <div class="col-12 d-flex justify-content-between">
+      <div class="mt-4">{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</div>
+      <div class="mt-4 mb-2 styled-select">
+        <select class="pointer bgGreen p-2 px-3" #operationType (change)="selectOperation(operationType.value)">
+          <option disabled selected hidden>{{ 'FEATURE360.PROCEDURES' | translate }} :</option>
+          <option class="pointer bgwhite" value="add">{{ 'FEATURE360.ADD' | translate }}</option>
+          <option class="pointer bgwhite" value="edit">{{ 'FEATURE360.EDIT' | translate }}</option>
+          <option class="pointer bgwhite" value="delete">{{ 'FEATURE360.DELETE' | translate }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-md-10">
+      <select #systemSource (change)="selectSystemSource(systemSource.value)" class="form-control bg-light">
+        <option selected disabled>{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</option>
+        <option value="Escalation">Escalation</option>
+	      <option value="GOSI">GOSI</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Medical Board">Medical Board</option>
+        <option value="NEW">NEW</option>
+        <option value="PPA">PPA</option>
+      </select>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.SERVICE-TYPE' | translate }}:</div>
+    <div class="col-md-10">
+      <ng-select #typeSelection (change)="selectChangeHandler($event)" class="bg-light">
+        <ng-option selected disabled>{{ 'FEATURE360.CHOOSE-TYPE' | translate }}:</ng-option>
+        <ng-option [value]="type.BODY" *ngFor="let type of responseTypes">
+          {{ type.GROUPTYPE }}
+        </ng-option>
+      </ng-select>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-10">
+      <textarea
+        disabled
+        maxlength="1000"
+        class="form-control"
+        rows="3"
+        [ngClass]="sendMessageForm.valid ? '' : 'has-error'"
+        [formControl]="sendMessageForm.get('message')"
+      ></textarea>
+    </div>
+  </div>
+</div>
+
+<div class="m-3 mb-5" *ngIf="addMode">
+  <div class="row m-2">
+    <div class="col-12 mt-4">{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</div>
+    <div class="col-md-10">
+      <select #systemSource (change)="selectSystemSource(systemSource.value)" class="form-control bg-light">
+        <option selected disabled>{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</option>
+        <option value="Escalation">Escalation</option>
+	      <option value="GOSI">GOSI</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Medical Board">Medical Board</option>
+        <option value="NEW">NEW</option>
+        <option value="PPA">PPA</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <div class="mt-4">{{ 'FEATURE360.SERVICE-TYPE' | translate }}:</div>
+    </div>
+    <div class="col-md-10">
+      <input
+        [(ngModel)]="newServiceType"
+        class="w-100 form-control"
+        type="text"
+        placeholder="{{ 'FEATURE360.SERVICE-TYPE' | translate }}"
+      />
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-10">
+      <textarea
+        [(ngModel)]="newMessage"
+        placeholder="{{ 'FEATURE360.MESSAGE-TEXT' | translate }}"
+        maxlength="1000"
+        class="form-control"
+        rows="3"
+      ></textarea>
+    </div>
+    <div class="col-md-12 mt-4 d-flex justify-content-end">
+      <button type="button" class="btn btn-success mx-2" (click)="addNewSms()">
+        {{ 'FEATURE360.SAVE' | translate }}
+      </button>
+      <button type="button" class="btn gray" (click)="closeWindow()">{{ 'FEATURE360.CANCEL' | translate }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Mode -->
+<div class="m-3 mb-5" *ngIf="editMode">
+  <div class="row m-2">
+    <div class="col-12 mt-4">{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</div>
+    <div class="col-md-10">
+      <select #systemSource (change)="selectSystemSource(systemSource.value)" class="form-control bg-light">
+        <option selected disabled>{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</option>
+        <option value="Escalation">Escalation</option>
+	      <option value="GOSI">GOSI</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Medical Board">Medical Board</option>
+        <option value="NEW">NEW</option>
+        <option value="PPA">PPA</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <div class="mt-4">{{ 'FEATURE360.SERVICE-TYPE' | translate }}:</div>
+    </div>
+    <div class="col-md-10">
+      <select
+        *ngIf="!editServiceType"
+        [(ngModel)]="smsObj"
+        (change)="viewMsgData(); editServiceType = true; editMsgTitle = true"
+        class="form-control bg-light"
+      >
+        <option selected disabled value="null">{{ 'FEATURE360.CHOOSE-TYPE' | translate }}:</option>
+        <option [ngValue]="type" *ngFor="let type of responseTypes">
+          {{ type.GROUPTYPE }}
+        </option>
+      </select>
+      <input class="bg-light form-control" *ngIf="editServiceType" type="text" [(ngModel)]="msgTitle" />
+      <div
+        *ngIf="smsObj && editMsgTitle && editServiceType"
+        class="d-flex justify-content-end pointer text-success mt-2"
+        (click)="editServiceType = true; editMsgTitle = false"
+      >
+        {{ 'FEATURE360.EDIT' | translate }}
+      </div>
+      <div
+        *ngIf="smsObj && !editMsgTitle && editServiceType"
+        class="d-flex justify-content-end pointer text-danger mt-2"
+        (click)="editServiceType = false"
+      >
+        {{ 'FEATURE360.CANCEL' | translate }}
+      </div>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-10">
+      <textarea
+        [(ngModel)]="editedMsgBody"
+        placeholder="{{ 'FEATURE360.MESSAGE-TEXT' | translate }}"
+        maxlength="1000"
+        class="form-control"
+        rows="3"
+      ></textarea>
+    </div>
+    <div class="col-md-12 mt-4 d-flex justify-content-end">
+      <button style="" type="button" class="btn btn-success mx-2" (click)="updateSMSTemplate()">
+        {{ 'FEATURE360.SAVE' | translate }}
+      </button>
+      <button type="button" class="btn gray" (click)="closeWindow()">{{ 'FEATURE360.CANCEL' | translate }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="m-3 mb-5" *ngIf="deleteMode">
+  <div class="row m-2">
+    <div class="col-12 mt-4">{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</div>
+    <div class="col-md-10">
+      <select #systemSource (change)="selectSystemSource(systemSource.value)" class="form-control bg-light">
+        <option selected disabled>{{ 'FEATURE360.CHOOSE-SOURCE-TYPE' | translate }}:</option>
+        <option value="Escalation">Escalation</option>
+	      <option value="GOSI">GOSI</option>
+        <option value="Inspection">Inspection</option>
+        <option value="Medical Board">Medical Board</option>
+        <option value="NEW">NEW</option>
+        <option value="PPA">PPA</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <div class="mt-4">{{ 'FEATURE360.SERVICE-TYPE' | translate }}:</div>
+    </div>
+    <div class="col-md-10">
+      <select #typeSelection [(ngModel)]="smsDeletedObj" (change)="viewMsgData('delete')" class="form-control bg-light">
+        <option selected disabled value="null">{{ 'FEATURE360.CHOOSE-TYPE' | translate }}:</option>
+        <option [ngValue]="type" *ngFor="let type of responseTypes">
+          {{ type.GROUPTYPE }}
+        </option>
+      </select>
+    </div>
+
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-10">
+      <textarea [(ngModel)]="deletedMsgBody" disabled maxlength="1000" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="col-md-12 mt-4 d-flex justify-content-end">
+      <button type="button" class="btn btn-success mx-2" (click)="deleteSMSTemplate()">
+        {{ 'FEATURE360.DELETE' | translate }}
+      </button>
+      <button type="button" class="btn gray" (click)="closeWindow()">{{ 'FEATURE360.CANCEL' | translate }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="m-3 mb-5" *ngIf="!lastRequestIsSent && freeText">
+  <div [formGroup]="sendMessageForm" class="row m-2">
+    <div class="col-md-12">{{ 'FEATURE360.RECEIVER' | translate }}:</div>
+    <div class="col-md-12 h-40">
+      <input
+        type="text"
+        maxlength="14"
+        class="form-control bg-light"
+        [formControl]="sendMessageForm.get('mobileNumber')"
+        onkeypress="(event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))"
+      />
+      <div
+        *ngIf="
+          sendMessageForm.get('mobileNumber').invalid &&
+          (sendMessageForm.get('mobileNumber').dirty || sendMessageForm.get('mobileNumber').touched)
+        "
+        class="error-alert"
+      >
+        <div *ngIf="sendMessageForm.get('mobileNumber').hasError('pattern')">
+          {{ 'FEATURE360.ERROR-START-PHONE-NUMBER' | translate }}
+        </div>
+        <div
+          *ngIf="
+            sendMessageForm.get('mobileNumber').hasError('minlength') &&
+            !sendMessageForm.get('mobileNumber').hasError('pattern')
+          "
+        >
+          {{ 'FEATURE360.ERROR-LIMIT-DIGITS' | translate }}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12 mt-4">{{ 'FEATURE360.MESSAGE-TEXT' | translate }}:</div>
+    <div class="col-md-12">
+      <textarea
+        class="form-control"
+        rows="3"
+        [ngClass]="sendMessageForm.valid ? '' : 'has-error'"
+        [formControl]="sendMessageForm.get('message')"
+      ></textarea>
+    </div>
+    <div class="col-md-12 mt-4">
+      <button
+        type="button"
+        [disabled]="(noRequest | async) && sendMessageForm.invalid"
+        class="btn btn-success"
+        (click)="sendTypeSMS('sendFreeText')"
+      >
+        {{ 'FEATURE360.SEND' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="m-3 mb-5 justify-content-md-center text-center" *ngIf="lastRequestIsSent">
+  <div class="row">
+    <div class="col-md-12 align-middle text-center">
+      <div class="icon-img">
+        <img alt="documentName" src="assets/icons/verified.svg" />
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-md-12 align-middle text-center">
+      <h6 class="text-success">{{ 'FEATURE360.SENT-SUCCESSFULLY' | translate }}</h6>
+    </div>
+  </div>
+</div>

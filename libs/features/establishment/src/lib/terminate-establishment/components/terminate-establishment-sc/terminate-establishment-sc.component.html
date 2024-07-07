@@ -1,0 +1,177 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+  <div class="content">
+    <div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-6">
+      <est-heading-dc [shouldPrompt]="true" [canNavigate]="false" (backEvent)="cancelModal()" [backLink]="routeToView">
+        {{ 'ESTABLISHMENT.CLOSE-ESTABLISHMENT' | translate }}
+      </est-heading-dc>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-6" *ngIf="isGOL && isValidator">
+      <est-claim-assign-release-dc
+      [payload]="payload"
+      [isUnclaimed]="isUnclaimed"
+      [taskId]="taskId"
+      (assign)="assignClicked()"
+      (release)="releaseClicked()"
+      >
+      </est-claim-assign-release-dc>
+    </div>  
+    </div>
+    <gosi-alert-sc></gosi-alert-sc>
+    <!-- edit view  -->
+    <div class="header" *ngIf="isValidator">
+      <!-- Comment Section -->
+      <div class="col-12">
+        <gosi-comments-dc [comments]="comments$ | async"> </gosi-comments-dc>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <est-terminate-establishment-details-dc [establishment]="establishment"></est-terminate-establishment-details-dc>
+      </div>
+    </div>
+  
+    <gosi-progress-wizard-dc
+      *ngIf="terminateEstTabWizards"
+      (clickWizard)="selectedWizard($event)"
+      [wizardItems]="terminateEstTabWizards"
+    >
+    </gosi-progress-wizard-dc>
+  
+    <tabset class="wrapper-tabset" *ngIf="terminateEligibilityStatus && showTransferContributor !== undefined">
+      <tab [active]="currentTab === 0">
+        <est-terminate-system-validation-dc
+          *ngIf="!isValidator && terminateEligibilityStatus"
+          [terminateEligibilityStatus]="terminateEligibilityStatus"
+        >
+        </est-terminate-system-validation-dc>
+  
+        <est-balance-details-dc
+          [balance]="terminateEligibilityStatus.balance"
+          [isDebit]="terminateEligibilityStatus.debit"
+          (trigerBillDashboard)="naviagteBillDashboard()"
+        >
+        </est-balance-details-dc>
+        <est-active-contributor-details-dc
+          *ngIf="showTransferContributor"
+          [branchEstablsihmentList]="branchEstablsihmentLovList"
+          [leaveReasonList]="leaveReasonLovList"
+          [contributorCount]="terminateEligibilityStatus?.numberOfContributors"
+          [actionsList]="terminateContributorActionList"
+          [parentForm]="terminateEstForm"
+          (selectTranferBranch)="selectedBranchToTransfer = $event"
+        >
+        </est-active-contributor-details-dc>
+        <est-bank-details-dc
+          *ngIf="showBank"
+          [parentForm]="terminateEstForm"
+          [bankAccount]="bankAccount"
+          [bankNameList]="isGcc ? (gccBankNameList$ | async) : bankNameList"
+          [terminateEstDetails]="terminateEligibilityStatus"
+          (ibanChange)="getBankName($event)"
+          [isPrivate]="isPrivate"
+          [isGccEst]="isGcc"
+          [isIbanMapped]="isIbanMapped"
+        >
+        </est-bank-details-dc>
+  
+        <est-footer-buttons-dc *ngIf="showSaveButton"
+          primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+          [showPrevious]="false"
+          (submit)="saveBankAndContributorDetails()"
+          (cancel)="showModal(cancelTemplate)"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+      <tab [active]="currentTab === 1 && showCBM">
+        <div class="row">
+          <div class="col-md-12">
+            <gosi-card-dc type="secondary">
+              <div class="row">
+                <div class="col">
+                  <h5 class="select-main-head">{{ 'ESTABLISHMENT.NEW-MAIN-EST-DETAILS' | translate }}</h5>
+                </div>
+                <div class="col-md-4 ml-auto">
+                  <gosi-search-dc
+                    [placeholder]="'ESTABLISHMENT.ESTABLISHMENT-NAME-ID' | translate"
+                    (search)="selectedPage(1, $event)"
+                    [isLoading]="isLoading"
+                  >
+                  </gosi-search-dc>
+                </div>
+              </div>
+              <est-branch-list-dc
+                class="cbm-pagination"
+                [itemsPerPage]="pageSize"
+                [establishments]="branchEstablishments"
+                [pageDetails]="pageDetails"
+                [currentPage]="currentPage"
+                [totalBranches]="totalBranchCount"
+                paginationId="pagination"
+                (selectedEstablishment)="onSelectEstablishment($event)"
+                (pageIndexEvent)="selectedPage($event, searchParam)"
+                [isLoading]="isLoading"
+                [isResultEmpty]="isResultEmpty"
+                [searchParam]="searchParam"
+              >
+              </est-branch-list-dc>
+            </gosi-card-dc>
+          </div>
+        </div>
+        <est-footer-buttons-dc *ngIf="showSaveButton"
+          primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+          [showPrevious]="true"
+          (submit)="saveNewMainEstablishmentDetails(false)"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(currentTab - 1)"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+      <!-- documents tab -->
+      <tab [active]="currentTab === 2 || (currentTab === 1 && !showCBM)">
+        <est-documents-dc
+          *ngIf="documents"
+          [documents]="documents"
+          [businessKey]="registrationNo"
+          [transactionId]="isPrivate ? null : transactionId"
+          (refreshDocument)="
+            refreshDocumentContent($event, registrationNo, undefined, ($event?.transactionReferenceIds)[0])
+          "
+        >
+        </est-documents-dc>
+        <!-- Comments -->
+        <gosi-card-dc type="secondary" [paddingBottom]="true">
+          <gosi-input-text-area-dc
+            [label]="'ESTABLISHMENT.COMMENTS' | translate"
+            id="comments"
+            name="comments"
+            [maxLength]="commentsMaxLength"
+            [control]="terminateEstForm.get('comments')"
+          >
+          </gosi-input-text-area-dc>
+        </gosi-card-dc>
+        <est-footer-buttons-dc
+          primaryLabel="ESTABLISHMENT.SUBMIT"
+          [showPrevious]="true"
+          (submit)="submitCloseEstablishment()"
+          (cancel)="showModal(cancelTemplate)"
+          (previous)="selectedWizard(currentTab - 1)"
+        >
+        </est-footer-buttons-dc>
+      </tab>
+    </tabset>
+  </div>
+  <ng-template #cancelTemplate>
+    <gosi-confirm-modal-dc
+      iconName="warning"
+      message="ESTABLISHMENT.INFO-CANCEL"
+      (onConfirm)="cancelModal()"
+      (onCancel)="hideModal()"
+    >
+    </gosi-confirm-modal-dc>
+  </ng-template>
+  

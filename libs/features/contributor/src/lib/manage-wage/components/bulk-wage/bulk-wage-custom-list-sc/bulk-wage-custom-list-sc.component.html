@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+<div class="content">
+  <!-- Heading -->
+  <cnt-header-section-dc
+    heading="CONTRIBUTOR.BULK-WAGE.DOWNLOAD-CONTRIBUTORS"
+    (goBack)="navigateBack()"
+  ></cnt-header-section-dc>
+  <!-- Content -->
+  <div class="custom-container">
+    <gosi-card-dc type="secondary" [lessPadding]="true">
+      <div class="row">
+        <div class="col-lg-8 col-md-5 custom-heading">
+          <div class="custom-download-content">{{ 'CONTRIBUTOR.BULK-WAGE.DOWNLOAD-CSV-INFO' | translate }}</div>
+        </div>
+        <div class="col-auto ml-auto download-btn">
+          <gosi-button-dc
+            type="primary"
+            size="sm"
+            (submit)="downloadActiveCsvFile()"
+            [disabled]="totalNumberOfActiveContributors === 0"
+          >
+            <fa-icon [icon]="['fas', 'download']" class="download-icon"></fa-icon>
+            <div class="d-flex flex-column pl-3 text-left">
+              <div class="download-text">{{ 'CONTRIBUTOR.BULK-WAGE.DOWNLOAD-FILE' | translate }}</div>
+              <div class="sub-text" *ngIf="totalNumberOfActiveContributors > 1">
+                ({{ totalNumberOfActiveContributors }})
+                {{ 'CONTRIBUTOR.BULK-WAGE.CONTRIBUTORS-SELECTED' | translate }}
+              </div>
+              <div class="sub-text" *ngIf="totalNumberOfActiveContributors <= 1">
+                ({{ totalNumberOfActiveContributors }}) {{ 'CONTRIBUTOR.BULK-WAGE.CONTRIBUTOR-SELECTED' | translate }}
+              </div>
+            </div>
+          </gosi-button-dc>
+        </div>
+      </div>
+    </gosi-card-dc>
+    <ng-container *ngIf="registrationNo">
+      <div class="p-4">
+        <!-- Alert handling -->
+        <gosi-alert-sc></gosi-alert-sc>
+        <!--Content -->
+        <cnt-contributor-list-action-dc
+          [nationalityList]="nationalityList$ | async"
+          [contributorWageDetailsResponse]="contributorWageDetailsResponse"
+          [(isDescending)]="isDescending"
+          [isRouteCustom]="true"
+          [sortParameters]="sortParameters"
+          [parentForm]="parentForm"
+          (getContributorWageDetails)="fetchContWageDetails($event)"
+        ></cnt-contributor-list-action-dc>
+        <!-- Table section starts-->
+        <div class="row mb-4 mt-1" *ngIf="contributorWageDetailsResponse.numberOfContributors > 0">
+          <div class="col-md-12">
+            <cnt-bulk-wage-details-dc
+              [contributorWageDetailsResponse]="contributorWageDetailsResponse"
+              [id]="paginationId"
+              [currentPage]="pageDetails.currentPage"
+              [pageSize]="itemsPerPage"
+              [totalSize]="contributorWageDetailsResponse.numberOfContributors"
+            ></cnt-bulk-wage-details-dc>
+          </div>
+        </div>
+
+        <!-- Pagination starts -->
+        <gosi-pagination-dc
+          *ngIf="totalNumberOfActiveContributors > 0"
+          [totalSize]="totalNumberOfActiveContributors"
+          [pageDetails]="pageDetails"
+          [paginationId]="paginationId"
+          [itemType]="'CONTRIBUTOR.WAGE.ACTIVE-CONTRIBUTORS' | translate | lowercase"
+          (pageChange)="paginateContributors($event)"
+        ></gosi-pagination-dc>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc message="CONTRIBUTOR.INFO-CANCEL" (onConfirm)="confirmCancel()" (onCancel)="hideModal()">
+  </gosi-confirm-modal-dc>
+</ng-template>

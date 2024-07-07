@@ -1,0 +1,100 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-content-dc [comments]="comments" [documents]="documents">
+    <div id="mainHeading">
+      <frm-main-heading-dc [heading]="'ESTABLISHMENT.CLOSE-ESTABLISHMENT' | translate"> </frm-main-heading-dc>
+      <gosi-alert-dc
+        class="info-msg"
+        *ngIf="hasDebit"
+        [message]="'ESTABLISHMENT.INFO.CLOSURE_WITH_DEBIT'"
+        [dismissible]="false"
+        type="info"
+      >
+      </gosi-alert-dc>
+    </div>
+
+    <div id="contentArea">
+      <div class="content-item">
+        <est-establishment-content-dc
+          [establishment]="establishment"
+          [estHeading]="'ESTABLISHMENT.ESTABLISHMENT-DETAILS'"
+          [isCloseEst]="true"
+        ></est-establishment-content-dc>
+      </div>
+      <div class="sub-content-item" *ngIf="hasDebit !== undefined">
+        <est-terminate-establishment-details-dc
+          [comments]="comments"
+          [establishmentToValidate]="establishmentToValidate"
+          [establishment]="establishment"
+          [closeEstablishmentDetails]="closeEstablishmentDetails"
+          [canEdit]="canEdit && !hasDebit"
+          (navigateToClose)="navigateToTerminateEst()"
+          (viewBill)="naviagteBillDashboard()"
+        >
+        </est-terminate-establishment-details-dc>
+      </div>
+    </div>
+
+    <!-----------Action Section----------------------->
+    <div id="actionArea" *ngIf="hasDebit !== undefined" class="close-button">
+      <frm-action-area-dc
+        [canReturn]="canReturn"
+        [canReject]="canReject"
+        [disableApprove]="hasDebit"
+        [disableReturn]="hasDebit && !isFCTransaction"
+        (approveEvent)="approveTransaction(terminateEstForm, approveTemplate)"
+        (rejectEvent)="rejectTransaction(terminateEstForm, rejectTemplate)"
+        (cancelEvent)="showModal(cancelTemplate)"
+        (returnEvent)="returnTransaction(terminateEstForm, returnTemplate)"
+      >
+      </frm-action-area-dc>
+    </div>
+  </frm-main-content-dc>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="confirmCancel()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+
+<ng-template #rejectTemplate>
+  <frm-reject-template-dc
+    [parentForm]="terminateEstForm"
+    heading="ESTABLISHMENT.REJECT.CLOSE-EST"
+    (cancelEvent)="hideModal()"
+    [rejectReasonList$]="rejectReasonList$"
+    (rejectEvent)="confirmReject(terminateEstForm)"
+    [transactionNumber]="transactionNumber"
+    [warningMessage]="'CORE.INFO.REJECT-TRANSACTION-INFO' | translate: { transactionNo: transactionNumber }"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [parentForm]="terminateEstForm"
+    [isCommentsMandatory]="isReturn"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApprove(terminateEstForm)"
+  ></frm-approve-template-dc>
+</ng-template>
+
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [parentForm]="terminateEstForm"
+    heading="ESTABLISHMENT.RETURN.CLOSE-EST"
+    (cancelEvent)="hideModal()"
+    [returnReasonList$]="returnReasonList$"
+    (returnEvent)="confirmReturn(terminateEstForm)"
+    [warningMessage]="
+      isReturnToAdmin ? 'CORE.INFO.RETURN-TO-ADMIN-TRANSACTION-INFO' : 'CORE.INFO.RETURN-TO-VALIDATOR-TRANSACTION-INFO'
+    "
+  >
+  </frm-return-template-dc>
+</ng-template>

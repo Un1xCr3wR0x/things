@@ -1,0 +1,185 @@
+<!-- Copyright GOSI. All Rights Reserved.
+This software is the proprietary information of GOSI.
+Use is subject to license terms. -->
+<div id="mainHeading">
+  <ng-container>
+    <div *ngIf="!isNonOcc && !isJailedLumpsum && !isHazardous && !isHeir && !isOcc && !isWomenLumpsum">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-RETIREMENT-LUMPSUM' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isNonOcc">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-NONOCC-LUMPSUM' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isJailedLumpsum">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-JAILED-LUMPSUM' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isHazardous">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-HAZARDOUS-LUMPSUM' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isHeir">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-HEIR-LUMPSUM-HEADING' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isOcc">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-OCC-LUMPSUM-HEADING' | translate"></frm-main-heading-dc>
+    </div>
+    <div *ngIf="isWomenLumpsum">
+      <frm-main-heading-dc [heading]="'BENEFITS.RETURN-WOMAN-LUMPSUM' | translate"></frm-main-heading-dc>
+    </div>
+  </ng-container>
+</div>
+
+<frm-main-content-dc [documents]="reqDocList" [showComments]="showComments" [comments]="transactionRefData">
+  <div id="contentArea">
+    <bnt-return-lumpsum-details-sc
+      *ngIf="socialInsuranceNo && routerData && requestId"
+      [lang]="lang"
+      [isAppPrivate]="isAppPrivate"
+      [socialInsuranceNo]="socialInsuranceNo"
+      [requestId]="requestId"
+      [repayId]="repayId"
+    ></bnt-return-lumpsum-details-sc>
+  </div>
+
+  <div id="actionArea">
+    <div class="row">
+      <div class="col-lg-12 form-action">
+        <div class="col-lg-12 action-requests">
+          <ng-container>
+            <div class="btn-section float-right">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                id="approve"
+                [disabled]="disableApprove"
+                type="primary"
+                (click)="approveTransaction(approveTemplate)"
+              >
+                {{ 'BENEFITS.APPROVE' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+            <div class="btn-section float-right" *ngIf="canReturn">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                type="secondary"
+                id="return"
+                (submit)="returnTransaction(returnTemplate)"
+              >
+                {{ 'BENEFITS.RETURN' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+            <div class="btn-section float-right" *ngIf="canReject">
+              <ng-container *gosiShow="validatorAccess">
+              <gosi-button-dc
+                type="danger"
+                id="reject"
+                (click)="rejectTransaction(rejectLumpsumTemplate)"
+              >
+                {{ 'BENEFITS.REJECT' | translate }}</gosi-button-dc
+              >
+              </ng-container>
+            </div>
+          </ng-container>
+          <div class="btn-section float-left">
+            <ng-container *gosiShow="validatorAccess">
+            <gosi-button-dc
+              id="cancel"
+              type="secondary"
+              (submit)="showCancelTemplate(cancelTemplate)"
+            >
+              {{ 'BENEFITS.CANCEL' | translate }}</gosi-button-dc
+            >
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</frm-main-content-dc>
+<!-- approve template -->
+<ng-template #approveTemplate>
+  <frm-approve-template-dc
+    [heading]="
+      isNonOcc
+        ? 'BENEFITS.APPROVE-NONOCC-LUMPSUM-HEADING'
+        : isJailedLumpsum
+        ? 'BENEFITS.APPROVE-JAILED-LUMPSUM-HEADING'
+        : isHazardous
+        ? 'BENEFITS.APPROVE-HAZARDOUS-LUMPSUM-HEADING'
+        : isHeir
+        ? 'BENEFITS.APPROVE-RETURN-HEIR-LUMPSUM'
+        : isWomenLumpsum
+        ? 'BENEFITS.APPROVE-WOMAN-LUMPSUM'
+        : isOcc
+        ? 'BENEFITS.APPROVE-OCC-LUMPSUM-HEADING'
+        : 'BENEFITS.APPROVE-RETIREMENT-LUMPSUM'
+    "
+    [isCommentsMandatory]="approveComments"
+    [parentForm]="returnLumpsumForm"
+    (cancelEvent)="hideModal()"
+    (approveEvent)="confirmApproveLumpsum()"
+  >
+  </frm-approve-template-dc>
+</ng-template>
+<!-- reject template -->
+<ng-template #rejectLumpsumTemplate>
+  <frm-reject-template-dc
+    [heading]="
+      isNonOcc
+        ? 'BENEFITS.REJECT-RETURN-NONOCC-LUMPSUM-HEADING'
+        : isJailedLumpsum
+        ? 'BENEFITS.REJECT-RETURN-JAILED-LUMPSUM-HEADING'
+        : isHazardous
+        ? 'BENEFITS.REJECT-RETURN-HAZARDOUS-LUMPSUM-HEADING'
+        : isHeir
+        ? 'BENEFITS.REJECT-RETURN-HEIR-LUMPSUM'
+        : isOcc
+        ? 'BENEFITS.REJECT-RETURN-OCC-LUMPSUM-HEADING'
+        : isWomenLumpsum
+        ? 'BENEFITS.REJECT-RETURN-WOMAN-LUMPSUM'
+        : 'BENEFITS.REJECT-RETURN-RETIREMENT-LUMPSUM'
+    "
+    [rejectReasonList$]="rejectReasonList"
+    [warningMessage]="'BENEFITS.INFO-VALIDATOR-REJECTION' | translate: { transactionNo: referenceNo }"
+    [parentForm]="returnLumpsumForm"
+    (rejectEvent)="confirmRejectLumpsum()"
+    (cancelEvent)="hideModal()"
+  >
+  </frm-reject-template-dc>
+</ng-template>
+<!-- return template -->
+<ng-template #returnTemplate>
+  <frm-return-template-dc
+    [returnReasonList$]="returnReasonList"
+    [heading]="
+      isNonOcc
+        ? 'BENEFITS.RETURN-RETURN-NONOCC-LUMPSUM-HEADING'
+        : isJailedLumpsum
+        ? 'BENEFITS.RETURN-RETURN-JAILED-LUMPSUM-HEADING'
+        : isHazardous
+        ? 'BENEFITS.RETURN-RETURN-HAZARDOUS-LUMPSUM-HEADING'
+        : isHeir
+        ? 'BENEFITS.RETURN-RETURN-HEIR-LUMPSUM'
+        : isOcc
+        ? 'BENEFITS.RETURN-RETURN-OCC-LUMPSUM-HEADING'
+        : isWomenLumpsum
+        ? 'BENEFITS.RETURN-RETURN-WOMAN-LUMPSUM'
+        : 'BENEFITS.RETURN-RETURN-RETIREMENT-LUMPSUM'
+    "
+    [warningMessage]="
+      channel === Channel.TAMINATY && routerData.assignedRole === rolesEnum.VALIDATOR_1
+        ? 'BENEFITS.INFO-IND-RETURN'
+        : routerData.assignedRole === rolesEnum.VALIDATOR_2
+        ? 'BENEFITS.INFO-VALIDATOR-RETURN-VALIDATOR'
+        : 'BENEFITS.INFO-FC-RETURN-VALIDATOR'
+    "
+    (cancelEvent)="hideModal()"
+    [parentForm]="returnLumpsumForm"
+    (returnEvent)="returnLumpsum()"
+  >
+  </frm-return-template-dc>
+</ng-template>
+<!-- cancel template -->
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc (onCancel)="hideModal()" [message]="'BENEFITS.CONFIRM-CANCEL'" (onConfirm)="confirmCancel()">
+  </gosi-confirm-modal-dc>
+</ng-template>

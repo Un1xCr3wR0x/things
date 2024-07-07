@@ -1,0 +1,138 @@
+<gosi-breadcrumb-dc></gosi-breadcrumb-dc>
+<div class="content">
+  <frm-main-heading-dc [heading]="'ESTABLISHMENT.REOPEN-ESTABLISHMENT' | translate"></frm-main-heading-dc>
+  <gosi-progress-wizard-dc
+    [wizardItems]="reopenWizardItems"
+    (clickWizard)="selectedWizard($event)"
+    #reopenEstablishmentWizard
+  ></gosi-progress-wizard-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="hide-tab">
+        <tabset class="pills">
+          <tab [active]="activeTab === 0">
+            <div class="row reopen-section">
+              <div class="col-md-12">
+                <div class="row">
+                  <div class="col-md-12">
+                    <gosi-card-dc heading="{{ 'ESTABLISHMENT.REOPEN-DETAILS' | translate }}" type="secondary">
+                      <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                          <div class="row">
+                            <div class="col-sm-12 col-md-6 col-lg-6">
+                              <gosi-input-select-dc
+                                id="reopen-reason"
+                                [name]="'reopenReason'"
+                                [label]="'ESTABLISHMENT.REASON-FOR-REOPENING' | translate"
+                                [list]="establishmentReopenReason$ | async"
+                                [control]="reopenReasonForm.get('reason')"
+                              >
+                              </gosi-input-select-dc>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-12 col-md-6 col-lg-6">
+                              <gosi-input-select-dc
+                                id="reopen-period"
+                                [name]="'reopenPeriod'"
+                                [label]="'ESTABLISHMENT.REOPENING-PERIOD' | translate"
+                                [list]="reopenPeriods$ | async"
+                                [control]="reopenReasonForm.get('period')"
+                              >
+                              </gosi-input-select-dc>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </gosi-card-dc>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <est-footer-buttons-dc
+                primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+                [showPrevious]="false"
+                (submit)="saveEstablishmentDetails(false)"
+                (cancel)="showModal(cancelTemplate)"
+              >
+              </est-footer-buttons-dc>
+            </div>
+          </tab>
+          <tab [active]="activeTab === 1">
+            <div class="row reopen-section">
+              <div class="col-md-12">
+                <est-authorizedperson-details-dc
+                  [parentForm]="reopenForm"
+                  [nationalityList$]="nationalityList$"
+                  [genderList$]="genderList$"
+                  [personResponse]="
+                    isValidator
+                      ? resetClicked
+                        ? personResponse
+                        : establishmentAfterChange?.reopenEstablishment?.person
+                      : personResponse
+                  "
+                  [newlyEnteredPerson]="newlyEnteredPerson"
+                  [isVerified]="isVerified"
+                  (verifyPersonEmit)="verifyPerson($event)"
+                  (resetPerson)="resetPerson()"
+                >
+                </est-authorizedperson-details-dc>
+              </div>
+            </div>
+            <div>
+              <est-footer-buttons-dc
+                primaryLabel="ESTABLISHMENT.SAVE-AND-NEXT"
+                [showPrevious]="true"
+                (submit)="saveEstablishmentDetails(true)"
+                (cancel)="showModal(cancelTemplate)"
+                (previous)="selectedWizard(0)"
+              >
+              </est-footer-buttons-dc>
+            </div>
+          </tab>
+          <tab [active]="activeTab === 2">
+            <est-documents-dc
+              [documents]="reopenDocuments"
+              [businessKey]="registrationNo"
+              [transactionId]="documentTransactionId"
+              (refreshDocument)="refreshDocumentContent($event, registrationNo, documentTransactionType, referenceNo)"
+              [referenceNo]="referenceNo"
+            >
+            </est-documents-dc>
+            <!-- Comments -->
+            <gosi-card-dc type="secondary" *ngIf="reopenForm" [paddingBottom]="true">
+              <gosi-input-text-area-dc
+                [label]="'ESTABLISHMENT.COMMENTS' | translate"
+                id="comments"
+                name="comments"
+                [control]="commentForm.get('comments')"
+              >
+              </gosi-input-text-area-dc>
+            </gosi-card-dc>
+            <est-footer-buttons-dc
+              primaryLabel="ESTABLISHMENT.SUBMIT"
+              [showPrevious]="true"
+              (submit)="saveReopenDetails()"
+              (cancel)="showModal(cancelTemplate)"
+              (previous)="selectedWizard(1)"
+            >
+            </est-footer-buttons-dc>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>

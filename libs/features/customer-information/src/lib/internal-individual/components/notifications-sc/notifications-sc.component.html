@@ -1,0 +1,170 @@
+<div class="txn-history-screen">
+  <div class="header-aria d-flex justify-content-between">
+    <p class="section-heading mb-2">
+      {{ 'CUSTOMER-INFORMATION.NOTIFICATIONS' | translate }}
+    </p>
+    <div class="notification-type-dropdown px-2">
+      <!-- <ng-select
+        [clearable]="false"
+        [searchable]="false"
+        id="NotificationType"
+        [(ngModel)]="selectedNotificationType"
+        (change)="onNotificationTypeChange()"
+      >
+        <ng-option value="ACTIVE">{{ 'CUSTOMER-INFORMATION.ACTIVE' | translate }}</ng-option>
+        <ng-option [disabled]="true" value="ARCHIVED">{{ 'CUSTOMER-INFORMATION.ARCHIVED' | translate }}</ng-option>
+      </ng-select> -->
+    </div>
+
+    <div class="align-items-center">
+      <ng-container *ngIf="currentTab === 1">
+        <img src="assets/icons/List Selected.svg" (click)="navigateToTimelineView()" alt="Table" class="m-btm" />
+        <span class="border-style"></span>
+        <img src="assets/icons/Table.svg" (click)="navigateToTableView()" alt="List" class="m-btm" />
+      </ng-container>
+      <ng-container *ngIf="currentTab === 0">
+        <img src="assets/icons/List.svg" (click)="navigateToTimelineView()" alt="List" class="m-btm" />
+        <span class="border-style"></span>
+        <img src="assets/icons/table Selected.svg" (click)="navigateToTableView()" alt="Table" class="m-btm" />
+      </ng-container>
+    </div>
+  </div>
+
+  <ng-container *ngIf="currentTab == 0">
+    <div class="desktop-view-table">
+      <gosi-table-dc>
+        <ng-container modalContent>
+          <table class="table table-condensed" aria-describedby="title">
+            <thead>
+              <tr>
+                <th style="width: 25%">
+                  {{ 'TRANSACTION-TRACING.TRANSACTION-NAME' | translate | uppercase }}
+                </th>
+                <th style="width: 20%">
+                  {{ 'CUSTOMER-INFORMATION.NOTIFICATION-TYPE' | translate | uppercase }}
+                </th>
+                <th style="width: 18%">
+                  {{ 'CUSTOMER-INFORMATION.LAST-SENT' | translate | uppercase }}
+                </th>
+                <th style="width: 25%">
+                  {{ 'CUSTOMER-INFORMATION.NOTIFICATION-SMS' | translate | uppercase }}
+                </th>
+                <th style="width: 14%">
+                  {{ 'TRANSACTION-TRACING.STATUS' | translate | uppercase }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="data-row"
+                *ngFor="
+                  let notification of filteredNotification?.list
+                    | paginate
+                      : {
+                          id: 'paginationId',
+                          itemsPerPage: itemsPerPage,
+                          currentPage: currentPage,
+                          totalItems: filteredNotification?.totalRecords
+                        };
+                  let i = index
+                "
+              >
+                <td style="width: 25%">
+                  {{ notification.transactionname }}
+                </td>
+                <td style="width: 20%">
+                  {{ notification.type }}
+                </td>
+                <td style="width: 18%">
+                  <div class="txn-number">
+                    {{ notification?.lastsent | gosiDate }}
+                  </div>
+                  <div class="description-content" dir="ltr">
+                    {{ notification?.lastsent | date: 'hh:mm a':'GMT' }}
+                  </div>
+                </td>
+                <td style="width: 25%">
+                  {{ notification.sms }}
+                </td>
+
+                <td class="task-status" style="width: 14%">
+                  <gosi-status-badge-dc
+                    [label]="'CUSTOMER-INFORMATION.NOTIFICATION-STATUS.' + notification.status | translate"
+                    [type]="statusBadgeType(notification.status)"
+                  >
+                  </gosi-status-badge-dc>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+      </gosi-table-dc>
+
+      <div *ngIf="!totalItems">
+        <gosi-no-result-dc></gosi-no-result-dc>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <div class="pagination">
+          <gosi-pagination-dc
+            *ngIf="totalItems > itemsPerPage"
+            [totalSize]="totalItems"
+            [itemsPerPage]="itemsPerPage"
+            [itemType]="'CUSTOMER-INFORMATION.NOTIFICATIONS' | translate"
+            paginationId="paginationId"
+            [pageDetails]="pageDetails"
+            (pageChange)="paginateTransactions($event)"
+          >
+          </gosi-pagination-dc>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="currentTab == 1" class="row d-flex flex-row-reverse p-2 m-90">
+    <ng-container *ngFor="let notification of filteredNotification?.list; let m = index">
+      <div class="col-md-12 col-lg-12 col-sm-12">
+        <ul class="timeline">
+          <li class="timeline-item">
+            <div class="px-2 time-style" *ngIf="notification.lastsent">
+              <span>{{ notification.lastsent | gosiDate }}</span>
+              <span class="view-details">{{ notification.lastsent | date: 'hh:mm a':'GMT' }}</span>
+            </div>
+            <div class="timeline-badge"></div>
+
+            <div class="row p-2" style="margin-top: -50px">
+              <div class="col-lg-9">
+                <div class="title mb-1">{{ notification.transactionname }}</div>
+                <div class="sml-txt">
+                  {{ 'CUSTOMER-INFORMATION.NOTIFICATION-TYPE' | translate }}: {{ notification.type }}
+                </div>
+
+                <div class="sml-txt">{{ 'CUSTOMER-INFORMATION.SMS' | translate }}: {{ notification.sms }}</div>
+              </div>
+              <div class="col-lg-3">
+                <div class="float-right">
+                  <gosi-status-badge-dc [label]="notification.status" [type]="statusBadgeType(notification.status)">
+                  </gosi-status-badge-dc>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+
+    <div class="load-more">
+      <gosi-loadmore-dc
+        [currentPage]="currentPage - 1"
+        [totalCount]="totalItems"
+        [pageSize]="itemsPerPage"
+        (loadMore)="onLoadMore($event)"
+      ></gosi-loadmore-dc>
+    </div>
+    <div *ngIf="!totalItems" class="d-flex align-items-center justify-content-center w-100 pt-3">
+      <gosi-no-result-dc></gosi-no-result-dc>
+    </div>
+  </div>
+</div>
+<ng-template #notShow>
+  <div>--</div>
+</ng-template>

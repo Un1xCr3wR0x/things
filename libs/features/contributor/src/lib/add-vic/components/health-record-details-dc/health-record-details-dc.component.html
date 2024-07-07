@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+-->
+<gosi-card-dc
+  type="secondary"
+  [heading]="'CONTRIBUTOR.ADD-VIC.HEALTH-ISSUE-DETAILS' | translate"
+  [noHeadingMargin]="true"
+>
+  <div class="row mt-4">
+    <div class="col-12">{{ 'CONTRIBUTOR.ADD-VIC.HEALTH-ISSUE-INFO' | translate }}</div>
+    <div class="col-12" *ngIf="healthDetailsForm && healthRecordList?.length > 0">
+      <div *ngFor="let healthRec of healthRecordList; let i = index">
+        <div class="py-3">
+          <cnt-comments-toggle-dc
+            [label]="healthRec.healthRecordDesc | bilingualText"
+            id="{{ 'health' + i }}"
+            [activeLabel]="'CONTRIBUTOR.YES'"
+            [inActiveLabel]="'CONTRIBUTOR.NO'"
+            [commentsControl]="healthDetailsForm.get(healthRec.healthRecordId.toString()).get('comments')"
+            [control]="healthDetailsForm.get(healthRec.healthRecordId.toString()).get('toggle')"
+            (changeEvent)="
+              toggleCommentSection(healthRec.remarkType, healthDetailsForm.get(healthRec.healthRecordId.toString()))
+            "
+          ></cnt-comments-toggle-dc>
+        </div>
+      </div>
+    </div>
+  </div>
+</gosi-card-dc>
+
+<div class="row" *ngIf="parentForm.get('healthCheckBox')">
+  <div class="col-12">
+    <gosi-input-checkbox-dc
+      id="healthCheckBox"
+      [noSpacing]="true"
+      label="CONTRIBUTOR.ADD-VIC.MEDICAL-ACKNOWLEDGEMENT"
+      [control]="parentForm.get('healthCheckBox')"
+    ></gosi-input-checkbox-dc>
+  </div>
+</div>
+
+<cnt-action-area-dc
+  [primaryButtonLabel]="canEdit ? 'CONTRIBUTOR.SAVE-AND-NEXT' : 'CONTRIBUTOR.NEXT'"
+  showPreviousSection="true"
+  (previous)="previous.emit()"
+  (submit)="submitHealthDetails()"
+  (cancel)="cancelTransaction.emit()"
+></cnt-action-area-dc>

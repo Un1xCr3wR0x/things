@@ -1,0 +1,584 @@
+<!-- <gosi-card-dc [heading]="'FORM-FRAGMENTS.DISABILITY-ASSESSMENT' | translate" type="primary"> -->
+<div class="col-md-12 col-sm-12 px-0" *ngFor="let assessment of previousDisabilityDetails?.data; let i = index">
+  <ng-container *ngIf="!isAppPublic">
+    <ul
+      [ngClass]="{
+        timeline: true,
+        'border-gray': true
+      }"
+    >
+      <li class="timeline-item">
+        <div class="timeline-badge"></div>
+        <div class="badge-items">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-6">
+                <span class="assessment-date">{{ assessment?.assessmentDate | dateType }}</span>
+              </div>
+              <div class="col-md-6 d-flex justify-content-end apply-btn">
+                <gosi-button-dc
+                  *ngIf="assessment?.canAccept && !isHoDoctor"
+                  class="px-3 pb-2"
+                  type="primary"
+                  [size]="'md'"
+                  (click)="accept(assessment)"
+                >
+                  <!-- *ngIf="true" -->
+
+                  <!-- *ngIf="injuryDetail?.recordStatus === 'Processed' || injuryDetail?.recordStatus === 'New'" -->
+                  {{ 'FORM-FRAGMENTS.CONTINUE-WITH-ENTITLEMNET' | translate }}
+                </gosi-button-dc>
+                <div *gosiShow="allowedAppealEarly">
+                  <gosi-button-dc
+                    *ngIf="assessment?.canAppeal && !isHoDoctor"
+                    class="px-3 pb-2"
+                    [type]="'primary'"
+                    [outlineOnly]="true"
+                    [size]="'md'"
+                    (click)="appeal(assessment)"
+                  >
+                    <!-- *ngIf="false" -->
+                    <!-- *ngIf="injuryDetail?.recordStatus === 'Processed' || injuryDetail?.recordStatus === 'New'"
+                  [disabled]="injuryDetail?.type?.english === 'Primary Medical Board'" -->
+                    {{ 'FORM-FRAGMENTS.APPEAL' | translate }}
+                  </gosi-button-dc>
+                </div>
+                <!-- Show button only for mbofficer and contributor login  -->
+                <!-- *ngIf="assessment?.showEarlyReassessmentRequest && (isContributor || isMbo || isCSR)" -->
+                <div *gosiShow="allowEarlyReassessment">
+                  <gosi-button-dc
+                    *ngIf="assessment?.showEarlyReassessmentRequest"
+                    class="px-3 pb-2"
+                    [type]="'primary'"
+                    [outlineOnly]="true"
+                    [size]="'md'"
+                    (click)="earlyAssessment(assessment)"
+                  >
+                    {{ 'FORM-FRAGMENTS.REQUEST-EARLY-RE-ASSESSMENT' | translate }}
+                  </gosi-button-dc>
+                </div>
+                <gosi-button-dc
+                  *ngIf="assessment?.canWithdraw"
+                  class="px-3 pb-2"
+                  [type]="'primary'"
+                  [size]="'md'"
+                  (click)="appeal(assessment)"
+                >
+                  <!-- [outlineOnly]="true" -->
+                  <!-- *ngIf="false" -->
+                  <!-- *ngIf="injuryDetail?.recordStatus === 'Processed' || injuryDetail?.recordStatus === 'New'"
+                  [disabled]="injuryDetail?.type?.english === 'Primary Medical Board'" -->
+                  {{ 'FORM-FRAGMENTS.WITHDRAW-APPEAL' | translate }}
+                </gosi-button-dc>
+                <ng-container *ngIf="assessment?.showAppeal">
+                  <span class="rule-value">_</span>
+                  <fa-icon [icon]="['fas', 'gavel']" rotate="270" class="hammer" size="1x"></fa-icon>
+                  <span>
+                    <!-- *ngIf="assessment?.recordStatus === 'Appealed'" -->
+                    {{ 'FORM-FRAGMENTS.APPEALED' | translate }}
+                  </span>
+                  <div class="px-2 pb-2">
+                    <span
+                      ><a class="appeal-link" (click)="navigateToAppealInfo.emit(assessment)">
+                        {{ 'FORM-FRAGMENTS.APPEAL-DETAILS' | translate }}</a
+                      ></span
+                    >
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="assessment?.showAccept">
+                  <!-- *ngIf="assessment?.recordStatus === 'Accepted'" -->
+                  <span> {{ 'FORM-FRAGMENTS.ACCEPTED' | translate }}</span>
+                  <fa-icon class="info" icon="info-circle"></fa-icon>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <gosi-label-dc ignoreLabel="true" id="diseaseDate" [value]=""> </gosi-label-dc>
+            <div class="icon-img">
+              <img class="appeal-icon" alt="appealedIccon" src="assets/icons/Appeal.svg" />
+              <p class="ml-2">Appealed</p>
+              <fa-icon class="info" icon="info-circle"></fa-icon>
+            </div> -->
+        <!-- </div> -->
+        <table class="table table-borderless">
+          <thead id="table-heading" class="table-light">
+            <tr>
+              <th id="disease-id">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-ID' | translate }}
+              </th>
+              <th id="disease-result">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-TYPE' | translate }}
+              </th>
+              <th id="diseae-required">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-RESULT' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.DISABILITY-PERCENTAGE' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.HELPER-REQUIRED' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.HELPER-START-DATE' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.BENEFIT-AMOUNT-SAR' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.NEXT-ASSESSMENT-DATE' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'FORM-FRAGMENTS.STATUS' | translate }}
+              </th>
+              <th id="disease-reason">
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE' | translate }}
+                {{ mbAllowanceDto?.allowanceDetails?.companionDetails?.paymentStatus?.english }}
+              </th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr class="border-bottom">
+              <!-- <td id="identinty-value">
+                <ng-container>
+                  <a class="member-click"></a>
+                </ng-container>
+              </td> -->
+              <td id="identinty-value">
+                <ng-container>
+                  <a class="appeal-link" (click)="onAssessmentIdClick(assessment)">{{
+                    assessment?.assessmentId
+                  }}</a></ng-container
+                >
+              </td>
+              <td>
+                <ng-container>{{ (assessment?.assessmentType | bilingualText) || '-' }} </ng-container>
+              </td>
+
+              <td>
+                <ng-container>{{ (assessment?.assessmentResult | bilingualText) || '-' }} </ng-container>
+              </td>
+              <td>
+                <ng-container>{{ assessment?.disabilityPercentage || '-' }} </ng-container>
+              </td>
+              <td>
+                <ng-container>{{ (assessment?.isHelperRequired | bilingualText) || '-' }} </ng-container>
+              </td>
+              <td>
+                <ng-container>{{ (assessment?.helperStartDate | dateType) || '-' }} </ng-container>
+              </td>
+              <td>
+                <ng-container>
+                  <div
+                    class="toolTipVisible"
+                    [tooltip]="assessment?.benefitAmount ? hoverAmountDetailsTemplate : null"
+                    triggers="mouseenter:mouseleave"
+                    placement="bottom"
+                  >
+                    {{ assessment?.benefitAmount || '-' }}
+                  </div>
+                  <ng-template #hoverAmountDetailsTemplate>
+                    <ng-container>
+                      <div class="heading-tooltip">
+                        <div class="row no-gutters flex-nowrap amount-type">
+                          <div class="row heading">
+                            <strong> {{ 'FORM-FRAGMENTS.BENEFIT-BREAKUP' | translate }} </strong>
+                          </div>
+                        </div>
+                        <div class="row no-gutters flex-nowrap amount-type" *ngIf="assessment?.basicAmount">
+                          <div class="row left">{{ 'FORM-FRAGMENTS.BASIC-AMOUNT' | translate }}:</div>
+                          <div class="row right custoom-white">{{ assessment?.basicAmount }}</div>
+                        </div>
+                        <div class="row no-gutters flex-nowrap amount-type" *ngIf="assessment?.helperAmount">
+                          <div class="row left">{{ 'FORM-FRAGMENTS.HELPER-AMOUNT' | translate }}:</div>
+                          <div class="row right custoom-white">{{ assessment?.helperAmount }}</div>
+                        </div>
+                        <div class="row no-gutters flex-nowrap amount-type" *ngIf="assessment?.dependentAmount">
+                          <div class="row left">{{ 'FORM-FRAGMENTS.DEPENDENT-AMOUNT' | translate }}:</div>
+                          <div class="row right custoom-white">{{ assessment?.dependentAmount }}</div>
+                        </div>
+                        <div class="underLine-benefitamount"></div>
+                        <div class="row no-gutters flex-nowrap amount-type" *ngIf="assessment?.benefitAmount">
+                          <div class="row left">{{ 'FORM-FRAGMENTS.TOTAL-AMOUNT' | translate }}:</div>
+                          <div class="row right custoom-white">{{ assessment?.benefitAmount }}</div>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </ng-template>
+                </ng-container>
+              </td>
+              <td>
+                <ng-container>{{ (assessment?.nextAssessmentDate | dateType) || '-' }}</ng-container>
+              </td>
+              <td>
+                <ng-container>{{ assessment?.status | bilingualText }}</ng-container>
+              </td>
+              <td>
+                <a class="appeal-link" (click)="paymentId(paymentIdTemplate, assessment)">
+                  {{ assessment?.paymentAmount }}
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+    </ul>
+  </ng-container>
+
+  <ng-container *ngIf="isAppPublic">
+    <ul
+      [ngClass]="{
+        timeline: true,
+        'border-gray': true
+      }"
+    >
+      <li class="timeline-item">
+        <div class="timeline-badge"></div>
+
+        <!-- <div class="badge-items">
+          <div class="col-md-12"> -->
+        <div class="row">
+          <div class="col-md-6">
+            <span class="assessment-date">{{ assessment?.assessmentDate | dateType }}</span>
+          </div>
+        </div>
+        <table class="table table-borderless">
+          <thead id="table-heading" class="table-light">
+            <tr>
+              <th id="disease-id">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-DATE' | translate }}
+              </th>
+              <th id="disease-result">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-TYPE' | translate }}
+              </th>
+              <th id="diseae-required">
+                {{ 'FORM-FRAGMENTS.ASSESSMENT-STATUS' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr class="border-bottom">
+              <!-- <td id="identinty-value">
+                <ng-container>
+                  <a class="member-click"></a>
+                </ng-container>
+              </td> -->
+              <!-- <td id="identinty-value">
+                <ng-container>
+                  <a class="appeal-link" (click)="onAssessmentIdClick(assessment)">{{
+                    assessment?.assessmentId
+                  }}</a></ng-container
+                >
+              </td> -->
+              <td>
+                <ng-container>{{ (assessment?.assessmentDate | dateType) || '-' }} </ng-container>
+              </td>
+
+              <td>
+                <ng-container>{{ (assessment?.assessmentType | bilingualText) || '-' }} </ng-container>
+              </td>
+              <td>
+                <ng-container>{{ (assessment?.status | bilingualText) || '-' }} </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- <div class="badge-items">
+          <div class="col-md-12">
+            <div class="row">
+              </div>
+              </div>
+              </div> -->
+      </li>
+    </ul>
+  </ng-container>
+</div>
+<ng-template #paymentIdTemplate>
+  <gosi-modal-dc
+    [modalHeader]="'FORM-FRAGMENTS.ASSESSMENT-ALLOWANCE-DETAILS' | translate"
+    [needCloseButton]="true"
+    (closeModal)="hideModal()"
+  >
+    <div class="row" modalContent>
+      <gosi-card-dc class="col-lg-12" type="secondary">
+        <accordion class="dependent-accordion mx-2 w-100">
+          <accordion-group class="wrapper-accordion-group">
+            <div accordion-heading>
+              <div class="font-weight-normal">
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.CONVEYANCE-ALLOWANCE' | translate }}
+              </div>
+              <span>
+                {{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment | number }}
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SAR' | translate }}
+              </span>
+            </div>
+            <!-- <div class="ml-auto mr-auto" accordion-heading></div> -->
+            <div class="header-wrapper ml-auto d-flex" accordion-heading>
+              <!-- <span>
+                {{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment | number }}
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SAR' | translate }}
+              </span> -->
+              <gosi-status-badge-dc
+                [label]="mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentStatus | bilingualText"
+                type="{{
+                  mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentStatus?.english === 'Paid'
+                    ? 'success'
+                    : 'warning'
+                }}"
+              ></gosi-status-badge-dc>
+              <span class="arrow-up">
+                <fa-icon icon="angle-up" size="lg"></fa-icon>
+              </span>
+              <span class="arrow-down">
+                <fa-icon icon="angle-down" size="lg"></fa-icon>
+              </span>
+            </div>
+            <div class="accordian-wrapper">
+              <div body>
+                <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                  <!-- <ng-container> -->
+                  <div class="row">
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-METHOD'"
+                        [value]="mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentMethod | bilingualText"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+                        value="{{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.bankAccountNumber }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <!-- <div class="col-md-6">
+                      <gosi-label-dc
+                        [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-DATE'"
+                        [value]="
+                          mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentDate?.hijiri | date: 'dd/MM/yyyy'
+                        "
+                      >
+                      </gosi-label-dc>
+                    </div> -->
+                    <div class="col-md-6"></div>
+                    <br />
+                    <div class="col-md-6"></div>
+                    <div class="col-md-6">
+                      <strong>
+                        {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION' | translate }}
+                      </strong>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div
+                      class="col-md-6"
+                      *ngIf="
+                        !mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                        !mbAllowanceDto?.isSameCity
+                      "
+                    >
+                      {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL' | translate }}
+                    </div>
+                    <div
+                      class="col-md-6"
+                      *ngIf="
+                        mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired && !mbAllowanceDto?.isSameCity
+                      "
+                    >
+                      {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL-LA' | translate }}
+                    </div>
+                    <div class="col-md-12">
+                      <div
+                        class="d-flex flex-row"
+                        *ngIf="
+                          mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                          !mbAllowanceDto?.isSameCity
+                        "
+                      >
+                        = (
+                        {{
+                          mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                            ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                            : 0
+                        }}
+                        x 2) x 30 / 100 + 100
+                      </div>
+                      <div
+                        class="d-flex flex-row"
+                        *ngIf="
+                          !mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.isLARequired &&
+                          !mbAllowanceDto?.isSameCity
+                        "
+                      >
+                        = (
+                        {{
+                          mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                            ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.distance
+                            : 0
+                        }}
+                        x 2 x 30) / 100
+                      </div>
+                      <div class="d-flex flex-row" *ngIf="mbAllowanceDto?.isSameCity">
+                        {{ 'OCCUPATIONAL-HAZARD.PAYMENT.CONVEYANCE-ALLOWANCE' | translate }}
+                      </div>
+                      <div class="d-flex flex-row-reverse">
+                        =
+                        {{
+                          mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                            ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                            : 0
+                        }}
+                        {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="d-flex flex-row">
+                        <strong>
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.TOTAL' | translate }}
+                        </strong>
+                      </div>
+                      <div class="d-flex flex-row-reverse">
+                        <strong>
+                          =
+                          {{
+                            mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                              ? mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.conveyancePayment
+                              : 0
+                          }}
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- </ng-container> -->
+          </accordion-group>
+          <accordion-group
+            class="wrapper-accordion-group"
+            *ngIf="
+              eachAllowance &&
+              eachAllowance?.medicalBoardType?.english !== 'Primary Medical Board' &&
+              mbAllowanceDto?.allowanceDetails?.companionDetails
+            "
+          >
+            <div accordion-heading>
+              <div class="font-weight-normal">
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.COMPANION-ALLOWANCE' | translate }}
+              </div>
+              <span>
+                {{ mbAllowanceDto?.allowanceDetails?.companionDetails?.companionPayment | number }}
+                {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SAR' | translate }}
+              </span>
+            </div>
+            <!-- <div class="ml-auto mr-auto" accordion-heading></div> -->
+            <div class="header-wrapper ml-auto d-flex" accordion-heading>
+              <gosi-status-badge-dc
+                [label]="mbAllowanceDto?.allowanceDetails?.companionDetails?.paymentStatus | bilingualText"
+                type="{{
+                  mbAllowanceDto?.allowanceDetails?.companionDetails?.paymentStatus?.english === 'Paid'
+                    ? 'success'
+                    : 'warning'
+                }}"
+              ></gosi-status-badge-dc>
+              <span class="arrow-up">
+                <fa-icon icon="angle-up" size="lg"></fa-icon>
+              </span>
+              <span class="arrow-down">
+                <fa-icon icon="angle-down" size="lg"></fa-icon>
+              </span>
+            </div>
+            <div class="accordian-wrapper">
+              <div body>
+                <div class="ml-3 mr-3 pl-2 pl-2 pt-4 pb-4">
+                  <!-- <ng-container> -->
+                  <div class="row">
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-METHOD'"
+                        [value]="mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.paymentMethod | bilingualText"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <div class="col-md-6">
+                      <gosi-label-dc
+                        label="OCCUPATIONAL-HAZARD.ALLOWANCE.ACCOUNT-NUMBER"
+                        value="{{ mbAllowanceDto?.allowanceDetails?.conveyanceDetails?.bankAccountNumber }}"
+                      >
+                      </gosi-label-dc>
+                    </div>
+                    <!-- <div class="col-md-6">
+                      <gosi-label-dc
+                        [label]="'OCCUPATIONAL-HAZARD.PAYMENT.PAYMENT-DATE'"
+                        [value]="
+                          mbAllowanceDto?.allowanceDetails?.companionDetails?.paymentDate?.hijiri | date: 'dd/MM/yyyy'
+                        "
+                      >
+                      </gosi-label-dc>
+                    </div> -->
+                    <div class="col-md-6"></div>
+                    <br />
+                    <div class="col-md-6">
+                      <div class="font-weight-normal">
+                        <strong>
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION' | translate }}
+                        </strong>
+                      </div>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-6" *ngIf="!mbAllowanceDto?.isSameCity">
+                      {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE-CALCULATION-DETAIL' | translate }}
+                    </div>
+                    <div class="col-md-12">
+                      <div class="d-flex flex-row" *ngIf="!mbAllowanceDto?.isSameCity">
+                        = (
+                        {{
+                          mbAllowanceDto?.allowanceDetails?.companionDetails?.distance
+                            ? mbAllowanceDto?.allowanceDetails?.companionDetails?.distance
+                            : 0
+                        }}
+                        x 2 x 30) / 100
+                      </div>
+                      <div class="d-flex flex-row" *ngIf="mbAllowanceDto?.isSameCity">
+                        {{ 'OCCUPATIONAL-HAZARD.PAYMENT.COMPANION-CONVEYANCE' | translate }}
+                      </div>
+                      <div class="d-flex flex-row-reverse">
+                        =
+                        {{
+                          mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                            ? mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                            : 0
+                        }}
+                        {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="d-flex flex-row">
+                        <strong>
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.TOTAL' | translate }}
+                        </strong>
+                      </div>
+                      <div class="d-flex flex-row-reverse">
+                        <strong>
+                          =
+                          {{
+                            mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                              ? mbAllowanceDto?.allowanceDetails?.companionDetails?.conveyancePayment
+                              : 0
+                          }}
+                          {{ 'OCCUPATIONAL-HAZARD.PAYMENT.ALLOWANCE.SR' | translate }}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- </ng-container> -->
+          </accordion-group>
+        </accordion>
+      </gosi-card-dc>
+    </div>
+  </gosi-modal-dc>
+</ng-template>

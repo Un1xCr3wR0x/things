@@ -1,0 +1,124 @@
+<!-- /**
+ * Copyright GOSI. All Rights Reserved.
+ * This software is the proprietary information of GOSI.
+ * Use is subject to license terms.
+ */ -->
+
+<div class="col-lg-12" *ngIf="isSamaFailed">
+  <gosi-alert-dc type="danger" [message]="'BILLING.SAMA-VERIFICATION-FAILED'"> </gosi-alert-dc>
+</div>
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <div class="header" *ngIf="isSinVaild && isActive">
+    {{ 'BILLING.VIC-REFUND-CREDIT-BALANCE' | translate }}
+  </div>
+  <!---------------------SIN Verification Screen------------------------->
+  <ng-container *ngIf="!fromAppProfile">
+    <ng-container *ngIf="(!isSinVaild && isAppPrivate) || !isActive">
+      <div class="header">{{ 'BILLING.VIC-REFUND-CREDIT-BALANCE' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+      <blg-verify-search-dc [type]="'sin'" (idNum)="verifyContributorDetails($event)"></blg-verify-search-dc>
+    </ng-container>
+  </ng-container>
+  <ng-container *ngIf="fromAppProfile">
+    <ng-container *ngIf="(!isSinVaild && isAppPrivate) || !isActive">
+      <div class="header">{{ 'BILLING.VIC-REFUND-CREDIT-BALANCE' | translate }}</div>
+      <gosi-alert-sc></gosi-alert-sc>
+    </ng-container>
+  </ng-container>
+  <!---------------------SIN Verification Screen Ends------------------------->
+  <ng-container *ngIf="isSinVaild && isActive">
+    <gosi-alert-sc></gosi-alert-sc>
+    <!-------------------Header Section --------------------->
+    <blg-establishment-header-info-dc [contributorDetails]="contributorDetails"> </blg-establishment-header-info-dc>
+    <!-------------------Wizard Section --------------------->
+    <gosi-progress-wizard-dc [wizardItems]="wizardItems" (clickWizard)="selectWizard($event)" #vicRefundWizard>
+    </gosi-progress-wizard-dc>
+    <!-------------------body Section --------------------->
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="hide-tab">
+          <tabset class="pills">
+            <tab [active]="currentTab === 0">
+              <div class="row">
+                <div class="col-lg-12">
+                  <blg-refund-bank-mode-dc
+                    [transferModeList]="transferModeList$ | async"
+                    [parentForm]="vicCreditRefundMainForm"
+                    (modeSelected)="getBankTranser($event)"
+                    [creditRefundDetails]="creditRefundDetails"
+                  ></blg-refund-bank-mode-dc>
+                  <ng-container *ngIf="isBankTransfer">
+                    <blg-bank-details-dc
+                      [bankName]="bankName"
+                      [ibanNumber]="ibanNumber"
+                      [isSamaWorkflow]="isSamaWorkflow"
+                      [bankNameFromApi]="bankNameFromApi"
+                      [lang]="lang"
+                      [fromPage]="'vic'"
+                      (bankDetails)="newBankDetails($event)"
+                      (onIbanBlurred)="onGetBankName($event)"
+                    >
+                    </blg-bank-details-dc>
+                  </ng-container>
+                </div>
+                <div class="col-lg-12">
+                  <blg-credit-balance-details-dc
+                    [creditBalanceDetails]="vicRefundDetials"
+                    (amountToBeRefunded)="setVicAmountToBeRefunded($event)"
+                    (save)="confirmDetails()"
+                    (cancel)="cancelVicCreditRefundPage()"
+                    [amount]="amount"
+                    [inWorkflow]="workflowFlag"
+                    [fromPage]="'vic'"
+                    [parentForm]="vicCreditRefundMainForm"
+                    [creditRetainedList]="creditRetainedList$ | async"
+                    (creditRetained)="getCreditRetainedValue($event)"
+                    [isRefundCreditBalance]="isRefundCreditBalance"
+                    [creditRefundDetails]="creditRefundDetails"
+                  >
+                  </blg-credit-balance-details-dc>
+                </div>
+              </div>
+            </tab>
+            <!-------------------document page --------------------->
+            <tab [active]="currentTab === 1">
+              <blg-credit-refund-file-upload-dc
+                [isSamaFailed]="isSamaFailed"
+                [documentList]="documentList"
+                [isScan]="isAppPrivate"
+                (previous)="previousFormDetails()"
+                (cancelBtn)="cancelVicCreditRefundUpload()"
+                [uuid]="uuid"
+                [transactionId]="documentTransactionIdVic"
+                [businessKey]="socialInsuranceNumber"
+                (doc)="refreshDocumentForVic($event)"
+                (submit)="submitVicCreditRefundDetails()"
+                [parentForm]="vicCreditRefundMainForm"
+                [referenceNo]="refNumber"
+              ></blg-credit-refund-file-upload-dc>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #vicRefundConfirmView>
+  <div class="model-margin">
+    <blg-credit-balance-summary-dc
+      [contributorDetails]="contributorDetails"
+      [creditBalanceDetails]="vicRefundDetials"
+      [refundbalance]="vicAmountToBeRefunded"
+      [iban]="ibanNumber"
+      [isBankTransfer]="isBankTransfer"
+      [isBankRequestinProgress]="isBankRequestinProgress"
+      [fromPage]="'refundConfrimPage'"
+      (confirmDetails)="navigateToVicDocumentPage()"
+      (cancelModal)="cancelVicPopup()"
+    >
+    </blg-credit-balance-summary-dc>
+  </div>
+</ng-template>

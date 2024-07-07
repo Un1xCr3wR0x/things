@@ -1,0 +1,110 @@
+<!--
+  ~ Copyright GOSI. All Rights Reserved.
+  ~  This software is the proprietary information of GOSI.
+  ~  Use is subject to license terms.
+  -->
+
+<gosi-breadcrumb-dc> </gosi-breadcrumb-dc>
+<div class="content">
+  <!---Heading section-->
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="col-md-6 col-lg-6 col-sm-12 float-left">
+      <h4 class="main-heading">
+        {{ 'ESTABLISHMENT.REPLACE-EST-ADMIN' | translate }}
+      </h4>
+    </div>
+  </div>
+  <est-replace-admin-info-dc *ngIf="selectedAdmin" [admin]="selectedAdmin"></est-replace-admin-info-dc>
+  <gosi-alert-sc></gosi-alert-sc>
+
+  <ng-container *ngIf="selectedAdmin">
+    <gosi-card-dc id="replaceAdminDetails" type="secondary" [heading]="'ESTABLISHMENT.ADMIN-DETAILS' | translate">
+      <div class="row">
+        <div class="col-md-12">
+          <est-search-person-dc
+            [person]="person"
+            [viewOnly]="estAdminForm.get('isVerified').value === true"
+            [parentForm]="estAdminForm"
+            [nationalityList$]="nationalityList$"
+          >
+          </est-search-person-dc>
+        </div>
+      </div>
+      <div class="row" *ngIf="estAdminForm.get('isSaved').value === false">
+        <div class="col-md-6 col-sm-12 verify-reset">
+          <ng-container *ngIf="estAdminForm.get('isVerified').value === false; else reset">
+            <est-footer-buttons-dc
+              [noMarginTop]="true"
+              [showCancel]="false"
+              [showPrevious]="false"
+              [hasOnlyPrimary]="true"
+              primaryId="{{ 'Verify' }}"
+              primaryLabel="ESTABLISHMENT.VERIFY"
+              (submit)="verifyEstAdmin(mainRegNo, selectedAdminId)"
+            ></est-footer-buttons-dc>
+          </ng-container>
+          <ng-template #reset>
+            <est-footer-buttons-dc
+              [showCancel]="false"
+              [noMarginTop]="true"
+              [showPrevious]="false"
+              [hasOnlyPrimary]="true"
+              cancelId="{{ 'Reset' }}"
+              primaryLabel="ESTABLISHMENT.RESET"
+              (submit)="resetEventDetails(estAdminForm)"
+            ></est-footer-buttons-dc>
+          </ng-template>
+        </div>
+      </div>
+    </gosi-card-dc>
+    <!-- Person Details  -->
+    <ng-container *ngIf="estAdminForm.get('isVerified').value === true">
+      <gosi-card-dc id="replacePersonDetails" type="secondary">
+        <est-person-details-dc
+          [parentForm]="estAdminForm"
+          [person]="personFormDetail"
+          [genderList]="genderList$ | async"
+          [readOnly]="estAdminForm.get('isSaved').value || estAdminForm.get('personExists').value"
+          [isSaved]="estAdminForm.get('isSaved').value"
+          [hasDateFields]="false"
+        >
+        </est-person-details-dc>
+      </gosi-card-dc>
+
+      <gosi-card-dc
+        id="replaceContactDetails"
+        type="secondary"
+        [heading]="'FORM-FRAGMENTS.CONTACT-DETAILS' | translate"
+      >
+        <frm-contact-dc
+          [parentForm]="estAdminForm"
+          [isHeadingRequired]="false"
+          [emailMandatory]="true"
+          [contactDetails]="person.contactDetail"
+          [readOnlyAll]="false"
+          [defaultOnly]="defaultToSaudi || estAdminForm.get('isSaved').value === true"
+        >
+        </frm-contact-dc>
+      </gosi-card-dc>
+    </ng-container>
+    <est-footer-buttons-dc
+      primaryLabel="ESTABLISHMENT.SUBMIT"
+      [showPrevious]="false"
+      (submit)="saveAdmin()"
+      (cancel)="showModal(cancelTemplate)"
+    >
+    </est-footer-buttons-dc>
+  </ng-container>
+</div>
+<ng-template #cancelTemplate>
+  <gosi-confirm-modal-dc
+    iconName="warning"
+    message="ESTABLISHMENT.INFO-CANCEL"
+    (onConfirm)="cancelModal()"
+    (onCancel)="hideModal()"
+  >
+  </gosi-confirm-modal-dc>
+</ng-template>
+<ng-template #feedBackPage>
+  <est-success-dc [goBack]="true"> </est-success-dc>
+</ng-template>
